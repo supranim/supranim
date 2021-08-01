@@ -92,7 +92,7 @@ type
 [Read Enimsql documentation](https://github.com/supranim/enimsql) and other tips and tricks.
 
 Example of creating a new user account using `User` model from above
-```
+```python
 from app/models import User
 
 var model = User(email:"test@example.com", username: "georgelemon", password: "123")
