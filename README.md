@@ -1,9 +1,9 @@
-**A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim**
-Supranim is also available as a NodeJS addon so it can surely boost your ugly app performances.
+<p align="center"><img src="/.github/supranim.png" width="180px"><br>
+<strong>A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim</strong>,<br>
+    based on <code>httpbeast</code>, provides extra functionalities, a <code>cli</code>, and a simple project structure & logic.
+</p>
 
-Supranim is based on `httpbeast`, provides extra functionalities, a command line interface, a simple project structure and clean logic.
-
-**Supranim is in WIP library. Most of these specs are just part of the concept.**
+**Supranim is an WIP library, so most of these specs are just part of the concept.**
 
 ## Server Features
 - [x] HTTP/1.1 server
