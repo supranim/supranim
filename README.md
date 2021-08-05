@@ -1,10 +1,8 @@
-**A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim.**
-
-Supranim is a happy fork of `httpbeast`, it provides extra functionalities, a command line interface, a stupid simple project structure and clean logic.
-=======
 <p align="center"><img src="/.github/supranim.png" width="180px"><br>
 <strong>A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim</strong>,<br>
     based on <code>httpbeast</code>, provides extra functionalities, a <code>cli</code>, and a simple project structure & logic.
+
+Supranim is a happy fork of `httpbeast`, it provides extra functionalities, a command line interface, a stupid simple project structure and clean logic.
 </p>
 
 **Supranim is an WIP library, so most of these specs are just part of the concept.**
@@ -42,9 +40,9 @@ Creating a new Supranim server is easy
 
 ```python
 from supranim import App, Router, Response, Request, UrlParams
-from app import middlewares/auth
 
 proc AuthMiddleware(): void =
+    ## Sample Auth Middleware
     discard
 
 proc homepage(resp: var Response): Response =
@@ -73,13 +71,40 @@ proc error500(resp: var Response, req: var Request): Response =
 
 Router.get("/", homepage)
 Router.get("/about", aboutUs)
+# A route can be protected by providing one or more Middlewares.
+# Processing middlewares is done in the order you provide them.
 Router.get("/orders/{:id}", yourOrders).middleware(@[AuthMiddleware])
+
+# Routing Assets via Proxy Handler
+# Where first parameters must be the relative path to your assets directory
+# and the second one the prefix route for enable the public access
+Router.assets("assets", "media")
+# One or more Assets Proxies can be provided to route your assets.
+# Let's say we want a route to be available for accessing only by logged in users
+Router.assets("private-assets", "private").middleware(@[AuthMiddleware])
 
 # Route your own Error pages
 Router.e404(error404)
 Router.e500(error500)
 
-App(address: "127.0.0.1", port: "3399", ssl: true).run()
+App(
+    # Server address and port number
+    # (Default 127.0.0.1:3399)
+    address: "127.0.0.1",
+    port: "3399",
+    # Boot your app under SSL connection.
+    # If set true, it will automatically generate a self-signed
+    # SSL certificate (in case it does not exist)
+    ssl: true,
+    # Enable multi threading support for your Supranim,
+    # by allocating one or more from available threads.
+    threads: 2,
+    # Relative path to your assets directory
+    # Used by Assets Proxy Handler for routing
+    # your assets to public network
+    assets: "../../static"
+).run()
+
 ```
 
 # Database & Model
