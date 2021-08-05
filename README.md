@@ -1,9 +1,6 @@
-**A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim**
-Supranim is also available as a NodeJS addon so it can surely boost your ugly app performances.
+**A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim.**
 
-Supranim is based on `httpbeast`, provides extra functionalities, a command line interface, a simple project structure and clean logic.
-
-**Supranim is in WIP library. Most of these specs are just part of the concept.**
+Supranim is a happy fork of `httpbeast`, it provides extra functionalities, a command line interface, a stupid simple project structure and clean logic.
 
 ## Server Features
 - [x] HTTP/1.1 server
@@ -34,14 +31,29 @@ Available Commands in Supranim CLI
 
 
 ## Quick Examples
-Starting a new Supranim server is easy
+Creating a new Supranim server is easy
+
 ```python
-from supranim import App, Router, Response, Request
+from supranim import App, Router, Response, Request, UrlParams
 from app import middlewares/auth
+
+proc AuthMiddleware(): void =
+    discard
 
 proc homepage(resp: var Response): Response =
     ## A simple procedure for returning a Hello World response
     return resp "Hello World!"
+
+proc aboutUs(resp: var Response): Response =
+    ## A simple procedure returning a response for a secondary page
+    return resp "This is about us"
+
+proc yourOrder(resp: var Response, req: var Request, params: var UrlParams): Response =
+    ## A simple procedure for a route that is middleware-protected,
+    ## So, before we call this proc will execute the given middleware.
+    ## Also, if provided, it will pass as a 3rd argument an varargs
+    ## with available URL parameters
+    return resp "Your Order No. #$1" % [ params[0] ]
 
 proc error404(resp: var Response, req: var Request): Response =
     ## A simple procedure for handling 404 errors
@@ -52,16 +64,15 @@ proc error500(resp: var Response, req: var Request): Response =
     return resp Http404, "500 - Internal Error"
 
 
-Router.get("/", homepage)                                     # A simple GET route
-Router.get("/articles/{slug}", homepage)                      # A route containing 'slug' pattern
-Router.get('/account/address').middleware(auth)               # Middleware protected route
+Router.get("/", homepage)
+Router.get("/about", aboutUs)
+Router.get("/orders/{:id}", yourOrders).middleware(@[AuthMiddleware])
 
 # Route your own Error pages
 Router.e404(error404)
 Router.e500(error500)
 
 App(address: "127.0.0.1", port: "3399", ssl: true).run()
-
 ```
 
 # Database & Model
@@ -80,16 +91,16 @@ from supranim/types import HasherType, TokenType, PKType
 type
     User* = ref object of Model
         id {.pk.}: PKType                       # PKType generates UUID on backend side.
-        email* {.unique.}: string
-        username* {.unique.}: string
-        display_name* {.default_nil.}: string
-        token*: TokenType
-        password*: HasherType
-        confirmed* {.default_false.}: bool
+        email* {.unique.}: string               # Set as text with UNIQUE value
+        username* {.unique.}: string            # Set as text with UNIQUE value
+        display_name* {.default_nil.}: string   # Set as text, and default NULL
+        token*: TokenType                       # Set as varchar(64)
+        password*: HasherType                   # Set as password
+        confirmed* {.default_false.}: bool      # Set as boolean type, default to FALSE
 
 ```
 
-[Read Enimsql documentation](https://github.com/supranim/enimsql) and other tips and tricks.
+**[Read Enimsql documentation](https://github.com/supranim/enimsql) and other tips and tricks.** 
 
 Example of creating a new user account using `User` model from above
 ```python
@@ -158,7 +169,7 @@ assert correctEmail == "valid" # true
 
 ```
 
-`isTLD` procedure will check through a long list with known Top Level Domains to determine if given domain is valid or not. 
+`isTLD` procedure will check through a long list with known Top Level Domains to determine if given domain is valid or not.
 
 ### Foot notes
 **What's Nim?**
