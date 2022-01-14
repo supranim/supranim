@@ -73,8 +73,8 @@ Router.get("/about", aboutUs)
 Router.get("/orders/{:id}", yourOrders).middleware(@[AuthMiddleware])
 
 # Routing Assets via Proxy Handler
-# Where first parameters must be the relative path to your assets directory
-# and the second one the prefix route for enable the public access
+# Where first parameter must be the relative path to your assets directory,
+# and the second one the route for ascessing public files
 Router.assets("assets", "media")
 # One or more Assets Proxies can be provided to route your assets.
 # Let's say we want a route to be available for accessing only by logged in users
