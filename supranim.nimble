@@ -2,7 +2,7 @@
 
 version       = "0.1.0"
 author        = "George Lemon from OpenPeep"
-description   = "A bloody hyper server & web framework"
+description   = "A bloody Hyper Server & Web Framework"
 license       = "MIT"
 srcDir        = "src"
 
@@ -10,3 +10,4 @@ srcDir        = "src"
 requires "nim >= 1.4.8"
 requires "enimsql"
 requires "nyml"
+requires "jsony"

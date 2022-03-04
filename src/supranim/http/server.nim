@@ -10,13 +10,12 @@
 #          Website: https://supranim.com
 #          Github Repository: https://github.com/supranim
 
-import selectors, net, nativesockets, os, httpcore, asyncdispatch,
-       strutils, posix, parseutils, options, logging, times, json
-
+import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
+            strutils, posix, parseutils, options, logging, times]
+import ../application
+import jsony
 from deques import len
 from osproc import countProcessors
-
-import ../application
 
 # Include the Request Parser
 include ./requestParser
@@ -57,20 +56,24 @@ type
         # Identifier used to distinguish requests.
         requestID*: uint
 
-    OnRequest* = proc (req: Request): Future[void] {.gcsafe.}
+    Response* = object
+        req: Request
 
-    Settings* = object
-        port*: Port
-        bindAddr*: string
-        domain*: Domain
-        numThreads: int
-        loggers: seq[Logger]
-        reusePort: bool
+    OnRequest* = proc (req: Request, res: Response): Future[void] {.gcsafe.}
+
+    # Settings* = object
+    #     port*: Port
+    #     bindAddr*: string
+    #     domain*: Domain
+    #     numThreads: int
+    #     loggers: seq[Logger]
+    #     reusePort: bool
             ## controls whether to fail with "Address already in use".
             ## Setting this to false will raise when `threads` are on.
     HttpBeastDefect* = ref object of Defect
 
-const serverInfo = "Supranim"
+const serverInfo = "Supranim"           # TODO support for white label
+# var Response* {.threadvar.}: Response
 
 ## Include Response Handler
 include ./response
@@ -252,7 +255,7 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
                                         data.headersFinished = false
 
                                 if validateRequest(request):
-                                    data.reqFut = onRequest(request)
+                                    data.reqFut = onRequest(request, Response(req: request))
                                     if not data.reqFut.isNil:
                                         data.reqFut.addCallback(
                                             proc (fut: Future[void]) =

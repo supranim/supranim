@@ -36,7 +36,7 @@ proc unsafeSend*(req: Request, data: string) {.inline.} =
         requestData.sendQueue.add(data)
     req.selector.updateHandle(req.client, {Event.Read, Event.Write})
 
-proc send*(req: Request, code: HttpCode, body: string, headers="") =
+proc send(req: Request, code: HttpCode, body: string, headers="") =
     ## Responds with the specified HttpCode and body.
     ## **Warning:** This can only be called once in the OnRequest callback.
     if req.client notin req.selector:
@@ -63,43 +63,45 @@ proc send*(req: Request, code: HttpCode, body: string, headers="") =
 proc send*(req: Request, code: HttpCode) =
     ## Responds with the specified HttpCode. The body of the response
     ## is the same as the HttpCode description.
-    req.send(code, $code)
+    send(req, code, $code)
 
-proc send*(req: Request, body: string, code = Http200) {.inline.} =
+proc send*[R: Response](res: R, body: string, code = Http200) {.inline.} =
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
-    req.send(code, body)
+    send(res.req, code, body)
 
-proc send404*(req: Request, msg="404 | Not Found") {.inline.} =
+proc send404*[R: Response](res: R, msg="404 | Not Found") {.inline.} =
     ## Sends a 404 HTTP Response with a default "404 | Not Found" message
-    send(req, msg, Http404)
+    res.send(msg, Http404)
 
-proc send500*(req: Request, msg="500 | Internal Error") {.inline.} =
+proc send500*[R: Response](res: R, msg="500 | Internal Error") {.inline.} =
     ## Sends a 500 HTTP Response with a default "500 | Internal Error" message
-    send(req, msg, Http500)
+    res.send(msg, Http500)
 
 #
 # JSON Responses
 #
-proc sendJson*(req: Request, jbody: JsonNode, code = Http200) {.inline.} =
-    ## Sends a Json Response with a default 200 (OK) status code
-    req.send(code, $jbody, "Content-Type: application/json")
+template json*[R: Response](res: R, jbody: untyped, code = Http200) =
+    ## Sends a JSON Response with a default 200 (OK) status code
+    res.req.send(code, toJson(jbody), "Content-Type: application/json")
 
-proc send404Json*(req: Request, msg: JsonNode = %*{"status": 404, "message": "Not Found"}) {.inline.} =
+template json404*[R: Response](res: R, body = "") =
     ## Sends a 404 JSON Response  with a default "Not found" message
-    sendJson(req, msg, Http404)
+    var jbody = if body.len == 0: """{"status": 404, "message": "Not Found"}""" else: body
+    res.json(jbody, Http404)
 
-proc send500Json*(req: Request, msg: JsonNode = %*{"status": 500, "message": "Internal Error"}) {.inline.} =
+template json500*[R: Response](res: R, body = "") =
     ## Sends a 500 JSON Response with a default "Internal Error" message
-    sendJson(req, msg, Http500)
+    var jbody = if body.len == 0: """{"status": 500, "message": "Internal Error"}""" else: body
+    res.json(req, jbody, Http500)
 
 #
 # HTTP Redirects procedures
 #
-proc redirect*(req: Request, target:string, code = Http301) {.inline.} =
+proc redirect*[R: Response](res: R, target:string, code = Http301) {.inline.} =
     ## Set a HTTP Redirect with a default 301 (Temporary) status code
-    req.send(code, "", "Location: "&target)
+    res.req.send(code, "", "Location: "&target)
 
-proc redirect302*(req: Request, target:string) {.inline.} =
+proc redirect302*[R: Response](res: R, target:string) {.inline.} =
     ## Set a HTTP Redirect with `302` (Permanent) status code
-    req.send(Http301, "", "Location: "&target)
+    res.req.send(Http302, "", "Location: "&target)

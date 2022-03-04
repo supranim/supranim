@@ -1,16 +1,21 @@
 import std/tables
+
 from std/times import DateTime
 from std/options import Option
-from ./server import HttpMethod
-from ./server import Request
+from std/enumutils import symbolName
+from std/strutils import `%`
+
+from ./server import HttpMethod, Request, Response
+
+export HttpMethod
 
 type
-    Callable* = proc(req: Request)
-    MiddlewareFunction* = proc(req: Request): void {.gcsafe.}
+    Callable* = proc(req: Request, res: Response) {.nimcall.}
+    MiddlewareFunction = proc(req: Request)
 
-    Middleware = object
-        name: string
-        callable: MiddlewareFunction
+    Middleware* = object
+        name*: string
+        callable*: proc(req: Request): void {.gcsafe.}
 
     Pattern* = enum
         Id, Slug, Date
@@ -29,14 +34,18 @@ type
         else: discard
 
     VerbCollection = Table[string, Route]
+    GroupRouteTuple* = tuple[verb: HttpMethod, route: string, callback: Callable]
 
     RouterHandler = object
         httpGet, httpPost, httpPut, httpHead, httpConnect: VerbCollection
         httpDelete, httpPatch, httpTrace, httpOptions: VerbCollection
 
+    RouterException* = object of CatchableError
+
 var Router* = RouterHandler()
 
 proc register[R: RouterHandler](router: var R, verb: HttpMethod, route: Route) =
+    ## Register a new route by given Verb and Route object
     case verb:
         of HttpGet:      router.httpGet[route.path] = route
         of HttpPost:     router.httpPost[route.path] = route
@@ -79,11 +88,11 @@ proc isTemporary*[R: RouterHandler](router: R, verb: HttpMethod, path: string): 
     let collection = getCollectionByVerb(verb)
     result = collection[path].isTemporary
 
-proc runCallable*[R: Route](route: R, req: Request) =
+proc runCallable*[R: Route](route: R, req: Request, res: Response) =
     ## Run callable from route controller
-    route.callback(req)
+    route.callback(req, res)
 
-proc middleware*[R: Route](route: var R, middlewares: seq[tuple[id: string, callable: MiddlewareFunction]]) =
+proc middleware*[R: Route](route: var R, middlewares: seq[tuple[id: string, callable: proc(req: Request): void {.gcsafe.}]]) =
     ## Set one or more middleware handlers to current Route
     route.hasMiddleware = true
     route.middleware = middlewares
@@ -92,41 +101,54 @@ proc expire*[R: Route](route: var R, expiration: Option[DateTime]) =
     ## Set expiration time for current Route
     discard
 
-proc get*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc get*[R: RouterHandler](router: var R, path: string, callback: proc(req: Request, res: Response): void {.gcsafe.}): Route {.discardable.} = 
     ## Register a new route for `HttpGet` method
     router.register(HttpGet, Route(path: path, verb: HttpGet, callback: callback))
     result = router.httpGet[path]
 
-proc post*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc post*[R: RouterHandler](router: var R, path: string, callback: proc(req: Request, res: Response): void {.gcsafe.}): Route {.discardable.} = 
     ## Register a new route for `HttpPost` method
     router.register(HttpPost, Route(path: path, verb: HttpPost, callback: callback))
     result = router.httpPost[path]
 
-proc put*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc put*[R: RouterHandler](router: var R, path: string, callback: proc(req: Request, res: Response): void {.gcsafe.}): Route {.discardable.} = 
     ## Register a new route for `HttpPut` method
     router.register(HttpPut, Route(path: path, verb: HttpPut, callback: callback))
     result = router.httpPut[path]
 
-proc head*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc head*[R: RouterHandler](router: var R, path: string, callback: proc(req: Request, res: Response): void {.gcsafe.}): Route {.discardable.} = 
     ## Register a new route for `HttpHead` method
     router.register(HttpHead, Route(path: path, verb: HttpHead, callback: callback))
     result = router.httpHead[path]
 
-proc connect*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc connect*[R: RouterHandler](router: var R, path: string, callback: proc(req: Request, res: Response): void {.gcsafe.}): Route {.discardable.} = 
     ## Register a new route for `HttpConnect` method
     router.register(HttpConnect, Route(path: path, verb: HttpConnect, callback: callback))
     result = router.httpConnect[path]
 
-proc delete*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc delete*[R: RouterHandler](router: var R, path: string, callback: proc(req: Request, res: Response): void {.gcsafe.}): Route {.discardable.} = 
     ## Register a new route for `HttpDelete` method
     router.register(HttpDelete, Route(path: path, verb: HttpDelete, callback: callback))
     result = router.httpDelete[path]
 
-proc patch*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc patch*[R: RouterHandler](router: var R, path: string, callback: proc(req: Request, res: Response): void {.gcsafe.}): Route {.discardable.} = 
     ## Register a new route for `HttpPatch` method
     router.register(HttpPatch, Route(path: path, verb: HttpPatch, callback: callback))
     result = router.httpPatch[path]
 
-proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: Callable): Route {.discardable.} =
-    ## Generate unique route path for specified verb
+proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: proc(req: Request, res: Response): void {.gcsafe.}): Route {.discardable.} =
+    ## Generate unique route for specified verb
     discard
+
+proc group*[R: RouterHandler](router: var R, basePath: string, routes: varargs[GroupRouteTuple]): RouterHandler {.discardable.} =
+    ## Add group of routes. Handy when adding multiple
+    ## routes at once, under same base URI, and optionally,
+    ## protected by one or more middleware handlers
+    for r in routes:
+        let routePath = if r.route == "/": basePath else: basePath  & "/" & r.route
+        if not router.exists(r.verb, routePath):
+            router.register(r.verb, Route(path: routePath, verb: r.verb, callback: r.callback))
+        else:
+            raise newException(RouterException,
+                "Duplicate route for \"$1\" path of $2" % [r.route, symbolName(r.verb)])
+    result = router
