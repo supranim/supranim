@@ -65,18 +65,21 @@ proc send*(req: Request, code: HttpCode) =
     ## is the same as the HttpCode description.
     send(req, code, $code)
 
-proc send*[R: Response](res: R, body: string, code = Http200) {.inline.} =
+proc response*[R: Response](res: R, body: string, code = Http200) {.inline.} =
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
-    send(res.req, code, body)
+    res.req.send(code, body, headers = "")
 
 proc send404*[R: Response](res: R, msg="404 | Not Found") {.inline.} =
     ## Sends a 404 HTTP Response with a default "404 | Not Found" message
-    res.send(msg, Http404)
+    res.response(msg, Http404)
 
 proc send500*[R: Response](res: R, msg="500 | Internal Error") {.inline.} =
     ## Sends a 500 HTTP Response with a default "500 | Internal Error" message
-    res.send(msg, Http500)
+    res.response(msg, Http500)
+
+template view*[R: Response](res: R, key: string, code = Http200) =
+    res.response(getViewContent(App, key))
 
 #
 # JSON Responses

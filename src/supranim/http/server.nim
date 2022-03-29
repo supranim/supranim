@@ -12,8 +12,12 @@
 
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
             strutils, posix, parseutils, options, logging, times]
-import ../application
+
+from std/strformat import fmt
+
 import jsony
+import ../application
+
 from deques import len
 from osproc import countProcessors
 
@@ -21,59 +25,72 @@ from osproc import countProcessors
 include ./requestParser
 
 export httpcore except parseHeader
+export asyncdispatch, options
 
 type
     FdKind = enum
         Server, Client, Dispatcher
 
     Data = object
-        fdKind: FdKind ## Determines the fd kind (server, client, dispatcher)
-        ## - Client specific data.
-        ## A queue of data that needs to be sent when the FD becomes writeable.
+        fdKind: FdKind
+            ## Determines the fd kind (server, client, dispatcher)
+            ## - Client specific data.
+            ## A queue of data that needs to be sent when the FD becomes writeable.
         sendQueue: string
-        ## The number of characters in `sendQueue` that have been sent already.
+            ## The number of characters in `sendQueue` that have been sent already.
         bytesSent: int
-        ## Big chunk of data read from client during request.
+            ## Big chunk of data read from client during request.
         data: string
-        ## Determines whether `data` contains "\c\l\c\l".
+            ## Determines whether `data` contains "\c\l\c\l".
         headersFinished: bool
-        ## Determines position of the end of "\c\l\c\l".
+            ## Determines position of the end of "\c\l\c\l".
         headersFinishPos: int
-        ## The address that a `client` connects from.
+            ## The address that a `client` connects from.
         ip: string
-        ## Future for onRequest handler (may be nil).
+            ## Future for onRequest handler (may be nil).
         reqFut: Future[void]
-        ## Identifier for current request. Mainly for better detection of cross-talk.
+            ## Identifier for current request. Mainly for better detection of cross-talk.
         requestID: uint
 
 type
     Request* = object
         selector: Selector[Data]
         client*: SocketHandle
-        # Determines where in the data buffer this request starts.
-        # Only used for HTTP pipelining.
+            # Determines where in the data buffer this request starts.
+            # Only used for HTTP pipelining.
         start: int
-        # Identifier used to distinguish requests.
+            # Identifier used to distinguish requests.
         requestID*: uint
+            # Identifier for current request
+        params: seq[RoutePatternTuple]
 
     Response* = object
         req: Request
 
-    OnRequest* = proc (req: Request, res: Response): Future[void] {.gcsafe.}
+    OnRequest* = proc (req: var Request, res: Response): Future[void] {.gcsafe.}
+        ## Procedure used on request
 
-    # Settings* = object
-    #     port*: Port
-    #     bindAddr*: string
-    #     domain*: Domain
-    #     numThreads: int
-    #     loggers: seq[Logger]
-    #     reusePort: bool
-            ## controls whether to fail with "Address already in use".
-            ## Setting this to false will raise when `threads` are on.
     HttpBeastDefect* = ref object of Defect
+        ## Catchable object error
 
-const serverInfo = "Supranim"           # TODO support for white label
-# var Response* {.threadvar.}: Response
+    RoutePattern* = enum
+        ## Base route patterns
+        None, Id, Slug, Alpha, Digits, Date, DateYear, DateMonth, DateDay
+
+    # CacheableRoutes = object
+    #     ## Cache routes response for a certain amount of time
+    #     expiration: Option[DateTime]
+
+    RoutePatternTuple* = tuple[pattern: RoutePattern, str: string, optional, dynamic: bool]
+        ## RoutePattern tuple is used for all Route object instances.
+        ## Holds the pattern representation of each path, where
+        ## ``pattern`` is one from Pattern enum,
+
+    RoutePatternRequest* = tuple[pattern: RoutePattern, str: string]
+        ## Similar to ``RoutePatternTuple``, the only difference is that is used
+        ## during runtime for parsing each path request.
+
+const serverInfo = "Supranim"
 
 ## Include Response Handler
 include ./response
@@ -84,7 +101,7 @@ proc initData(fdKind: FdKind, ip = ""): Data =
          bytesSent: 0,
          data: "",
          headersFinished: false,
-         headersFinishPos: -1, ## By default we assume the fast case: end of data.
+         headersFinishPos: -1,          ## By default we assume the fast case: end of data.
          ip: ip
     )
 
@@ -237,13 +254,12 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
 
                         let waitingForBody = methodNeedsBody(data) and bodyInTransit(data)
                         if likely(not waitingForBody):
-                            # echo $data.data
                             for start in parseRequests(data.data):
                                 # For pipelined requests, we need to reset this flag.
                                 data.headersFinished = true
                                 data.requestID = genRequestID()
 
-                                let request = Request(
+                                var request = Request(
                                     selector: selector,
                                     client: fd.SocketHandle,
                                     start: start,
@@ -342,6 +358,14 @@ proc path*(req: Request): Option[string] {.inline.} =
     if unlikely(req.client notin req.selector): return
     parsePath(req.selector.getData(req.client).data, req.start)
 
+proc getParams*(req: Request): seq[RoutePatternTuple] =
+    ## Retrieve available sequence of RoutePatternTuple for current request
+    result = req.params
+
+proc setParams*(req: var Request, params: seq[RoutePatternTuple]) =
+    ## Add a sequence of RoutePatternTuple for current request
+    req.params = params
+
 proc headers*(req: Request): Option[HttpHeaders] =
     ## Parses the request's data to get the headers.
     if unlikely(req.client notin req.selector):
@@ -358,8 +382,7 @@ proc body*(req: Request): Option[string] =
         let length =
             if req.headers.get().hasKey("Content-Length"):
                 req.headers.get()["Content-Length"].parseInt()
-            else:
-                0
+            else: 0
         assert result.get().len == length
 
 proc ip*(req: Request): string =
@@ -400,44 +423,22 @@ proc run*(onRequest: OnRequest, app: Application) =
     ## The ``onRequest`` procedure returns a ``Future[void]`` type. But
     ## unlike most asynchronous procedures in Nim, it can return ``nil``
     ## for better performance, when no async operations are needed.
-
-    var loadedServices: seq[string] = @["Database", "Cookie", "Http Authentication", "Form Validation"]
-
+    # var loadedServices: seq[string] = @["Database", "Cookie", "Http Authentication", "Form Validation"]
     when compileOption("threads"):
-        let numThreads = if app.isMultithreading: app.getThreads else: countProcessors()
+        let numThreads = if app.isMultithreading: app.getThreads() else: 1
     else:
         let numThreads = 1
-    # echo "----------------- ⚡️ -----------------"
-    # echo("👌 Up & Running on ", settings.bindAddr&":"& $settings.port)
-    # echo "✓ SSL Certificate: Yes"
-    # echo "✓ Static Assets Proxy: Yes"
-    # echo "✓ Release mode: Development"
-    # echo("✓ Multi-threading: ", numThreads, " of ", $countProcessors())
-    # echo "--------- Service Providers ----------"
-    # for loadedService in loadedServices:
-    #     echo("✓ ", loadedService)
-    echo "running..."
-    if numThreads > 1:
+
+    app.printBootStatus()
+
+    if numThreads == 1:
+        eventLoop((onRequest, app))
+    else:
         when compileOption("threads"):
             var threads = newSeq[Thread[(OnRequest, Application)]](numThreads)
             for i in 0 ..< numThreads:
-                createThread[(OnRequest, Application)](
-                    threads[i], eventLoop, (onRequest, app)
-                )
+                createThread[(OnRequest, Application)](threads[i], eventLoop, (onRequest, app))
             # echo("Listening on port ", settings.port) # This line is used in the tester to signal readiness.
             joinThreads(threads)
         else:
             assert false
-    else:
-        eventLoop((onRequest, app))
-
-when false:
-    proc close*(port: Port) =
-        ## Closes an httpbeast server that is running on the specified port.
-        ##
-        ## **NOTE:** This is not yet implemented.
-
-        assert false
-        # TODO: Figure out the best way to implement this. One way is to use async
-        # events to signal our `eventLoop`. Maybe it would be better not to support
-        # multiple servers running at the same time?
