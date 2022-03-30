@@ -5,12 +5,15 @@
 # This is an include-only file, part of the ./server.nim
 # 
 # (c) 2021 Supranim is released under MIT License
-#          by George Lemon <georgelemon@protonmail.com>
+#          Developed by Humans from OpenPeep
 #          
 #          Website: https://supranim.com
 #          Github Repository: https://github.com/supranim
 
 var serverDate {.threadvar.}: string
+const
+    HeaderContentTypeJSON = "Content-Type: application/json"
+    HeaderHttpRedirect = "Location: $1"
 
 proc updateDate(fd: AsyncFD): bool =
     result = false # Returning true signifies we want timer to stop.
@@ -84,9 +87,17 @@ template view*[R: Response](res: R, key: string, code = Http200) =
 #
 # JSON Responses
 #
-template json*[R: Response](res: R, jbody: untyped, code = Http200) =
+template json*[R: Response](res: R, body: untyped, code = Http200) =
     ## Sends a JSON Response with a default 200 (OK) status code
-    res.req.send(code, toJson(jbody), "Content-Type: application/json")
+    ## This template is using an untyped body parameter that is automatically
+    ## converting ``seq``, ``objects``, ``string`` (and so on) to
+    ## JSON (stringified) via ``jsony`` library.
+    res.req.send(code, toJson(body), HeaderContentTypeJSON)
+
+template json*[R: Response](res: R, body: JsonNode, code = Http200) =
+    ## Sends a JSON response with a default 200 (OK) status code.
+    ## This template is using the native JsonNode for creating the response body.
+    res.req.send(code, $(body), HeaderContentTypeJSON)
 
 template json404*[R: Response](res: R, body = "") =
     ## Sends a 404 JSON Response  with a default "Not found" message
@@ -103,8 +114,8 @@ template json500*[R: Response](res: R, body = "") =
 #
 proc redirect*[R: Response](res: R, target:string, code = Http301) {.inline.} =
     ## Set a HTTP Redirect with a default 301 (Temporary) status code
-    res.req.send(code, "", "Location: "&target)
+    res.req.send(code, "", HeaderHttpRedirect % [target])
 
 proc redirect302*[R: Response](res: R, target:string) {.inline.} =
     ## Set a HTTP Redirect with `302` (Permanent) status code
-    res.req.send(Http302, "", "Location: "&target)
+    res.req.send(Http302, "", HeaderHttpRedirect % [target])

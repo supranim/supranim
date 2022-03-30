@@ -14,6 +14,7 @@ import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
             strutils, posix, parseutils, options, logging, times]
 
 from std/strformat import fmt
+from std/json import JsonNode, `$`
 
 import jsony
 import ../application
@@ -52,7 +53,9 @@ type
             ## Identifier for current request. Mainly for better detection of cross-talk.
         requestID: uint
 
-type
+    Param = tuple[k, v: string]
+        ## Key-Value tuple used to handle GET request parameters
+
     Request* = object
         selector: Selector[Data]
         client*: SocketHandle
@@ -62,7 +65,10 @@ type
             # Identifier used to distinguish requests.
         requestID*: uint
             # Identifier for current request
-        params: seq[RoutePatternTuple]
+        patterns: seq[RoutePatternRequest]
+            ## Holds all route patterns from current request
+        params: seq[Param]
+            ## Holds all GET parameters from current request
 
     Response* = object
         req: Request
@@ -358,13 +364,19 @@ proc path*(req: Request): Option[string] {.inline.} =
     if unlikely(req.client notin req.selector): return
     parsePath(req.selector.getData(req.client).data, req.start)
 
-proc getParams*(req: Request): seq[RoutePatternTuple] =
-    ## Retrieve available sequence of RoutePatternTuple for current request
-    result = req.params
+proc getParams*(req: Request): seq[RoutePatternRequest] =
+    ## Retrieves all dynamic patterns (key/value) from current request
+    result = req.patterns
 
-proc setParams*(req: var Request, params: seq[RoutePatternTuple]) =
-    ## Add a sequence of RoutePatternTuple for current request
-    req.params = params
+proc hasParams*(req: Request): bool =
+    ## Determine if the current request contains any parameters from the dynamic route
+    result = req.patterns.len != 0
+
+proc setParams*(req: var Request, reqValues: seq[RoutePatternRequest]) =
+    ## Map values from request to route parameters
+    ## Add dynamic route values from current request 
+    for reqVal in reqValues:
+        req.patterns.add(reqVal)
 
 proc headers*(req: Request): Option[HttpHeaders] =
     ## Parses the request's data to get the headers.

@@ -38,6 +38,8 @@ type
         ## or dynamic (when using Route patterns)
         StaticRouteType, DynamicRouteType
 
+    RuntimeRoutePattern* = tuple[status: bool, key: string, isDynamic: bool, params: seq[RoutePatternRequest]]
+
     Route* = object
         ## Route object used to manage application routes
         path: string
@@ -266,7 +268,7 @@ proc exists[R: RouterHandler](router: var R, verb: HttpMethod, path: string): bo
     let collection = router.getCollectionByVerb(verb)
     result = collection.hasKey(path)
 
-proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: string): tuple[status: bool, key: string, isDynamic: bool] =
+proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: string): RuntimeRoutePattern =
     ## Determine if route exists for given ``key/path`` based on current HttpMethod verb.
     ## This is a procedure called only on runtime on each request.
     let collection = router.getCollectionByVerb(verb)
@@ -274,8 +276,9 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
     result.key = path
     if result.status == false:
         let dynamicCollection = router.getCollectionByVerb(verb, true)
-        let reqPattern = getPatternsByStr(path)
+        var reqPattern = getPatternsByStr(path)
         var matchRoutePattern: bool
+        var reqPatternKeys: seq[int]
         for key, route in dynamicCollection.pairs():
             let routePatternsLen = route.patterns.len
             let reqPatternsLen = reqPattern.len
@@ -288,6 +291,10 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
                     if i == routePatternsLen: break
                     if reqPattern[i].pattern == route.patterns[i].pattern:
                         matchRoutePattern = true
+                        if not route.patterns[i].dynamic:   # store all non dynamic route patterns.
+                            reqPatternKeys.add(i)
+                        else:
+                            reqPattern[i].str = reqPattern[i].str
                     else:
                         matchRoutePattern = false
                         break
@@ -296,7 +303,12 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
                 result.status = true
                 result.key = route.path
                 result.isDynamic = true
-                # result.reqPatterns = reqPattern
+                for reqPatternKey in reqPatternKeys:
+                    # delete all non dynamic pattern by index key.
+                    # in this way `reqPattern` will contain only dynamic patterns that
+                    # need to be exposed in controlled-based procedure to retrieve values.
+                    reqPattern.del(reqPatternKey)
+                result.params = reqPattern
                 break
 
 proc getRoute*[R: RouterHandler](router: var R, path: string, isDynamic: bool): Route =
