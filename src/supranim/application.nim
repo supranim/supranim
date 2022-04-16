@@ -3,55 +3,101 @@ import nyml
 from std/nativesockets import Domain
 from std/net import Port
 from std/logging import Logger
-from std/os import getCurrentDir, putEnv, getEnv, fileExists
+from std/os import getCurrentDir, putEnv, getEnv, fileExists, getAppDir, normalizePath
 from std/strutils import toUpperAscii
+from std/macros import getProjectPath
 
+import ./config/assets
 export Port
+export assets
 
 include supranim/db
 
+const SECURE_PROTOCOL = "https"
+const UNSECURE_PROTOCOL = "http"
+
 type
-    AssetsTuple = ref tuple[source, public: string]
 
     Application* = object
-        port: Port                  ## Specify a port or let retrieve one automatically
-        address: string             ## Specify a local IP address
+        port: Port
+            ## Specify a port or let retrieve one automatically
+        address: string
+            ## Specify a local IP address
         domain: Domain
-        ssl: bool                   ## Boot in SSL mode (requires HTTPS Certificate)
-        threads: int                ## Boot Supranim on a specific number of threads
+            ## Domain used for application runtime
+        ssl: bool
+            ## Boot in SSL mode (requires HTTPS Certificate)
+        threads: int
+            ## Boot Supranim on a specific number of threads
         database: DBConfig
-        assets: AssetsTuple
-        views: string               ## Path to Views source directory
-        recyclable: bool            ## Whether to reuse current port or not
+            ## PostgreSQL Database credentials
+        assets: Assets
+            ## Hold source and public paths for retriving and rendering static assets
+        views: string
+            ## Path to Views source directory
+        recyclable: bool
+            ## Whether to reuse current port or not
         loggers: seq[Logger]
+            ## Loggers used in background by current application instance
+        config: Document
+            ## Holds Document representation of ``.env.yml`` configuration file
 
 const yamlEnvFile = ".env.yml"
 
 var App* {.threadvar.}: Application
 App = Application()
 
+# read Supranim config contents from .env.yml on compile time
+const ymlConfigContents = staticRead(getProjectPath() & "/../bin/" & yamlEnvFile)
+
 proc parseEnvFile(envPath: string): Document =
-    ## Parse and validate .env.yml configuration file
-    var yml = Nyml.init(contents = readFile(envPath))
+    # Private procedure for parsing and validating the ``.env.yml`` configuration file.
+    # The YML contents is parsed with Nyml library, for more details
+    # related to Nyml limitations and YAML syntax supported by Nyml
+    # check official repository: https://github.com/openpeep/nyml
+    var yml = Nyml.init(contents = ymlConfigContents)
     result = yml.toJson()
 
-proc init*(port = Port(3399), address = "localhost", ssl = false, threads = 1): Application =
-    ## Initialize Supranim Application
-    let doc: Document = parseEnvFile(envPath = getCurrentDir() & "/bin/" & yamlEnvFile)
-    ## Set DB Environment credentials
+proc init*(port = Port(3399), ssl = false, threads = 1): Application =
+    ## Main procedure for initializing your Supranim Application.
+    ##
+    ## TODO
+    ## For initializing is required to have a ``.env.yml`` file in root of your project.
+    ## The ``.env.yml`` contents is parsed during compile time and embedded in
+    ## your binary app once compiled.
+    App.config = parseEnvFile(envPath = getCurrentDir() & "/bin/" & yamlEnvFile)
+
+    # If enabled, will try connect to a database using Database credentials from ``.env.yml``
     for dbEnv in @["host", "prefix", "name", "user", "password"]:
-        putEnv("DB_" & toUpperAscii(dbEnv), doc.get("database.main." & dbEnv).getStr)
+        putEnv("DB_" & toUpperAscii(dbEnv), App.config.get("database.main." & dbEnv).getStr)
     # testDb()
-    App.address = address
+
+    let publicDir = App.config.get("app.assets.public").getStr
+    var sourceDir = App.config.get("app.assets.source").getStr
+    if publicDir.len != 0 and sourceDir.len != 0:
+        sourceDir = getAppDir() & "/" & sourceDir
+        normalizePath(sourceDir)
+        App.assets = Assets.init(sourceDir, publicDir)
+
+    App.address = App.config.get("app.address").getStr
     App.domain = Domain.AF_INET
-    App.port = Port(doc.get("app.port").getInt)
-    App.threads = doc.get("app.threads").getInt
+    App.port = Port(App.config.get("app.port").getInt)
+    App.threads = App.config.get("app.threads").getInt
     App.recyclable = true
     result = App
 
-proc getAddress*[A: Application](app: A): string {.inline.}  =
-    ## Get the local address
+proc hasAssets*[A: Application](app: A): bool =
+    ## Determine if current Supranim application has an Assets instance
+    result = app.assets != nil
+
+proc instance*[A: Application, B: typedesc[Assets]](app: A, assets: B): Assets =
+    ## Procedure for returning the Assets instance from current Application
+    result = app.assets
+
+proc getAddress*[A: Application](app: A, path = ""): string {.inline.}  =
+    ## Get the current local address
     result = app.address
+    if path.len != 0: add result, "/" & path
 
 proc getPort*[A: Application](app: A): Port {.inline.} =
     ## Get the current Port
@@ -74,7 +120,7 @@ proc isMultithreading*[A: Application](app: A): bool {.inline.}  =
     result = app.threads notin {0, 1}
 
 proc getThreads*[A: Application](app: A): int {.inline.} =
-    ## Get number of available threads
+    ## Get the number of available threads
     result = app.threads
 
 proc getLoggers*[A: Application](app: A): seq[Logger] =
@@ -85,28 +131,51 @@ proc getDomain*[A: Application](app: A): Domain =
     ## Retrieve Supranim domain instance
     result = app.domain
 
+proc url*[A: Application](app: A, path: string): string =
+    ## Create an application URL
+    add result, if app.hasSSL(): SECURE_PROTOCOL else: UNSECURE_PROTOCOL
+    add result, "://" & app.getAddress() & ":" & $(App.config.get("app.port").getInt) & "/" & path
+
+proc getProjectDirectory(path: string, getAppPath = false): string =
+    ## Temporary to create a compatiblity for Chocotone Library
+    ## in order to handle static files in a Chocotone desktop native app
+    ## TODO:
+    ## Supranim should have various options for handling static assets
+    ## 1. CSS/JS assets bundled directly in binary app
+    ## 2. Load CSS/JS assets on request externally from an absolute path
+    ## Also, Supranim should support with Tim Engine
+    result = if getAppPath == true: getAppDir() else: getCurrentDir()
+    result = result & path
+
 proc getViewContent*(app: var Application, key: string, layout = "base"): string =
     ## Retrieve contents of a specific view by view id.
-    let pathView = getCurrentDir() & "/assets/" & key & ".html"
+    ## TODO, implement in a separate logic, integrate with Tim Engine
+    let pathView = getProjectDirectory("/assets/" & key & ".html", true)
     if fileExists(pathView):
         result = readFile(pathView)
 
 proc isRecyclable*[A: Application](app: A): bool =
-    ## Determine if current application Port can be reused
+    ## Determine if application instance can reuse the same Port
     result = app.recyclable
 
 proc printBootStatus*[A: Application](app: A) =
-    ## Print boot status of the current application instance
+    ## Public procedure used to print various informations related to current application instance
     echo "----------------- ⚡️ -----------------"
     echo("👌 Up & Running on http://", app.getAddress&":"& $app.getPort)
-    
+
     var defaultCompileOptions: seq[string]
+    
+    # Compiling with ``-opt:size``
     when compileOption("opt", "size"):
         defaultCompileOptions.add("Compiled with Size Optimization")
+    
+    # Compiling for a ``-d:release`` version
     when defined(release):
         defaultCompileOptions.add("Release mode: Production")
     else:
         defaultCompileOptions.add("Release mode: Development")
+    
+    # Compiling application in multithreading mode
     when compileOption("threads"):
         defaultCompileOptions.add("Multi-threading: true (threads: " & $app.getThreads & ")")
     else:

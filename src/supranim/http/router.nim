@@ -323,7 +323,7 @@ proc isTemporary*[R: RouterHandler](router: R, verb: HttpMethod, path: string): 
     let collection = router.getCollectionByVerb(verb)
     result = collection[path].isTemporary
 
-proc runCallable*[R: Route](route: R, req: Request, res: Response) =
+proc runCallable*[R: Route](route: R, req: var Request, res: var Response) =
     ## Run callable from route controller
     route.callback(req, res)
 
@@ -333,7 +333,8 @@ proc middleware*[R: Route](route: var R, middlewares: seq[tuple[id: string, call
     route.middleware = middlewares
 
 proc expire*[R: Route](route: var R, expiration: Option[DateTime]) =
-    ## Set expiration time for current Route
+    ## Set a time for temporary routes that can expire.
+    ## TODO
     discard
 
 proc getRouteInstance*[R: RouterHandler](router: var R, route: var Route): Route =
@@ -347,10 +348,10 @@ proc get*[R: RouterHandler](router: var R, path: string, callback: Callable): Ro
     router.register(HttpGet, route)
     result = router.getRouteInstance(route)
 
-# proc post*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
-#     ## Register a new route for `HttpPost` method
-#     router.register(HttpPost, Route(path: path, verb: HttpPost, callback: callback))
-#     result = router.httpPost[path]
+proc post*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+    ## Register a new route for `HttpPost` method
+    router.register(HttpPost, Route(path: path, verb: HttpPost, callback: callback))
+    result = router.httpPost[path]
 
 # proc put*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
 #     ## Register a new route for `HttpPut` method
@@ -381,11 +382,13 @@ proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: Callab
     ## Generate unique route for specified verb
     discard
 
-# proc assets*[R: RouterHandler](router: var R, sourcePath, publicPath: string) =
-#     ## GET route handler for serving public assets
-#     var handler = Assets.init(publicPath, sourcePath, isPublic = true)
+# proc assets*[R: RouterHandler](router: var R, source, public: string) =
+#     ## If enabled via ``.env.yml``. Your Supranim application can
+#     ## serve static assets like .css, .js, .jpg, .png and so on
+#     ## Note that his procedure is recommended for serving public assets.
+#     var handler = Assets.init(public, source)
 #     for file in handler.discoverFiles():
-#         handler.addFile(output: publicPath & "/" & file.getPath())
+#         handler.addFile(output: public & "/" & file.getPath())
 
 proc group*[R: RouterHandler](router: var R, basePath: string, routes: varargs[GroupRouteTuple]): RouterHandler {.discardable.} =
     ## Add group of routes. Handy when adding multiple
