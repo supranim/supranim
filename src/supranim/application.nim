@@ -4,7 +4,7 @@ from std/nativesockets import Domain
 from std/net import Port
 from std/logging import Logger
 from std/os import getCurrentDir, putEnv, getEnv, fileExists, getAppDir, normalizePath
-from std/strutils import toUpperAscii
+from std/strutils import toUpperAscii, indent
 from std/macros import getProjectPath
 
 import ./config/assets
@@ -15,6 +15,8 @@ include supranim/db
 
 const SECURE_PROTOCOL = "https"
 const UNSECURE_PROTOCOL = "http"
+const NO = "no"
+const YES = "yes"
 
 type
 
@@ -47,27 +49,25 @@ const yamlEnvFile = ".env.yml"
 var App* {.threadvar.}: Application
 App = Application()
 
-# read Supranim config contents from .env.yml on compile time
-const ymlConfigContents = staticRead(getProjectPath() & "/../bin/" & yamlEnvFile)
+when not defined(inlineConfig):
+    const ymlConfigContents = staticRead(getProjectPath() & "/../bin/" & yamlEnvFile)
 
-proc parseEnvFile(envPath: string): Document =
+proc parseEnvFile(configContents: string): Document =
     # Private procedure for parsing and validating the ``.env.yml`` configuration file.
     # The YML contents is parsed with Nyml library, for more details
     # related to Nyml limitations and YAML syntax supported by Nyml
     # check official repository: https://github.com/openpeep/nyml
-    var yml = Nyml.init(contents = ymlConfigContents)
+    var yml = Nyml.init(contents = configContents)
     result = yml.toJson()
 
-proc init*(port = Port(3399), ssl = false, threads = 1): Application =
+proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string = ""): Application =
     ## Main procedure for initializing your Supranim Application.
-    ##
-    ## TODO
-    ## For initializing is required to have a ``.env.yml`` file in root of your project.
-    ## The ``.env.yml`` contents is parsed during compile time and embedded in
-    ## your binary app once compiled.
-    App.config = parseEnvFile(envPath = getCurrentDir() & "/bin/" & yamlEnvFile)
+    App.config = when not defined(inlineConfig): parseEnvFile(ymlConfigContents)
+                else: parseEnvFile(inlineConfigStr)
 
-    # If enabled, will try connect to a database using Database credentials from ``.env.yml``
+    # If enabled, collects database credentials from ``.env.yml``
+    # in memory via ``putEnv`` and enables DatabaseService with
+    # given connection credentials.
     for dbEnv in @["host", "prefix", "name", "user", "password"]:
         putEnv("DB_" & toUpperAscii(dbEnv), App.config.get("database.main." & dbEnv).getStr)
     # testDb()
@@ -90,6 +90,10 @@ proc hasAssets*[A: Application](app: A): bool =
     ## Determine if current Supranim application has an Assets instance
     result = app.assets != nil
 
+proc hasTemplates*[A: Application](app: A): bool =
+    ## Determine if current Supranim application has enabled the template engine
+    result = false
+
 proc instance*[A: Application, B: typedesc[Assets]](app: A, assets: B): Assets =
     ## Procedure for returning the Assets instance from current Application
     result = app.assets
@@ -109,7 +113,7 @@ proc hasSSL*[A: Application](app: A): bool {.inline.}  =
 
 proc hasDatabase*[A: Application](app: A): bool {.inline.} =
     ## Determine if application has a database attached
-    result = app.database != nil    
+    result = app.database.main != nil    
 
 proc hasMultiDatabase*[A: Application](app: A): bool {.inline.} =
     ## Determine if application has multi databases attached
@@ -177,15 +181,25 @@ proc printBootStatus*[A: Application](app: A) =
     
     # Compiling application in multithreading mode
     when compileOption("threads"):
-        defaultCompileOptions.add("Multi-threading: true (threads: " & $app.getThreads & ")")
+        defaultCompileOptions.add("Multi-threading: " & YES & " (threads: " & $app.getThreads & ")")
     else:
-        defaultCompileOptions.add("Multi-threading: false")
+        defaultCompileOptions.add("Multi-threading: " & NO)
+    
+    # Compiling with static assets handler enabled or use Supranim as a REST API service
+    if app.hasAssets():
+        defaultCompileOptions.add("Static Assets Handler: " & YES)
+
+    # Compiling with Template Engine or use Supranim asa REST API service
+    if app.hasTemplates():
+        defaultCompileOptions.add("Template Engine: " & YES)
+
+    # Compiling with DatabaseService
+    if app.hasDatabase():
+        defaultCompileOptions.add("Database:" & YES)
 
     for compileOptionLabel in defaultCompileOptions:
-        echo "✓ " & compileOptionLabel
+        echo indent("✓ " & compileOptionLabel, 2)
 
-    # echo "✓ Static Assets Proxy: Yes"
-    # echo "✓ Release mode: Development"
     # echo "--------- Service Providers ----------"
     # for loadedService in loadedServices:
     #     echo("✓ ", loadedService)

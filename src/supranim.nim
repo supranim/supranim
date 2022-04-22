@@ -12,7 +12,6 @@ from os import getAppDir, normalizedPath, getCurrentDir, fileExists
 import jsony
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
-import supranim/services
 
 from std/strutils import startsWith
 
