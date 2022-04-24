@@ -11,7 +11,7 @@ import ./config/assets
 export Port
 export assets
 
-include supranim/db
+# include supranim/db
 
 const SECURE_PROTOCOL = "https"
 const UNSECURE_PROTOCOL = "http"
@@ -68,8 +68,8 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     # If enabled, collects database credentials from ``.env.yml``
     # in memory via ``putEnv`` and enables DatabaseService with
     # given connection credentials.
-    for dbEnv in @["host", "prefix", "name", "user", "password"]:
-        putEnv("DB_" & toUpperAscii(dbEnv), App.config.get("database.main." & dbEnv).getStr)
+    # for dbEnv in @["host", "prefix", "name", "user", "password"]:
+        # putEnv("DB_" & toUpperAscii(dbEnv), App.config.get("database.main." & dbEnv).getStr)
     # testDb()
 
     let publicDir = App.config.get("app.assets.public").getStr
