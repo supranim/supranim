@@ -113,13 +113,9 @@ proc parseHeaders*(data: string, start: int): Option[HttpHeaders] =
     return none(HttpHeaders)
 
 proc parseContentLength*(data: string, start: int): int =
-    result = 0
-
     let headers = data.parseHeaders(start)
     if headers.isNone(): return
-
     if unlikely(not headers.get().hasKey("Content-Length")): return
-
     discard headers.get()["Content-Length"].parseSaturatedNatural(result)
 
 iterator parseRequests*(data: string): int =

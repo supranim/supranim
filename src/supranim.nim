@@ -29,6 +29,14 @@ proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
     ## Determine if given HttpMethod is as expected
     result = httpMethod == some(expectMethod)
 
+template handleHttpRouteRequest(verb: HttpMethod, req: Request, res: Response, reqRoute: string) =
+    let runtime: RuntimeRoutePattern = Router.existsRuntime(verb, reqRoute)
+    if runtime.status == true:
+        if runtime.route.isDynamic():
+            req.setParams(runtime.params)
+        runtime.route.runCallable(req, res)
+    else: res.send404()
+
 proc onRequest(req: var Request, res: var Response, app: Application): Future[ void ] =
     ## Procedure called during runtime. Determine type of the current request
     ## find a route and return the callable, otherwise prompt a 404 Response.
@@ -47,21 +55,13 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
                 else:
                     res.send404()
                 return
-
-            let metaRouteTuple: RuntimeRoutePattern = Router.existsRuntime(HttpGet, reqRoute)
-            if metaRouteTuple.status == true:
-                let isDynamicRoute = metaRouteTuple.isDynamic
-                var routeInstance: Route = Router.getRoute(metaRouteTuple.key, isDynamicRoute)
-                if isDynamicRoute:
-                    req.setParams(metaRouteTuple.params)
-                routeInstance.runCallable(req, res)
-                return
-            res.send404()
+            handleHttpRouteRequest(HttpGet, req, res, reqRoute)
             return
 
         # Handle HttpPost requests
         if expect(req.httpMethod, HttpPost):
-            discard
+            handleHttpRouteRequest(HttpPost, req, res, reqRoute)
+            return
 
         # Handle HttpPut requests
         if expect(req.httpMethod, HttpPut):

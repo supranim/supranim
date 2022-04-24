@@ -7,7 +7,7 @@
 #          Website https://supranim.com
 #          Github Repository: https://github.com/supranim
 
-import std/tables
+import std/[tables, macros]
 
 from std/times import DateTime
 from std/options import Option
@@ -37,8 +37,6 @@ type
         ## Define available route types, it can be either static,
         ## or dynamic (when using Route patterns)
         StaticRouteType, DynamicRouteType
-
-    RuntimeRoutePattern* = tuple[status: bool, key: string, isDynamic: bool, params: seq[RoutePatternRequest]]
 
     Route* = object
         ## Route object used to manage application routes
@@ -78,6 +76,8 @@ type
                     ## The expiration DateTime
             else: discard
 
+    RuntimeRoutePattern* = tuple[status: bool, key: string, params: seq[RoutePatternRequest], route: Route]
+
     VerbCollection* = Table[string, Route]
         ## ``VerbCollection``, is a table that contains Route Objects stored by their path
         ## Note that, each ``HttpMethod`` has its own collection.
@@ -98,9 +98,9 @@ type
     RouterException* = object of CatchableError
         ## Catchable Router Exception
 
-var Router* = RouterHandler()   # RouterHandler singleton
+var Router* = RouterHandler()   # Singleton of RouterHandler
 
-proc isDynamic[R: Route](route: R): bool =
+proc isDynamic*[R: Route](route: R): bool =
     ## Determine if current routeType of route object instance is type of ``DynamicRouteType``
     result = route.routeType == DynamicRouteType
 
@@ -121,14 +121,33 @@ proc register[R: RouterHandler](router: var R, verb: HttpMethod, route: Route) =
         of HttpTrace:    router.httpTrace[route.path] = route
         of HttpOptions:  router.httpOptions[route.path] = route
 
-proc getCollectionByVerb[R: RouterHandler](router: var R, verb: HttpMethod, isDynamic = false): VerbCollection  =
+macro getCollection(router: object, field: string, isDynamic: bool): untyped =
+    nnkStmtList.newTree(
+        nnkIfStmt.newTree(
+            nnkElifBranch.newTree(
+                nnkInfix.newTree(
+                    newIdentNode("=="),
+                    newIdentNode(isDynamic.strVal),
+                    newIdentNode("true")
+                ),
+                nnkStmtList.newTree(
+                    newDotExpr(router, newIdentNode(field.strVal & "Dynam"))
+                )
+            ),
+            nnkElse.newTree(
+                nnkStmtList.newTree(
+                    newDotExpr(router, newIdentNode(field.strVal))
+                )
+            )
+        )
+    )
+
+proc getCollectionByVerb*[R: RouterHandler](router: var R, verb: HttpMethod, isDynamic = false): VerbCollection  =
     ## Get `VerbCollection`, `Table[string, Route]` based on given verb
     result = case verb:
-        of HttpGet:
-            if isDynamic:   router.httpGetDynam
-            else:           router.httpGet
-        of HttpPost:    router.httpPost
-        of HttpPut:     router.httpPut
+        of HttpGet:     router.getCollection("httpGet", isDynamic)
+        of HttpPost:    router.getCollection("httpPost", isDynamic)
+        of HttpPut:     router.getCollection("httpPut", isDynamic)
         of HttpHead:    router.httpHead
         of HttpConnect: router.httpConnect
         of HttpDelete:  router.httpDelete
@@ -243,7 +262,7 @@ proc parseRoute(path: string, verb: HttpMethod, callback: Callable): Route =
     ## inside the pattern. For example ``{?slug}``
     result = Route(
         path: path,
-        verb: HttpGet,
+        verb: verb,
         routeType: StaticRouteType,
         callback: callback
     )
@@ -258,9 +277,6 @@ proc parseRoute(path: string, verb: HttpMethod, callback: Callable): Route =
             # as params for later use on request in controller-based procedures
             if pattern.dynamic:
                 result.params.add(pattern)
-
-proc getRouteParams*[R: Route](route: R): seq[RoutePatternTuple] =
-    result = route.params
 
 proc exists[R: RouterHandler](router: var R, verb: HttpMethod, path: string): bool =
     ## Determine if route exists for given `key/path` based on verb.
@@ -291,7 +307,7 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
                     if i == routePatternsLen: break
                     if reqPattern[i].pattern == route.patterns[i].pattern:
                         matchRoutePattern = true
-                        if not route.patterns[i].dynamic:   # store all non dynamic route patterns.
+                        if not route.patterns[i].dynamic:               # store all non dynamic route patterns.
                             reqPatternKeys.add(i)
                         else:
                             reqPattern[i].str = reqPattern[i].str
@@ -302,7 +318,7 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
             if matchRoutePattern:
                 result.status = true
                 result.key = route.path
-                result.isDynamic = true
+                result.route = route
                 for reqPatternKey in reqPatternKeys:
                     # delete all non dynamic pattern by index key.
                     # in this way `reqPattern` will contain only dynamic patterns that
@@ -310,13 +326,19 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
                     reqPattern.del(reqPatternKey)
                 result.params = reqPattern
                 break
-
-proc getRoute*[R: RouterHandler](router: var R, path: string, isDynamic: bool): Route =
-    ## Retrieve a HttpGet route from RouterHandler collections
-    if isDynamic:
-        result = router.httpGetDynam[path]
     else:
-        result = router.httpGet[path]
+        result.route = collection[path]
+
+
+# proc getByGET*[R: RouterHandler](router: var R, path: string, hasParams: bool): Route =
+#     ## Retrieve a HttpGet route from RouterHandler collections
+#     if hasParams:   result = router.httpGetDynam[path]
+#     else:           result = router.httpGet[path]
+
+# proc getByPOST*[R: RouterHandler](router: var R, path: string, hasParams: bool): Route =
+#     ## Retrieve a HttpGet route from RouterHandler collections
+#     if hasParams:   result = router.httpPostDynam[path]
+#     else:           result = router.httpPost[path]
 
 proc isTemporary*[R: RouterHandler](router: R, verb: HttpMethod, path: string): bool =
     ## Determine if specified route has expiration time
@@ -350,8 +372,9 @@ proc get*[R: RouterHandler](router: var R, path: string, callback: Callable): Ro
 
 proc post*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
     ## Register a new route for `HttpPost` method
-    router.register(HttpPost, Route(path: path, verb: HttpPost, callback: callback))
-    result = router.httpPost[path]
+    var route: Route = parseRoute(path, HttpPost, callback)
+    router.register(HttpPost, route)
+    result = router.getRouteInstance(route)
 
 # proc put*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
 #     ## Register a new route for `HttpPut` method
@@ -391,9 +414,7 @@ proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: Callab
 #         handler.addFile(output: public & "/" & file.getPath())
 
 proc group*[R: RouterHandler](router: var R, basePath: string, routes: varargs[GroupRouteTuple]): RouterHandler {.discardable.} =
-    ## Add group of routes. Handy when adding multiple
-    ## routes at once, under same base URI, and optionally,
-    ## protected by one or more middleware handlers
+    ## Add grouped routes under same base endpoint.
     for r in routes:
         let routePath = if r.route == "/":
                             basePath
