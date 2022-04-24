@@ -107,12 +107,12 @@ include ./serve
 
 proc httpMethod*(req: Request): Option[HttpMethod] {.inline.} =
     ## Parses the request's data to find the request HttpMethod.
-    parseHttpMethod(req.selector.getData(req.client).data, req.start)
+    result = parseHttpMethod(req.selector.getData(req.client).data, req.start)
 
 proc path*(req: Request): Option[string] {.inline.} =
     ## Parses the request's data to find the request target.
     if unlikely(req.client notin req.selector): return
-    parsePath(req.selector.getData(req.client).data, req.start)
+    result = parsePath(req.selector.getData(req.client).data, req.start)
 
 proc getCurrentPath*(req: Request): string = 
     ## Alias for retrieving the route path from current request
