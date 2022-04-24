@@ -31,7 +31,8 @@ type
             ## Boot in SSL mode (requires HTTPS Certificate)
         threads: int
             ## Boot Supranim on a specific number of threads
-        database: DBConfig
+        # database: DBConfig
+        database: bool
             ## PostgreSQL Database credentials
         assets: Assets
             ## Hold source and public paths for retriving and rendering static assets
@@ -113,11 +114,13 @@ proc hasSSL*[A: Application](app: A): bool {.inline.}  =
 
 proc hasDatabase*[A: Application](app: A): bool {.inline.} =
     ## Determine if application has a database attached
-    result = app.database.main != nil    
+    # result = app.database.main != nil
+    result = false
 
 proc hasMultiDatabase*[A: Application](app: A): bool {.inline.} =
     ## Determine if application has multi databases attached
-    result = app.secondary.len != 0
+    # result = app.secondary.len != 0
+    result = false
 
 proc isMultithreading*[A: Application](app: A): bool {.inline.}  =
     ## Determine if application runs on multiple threads
