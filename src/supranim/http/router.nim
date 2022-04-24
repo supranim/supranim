@@ -121,13 +121,14 @@ proc register[R: RouterHandler](router: var R, verb: HttpMethod, route: Route) =
         of HttpTrace:    router.httpTrace[route.path] = route
         of HttpOptions:  router.httpOptions[route.path] = route
 
-macro getCollection(router: object, field: string, isDynamic: bool): untyped =
+macro getCollection(router: object, field: string, hasParams: bool): untyped =
+    ## Retrieve a Collection of routes from ``RouterHandler``
     nnkStmtList.newTree(
         nnkIfStmt.newTree(
             nnkElifBranch.newTree(
                 nnkInfix.newTree(
                     newIdentNode("=="),
-                    newIdentNode(isDynamic.strVal),
+                    newIdentNode(hasParams.strVal),
                     newIdentNode("true")
                 ),
                 nnkStmtList.newTree(
@@ -142,18 +143,18 @@ macro getCollection(router: object, field: string, isDynamic: bool): untyped =
         )
     )
 
-proc getCollectionByVerb*[R: RouterHandler](router: var R, verb: HttpMethod, isDynamic = false): VerbCollection  =
+proc getCollectionByVerb*[R: RouterHandler](router: var R, verb: HttpMethod, hasParams = false): VerbCollection  =
     ## Get `VerbCollection`, `Table[string, Route]` based on given verb
     result = case verb:
-        of HttpGet:     router.getCollection("httpGet", isDynamic)
-        of HttpPost:    router.getCollection("httpPost", isDynamic)
-        of HttpPut:     router.getCollection("httpPut", isDynamic)
-        of HttpHead:    router.httpHead
-        of HttpConnect: router.httpConnect
-        of HttpDelete:  router.httpDelete
-        of HttpPatch:   router.httpPatch
-        of HttpTrace:   router.httpTrace
-        of HttpOptions: router.httpOptions
+        of HttpGet:     router.getCollection("httpGet", hasParams)
+        of HttpPost:    router.getCollection("httpPost", hasParams)
+        of HttpPut:     router.getCollection("httpPut", hasParams)
+        of HttpHead:    router.getCollection("httpHead", hasParams)
+        of HttpConnect: router.getCollection("httpConnect", hasParams)
+        of HttpDelete:  router.getCollection("httpDelete", hasParams)
+        of HttpPatch:   router.getCollection("httpPatch", hasParams)
+        of HttpTrace:   router.getCollection("httpTrace", hasParams)
+        of HttpOptions: router.getCollection("httpOptions", hasParams)
 
 proc getPattern(curr, str: string, opt, dynamic = false): RoutePatternTuple =
     ## Create a RoutePattern based on given string pattern containing:
@@ -329,17 +330,6 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
     else:
         result.route = collection[path]
 
-
-# proc getByGET*[R: RouterHandler](router: var R, path: string, hasParams: bool): Route =
-#     ## Retrieve a HttpGet route from RouterHandler collections
-#     if hasParams:   result = router.httpGetDynam[path]
-#     else:           result = router.httpGet[path]
-
-# proc getByPOST*[R: RouterHandler](router: var R, path: string, hasParams: bool): Route =
-#     ## Retrieve a HttpGet route from RouterHandler collections
-#     if hasParams:   result = router.httpPostDynam[path]
-#     else:           result = router.httpPost[path]
-
 proc isTemporary*[R: RouterHandler](router: R, verb: HttpMethod, path: string): bool =
     ## Determine if specified route has expiration time
     let collection = router.getCollectionByVerb(verb)
@@ -376,30 +366,35 @@ proc post*[R: RouterHandler](router: var R, path: string, callback: Callable): R
     router.register(HttpPost, route)
     result = router.getRouteInstance(route)
 
-# proc put*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
-#     ## Register a new route for `HttpPut` method
-#     router.register(HttpPut, Route(path: path, verb: HttpPut, callback: callback))
-#     result = router.httpPut[path]
+proc put*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+    ## Register a new route for `HttpPut` method
+    var route: Route = parseRoute(path, HttpPut, callback)
+    router.register(HttpPut, route)
+    result = router.getRouteInstance(route)
 
-# proc head*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
-#     ## Register a new route for `HttpHead` method
-#     router.register(HttpHead, Route(path: path, verb: HttpHead, callback: callback))
-#     result = router.httpHead[path]
+proc head*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+    ## Register a new route for `HttpHead` method
+    var route: Route = parseRoute(path, HttpHead, callback)
+    router.register(HttpHead, route)
+    result = router.getRouteInstance(route)
 
-# proc connect*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
-#     ## Register a new route for `HttpConnect` method
-#     router.register(HttpConnect, Route(path: path, verb: HttpConnect, callback: callback))
-#     result = router.httpConnect[path]
+proc connect*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+    ## Register a new route for `HttpConnect` method
+    var route: Route = parseRoute(path, HttpConnect, callback)
+    router.register(HttpConnect, route)
+    result = router.getRouteInstance(route)
 
-# proc delete*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
-#     ## Register a new route for `HttpDelete` method
-#     router.register(HttpDelete, Route(path: path, verb: HttpDelete, callback: callback))
-#     result = router.httpDelete[path]
+proc delete*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+    ## Register a new route for `HttpDelete` method
+    var route: Route = parseRoute(path, HttpDelete, callback)
+    router.register(HttpDelete, route)
+    result = router.getRouteInstance(route)
 
-# proc patch*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
-#     ## Register a new route for `HttpPatch` method
-#     router.register(HttpPatch, Route(path: path, verb: HttpPatch, callback: callback))
-#     result = router.httpPatch[path]
+proc patch*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+    ## Register a new route for `HttpPatch` method
+    var route: Route = parseRoute(path, HttpPatch, callback)
+    router.register(HttpPatch, route)
+    result = router.getRouteInstance(route)
 
 proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: Callable): Route {.discardable.} =
     ## Generate unique route for specified verb
