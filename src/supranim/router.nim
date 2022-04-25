@@ -7,5 +7,5 @@
 #          Website https://supranim.com
 #          Github Repository: https://github.com/supranim
 
-import ./http/router
+import ./router/router
 export router
