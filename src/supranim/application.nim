@@ -19,7 +19,6 @@ const NO = "no"
 const YES = "yes"
 
 type
-
     Application* = object
         port: Port
             ## Specify a port or let retrieve one automatically

@@ -18,9 +18,9 @@ from std/strutils import startsWith
 export Port
 export App, application
 
-export Http200, Http301, Http302, Http403, Http404, Http500, Http503
+export Http200, Http301, Http302, Http403, Http404, Http500, Http503, HttpCode
 export HttpMethod, Request, Response
-export response, send404, send500, json, json404, json500, redirect, redirect302, view
+export response, send404, send500, json, json404, json500, json_error, redirect, redirect302, view
 
 export server.getParams, server.hasParams, server.getCurrentPath, server.isPage
 export jsony
@@ -29,13 +29,19 @@ proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
     ## Determine if given HttpMethod is as expected
     result = httpMethod == some(expectMethod)
 
+proc default404Response(res: var Response) =
+    ## A default ``404 Response`` based on your preferences
+    ## from current App instance
+    ## TODO Use `App` singleton to retrieve custom response errors
+    res.json_error("Invalid endpoint", Http404)
+
 template handleHttpRouteRequest(verb: HttpMethod, req: Request, res: Response, reqRoute: string) =
     let runtime: RuntimeRoutePattern = Router.existsRuntime(verb, reqRoute)
     if runtime.status == true:
         if runtime.route.isDynamic():
             req.setParams(runtime.params)
         runtime.route.runCallable(req, res)
-    else: res.send404()
+    else: res.default404Response()
 
 proc onRequest(req: var Request, res: var Response, app: Application): Future[ void ] =
     ## Procedure called during runtime. Determine type of the current request
@@ -53,7 +59,7 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
                 if app.instance(Assets).hasFile(reqRoute):
                     res.response(app.instance(Assets).getFile(reqRoute))
                 else:
-                    res.send404()
+                    res.default404Response()
                 return
             handleHttpRouteRequest(HttpGet, req, res, reqRoute)
             return

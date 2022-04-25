@@ -109,6 +109,10 @@ template json500*[R: Response](res: R, body = "") =
     var jbody = if body.len == 0: """{"status": 500, "message": "Internal Error"}""" else: body
     res.json(req, jbody, Http500)
 
+template json_error*[R: Response](res: R, body: untyped, code: HttpCode) = 
+    ## Sends a JSON response followed by of a HttpCode (that represents an error)
+    res.req.send(code, toJson(body), HeaderContentTypeJSON)
+
 #
 # HTTP Redirects procedures
 #
