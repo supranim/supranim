@@ -7,7 +7,7 @@
 #          Website https://supranim.com
 #          Github Repository: https://github.com/supranim
 
-import std/[tables, macros]
+import std/[tables, macros, with]
 
 from std/times import DateTime
 from std/options import Option
@@ -78,7 +78,7 @@ type
 
     RuntimeRoutePattern* = tuple[status: bool, key: string, params: seq[RoutePatternRequest], route: Route]
 
-    VerbCollection* = Table[string, Route]
+    VerbCollection* = TableRef[string, Route]
         ## ``VerbCollection``, is a table that contains Route Objects stored by their path
         ## Note that, each ``HttpMethod`` has its own collection.
         ## Also, based on their ``routeType``, route objects can be
@@ -98,52 +98,27 @@ type
     RouterException* = object of CatchableError
         ## Catchable Router Exception
 
+proc setField[T: VerbCollection](val: var T) =
+    val = newTable[string, Route]()
+
+template initTables(router: object): untyped =
+    block fieldFound:
+        for k, v in fieldPairs(router):
+            setField(v)
+
+proc initCollectionTables[R: RouterHandler](router: var R) =
+    router.initTables()
+
 var Router* = RouterHandler()   # Singleton of RouterHandler
+Router.initCollectionTables()   # https://forum.nim-lang.org/t/5631#34992
 
 proc isDynamic*[R: Route](route: R): bool =
     ## Determine if current routeType of route object instance is type of ``DynamicRouteType``
     result = route.routeType == DynamicRouteType
 
-proc register[R: RouterHandler](router: var R, verb: HttpMethod, route: Route) =
-    ## Register a new route by given Verb and Route object
-    case verb:
-        of HttpGet:
-            if isDynamic(route):   router.httpGetDynam[route.path] = route
-            else:                  router.httpGet[route.path] = route
-        of HttpPost:
-            if isDynamic(route):    router.httpPostDynam[route.path] = route
-            else:                   router.httpPost[route.path] = route
-        of HttpPut:      router.httpPut[route.path] = route
-        of HttpHead:     router.httpHead[route.path] = route
-        of HttpConnect:  router.httpConnect[route.path] = route
-        of HttpDelete:   router.httpDelete[route.path] = route
-        of HttpPatch:    router.httpPatch[route.path] = route
-        of HttpTrace:    router.httpTrace[route.path] = route
-        of HttpOptions:  router.httpOptions[route.path] = route
+include ../router/utils
 
-macro getCollection(router: object, field: string, hasParams: bool): untyped =
-    ## Retrieve a Collection of routes from ``RouterHandler``
-    nnkStmtList.newTree(
-        nnkIfStmt.newTree(
-            nnkElifBranch.newTree(
-                nnkInfix.newTree(
-                    newIdentNode("=="),
-                    newIdentNode(hasParams.strVal),
-                    newIdentNode("true")
-                ),
-                nnkStmtList.newTree(
-                    newDotExpr(router, newIdentNode(field.strVal & "Dynam"))
-                )
-            ),
-            nnkElse.newTree(
-                nnkStmtList.newTree(
-                    newDotExpr(router, newIdentNode(field.strVal))
-                )
-            )
-        )
-    )
-
-proc getCollectionByVerb*[R: RouterHandler](router: var R, verb: HttpMethod, hasParams = false): VerbCollection  =
+proc getCollectionByVerb[R: RouterHandler](router: var R, verb: HttpMethod, hasParams = false): VerbCollection  =
     ## Get `VerbCollection`, `Table[string, Route]` based on given verb
     result = case verb:
         of HttpGet:     router.getCollection("httpGet", hasParams)
@@ -155,6 +130,10 @@ proc getCollectionByVerb*[R: RouterHandler](router: var R, verb: HttpMethod, has
         of HttpPatch:   router.getCollection("httpPatch", hasParams)
         of HttpTrace:   router.getCollection("httpTrace", hasParams)
         of HttpOptions: router.getCollection("httpOptions", hasParams)
+
+proc register[R: RouterHandler](router: var R, verb: HttpMethod, route: Route) =
+    ## Register a new route by given Verb and Route object
+    router.getCollectionByVerb(verb, route.isDynamic)[route.path] = route
 
 proc getPattern(curr, str: string, opt, dynamic = false): RoutePatternTuple =
     ## Create a RoutePattern based on given string pattern containing:
