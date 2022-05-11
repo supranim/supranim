@@ -11,8 +11,6 @@ import ./config/assets
 export Port
 export assets
 
-# include supranim/db
-
 const SECURE_PROTOCOL = "https"
 const UNSECURE_PROTOCOL = "http"
 const NO = "no"
@@ -141,6 +139,11 @@ proc url*[A: Application](app: A, path: string): string =
     ## Create an application URL
     add result, if app.hasSSL(): SECURE_PROTOCOL else: UNSECURE_PROTOCOL
     add result, "://" & app.getAddress() & ":" & $(App.config.get("app.port").getInt) & "/" & path
+
+proc getConfig*[A: Application](app: A, key: string): JsonNode = 
+    ## Return a ``JsonNode`` value from current Supranim configuration
+    ## by using dot annotations.
+    result = App.config.get(key)
 
 proc getProjectDirectory(path: string, getAppPath = false): string =
     ## Temporary to create a compatiblity for Chocotone Library

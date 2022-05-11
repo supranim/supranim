@@ -1,14 +1,9 @@
-# Supranim is a simple Hyper Server and Web Framework developed
-# for building safe & fast in-house projects.
-# 
-# Supranim Server module based on (c) Dom's work for Httpbeast,
-# with some improvements and better code readability
-# 
+# Supranim is a simple MVC-style web framework for building
+# fast web applications, REST API microservices and other cool things.
+#
 # (c) 2021 Supranim is released under MIT License
-#          by George Lemon <georgelemon@protonmail.com>
-#          
-#          Website: https://supranim.com
-#          Github Repository: https://github.com/supranim
+#          George Lemon | Made by Humans from OpenPeep
+#          https://supranim.com   |    https://github.com/supranim
 
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
             strutils, posix, parseutils, options, logging, times]

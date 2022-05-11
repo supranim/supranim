@@ -12,7 +12,8 @@
 
 var serverDate {.threadvar.}: string
 const
-    HeaderContentTypeJSON = "Content-Type: application/json"
+    ContentTypeJSON = "Content-Type: application/json"
+    ContentTypeTextHtml = "Content-Type: text/html"
     HeaderHttpRedirect = "Location: $1"
 
 proc updateDate(fd: AsyncFD): bool =
@@ -71,7 +72,7 @@ proc send*(req: Request, code: HttpCode) =
 proc response*[R: Response](res: R, body: string, code = Http200) {.inline.} =
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
-    res.req.send(code, body, headers = "")
+    res.req.send(code, body, ContentTypeTextHtml)
 
 proc send404*[R: Response](res: R, msg="404 | Not Found") {.inline.} =
     ## Sends a 404 HTTP Response with a default "404 | Not Found" message
@@ -92,12 +93,12 @@ template json*[R: Response](res: R, body: untyped, code = Http200) =
     ## This template is using an untyped body parameter that is automatically
     ## converting ``seq``, ``objects``, ``string`` (and so on) to
     ## JSON (stringified) via ``jsony`` library.
-    res.req.send(code, toJson(body), HeaderContentTypeJSON)
+    res.req.send(code, toJson(body), ContentTypeJSON)
 
 template json*[R: Response](res: R, body: JsonNode, code = Http200) =
     ## Sends a JSON response with a default 200 (OK) status code.
     ## This template is using the native JsonNode for creating the response body.
-    res.req.send(code, $(body), HeaderContentTypeJSON)
+    res.req.send(code, $(body), ContentTypeJSON)
 
 template json404*[R: Response](res: R, body = "") =
     ## Sends a 404 JSON Response  with a default "Not found" message
@@ -111,7 +112,7 @@ template json500*[R: Response](res: R, body = "") =
 
 template json_error*[R: Response](res: R, body: untyped, code: HttpCode) = 
     ## Sends a JSON response followed by of a HttpCode (that represents an error)
-    res.req.send(code, toJson(body), HeaderContentTypeJSON)
+    res.req.send(code, toJson(body), ContentTypeJSON)
 
 #
 # HTTP Redirects procedures
