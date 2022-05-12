@@ -1,7 +1,7 @@
 # Package
 
 version       = "0.1.0"
-author        = "George Lemon from OpenPeep"
+author        = "George Lemon"
 description   = "A fast Hyper Server & Web Framework"
 license       = "MIT"
 srcDir        = "src"
