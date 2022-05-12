@@ -1,25 +1,9 @@
 <p align="center"><img src="/.github/supranim.png" width="180px"><br>
-<strong>A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim</strong>,<br>Supranim is a happy fork of <code>httpbeast</code>, providing extra functionalities, a command line interface, a stupid simple project structure and clean logic.
+<strong>A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim</strong>,<br>
+Supranim is a happy fork of <code>httpbeast</code>, providing extra functionalities, a <code>Model</code> <code>View</code> <code>Controller</code> project structure and other cool things.
 </p>
 
-## Server Features
-- [x] HTTP/1.1 server
-- [x] Multi-threading 
-- [x] Supports al `verbs` (`GET`, `POST`, `PUT`, `DELETE`...)
-- [x] High Performance & Scalability
-- [x] PostgreSQL Support powered by [Enimsql ORM](https://github.com/georgelemon/enimsql)
-- [x] Static Files & Assets
-
-## Framework Features
-If you want the full Supranim experience you can also `nimble install supranim-framework` and you'll get the following extra functionalities:
-- [ ] Database `Migrator` / `Schema` / `Model`
-- [ ] Middleware Support
-- [ ] Cache Management (`Memcache` and `Redis` Driver)
-- [ ] Session Management
-- [ ] Cookie jar
-- [ ] Form Validation
-- [ ] Authentication System
-- [ ] Hot Code Reloading [flag](https://nim-lang.github.io/Nim/hcr.html)
+**Work in progress**
 
 ### ❤ Contributions
 If you like this project you can contribute to Tim project by opening new issues, fixing bugs, contribute with code, ideas and you can even [donate via PayPal address](https://www.paypal.com/donate/?hosted_button_id=RJK3ZTDWPL55C) 🥰
