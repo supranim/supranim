@@ -1,6 +1,7 @@
 <p align="center"><img src="/.github/supranim.png" width="180px"><br>
-<strong>A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim</strong>,<br>
-Supranim is a happy fork of <code>httpbeast</code>, providing extra functionalities, a <code>Model</code> <code>View</code> <code>Controller</code> project structure and other cool things.
+    <strong>A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim</strong>,<br>
+    Supranim is a happy fork of <code>httpbeast</code>, providing extra functionalities,<br>
+    a <code>Model</code> <code>View</code> <code>Controller</code> project structure and other cool things.
 </p>
 
 **Work in progress**
