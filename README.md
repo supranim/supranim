@@ -1,10 +1,10 @@
 <p align="center"><img src="/.github/supranim.png" width="180px"><br>
-    <strong>A simple web framework for creating REST APIs and beautiful web apps. Fully written in Nim</strong>,<br>
+    <strong>A simple web framework for creating REST APIs and beautiful web apps.</strong>,<br>
     Supranim is a happy fork of <code>httpbeast</code>, providing extra functionalities,<br>
     a <code>Model</code> <code>View</code> <code>Controller</code> project structure and other cool things.
 </p>
 
-**Work in progress**
+<p align="center">👉 Work in progress</p>
 
 ### ❤ Contributions
 If you like this project you can contribute to Tim project by opening new issues, fixing bugs, contribute with code, ideas and you can even [donate via PayPal address](https://www.paypal.com/donate/?hosted_button_id=RJK3ZTDWPL55C) 🥰
