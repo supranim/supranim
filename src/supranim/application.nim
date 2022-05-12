@@ -1,3 +1,10 @@
+# Supranim is a simple MVC-style web framework for building
+# fast web applications, REST API microservices and other cool things.
+#
+# (c) 2021 Supranim is released under MIT License
+#          George Lemon | Made by Humans from OpenPeep
+#          https://supranim.com   |    https://github.com/supranim
+
 import nyml
 
 from std/nativesockets import Domain
@@ -62,13 +69,6 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     ## Main procedure for initializing your Supranim Application.
     App.config = when not defined(inlineConfig): parseEnvFile(ymlConfigContents)
                 else: parseEnvFile(inlineConfigStr)
-
-    # If enabled, collects database credentials from ``.env.yml``
-    # in memory via ``putEnv`` and enables DatabaseService with
-    # given connection credentials.
-    # for dbEnv in @["host", "prefix", "name", "user", "password"]:
-        # putEnv("DB_" & toUpperAscii(dbEnv), App.config.get("database.main." & dbEnv).getStr)
-    # testDb()
 
     let publicDir = App.config.get("app.assets.public").getStr
     var sourceDir = App.config.get("app.assets.source").getStr

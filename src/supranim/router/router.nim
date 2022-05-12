@@ -345,43 +345,43 @@ proc get*[R: RouterHandler](router: var R, path: string, callback: Callable): re
     router.register(HttpGet, result)
     discard router.getRouteInstance(result)
 
-proc post*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc post*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpPost` method
-    var route: Route = parseRoute(path, HttpPost, callback)
-    router.register(HttpPost, route)
-    result = router.getRouteInstance(route)
+    result = parseRoute(path, HttpPost, callback)
+    router.register(HttpPost, result)
+    discard router.getRouteInstance(result)
 
-proc put*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc put*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpPut` method
-    var route: Route = parseRoute(path, HttpPut, callback)
-    router.register(HttpPut, route)
-    result = router.getRouteInstance(route)
+    result = parseRoute(path, HttpPut, callback)
+    router.register(HttpPut, result)
+    discard router.getRouteInstance(result)
 
-proc head*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc head*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpHead` method
-    var route: Route = parseRoute(path, HttpHead, callback)
-    router.register(HttpHead, route)
-    result = router.getRouteInstance(route)
+    result = parseRoute(path, HttpHead, callback)
+    router.register(HttpHead, result)
+    discard router.getRouteInstance(result)
 
-proc connect*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc connect*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpConnect` method
-    var route: Route = parseRoute(path, HttpConnect, callback)
-    router.register(HttpConnect, route)
-    result = router.getRouteInstance(route)
+    result = parseRoute(path, HttpConnect, callback)
+    router.register(HttpConnect, result)
+    discard router.getRouteInstance(result)
 
-proc delete*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc delete*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpDelete` method
-    var route: Route = parseRoute(path, HttpDelete, callback)
-    router.register(HttpDelete, route)
-    result = router.getRouteInstance(route)
+    result = parseRoute(path, HttpDelete, callback)
+    router.register(HttpDelete, result)
+    discard router.getRouteInstance(result)
 
-proc patch*[R: RouterHandler](router: var R, path: string, callback: Callable): Route {.discardable.} = 
+proc patch*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpPatch` method
-    var route: Route = parseRoute(path, HttpPatch, callback)
-    router.register(HttpPatch, route)
-    result = router.getRouteInstance(route)
+    result = parseRoute(path, HttpPatch, callback)
+    router.register(HttpPatch, result)
+    discard router.getRouteInstance(result)
 
-proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: Callable): Route {.discardable.} =
+proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: Callable): ref Route {.discardable.} =
     ## Generate a unique route using provided verb and callback.
     ## Helpful for generating unique temporary URLs without
     ## dealing with database queries.
@@ -398,8 +398,7 @@ proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: Callab
 proc group*[R: RouterHandler](router: var R, basePath: string, routes: varargs[GroupRouteTuple]): RouterHandler {.discardable.} =
     ## Add grouped routes under same base endpoint.
     for r in routes:
-        let routePath = if r.route == "/":
-                            basePath
+        let routePath = if r.route == "/": basePath
                         else:
                             if r.route[0] == '/': basePath & r.route
                             else: basePath  & "/" & r.route

@@ -117,10 +117,10 @@ template json_error*[R: Response](res: R, body: untyped, code: HttpCode) =
 #
 # HTTP Redirects procedures
 #
-proc redirect*[R: Response](res: R, target:string, code = Http301) {.inline.} =
-    ## Set a HTTP Redirect with a default 301 (Temporary) status code
+proc redirect*[R: Response](res: R, target:string, code = Http307) {.inline.} =
+    ## Set a HTTP Redirect with a default ``Http307`` Temporary Redirect status code
     res.req.send(code, "", HeaderHttpRedirect % [target])
 
-proc redirect302*[R: Response](res: R, target:string) {.inline.} =
-    ## Set a HTTP Redirect with `302` (Permanent) status code
-    res.req.send(Http302, "", HeaderHttpRedirect % [target])
+proc redirect301*[R: Response](res: R, target:string) {.inline.} =
+    ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
+    res.req.send(Http301, "", HeaderHttpRedirect % [target])

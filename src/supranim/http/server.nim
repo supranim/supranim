@@ -8,7 +8,6 @@
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
             strutils, posix, parseutils, options, logging, times]
 
-from std/strformat import fmt
 from std/json import JsonNode, `$`
 
 import jsony

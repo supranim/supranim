@@ -18,7 +18,7 @@ export App, application
 
 export Http200, Http301, Http302, Http403, Http404, Http500, Http503, HttpCode
 export HttpMethod, Request, Response
-export response, send404, send500, json, json404, json500, json_error, redirect, redirect302, view
+export response, send404, send500, json, json404, json500, json_error, redirect, redirect301, view
 
 export server.getParams, server.hasParams, server.getCurrentPath, server.isPage
 export jsony
