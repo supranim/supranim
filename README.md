@@ -1,4 +1,4 @@
-<p align="center"><img src="/.github/supranim.png" width="180px"><br>
+<p align="center"><img src="https://raw.githubusercontent.com/supranim/supranim/main/.github/supranim.png" width="180px"><br>
     <strong>A simple web framework for creating REST APIs and beautiful web apps.</strong>,<br>
     Supranim is a happy fork of <code>httpbeast</code>, providing extra functionalities,<br>
     a <code>Model</code> <code>View</code> <code>Controller</code> project structure and other cool things.
