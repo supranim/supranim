@@ -268,14 +268,12 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
     if result.status == false:
         let dynamicCollection = router.getCollectionByVerb(verb, true)
         var reqPattern = getPatternsByStr(path)
-        echo reqPattern
         var matchRoutePattern: bool
         var reqPatternKeys: seq[int]
         for key, route in dynamicCollection.pairs():
             let routePatternsLen = route.patterns.len
             let reqPatternsLen = reqPattern.len
             # TODO handle optional patterns
-            echo route.patterns
             if routePatternsLen != reqPatternsLen:
                 continue
             else: 
