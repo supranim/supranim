@@ -1,6 +1,7 @@
 macro getCollection(router: object, field: string, hasParams: bool): untyped =
     ## Retrieve a Collection of routes from ``RouterHandler``
-    nnkStmtList.newTree(
+    result = nnkStmtList.newTree()
+    result.add(
         nnkIfStmt.newTree(
             nnkElifBranch.newTree(
                 nnkInfix.newTree(

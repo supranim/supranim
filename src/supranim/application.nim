@@ -46,7 +46,7 @@ type
             ## Whether to reuse current port or not
         loggers: seq[Logger]
             ## Loggers used in background by current application instance
-        config: Document
+        config*: Document
             ## Holds Document representation of ``.env.yml`` configuration file
 
 const yamlEnvFile = ".env.yml"
