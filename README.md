@@ -6,6 +6,22 @@
 
 <p align="center">👉 Work in progress</p>
 
+## Key Features
+- [x] Made for Unix Systems
+- [ ] Command Line Interface via Sup
+- [ ] PostgreSQL and SQLite Database Drivers via [Norm ORM](https://github.com/moigagoo/norm)
+- [x] `Model`-`View`-`Controller` Structure
+- [ ] Framework Agnostic Libraries
+- [x] [Rate Limiter](https://github.com/supranim/limiter)
+- [x] [Event Emitter](https://github.com/supranim/emitter)
+- [ ] `i18n` Internationalization 
+- [ ] Queue Services
+- [x] Router with Patterns support and Zero RegEx
+- [ ] Middlewares
+- [ ] Rendering Engine via [Tim Engine](https://github.com/openpeep/tim)
+- [ ] Bootstrap Supranim with [Application Template](https://github.com/supranim/app)
+- [ ] Support for Redis & [Snapchat's KeyDB](https://github.com/Snapchat/KeyDB)
+
 ### ❤ Contributions
 If you like this project you can contribute to Tim project by opening new issues, fixing bugs, contribute with code, ideas and you can even [donate via PayPal address](https://www.paypal.com/donate/?hosted_button_id=RJK3ZTDWPL55C) 🥰
 
