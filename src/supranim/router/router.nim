@@ -126,12 +126,31 @@ proc register[R: RouterHandler](router: var R, verb: HttpMethod, route: ref Rout
     ## Register a new route by given Verb and Route object
     router.getCollectionByVerb(verb, route.routeType == DynamicRouteType)[route.path] = route
 
+proc getPatternsByStr(path: string): seq[RoutePatternRequest] =
+    ## Create a sequence of RoutePattern of current path request.
+    let pathSeq: seq[string] = path.split("/")
+    for pathStr in pathSeq:
+        if pathStr.len == 0: continue
+        var pattern: RoutePattern
+        for pathSeqChar in pathStr.toSeq:
+            if isDigit(pathSeqChar):
+                if pattern == Slug:
+                    discard # set as `Slug` if already contains alpha ascii
+                else:
+                    pattern = Id
+            elif isAlphanumeric(pathSeqChar):
+                pattern = Slug
+            elif isAlphaAscii(pathSeqChar):
+                pattern = Alpha
+        result.add((pattern: pattern, str: pathStr))
+        pattern = None
+
 proc getPattern(curr, str: string, opt, dynamic = false): RoutePatternTuple =
     ## Create a RoutePattern based on given string pattern containing:
     ## ``tuple[pattern: Pattern, str: string, optional: bool]``
-    ## where ``pattern`` field must be an item from Pattern enum,
-    ## ``str`` field is automatically filled if route is statically declared,
-    ## and ``opt`` if current route should be considered optional.
+    ## - ``pattern`` field must be an item from Pattern enum,
+    ## - ``str`` field is auto filled if route is statically declared,
+    ## - ``opt`` if pattern should be considered optional.
     var pattern: RoutePattern
     case curr:
         of "id":
@@ -152,28 +171,12 @@ proc getPattern(curr, str: string, opt, dynamic = false): RoutePatternTuple =
             pattern = DateDay       # accepts only numbers from 1 to 31
         else:
             for currChar in curr.toSeq:
-                if isDigit(currChar):           pattern = Id
+                if isDigit(currChar):
+                    if pattern == Slug: discard
+                    else: pattern = Id
                 elif isAlphanumeric(currChar):  pattern = Slug
                 elif isAlphaAscii(currChar):    pattern = Alpha
-            # raise newException(RouterException, "Invalid RoutePattern declaration for \"$1\"" % [curr])
     result = (pattern: pattern, str: str, optional: opt, dynamic: dynamic)
-
-proc getPatternsByStr(path: string): seq[RoutePatternRequest] =
-    ## Create a sequence of RoutePattern of current path request.
-    let pathSeq: seq[string] = path.split("/")
-    for pathStr in pathSeq:
-        if pathStr.len == 0: continue
-        var pattern: RoutePattern
-        for pathSeqChar in pathStr.toSeq:
-            if isDigit(pathSeqChar):
-                if pattern == Slug: pattern = Slug
-                else: pattern = Id
-            elif isAlphanumeric(pathSeqChar):
-                pattern = Slug
-            elif isAlphaAscii(pathSeqChar):
-                pattern = Alpha
-        result.add((pattern: pattern, str: pathStr))
-        pattern = None
 
 proc parseRoutePath(path: string): tuple[routeType: RouteType, patterns: seq[RoutePatternTuple]] =
     var
@@ -265,12 +268,14 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
     if result.status == false:
         let dynamicCollection = router.getCollectionByVerb(verb, true)
         var reqPattern = getPatternsByStr(path)
+        echo reqPattern
         var matchRoutePattern: bool
         var reqPatternKeys: seq[int]
         for key, route in dynamicCollection.pairs():
             let routePatternsLen = route.patterns.len
             let reqPatternsLen = reqPattern.len
             # TODO handle optional patterns
+            echo route.patterns
             if routePatternsLen != reqPatternsLen:
                 continue
             else: 
@@ -403,8 +408,9 @@ proc group*[R: RouterHandler](router: var R, basePath: string, routes: varargs[G
                             if r.route[0] == '/': basePath & r.route
                             else: basePath  & "/" & r.route
         if not router.exists(r.verb, routePath):
-            var routeObject: Route = parseRoute(routePath, r.verb, r.callback)
+            var routeObject = parseRoute(routePath, r.verb, r.callback)
             router.register(r.verb, routeObject)
+            discard router.getRouteInstance(routeObject)
         else:
             raise newException(RouterException,
                 "Duplicate route for \"$1\" path of $2" % [r.route, symbolName(r.verb)])
