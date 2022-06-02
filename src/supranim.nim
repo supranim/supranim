@@ -5,29 +5,27 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
-from os import getAppDir, normalizedPath, getCurrentDir, fileExists
-
-import jsony
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
 
-from std/strutils import startsWith
+from std/os import getAppDir, normalizedPath, getCurrentDir, fileExists
+from std/strutils import startsWith, endsWith
+
+from ./supranim/http/response import json_error, response, css
 
 export Port
 export App, application
 
 export Http200, Http301, Http302, Http403, Http404, Http500, Http503, HttpCode
 export HttpMethod, Request, Response
-export response, send404, send500, json, json404, json500, json_error, redirect, redirect301, view
 
 export server.getParams, server.hasParams, server.getCurrentPath, server.isPage
-export jsony
 
 proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
     ## Determine if given HttpMethod is as expected
     result = httpMethod == some(expectMethod)
 
-proc default404Response(res: var Response) =
+proc default404Response(res: Response) =
     ## A default ``404 Response`` based on your preferences
     ## from current App instance
     ## TODO Use `App` singleton to retrieve custom response errors
@@ -55,7 +53,10 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
         if expect(req.httpMethod, HttpGet):
             if app.hasAssets() and startsWith(reqRoute, app.instance(Assets).getPublicPath()):
                 if app.instance(Assets).hasFile(reqRoute):
-                    res.response(app.instance(Assets).getFile(reqRoute))
+                    if endsWith(reqRoute, ".css"):
+                        res.css(app.instance(Assets).getFile(reqRoute))
+                    else:
+                        res.response(app.instance(Assets).getFile(reqRoute))
                 else:
                     res.default404Response()
                 return
