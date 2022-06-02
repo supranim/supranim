@@ -10,69 +10,31 @@
 #          Website: https://supranim.com
 #          Github Repository: https://github.com/supranim
 
-var serverDate {.threadvar.}: string
+import std/httpcore
+import jsony
+
+from std/strutils import `%`
+from std/json import JsonNode
+from ./server import Request, Response, send, hasHeaders, getHeader, getRequestInstance
+
+export Request, Response
+
+export hasHeaders, getHeader, jsony
+
 const
     ContentTypeJSON = "Content-Type: application/json"
     ContentTypeTextHtml = "Content-Type: text/html"
+    ContentTypeTextCSS = "Content-Type: text/css"
     HeaderHttpRedirect = "Location: $1"
-
-proc updateDate(fd: AsyncFD): bool =
-    result = false # Returning true signifies we want timer to stop.
-    serverDate = now().utc().format("ddd, dd MMM yyyy HH:mm:ss 'GMT'")
-
-template withRequestData(req: Request, body: untyped) =
-    let requestData {.inject.} = addr req.selector.getData(req.client)
-    body
-
-#
-# Response Handler
-#
-proc unsafeSend*(req: Request, data: string) {.inline.} =
-    ## Sends the specified data on the request socket.
-    ##
-    ## This function can be called as many times as necessary.
-    ##
-    ## It does not check whether the socket is in
-    ## a state that can be written so be careful when using it.
-    if req.client notin req.selector:
-        return
-    withRequestData(req):
-        requestData.sendQueue.add(data)
-    req.selector.updateHandle(req.client, {Event.Read, Event.Write})
-
-proc send(req: Request, code: HttpCode, body: string, headers="") =
-    ## Responds with the specified HttpCode and body.
-    ## **Warning:** This can only be called once in the OnRequest callback.
-    if req.client notin req.selector:
-        return
-
-    withRequestData(req):
-        # assert requestData.headersFinished, "Selector not ready to send."
-        if requestData.requestID != req.requestID:
-            raise HttpBeastDefect(msg: "You are attempting to send data to a stale request.")
-
-        let otherHeaders = if likely(headers.len == 0): "" else: "\c\L" & headers
-        var
-            text = (
-                "HTTP/1.1 $#\c\L" &
-                "Content-Length: $#\c\LServer: $#\c\LDate: $#$#\c\L\c\L$#"
-            ) % [$code, $body.len, serverInfo, serverDate, otherHeaders, body]
-
-        requestData.sendQueue.add(text)
-    req.selector.updateHandle(req.client, {Event.Read, Event.Write})
 
 #
 # Http Responses
 #
-proc send*(req: Request, code: HttpCode) =
-    ## Responds with the specified HttpCode. The body of the response
-    ## is the same as the HttpCode description.
-    send(req, code, $code)
 
-proc response*[R: Response](res: R, body: string, code = Http200) {.inline.} =
+proc response*[R: Response](res: R, body: string, code = Http200, contentType = ContentTypeTextHtml) {.inline.} =
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
-    res.req.send(code, body, ContentTypeTextHtml)
+    res.getRequestInstance().send(code, body, contentType)
 
 proc send404*[R: Response](res: R, msg="404 | Not Found") {.inline.} =
     ## Sends a 404 HTTP Response with a default "404 | Not Found" message
@@ -85,6 +47,10 @@ proc send500*[R: Response](res: R, msg="500 | Internal Error") {.inline.} =
 template view*[R: Response](res: R, key: string, code = Http200) =
     res.response(getViewContent(App, key))
 
+template css*[R: Response](res: R, data: string) =
+    ## Send a response containing CSS contents with ``Content-Type: text/css``
+    res.response(data, contentType = ContentTypeTextCSS)
+
 #
 # JSON Responses
 #
@@ -93,12 +59,12 @@ template json*[R: Response](res: R, body: untyped, code = Http200) =
     ## This template is using an untyped body parameter that is automatically
     ## converting ``seq``, ``objects``, ``string`` (and so on) to
     ## JSON (stringified) via ``jsony`` library.
-    res.req.send(code, toJson(body), ContentTypeJSON)
+    getRequestInstance(res).send(code, toJson(body), ContentTypeJSON)
 
 template json*[R: Response](res: R, body: JsonNode, code = Http200) =
     ## Sends a JSON response with a default 200 (OK) status code.
     ## This template is using the native JsonNode for creating the response body.
-    res.req.send(code, $(body), ContentTypeJSON)
+    getRequestInstance(res).send(code, $(body), ContentTypeJSON)
 
 template json404*[R: Response](res: R, body = "") =
     ## Sends a 404 JSON Response  with a default "Not found" message
@@ -110,17 +76,59 @@ template json500*[R: Response](res: R, body = "") =
     var jbody = if body.len == 0: """{"status": 500, "message": "Internal Error"}""" else: body
     res.json(req, jbody, Http500)
 
-template json_error*[R: Response](res: R, body: untyped, code: HttpCode) = 
+template json_error*[R: Response](res: R, body: untyped, code: HttpCode = Http501) = 
     ## Sends a JSON response followed by of a HttpCode (that represents an error)
-    res.req.send(code, toJson(body), ContentTypeJSON)
+    getRequestInstance(res).send(code, toJson(body), ContentTypeJSON)
 
 #
 # HTTP Redirects procedures
 #
-proc redirect*[R: Response](res: R, target:string, code = Http307) {.inline.} =
+proc redirect*[R: Response](res: R, target: string, code = Http307) {.inline.} =
     ## Set a HTTP Redirect with a default ``Http307`` Temporary Redirect status code
-    res.req.send(code, "", HeaderHttpRedirect % [target])
+    getRequestInstance(res).send(code, "", HeaderHttpRedirect % [target])
 
 proc redirect301*[R: Response](res: R, target:string) {.inline.} =
     ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
-    res.req.send(Http301, "", HeaderHttpRedirect % [target])
+    getRequestInstance(res).send(Http301, "", HeaderHttpRedirect % [target])
+
+proc getAgent*(req: Request): string =
+    ## Retrieves the user agent from request header
+    result = req.getHeader("user-agent")
+
+proc getPlatform*(req: Request): string =
+    ## Return the platform name, It can be one of the following common platform values:
+    ## ``Android``, ``Chrome OS``, ``iOS``, ``Linux``, ``macOS``, ``Windows``, or ``Unknown``.
+    # https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform
+    let currOs = req.getHeader("sec-ch-ua-platform")
+    if currOs[0] == '"' and currOs[^1] == '"':
+        result = currOs[1 .. ^2]
+
+proc isMacOS*(req: Request): bool =
+    ## Determine if current request is made from ``macOS`` platform
+    result = req.getPlatform() == "macOS"
+
+proc isLinux*(req: Request): bool =
+    ## Determine if current request is made from ``Linux`` platform
+    result = req.getPlatform() == "Linux"
+
+proc isWindows*(req: Request): bool =
+    ## Determine if current request is made from ``Window`` platform
+    result = req.getPlatform() == "Windows"
+
+proc isChromeOS*(req: Request): bool =
+    ## Determine if current request is made from ``Chrome OS`` platform
+    result = req.getPlatform() == "Chrome OS"
+
+proc isIOS*(req: Request): bool =
+    ## Determine if current request is made from ``iOS`` platform
+    result = req.getPlatform() == "iOS"
+
+proc isAndroid*(req: Request): bool =
+    ## Determine if current request is made from ``Android`` platform
+    result = req.getPlatform() == "Android"
+
+proc isMobile*(req: Request): bool =
+    ## Determine if current request is made from a mobile device
+    ## https://wicg.github.io/ua-client-hints/#sec-ch-ua-mobile
+    result = req.getPlatform() in ["Android", "iOS"] and
+             req.getHeader("sec-ch-ua-mobile") == "true"

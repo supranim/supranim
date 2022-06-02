@@ -1,14 +1,14 @@
-# Supranim is a simple Hyper Server and Web Framework developed
-# for building safe & fast in-house projects.
+# Supranim is a simple MVC-style web framework for building
+# fast web applications, REST API microservices and other cool things.
 # 
-# Supranim Server - The Request Parser
-# This is an include-only file, part of the ./server.nim
-# 
+# The http module is a modified version of httpbeast.
+#          (c) Dominik Picheta
+#          https://github.com/dom96/httpbeast
+#
 # (c) 2021 Supranim is released under MIT License
-#          by George Lemon <georgelemon@protonmail.com>
 #          
-#          Website: https://supranim.com
-#          Github Repository: https://github.com/supranim
+#          Made by Humans from OpenPeep
+#          https://supranim.com   |    https://github.com/supranim
 
 import options, httpcore, parseutils
 
@@ -18,6 +18,7 @@ proc parseHttpMethod*(data: string, start: int): Option[HttpMethod] =
     ## The HttpMethod parser is wrapped into a try/except statement
     ## so in case the http method is invalid will just raise none(HttpMethod) option,
     ## preventing IndexDefect exceptions and other unpleasant errors
+    # echo data
     try:
         case data[start]
         of 'G':
@@ -109,7 +110,6 @@ proc parseHeaders*(data: string, start: int): Option[HttpHeaders] =
             else:
                 current[0].add(data[i])
         i.inc()
-
     return none(HttpHeaders)
 
 proc parseContentLength*(data: string, start: int): int =

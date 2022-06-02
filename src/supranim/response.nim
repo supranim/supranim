@@ -5,8 +5,9 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
-import ./server
+from ./server import Response, Request
+import ./http/response
 
-export Response, response, send404
+export Request, Response, response, send404
 export json, json404, json500, json_error
 export redirect, redirect301

@@ -1,3 +1,15 @@
+# Supranim is a simple MVC-style web framework for building
+# fast web applications, REST API microservices and other cool things.
+# 
+# The http module is modified version of httpbeast.
+#          (c) Dominik Picheta
+#          https://github.com/dom96/httpbeast
+#
+# (c) 2021 Supranim is released under MIT License
+#          
+#          Made by Humans from OpenPeep
+#          https://supranim.com   |    https://github.com/supranim
+
 proc initData(fdKind: FdKind, ip = ""): Data =
     Data(fdKind: fdKind,
          sendQueue: "",
@@ -162,20 +174,25 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
                                 data.headersFinished = true
                                 data.requestID = genRequestID()
 
-                                var request = Request(
+                                var req = Request(
+                                    start: start,
                                     selector: selector,
                                     client: fd.SocketHandle,
-                                    start: start,
                                     requestID: data.requestID,
+                                    ip: data.ip
                                 )
 
+                                req.requestHeaders = parseHeaders(req.selector.getData(req.client).data, req.start)
+                                # echo req.requestHeaders
+                                # echo 
+
                                 template validateResponse(): untyped =
-                                    if data.requestID == request.requestID:
+                                    if data.requestID == req.requestID:
                                         data.headersFinished = false
 
-                                if validateRequest(request):
-                                    var response = Response(req: request)
-                                    data.reqFut = onRequest(request, response, app)
+                                if validateRequest(req):
+                                    var res = Response(req: req) # TODO something useful here
+                                    data.reqFut = onRequest(req, res, app)
                                     if not data.reqFut.isNil:
                                         data.reqFut.addCallback(
                                             proc (fut: Future[void]) =

@@ -1,20 +1,24 @@
 # Supranim is a simple MVC-style web framework for building
 # fast web applications, REST API microservices and other cool things.
+# 
+# The http module is a modified version of httpbeast.
+#          (c) Dominik Picheta
+#          https://github.com/dom96/httpbeast
 #
 # (c) 2021 Supranim is released under MIT License
-#          George Lemon | Made by Humans from OpenPeep
+#          
+#          Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
-            strutils, posix, parseutils, options, logging, times]
+            strutils, posix, parseutils, options, logging, times, tables]
 
 from std/json import JsonNode, `$`
 
-import jsony
 import ../application
 
-from deques import len
-from osproc import countProcessors
+from std/deques import len
+from std/osproc import countProcessors
 
 # Include the Request Parser
 include ./requestParser
@@ -50,6 +54,9 @@ type
     Param = tuple[k, v: string]
         ## Key-Value tuple used to handle GET request parameters
 
+    HeaderValue* = object
+        value: string
+
     Request* = object
         selector: Selector[Data]
         client*: SocketHandle
@@ -63,10 +70,15 @@ type
             ## Holds all route patterns from current request
         params: seq[Param]
             ## Holds all GET parameters from current request
+        requestHeaders: Option[HttpHeaders]
+            ## Holds all headers from current request
+        ip: string
+            ## The public IP address from request
+        methodType: HttpMethod
+            ## The ``HttpMethod`` of the request
 
     Response* = object
         req: Request
-            ## Holds a Request object instance of the current response
 
     OnRequest* = proc (req: var Request, res: var Response, app: Application): Future[void] {.gcsafe.}
         ## Procedure used on request
@@ -91,10 +103,64 @@ type
         ## Similar to ``RoutePatternTuple``, the only difference is that is used
         ## during runtime for parsing each path request.
 
-const serverInfo = "Supranim"
+const serverInfo = "Supranim" # TODO Support whitelabel signatures
 
-## Include Response Handler
-include ./response
+var serverDate {.threadvar.}: string
+
+proc updateDate(fd: AsyncFD): bool =
+    result = false # Returning true signifies we want timer to stop.
+    serverDate = now().utc().format("ddd, dd MMM yyyy HH:mm:ss 'GMT'")
+
+template withRequestData(req: Request, body: untyped) =
+    let requestData {.inject.} = addr req.selector.getData(req.client)
+    body
+
+#
+# Response Handler
+#
+
+proc getRequestInstance*(res: Response): Request {.inline.} =
+    result = res.req
+
+proc unsafeSend*(req: Request, data: string) {.inline.} =
+    ## Sends the specified data on the request socket.
+    ##
+    ## This function can be called as many times as necessary.
+    ##
+    ## It does not check whether the socket is in
+    ## a state that can be written so be careful when using it.
+    if req.client notin req.selector:
+        return
+    withRequestData(req):
+        requestData.sendQueue.add(data)
+    req.selector.updateHandle(req.client, {Event.Read, Event.Write})
+
+proc send*(req: Request, code: HttpCode, body: string, headers="") =
+    ## Responds with the specified HttpCode and body.
+    ## **Warning:** This can only be called once in the OnRequest callback.
+    if req.client notin req.selector:
+        return
+
+    withRequestData(req):
+        # assert requestData.headersFinished, "Selector not ready to send."
+        if requestData.requestID != req.requestID:
+            raise HttpBeastDefect(msg: "You are attempting to send data to a stale request.")
+
+        let otherHeaders = if likely(headers.len == 0): "" else: "\c\L" & headers
+        var
+            text = (
+                "HTTP/1.1 $#\c\L" &
+                "Content-Length: $#\c\LServer: $#\c\LDate: $#$#\c\L\c\L$#"
+            ) % [$code, $body.len, serverInfo, serverDate, otherHeaders, body]
+
+        requestData.sendQueue.add(text)
+    req.selector.updateHandle(req.client, {Event.Read, Event.Write})
+
+proc send*(req: Request, code: HttpCode) =
+    ## Responds with the specified HttpCode. The body of the response
+    ## is the same as the HttpCode description.
+    send(req, code, $code)
+
 include ./serve
 
 #[ API start ]#
@@ -119,11 +185,13 @@ proc isPage*(req: Request, key: string): bool =
     result = req.getCurrentPath() == key
 
 proc getParams*(req: Request): seq[RoutePatternRequest] =
-    ## Retrieves all dynamic patterns (key/value) from current request
+    ## Retrieves all dynamic patterns (key/value)
+    ## from current request
     result = req.patterns
 
 proc hasParams*(req: Request): bool =
-    ## Determine if the current request contains any parameters from the dynamic route
+    ## Determine if the current request contains
+    ## any parameters from the dynamic route
     result = req.patterns.len != 0
 
 proc setParams*(req: var Request, reqValues: seq[RoutePatternRequest]) =
@@ -138,6 +206,14 @@ proc headers*(req: Request): Option[HttpHeaders] =
         return
     parseHeaders(req.selector.getData(req.client).data, req.start)
 
+proc hasHeaders*(req: Request): bool =
+    result = req.requestHeaders.get() != nil
+
+proc getHeader*(req: Request, key: string): string = 
+    let headers = req.requestHeaders.get()
+    if headers.hasKey(key):
+        result = headers[key]
+
 proc body*(req: Request): Option[string] =
     ## Retrieves the body of the request.
     let pos = req.selector.getData(req.client).headersFinishPos
@@ -151,15 +227,9 @@ proc body*(req: Request): Option[string] =
             else: 0
         assert result.get().len == length
 
-proc ip*(req: Request): string =
-    ## Retrieves the IP address from request
-    req.selector.getData(req.client).ip
-
-proc getAgent*(req: Request): string =
-    ## Retrieves the user agent from request header
-    let headers = req.headers.get()
-    if headers.hasKey("user-agent"):
-        result = headers["user-agent"]
+# proc ip*(req: Request): string =
+#     ## Retrieves the IP address from request
+#     req.selector.getData(req.client).ip
 
 proc forget*(req: Request) =
     ## Unregisters the underlying request's client socket from httpbeast's
