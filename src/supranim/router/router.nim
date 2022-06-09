@@ -13,7 +13,8 @@ from std/enumutils import symbolName
 from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit, startsWith
 from std/sequtils import toSeq
 
-from ../http/server import HttpMethod, Request, Response, RoutePattern, RoutePatternTuple, RoutePatternRequest
+from ../http/server import HttpMethod, Request, Response, RoutePattern,
+                           RoutePatternTuple, RoutePatternRequest, HttpCode
 
 export HttpMethod
 
@@ -76,6 +77,7 @@ type
         ## stored either in ``httpGet`` or ``httpGetDynam``
     GroupRouteTuple* = tuple[verb: HttpMethod, route: string, callback: Callable]
 
+    ErrorPagesTable = Table[int, proc(): string]
     RouterHandler = object
         ## Router Handler that holds all VerbCollection tables Table[string, Route]
         httpGet, httpPost, httpPut, httpHead, httpConnect: VerbCollection
@@ -89,18 +91,19 @@ type
     RouterException* = object of CatchableError
         ## Catchable Router Exception
 
-proc setField[T: VerbCollection](val: var T) =
+proc setField[T: VerbCollection](k: string, val: var T) =
     val = newTable[string, ref Route]()
 
 template initTables(router: object): untyped =
     block fieldFound:
         for k, v in fieldPairs(router):
-            setField(v)
+            setField(k, v)
 
 proc initCollectionTables[R: RouterHandler](router: var R) =
     router.initTables()
 
 var Router* = RouterHandler()   # Singleton of RouterHandler
+var ErrorPages*: ErrorPagesTable
 Router.initCollectionTables()   # https://forum.nim-lang.org/t/5631#34992
 
 proc isDynamic*[R: Route](route: ref R): bool =
@@ -413,3 +416,9 @@ proc group*[R: RouterHandler](router: var R, basePath: string, routes: varargs[G
             raise newException(RouterException,
                 "Duplicate route for \"$1\" path of $2" % [r.route, symbolName(r.verb)])
     result = router
+
+proc setErrorPage*[R: RouterHandler](router: var R, httpCode: HttpCode, callback: proc(): string) =
+    ErrorPages[httpCode.int] = callback
+
+proc getErrorPage*(httpCode: HttpCode): string =
+    result = ErrorPages[httpCode.int]()

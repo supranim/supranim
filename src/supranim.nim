@@ -5,13 +5,14 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
+import emitter
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
 
 from std/os import getAppDir, normalizedPath, getCurrentDir, fileExists
 from std/strutils import startsWith, endsWith
 
-from ./supranim/http/response import json_error, response, css
+from ./supranim/http/response import json_error, response, css, send404
 
 export Port
 export App, application
@@ -28,8 +29,11 @@ proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
 proc default404Response(res: Response) =
     ## A default ``404 Response`` based on your preferences
     ## from current App instance
-    ## TODO Use `App` singleton to retrieve custom response errors
-    res.json_error("Invalid endpoint", Http404)
+    # Event.emit("system.http.404")
+    if App.getAppType == RESTful:
+        res.json_error(getErrorPage(Http404), Http404)
+    else:
+        res.send404(getErrorPage(Http404))
 
 template handleHttpRouteRequest(verb: HttpMethod, req: Request, res: Response, reqRoute: string) =
     let runtime: RuntimeRoutePattern = Router.existsRuntime(verb, reqRoute, req, res)
@@ -48,7 +52,6 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
     # method type of current request because, for some reasons,
     # simple if statements are faster than if/elif blocks.
         var reqRoute = req.path.get()
-        
         # Handle HttpGET requests
         if expect(req.httpMethod, HttpGet):
             if app.hasAssets() and startsWith(reqRoute, app.instance(Assets).getPublicPath()):

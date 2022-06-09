@@ -183,9 +183,6 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
                                 )
 
                                 req.requestHeaders = parseHeaders(req.selector.getData(req.client).data, req.start)
-                                # echo req.requestHeaders
-                                # echo 
-
                                 template validateResponse(): untyped =
                                     if data.requestID == req.requestID:
                                         data.headersFinished = false

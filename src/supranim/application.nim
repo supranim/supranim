@@ -5,7 +5,8 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
-import nyml
+import nyml, emitter
+import std/tables
 
 from std/nativesockets import Domain
 from std/net import Port
@@ -17,6 +18,7 @@ from std/macros import getProjectPath
 import ./config/assets
 export Port
 export assets
+export nyml.get, nyml.getInt, nyml.getStr, nyml.getBool
 
 const SECURE_PROTOCOL = "https"
 const UNSECURE_PROTOCOL = "http"
@@ -24,6 +26,9 @@ const NO = "no"
 const YES = "yes"
 
 type
+    AppType* = enum
+        WebApp, RESTful
+
     Application* = object
         port: Port
             ## Specify a port or let retrieve one automatically
@@ -48,6 +53,7 @@ type
             ## Loggers used in background by current application instance
         config*: Document
             ## Holds Document representation of ``.env.yml`` configuration file
+        appType: AppType
 
 const yamlEnvFile = ".env.yml"
 
@@ -76,6 +82,8 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
         sourceDir = getAppDir() & "/" & sourceDir
         normalizePath(sourceDir)
         App.assets = Assets.init(sourceDir, publicDir)
+    else:
+        App.appType = RESTful
 
     App.address = App.config.get("app.address").getStr
     App.domain = Domain.AF_INET
@@ -83,6 +91,9 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     App.threads = App.config.get("app.threads").getInt
     App.recyclable = true
     result = App
+
+proc getAppType*[A: Application](app: A): AppType =
+    result = app.appType
 
 proc hasAssets*[A: Application](app: A): bool =
     ## Determine if current Supranim application has an Assets instance
@@ -204,6 +215,8 @@ proc printBootStatus*[A: Application](app: A) =
 
     for compileOptionLabel in defaultCompileOptions:
         echo indent("✓ " & compileOptionLabel, 2)
+
+    Event.emit("system.boot.services")
 
     # echo "--------- Service Providers ----------"
     # for loadedService in loadedServices:
