@@ -5,8 +5,11 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
-import nyml, emitter
+import nyml
 import std/tables
+
+when defined(webapp):
+    import emitter
 
 from std/nativesockets import Domain
 from std/net import Port
@@ -215,8 +218,9 @@ proc printBootStatus*[A: Application](app: A) =
 
     for compileOptionLabel in defaultCompileOptions:
         echo indent("✓ " & compileOptionLabel, 2)
-
-    Event.emit("system.boot.services")
+    
+    when defined(webapp):
+        Event.emit("system.boot.services")
 
     # echo "--------- Service Providers ----------"
     # for loadedService in loadedServices:

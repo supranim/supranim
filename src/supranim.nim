@@ -4,10 +4,11 @@
 # (c) 2021 Supranim is released under MIT License
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
-
-import emitter
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
+
+when defined(webapp):
+    import emitter
 
 from std/os import getAppDir, normalizedPath, getCurrentDir, fileExists
 from std/strutils import startsWith, endsWith
