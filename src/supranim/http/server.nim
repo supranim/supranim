@@ -11,14 +11,19 @@
 #          https://supranim.com   |    https://github.com/supranim
 
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
-            strutils, posix, parseutils, options, logging, times, tables]
+            strutils, parseutils, options, logging, times, tables]
 
+from std/sugar import capture
 from std/json import JsonNode, `$`
+from std/deques import len
+
+when defined(windows):
+    import sets
+else:
+    import std/posix
+    from std/osproc import countProcessors
 
 import ../application
-
-from std/deques import len
-from std/osproc import countProcessors
 
 # Include the Request Parser
 include ./requestParser
@@ -83,7 +88,7 @@ type
     OnRequest* = proc (req: var Request, res: var Response, app: Application): Future[void] {.gcsafe.}
         ## Procedure used on request
 
-    HttpBeastDefect* = ref object of Defect
+    SupranimDefect* = ref object of Defect
         ## Catchable object error
 
     RoutePattern* = enum
@@ -144,7 +149,7 @@ proc send*(req: Request, code: HttpCode, body: string, headers="") =
     withRequestData(req):
         # assert requestData.headersFinished, "Selector not ready to send."
         if requestData.requestID != req.requestID:
-            raise HttpBeastDefect(msg: "You are attempting to send data to a stale request.")
+            raise SupranimDefect(msg: "You are attempting to send data to a stale request.")
 
         let otherHeaders = if likely(headers.len == 0): "" else: "\c\L" & headers
         var
@@ -232,11 +237,10 @@ proc body*(req: Request): Option[string] =
 #     req.selector.getData(req.client).ip
 
 proc forget*(req: Request) =
-    ## Unregisters the underlying request's client socket from httpbeast's
-    ## event loop.
+    ## Unregisters the underlying request's client socket from event loop.
     ##
     ## This is useful when you want to register ``req.client`` in your own
-    ## event loop, for example when wanting to integrate httpbeast into a
+    ## event loop, for example when wanting to integrate the server into a
     ## websocket library.
     assert req.selector.getData(req.client).requestID == req.requestID
     req.selector.unregister(req.client)

@@ -20,13 +20,14 @@ proc initData(fdKind: FdKind, ip = ""): Data =
          ip: ip
     )
 
-template handleAccept() =
+template handleAcceptClient() =
     let (client, address) = fd.SocketHandle.accept()
     if client == osInvalidSocket:
         let lastError = osLastError()
-        if lastError.int32 == EMFILE:
-            warn("Ignoring EMFILE error: ", osErrorMsg(lastError))
-            return
+        when defined posix:
+            if lastError.int32 == EMFILE:
+                warn("Ignoring EMFILE error: ", osErrorMsg(lastError))
+                return
         raiseOSError(lastError)
     setBlocking(client, false)
     selector.registerHandle(client, {Event.Read}, initData(Client, ip=address))
@@ -124,13 +125,15 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
         case data.fdKind
         of Server:
             if Event.Read in events[i].events:
-                handleAccept()
+                handleAcceptClient()
             else:
                 assert false, "Only Read events are expected for the server"
         of Dispatcher:
-            # Run the dispatcher loop.
-            assert events[i].events == {Event.Read}
-            asyncdispatch.poll(0)
+            # Handle the dispatcher loop
+            when defined posix:
+                assert events[i].events == {Event.Read}
+                asyncdispatch.poll(0)
+            else: discard
         of Client:
             if Event.Read in events[i].events:
                 const size = 256
@@ -145,10 +148,11 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
                         handleClientClosure(selector, fd)
 
                     if ret == -1:
-                        # Error!
                         let lastError = osLastError()
-                        if lastError.int32 in {EWOULDBLOCK, EAGAIN}:
-                            break
+                        when defined posix:
+                            if lastError.int32 in {EWOULDBLOCK, EAGAIN}: break
+                        else:
+                            if lastError.int == WSAEWOULDBLOCK: break
                         if isDisconnectionError({SocketFlag.SafeDisconn}, lastError):
                             handleClientClosure(selector, fd)
                         raiseOSError(lastError)
@@ -183,20 +187,21 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
                                 )
 
                                 req.requestHeaders = parseHeaders(req.selector.getData(req.client).data, req.start)
-                                template validateResponse(): untyped =
-                                    if data.requestID == req.requestID:
-                                        data.headersFinished = false
+                                template validateResponse(capturedData: ptr Data): untyped =
+                                    if capturedData.requestID == req.requestID:
+                                        capturedData.headersFinished = false
 
                                 if validateRequest(req):
                                     var res = Response(req: req) # TODO something useful here
                                     data.reqFut = onRequest(req, res, app)
                                     if not data.reqFut.isNil:
-                                        data.reqFut.addCallback(
-                                            proc (fut: Future[void]) =
-                                                onRequestFutureComplete(fut, selector, fd)
-                                                validateResponse()
-                                        )
-                                    else: validateResponse()
+                                        capture data:
+                                            data.reqFut.addCallback(
+                                                proc (fut: Future[void]) =
+                                                    onRequestFutureComplete(fut, selector, fd)
+                                                    validateResponse(data)
+                                            )
+                                    else: validateResponse(data)
 
                     if ret != size:
                         # Assume there is nothing else for us right now and break.
@@ -205,14 +210,18 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
                 assert data.sendQueue.len > 0
                 assert data.bytesSent < data.sendQueue.len
                 # Write the sendQueue.
-                let leftover = data.sendQueue.len-data.bytesSent
-                let ret = send(fd.SocketHandle, addr data.sendQueue[data.bytesSent],
-                                             leftover, 0)
+                when defined posix:
+                    let leftover = data.sendQueue.len - data.bytesSent
+                else:
+                    let leftover = cint(data.sendQueue.len - data.bytesSent)
+                let ret = send(fd.SocketHandle, addr data.sendQueue[data.bytesSent], leftover, 0)
                 if ret == -1:
                     # Error!
                     let lastError = osLastError()
-                    if lastError.int32 in {EWOULDBLOCK, EAGAIN}:
-                        break
+                    when defined posix:
+                        if lastError.int32 in {EWOULDBLOCK, EAGAIN}: break
+                    else:
+                        if lastError.int32 == WSAEWOULDBLOCK: break
                     if isDisconnectionError({SocketFlag.SafeDisconn}, lastError):
                         handleClientClosure(selector, fd)
                     raiseOSError(lastError)
@@ -238,7 +247,7 @@ proc eventLoop(params: (OnRequest, Application)) =
     server.setSockOpt(OptReuseAddr, true)
 
     if compileOption("threads") and not app.isRecyclable:
-        raise HttpBeastDefect(msg: "--threads:on requires reusePort to be enabled in settings")
+        raise SupranimDefect(msg: "--threads:on requires reusePort to be enabled in settings")
 
     server.setSockOpt(OptReusePort, app.isRecyclable)
     server.bindAddr(app.getPort, app.getAddress)
@@ -246,20 +255,30 @@ proc eventLoop(params: (OnRequest, Application)) =
     server.getFd().setBlocking(false)
     selector.registerHandle(server.getFd(), {Event.Read}, initData(Server))
 
-    let disp = getGlobalDispatcher()
-    selector.registerHandle(getIoHandler(disp).getFd(), {Event.Read}, initData(Dispatcher))
-
     # Set up timer to get current date/time.
     discard updateDate(0.AsyncFD)
     asyncdispatch.addTimer(1000, false, updateDate)
 
-    var events: array[64, ReadyKey]
-    while true:
-        let ret = selector.selectInto(-1, events)
-        processEvents(selector, events, ret, onRequest, app)
-
-        # Ensure callbacks list doesn't grow forever in asyncdispatch.
-        # @SEE https://github.com/nim-lang/Nim/issues/7532.
-        # Not processing callbacks can also lead to exceptions being silently lost!
-        if unlikely(asyncdispatch.getGlobalDispatcher().callbacks.len > 0):
+    let disp = getGlobalDispatcher()
+    when defined posix:
+        selector.registerHandle(getIoHandler(disp).getFd(), {Event.Read}, initData(Dispatcher))
+        var events: array[64, ReadyKey]
+        while true:
+            let ret = selector.selectInto(-1, events)
+            processEvents(selector, events, ret, onRequest, app)
+            # Ensure callbacks list doesn't grow forever in asyncdispatch.
+            # @SEE https://github.com/nim-lang/Nim/issues/7532.
+            # Not processing callbacks can also lead to exceptions being silently lost!
+            if unlikely(asyncdispatch.getGlobalDispatcher().callbacks.len > 0):
+                asyncdispatch.poll(0)
+    else:
+        var events: array[64, ReadyKey]
+        while true:
+            let ret =
+                if disp.timers.len > 0:
+                    selector.selectInto((disp.timers[0].finishAt - getMonoTime()).inMilliseconds.int, events)
+                else:
+                    selector.selectInto(20, events)
+            if ret > 0:
+                processEvents(selector, events, ret, onRequest)
             asyncdispatch.poll(0)

@@ -18,7 +18,6 @@ proc parseHttpMethod*(data: string, start: int): Option[HttpMethod] =
     ## The HttpMethod parser is wrapped into a try/except statement
     ## so in case the http method is invalid will just raise none(HttpMethod) option,
     ## preventing IndexDefect exceptions and other unpleasant errors
-    # echo data
     try:
         case data[start]
         of 'G':
