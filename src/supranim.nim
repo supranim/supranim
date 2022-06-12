@@ -100,5 +100,5 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
         if expect(req.httpMethod, HttpPatch):
             discard
 
-proc start*[A: Application](app: var A) =
+proc startServer*[A: Application](app: var A) =
     run(onRequest, app)

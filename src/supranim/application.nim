@@ -15,7 +15,8 @@ import std/macros
 from std/nativesockets import Domain
 from std/net import Port
 from std/logging import Logger
-from std/os import getCurrentDir, putEnv, getEnv, fileExists, getAppDir, normalizePath
+from std/os import getCurrentDir, putEnv, getEnv, fileExists,
+                    getAppDir, normalizePath, walkDirRec
 from std/strutils import toUpperAscii, indent, split
 
 import ./config/assets
@@ -102,8 +103,8 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     App.recyclable = true
     result = App
 
-dumpAstGen:
-    var Tim* = init(TimEngine, source = "a", output = "b")
+# dumpAstGen:
+#     var Tim* = init(TimEngine, source = "a", output = "b")
 
 macro init*[A: Application](app: var A) =
     ## Initialize Supranim application based on current
@@ -159,9 +160,30 @@ macro init*[A: Application](app: var A) =
                     )
                 )
             )
+        else:
+            result.add(
+                nnkVarSection.newTree(
+                    nnkIdentDefs.newTree(
+                        nnkPostfix.newTree(
+                            ident "*",
+                            ident singletonIdent
+                        ),
+                        newEmptyNode(),
+                        callable
+                    )
+                )
+            )
+    # Include application routes.nim file
+    result.add(
+        nnkIncludeStmt.newTree(ident getProjectPath() & "/" & "routes.nim")
+    )
+
     result.add quote do:
         var supserver = init(threads = 1)
-        supserver.start()
+
+template start*[A: Application](app: var A) =
+    ## Boot Supranim application
+    app.startServer()
 
 proc getAppType*[A: Application](app: A): AppType =
     result = app.appType
