@@ -9,7 +9,7 @@
 ## Key Features
 - [x] Made for Unix Systems
 - [ ] Command Line Interface via Sup
-- [ ] PostgreSQL and SQLite Database Drivers via [Norm ORM](https://github.com/moigagoo/norm)
+- [ ] PostgreSQL and SQLite Database Drivers via [Enimsql ORM](https://github.com/supranim/enimsql)
 - [x] `Model`-`View`-`Controller` Structure
 - [ ] Framework Agnostic Libraries
 - [x] [Rate Limiter](https://github.com/supranim/limiter)
