@@ -11,12 +11,12 @@ import std/tables
 when defined(webapp):
     import emitter
 
+import std/macros
 from std/nativesockets import Domain
 from std/net import Port
 from std/logging import Logger
 from std/os import getCurrentDir, putEnv, getEnv, fileExists, getAppDir, normalizePath
-from std/strutils import toUpperAscii, indent
-from std/macros import getProjectPath
+from std/strutils import toUpperAscii, indent, split
 
 import ./config/assets
 export Port
@@ -76,8 +76,15 @@ proc parseEnvFile(configContents: string): Document =
 
 proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string = ""): Application =
     ## Main procedure for initializing your Supranim Application.
-    App.config = when not defined(inlineConfig): parseEnvFile(ymlConfigContents)
-                else: parseEnvFile(inlineConfigStr)
+    App.config =
+        when not defined(inlineConfig):
+            # Load app config from a .env.yml file
+            parseEnvFile(ymlConfigContents)
+        else:
+            # load app config from `inlineConfigStr`. Useful for
+            # embedding Supranim in other libraries, for example
+            # Chocotone https://github.com/chocotone
+            parseEnvFile(inlineConfigStr)
 
     let publicDir = App.config.get("app.assets.public").getStr
     var sourceDir = App.config.get("app.assets.source").getStr
@@ -94,6 +101,67 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     App.threads = App.config.get("app.threads").getInt
     App.recyclable = true
     result = App
+
+dumpAstGen:
+    var Tim* = init(TimEngine, source = "a", output = "b")
+
+macro init*[A: Application](app: var A) =
+    ## Initialize Supranim application based on current
+    ## configuration and available services.
+    var yml = Nyml.init(contents = ymlConfigContents)
+    let doc: Document = yml.toJson()
+    let services = doc.get("services")
+    result = newStmtList()
+    
+    # iterate over available services
+    for id, conf in pairs(services):
+        var singleton = split(conf["singleton"].getStr, ':')
+        let singletonIdent = singleton[0]
+        let singletonObject = singleton[1]
+        result.add(nnkImportStmt.newTree(ident id))
+        var callable = nnkCall.newTree()
+        callable.add(ident "init")
+        callable.add(ident singletonObject)
+        if conf.hasKey("settings"):
+            for pId, pVal in pairs(conf["settings"]):
+                case pVal.kind:
+                of JString:
+                    callable.add(
+                        nnkExprEqExpr.newTree(
+                            ident pId,
+                            newLit pVal.getStr
+                        )
+                    )
+                of JBool:
+                    callable.add(
+                        nnkExprEqExpr.newTree(
+                            ident pId,
+                            newLit pVal.getBool
+                        )
+                    )
+                of JInt:
+                    callable.add(
+                        nnkExprEqExpr.newTree(
+                            ident pId,
+                            newLit pVal.getInt
+                        )
+                    )
+                else: discard # TODO
+            result.add(
+                nnkVarSection.newTree(
+                    nnkIdentDefs.newTree(
+                        nnkPostfix.newTree(
+                            ident "*",
+                            ident singletonIdent
+                        ),
+                        newEmptyNode(),
+                        callable
+                    )
+                )
+            )
+    result.add quote do:
+        var supserver = init(threads = 1)
+        supserver.start()
 
 proc getAppType*[A: Application](app: A): AppType =
     result = app.appType
