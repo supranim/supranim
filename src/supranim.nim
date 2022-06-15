@@ -7,8 +7,8 @@
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
 
-when defined(webapp):
-    import emitter
+# when defined(webapp):
+#     import emitter
 
 from std/os import getAppDir, normalizedPath, getCurrentDir, fileExists
 from std/strutils import startsWith, endsWith
@@ -30,7 +30,6 @@ proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
 proc default404Response(res: Response) =
     ## A default ``404 Response`` based on your preferences
     ## from current App instance
-    # Event.emit("system.http.404")
     if App.getAppType == RESTful:
         res.json_error(getErrorPage(Http404), Http404)
     else:

@@ -12,10 +12,8 @@ from std/options import Option
 from std/enumutils import symbolName
 from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit, startsWith
 from std/sequtils import toSeq
-
-from ../http/server import HttpMethod, Request, Response, RoutePattern,
-                           RoutePatternTuple, RoutePatternRequest, HttpCode
-
+from ../server import HttpMethod, Request, Response, RoutePattern,
+                      RoutePatternTuple, RoutePatternRequest, HttpCode
 export HttpMethod
 
 type

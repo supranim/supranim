@@ -103,83 +103,82 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     App.recyclable = true
     result = App
 
-# dumpAstGen:
-#     var Tim* = init(TimEngine, source = "a", output = "b")
-
 macro init*[A: Application](app: var A) =
     ## Initialize Supranim application based on current
     ## configuration and available services.
     var yml = Nyml.init(contents = ymlConfigContents)
     let doc: Document = yml.toJson()
-    let services = doc.get("services")
     result = newStmtList()
-    
-    # iterate over available services
-    for id, conf in pairs(services):
-        var singleton = split(conf["singleton"].getStr, ':')
-        let singletonIdent = singleton[0]
-        let singletonObject = singleton[1]
-        result.add(nnkImportStmt.newTree(ident id))
-        var callable = nnkCall.newTree()
-        callable.add(ident "init")
-        callable.add(ident singletonObject)
-        if conf.hasKey("settings"):
-            for pId, pVal in pairs(conf["settings"]):
-                case pVal.kind:
-                of JString:
-                    callable.add(
-                        nnkExprEqExpr.newTree(
-                            ident pId,
-                            newLit pVal.getStr
+    if doc.get().hasKey("services"):
+        let services = doc.get("services")
+        # iterate over available services
+        for id, conf in pairs(services):
+            var singleton = split(conf["singleton"].getStr, ':')
+            let singletonIdent = singleton[0]
+            let singletonObject = singleton[1]
+            result.add(nnkImportStmt.newTree(ident id))
+            var callable = nnkCall.newTree()
+            callable.add(ident "init")
+            callable.add(ident singletonObject)
+            if conf.hasKey("settings"):
+                for pId, pVal in pairs(conf["settings"]):
+                    case pVal.kind:
+                    of JString:
+                        callable.add(
+                            nnkExprEqExpr.newTree(
+                                ident pId,
+                                newLit pVal.getStr
+                            )
                         )
-                    )
-                of JBool:
-                    callable.add(
-                        nnkExprEqExpr.newTree(
-                            ident pId,
-                            newLit pVal.getBool
+                    of JBool:
+                        callable.add(
+                            nnkExprEqExpr.newTree(
+                                ident pId,
+                                newLit pVal.getBool
+                            )
                         )
-                    )
-                of JInt:
-                    callable.add(
-                        nnkExprEqExpr.newTree(
-                            ident pId,
-                            newLit pVal.getInt
+                    of JInt:
+                        callable.add(
+                            nnkExprEqExpr.newTree(
+                                ident pId,
+                                newLit pVal.getInt
+                            )
                         )
-                    )
-                else: discard # TODO
-            result.add(
-                nnkVarSection.newTree(
-                    nnkIdentDefs.newTree(
-                        nnkPostfix.newTree(
-                            ident "*",
-                            ident singletonIdent
-                        ),
-                        newEmptyNode(),
-                        callable
+                    else: discard # TODO
+                result.add(
+                    nnkVarSection.newTree(
+                        nnkIdentDefs.newTree(
+                            nnkPostfix.newTree(
+                                ident "*",
+                                ident singletonIdent
+                            ),
+                            newEmptyNode(),
+                            callable
+                        )
                     )
                 )
-            )
-        else:
-            result.add(
-                nnkVarSection.newTree(
-                    nnkIdentDefs.newTree(
-                        nnkPostfix.newTree(
-                            ident "*",
-                            ident singletonIdent
-                        ),
-                        newEmptyNode(),
-                        callable
+            else:
+                result.add(
+                    nnkVarSection.newTree(
+                        nnkIdentDefs.newTree(
+                            nnkPostfix.newTree(
+                                ident "*",
+                                ident singletonIdent
+                            ),
+                            newEmptyNode(),
+                            callable
+                        )
                     )
                 )
-            )
     # Include application routes.nim file
     result.add(
-        nnkIncludeStmt.newTree(ident getProjectPath() & "/" & "routes.nim")
+        nnkIncludeStmt.newTree(
+            ident getProjectPath() & "/" & "routes.nim"
+        )
     )
 
     result.add quote do:
-        var supserver = init(threads = 1)
+        discard init(threads = 1)
 
 template start*[A: Application](app: var A) =
     ## Boot Supranim application
