@@ -10,23 +10,32 @@ import std/[tables, macros, with]
 from std/times import DateTime
 from std/options import Option
 from std/enumutils import symbolName
-from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit, startsWith
+from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit,
+                        startsWith, toUpperAscii, contains
 from std/sequtils import toSeq
 from ../server import HttpMethod, Request, Response, RoutePattern,
                       RoutePatternTuple, RoutePatternRequest, HttpCode
-export HttpMethod
+
+export HttpMethod, Response, Request, HttpCode
+
+{.experimental: "dynamicBindSym".}
 
 type
     Callable* = proc(req: Request, res: Response) {.nimcall.}
         ## Callable procedure for route controllers
 
-    MiddlewareFunction* = proc(res: Response) {.nimcall.} 
+    MiddlewareFunction* = proc(res: Response) {.nimcall.}
         ## A callable Middleware procedure
 
     RouteType = enum
         ## Define available route types, it can be either static,
         ## or dynamic (when using Route patterns)
         StaticRouteType, DynamicRouteType
+
+    ControllerByVerb = enum
+        getController = "get$1"
+        postController = "get$1"
+        putController = "put$1"
 
     Route* = object
         ## Route object used to manage application routes
@@ -54,7 +63,7 @@ type
             ## Determine if current Route object has one or
             ## more middleware attached to it.
             of true:
-                middleware: MiddlewareFunction
+                middlewares: seq[MiddlewareFunction]
                     ## A sequence of Middlewares. Note that middlewares
                     ## are always checked in the same order that have been provided.
             else: discard
@@ -76,7 +85,7 @@ type
     GroupRouteTuple* = tuple[verb: HttpMethod, route: string, callback: Callable]
 
     ErrorPagesTable = Table[int, proc(): string]
-    RouterHandler = object
+    HttpRouter = object
         ## Router Handler that holds all VerbCollection tables Table[string, Route]
         httpGet, httpPost, httpPut, httpHead, httpConnect: VerbCollection
         httpDelete, httpPatch, httpTrace, httpOptions: VerbCollection
@@ -97,10 +106,10 @@ template initTables(router: object): untyped =
         for k, v in fieldPairs(router):
             setField(k, v)
 
-proc initCollectionTables[R: RouterHandler](router: var R) =
+proc initCollectionTables[R: HttpRouter](router: var R) =
     router.initTables()
 
-var Router* = RouterHandler()   # Singleton of RouterHandler
+var Router* = HttpRouter()   # Singleton of HttpRouter
 var ErrorPages*: ErrorPagesTable
 Router.initCollectionTables()   # https://forum.nim-lang.org/t/5631#34992
 
@@ -110,7 +119,27 @@ proc isDynamic*[R: Route](route: ref R): bool =
 
 include ./utils
 
-proc getCollectionByVerb[R: RouterHandler](router: var R, verb: HttpMethod, hasParams = false): VerbCollection  =
+proc getNameByPath(route: string): string {.compileTime.} =
+    if route == "/":
+        result = "Homepage"
+    else:
+        let paths =
+            if route[0] == '/':
+                split(route[1 .. ^1], {'/', '-'})
+            else: split(route, {'/', '-'})
+        for path in paths:
+            result &= toUpperAscii(path[0])
+            result &= path[1 .. ^1]
+
+proc initControllerName(methodType: HttpMethod, path: string): string {.compileTime.} =
+    case methodType:
+    of HttpGet:
+        result = $getController % [getNameByPath(path)]
+    of HttpPost:
+        result = $postController % [getNameByPath(path)]
+    else: result = ""
+
+proc getCollectionByVerb[R: HttpRouter](router: var R, verb: HttpMethod, hasParams = false): VerbCollection  =
     ## Get `VerbCollection`, `Table[string, Route]` based on given verb
     result = case verb:
         of HttpGet:     router.getCollection("httpGet", hasParams)
@@ -123,7 +152,7 @@ proc getCollectionByVerb[R: RouterHandler](router: var R, verb: HttpMethod, hasP
         of HttpTrace:   router.getCollection("httpTrace", hasParams)
         of HttpOptions: router.getCollection("httpOptions", hasParams)
 
-proc register[R: RouterHandler](router: var R, verb: HttpMethod, route: ref Route) =
+proc register[R: HttpRouter](router: var R, verb: HttpMethod, route: ref Route) =
     ## Register a new route by given Verb and Route object
     router.getCollectionByVerb(verb, route.routeType == DynamicRouteType)[route.path] = route
 
@@ -235,31 +264,36 @@ proc parseRoute(path: string, verb: HttpMethod, callback: Callable): ref Route =
     ## All patterns are by default required.
     ## For making an optional route pattern you must add a question mark
     ## inside the pattern. For example ``{?slug}``
-    result = new Route
-    with result:
-        path = path
-        verb = verb
-        routeType = StaticRouteType
-        callback = callback
     let routePattern = parseRoutePath(path)
+    result = new Route
     if routePattern.routeType == DynamicRouteType:
         # determine if routeType is DynamicRouteType, which
         # in this case route object should contain dymamic patterns.
-        result.routeType = DynamicRouteType
+        with result:
+            path = path
+            verb = verb
+            routeType = DynamicRouteType
+            callback = callback
         result.patterns = routePattern.patterns
         for pattern in result.patterns:
             # find dynamic patterns and store in separate field
             # as params for later use on request in controller-based procedures
             if pattern.dynamic:
                 result.params.add(pattern)
+    else:
+        with result:
+            path = path
+            verb = verb
+            routeType = StaticRouteType
+            callback = callback
 
-proc exists[R: RouterHandler](router: var R, verb: HttpMethod, path: string): bool =
+proc exists[R: HttpRouter](router: var R, verb: HttpMethod, path: string): bool =
     ## Determine if route exists for given ``key/path`` based on given ``HttpMethod``.
     ## First, look for static routes. If not found will check the pattern-based routes
     let collection = router.getCollectionByVerb(verb)
     result = collection.hasKey(path)
 
-proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: string,
+proc existsRuntime*[R: HttpRouter](router: var R, verb: HttpMethod, path: string,
                                       req: Request, res: Response): RuntimeRoutePattern =
     ## Determine if route exists for given ``key/path`` based on current HttpMethod verb.
     ## This is a procedure called only on runtime on each request.
@@ -305,17 +339,13 @@ proc existsRuntime*[R: RouterHandler](router: var R, verb: HttpMethod, path: str
     else:
         let routeInstance = collection[path]
         if routeInstance.hasMiddleware:
-            # Run available middlewares attached to current route.
-            # Note that middlewares procedure cannot have a return type,
-            # In this case, if a middleware check fails, you can use
-            # a HTTP redirect response that points to a public route,
-            # otherwise all you have to do is just... let it go.
-            routeInstance.middleware(res)
+            for middlewareCallback in routeInstance.middlewares:
+                middlewareCallback(res)
             result.route = routeInstance
         else:
             result.route = routeInstance
 
-proc isTemporary*[R: RouterHandler](router: R, verb: HttpMethod, path: string): bool =
+proc isTemporary*[R: HttpRouter](router: R, verb: HttpMethod, path: string): bool =
     ## Determine if specified route has expiration time
     let collection = router.getCollectionByVerb(verb)
     result = collection[path].isTemporary
@@ -324,74 +354,107 @@ proc runCallable*[R: Route](route: ref R, req: var Request, res: var Response) =
     ## Run callable from route controller
     route.callback(req, res)
 
-proc middleware*[R: Route](route: ref R, middlewares: MiddlewareFunction) =
-    ## Add one or more middleware handlers to current ``Route`` Instance.
-    ## Middlewares are called in the same order you provide
-    ## the callable procedures to ``varargs[MiddlewareFunction]``
-    runnableExamples:
-        Router.get("/profile").middleware(middlewares.auth, middlewares.membership)
-    route.hasMiddleware = true
-    route.middleware = middlewares
-
 proc expire*[R: Route](route: var R, expiration: Option[DateTime]) =
     ## Set a time for temporary routes that can expire.
     ## TODO
     discard
 
-proc getRouteInstance*[R: RouterHandler](router: var R, route: ref Route): ref Route =
+proc getRouteInstance*[R: HttpRouter](router: var R, route: ref Route): ref Route =
     ## Return the Route object instance based on verb
     let collection = router.getCollectionByVerb(route.verb, route.routeType == DynamicRouteType)
     result = collection[route.path]
 
-proc get*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc get[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpGet` method
     result = parseRoute(path, HttpGet, callback)
     router.register(HttpGet, result)
     discard router.getRouteInstance(result)
 
-proc post*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+macro get*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    let controllerCallback = ident initControllerName(HttpGet, path)
+    result = newStmtList()
+    result.add quote do:
+        Router.get(`path`, `controllerCallback`)
+
+proc post[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpPost` method
     result = parseRoute(path, HttpPost, callback)
     router.register(HttpPost, result)
     discard router.getRouteInstance(result)
 
-proc put*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+macro post*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    let controllerCallback = ident initControllerName(HttpPost, path)
+    result = newStmtList()
+    result.add quote do:
+        Router.post(`path`, `controllerCallback`)
+
+proc put[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpPut` method
     result = parseRoute(path, HttpPut, callback)
     router.register(HttpPut, result)
     discard router.getRouteInstance(result)
 
-proc head*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+macro put*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    let controllerCallback = ident initControllerName(HttpPut, path)
+    result = newStmtList()
+    result.add quote do:
+        Router.put(`path`, `controllerCallback`)
+
+proc head*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpHead` method
     result = parseRoute(path, HttpHead, callback)
     router.register(HttpHead, result)
     discard router.getRouteInstance(result)
 
-proc connect*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+macro head*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    let controllerCallback = ident initControllerName(HttpHead, path)
+    result = newStmtList()
+    result.add quote do:
+        Router.head(`path`, `controllerCallback`)
+
+proc connect[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpConnect` method
     result = parseRoute(path, HttpConnect, callback)
     router.register(HttpConnect, result)
     discard router.getRouteInstance(result)
 
-proc delete*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+macro connect*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    let controllerCallback = ident initControllerName(HttpConnect, path)
+    result = newStmtList()
+    result.add quote do:
+        Router.connect(`path`, `controllerCallback`)
+
+proc delete*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpDelete` method
     result = parseRoute(path, HttpDelete, callback)
     router.register(HttpDelete, result)
     discard router.getRouteInstance(result)
 
-proc patch*[R: RouterHandler](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+macro delete*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    let controllerCallback = ident initControllerName(HttpDelete, path)
+    result = newStmtList()
+    result.add quote do:
+        Router.delete(`path`, `controllerCallback`)
+
+proc patch*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpPatch` method
     result = parseRoute(path, HttpPatch, callback)
     router.register(HttpPatch, result)
     discard router.getRouteInstance(result)
 
-proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: Callable): ref Route {.discardable.} =
+macro patch*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    let controllerCallback = ident initControllerName(HttpPatch, path)
+    result = newStmtList()
+    result.add quote do:
+        Router.patch(`path`, `controllerCallback`)
+
+proc unique*[R: HttpRouter](router: var R, verb: HttpMethod, callback: Callable): ref Route {.discardable.} =
     ## Generate a unique route using provided verb and callback.
     ## Helpful for generating unique temporary URLs without
     ## dealing with database queries.
     discard
 
-# proc assets*[R: RouterHandler](router: var R, source, public: string) =
+# proc assets*[R: HttpRouter](router: var R, source, public: string) =
 #     ## If enabled via ``.env.yml``. Your Supranim application can
 #     ## serve static assets like .css, .js, .jpg, .png and so on
 #     ## Note that his procedure is recommended for serving public assets.
@@ -399,7 +462,7 @@ proc unique*[R: RouterHandler](router: var R, verb: HttpMethod, callback: Callab
 #     for file in handler.discoverFiles():
 #         handler.addFile(output: public & "/" & file.getPath())
 
-proc group*[R: RouterHandler](router: var R, basePath: string, routes: varargs[GroupRouteTuple]): RouterHandler {.discardable.} =
+proc group*[R: HttpRouter](router: var R, basePath: string, routes: varargs[GroupRouteTuple]): HttpRouter {.discardable.} =
     ## Add grouped routes under same base endpoint.
     for r in routes:
         let routePath = if r.route == "/": basePath
@@ -415,8 +478,19 @@ proc group*[R: RouterHandler](router: var R, basePath: string, routes: varargs[G
                 "Duplicate route for \"$1\" path of $2" % [r.route, symbolName(r.verb)])
     result = router
 
-proc setErrorPage*[R: RouterHandler](router: var R, httpCode: HttpCode, callback: proc(): string) =
+proc setErrorPage*[R: HttpRouter](router: var R, httpCode: HttpCode, callback: proc(): string) =
     ErrorPages[httpCode.int] = callback
 
-proc getErrorPage*(httpCode: HttpCode): string =
-    result = ErrorPages[httpCode.int]()
+proc getErrorPage*(httpCode: HttpCode, default: string): string =
+    let httpCodeKey = httpCode.int
+    if ErrorPages.hasKey(httpCodeKey):
+        result = ErrorPages[httpCode.int]()
+    else: result = default
+
+proc middleware*[R: Route](route: ref R, middlewares: varargs[MiddlewareFunction]) =
+    ## Add one or more middleware handlers as `varargs[MiddlewareFunction]`.
+    ## Middlewares are parsed in the provided order.
+    runnableExamples:
+        Router.get("/profile").middleware(middlewares.auth, middlewares.membership)
+    route.hasMiddleware = true
+    route.middlewares = toSeq(middlewares)
