@@ -27,21 +27,20 @@ proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
     ## Determine if given HttpMethod is as expected
     result = httpMethod == some(expectMethod)
 
-proc default404Response(res: Response) =
-    ## A default ``404 Response`` based on your preferences
-    ## from current App instance
-    if App.getAppType == RESTful:
-        res.json_error(getErrorPage(Http404), Http404)
-    else:
-        res.send404(getErrorPage(Http404))
-
 template handleHttpRouteRequest(verb: HttpMethod, req: Request, res: Response, reqRoute: string) =
     let runtime: RuntimeRoutePattern = Router.existsRuntime(verb, reqRoute, req, res)
     if runtime.status == true:
         if runtime.route.isDynamic():
             req.setParams(runtime.params)
         runtime.route.runCallable(req, res)
-    else: res.default404Response()
+    else:
+        case verb:
+        of HttpGet:
+            if App.getAppType == RESTful:
+                res.send404 getErrorPage(Http404, "404 | Not found")
+            else:
+                res.send404 getErrorPage(Http404, "404 | Not found")
+        else: res.response("Not Implemented", HttpCode(501))
 
 proc onRequest(req: var Request, res: var Response, app: Application): Future[ void ] =
     ## Procedure called during runtime. Determine type of the current request
@@ -61,7 +60,7 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
                     else:
                         res.response(app.instance(Assets).getFile(reqRoute))
                 else:
-                    res.default404Response()
+                    res.send404 getErrorPage(Http404, "404 | Not found")
                 return
             handleHttpRouteRequest(HttpGet, req, res, reqRoute)
             return
