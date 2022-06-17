@@ -46,7 +46,7 @@ template handleHttpRouteRequest(verb: HttpMethod, req: Request, res: Response, r
 
 when not defined release:
     template handleStaticAssetsDev() =
-        if App.hasAssets() and startsWith(reqRoute, Assets.getPublicPath()):
+        if Assets.exists() and startsWith(reqRoute, Assets.getPublicPath()):
             if Assets.hasFile(reqRoute):
                 if endsWith(reqRoute, ".css"):
                     res.css(Assets.getFile(reqRoute))

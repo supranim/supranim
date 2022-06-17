@@ -35,6 +35,9 @@ proc finder*(findArgs: seq[string] = @[], path=""): seq[string] {.thread.} =
     else:
         result = files.split("\n")
 
+proc exists*[A: AssetsHandler](assets: A): bool =
+    result = Assets.files.len != 0
+
 proc getPublicPath*[A: AssetsHandler](assets: A): string = 
     ## Retrieve the public path for assets
     result = "/" & assets.public
@@ -53,7 +56,7 @@ proc addFile*[T: AssetsHandler](assets: var T, alias, path: string) =
     if not assets.hasFile(alias):
         assets.files[alias] = File(alias: alias, path: path)
 
-proc init*[T: AssetsHandler](assets: var T, source, public: string): AssetsHandler =
+proc init*[T: AssetsHandler](assets: var T, source, public: string) =
     ## Initialize a new Assets object collection
     assets.source = source
     assets.public = public
@@ -62,7 +65,6 @@ proc init*[T: AssetsHandler](assets: var T, source, public: string): AssetsHandl
         for file in files:
             let f = splitPath(file)
             assets.addFile("/" & public & "/" & f.tail, file)
-    result = assets
 
 proc getFile*[T: AssetsHandler](assets: T, alias: string): string =
     ## Retrieve the contents of requested file

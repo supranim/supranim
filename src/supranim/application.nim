@@ -12,7 +12,9 @@ when defined webapp:
     import emitter
 
 import std/macros
+
 when not defined release:
+    # enable modules available for web development only
     import ./private/config/assets
 
 from std/nativesockets import Domain
@@ -70,7 +72,6 @@ type
             ## Loggers used in background by current application instance
         config*: Document
             ## Holds Document representation of ``.env.yml`` configuration file
-        hasAssetsEnabled: bool
 
 const yamlEnvFile = ".env.yml"
 
@@ -108,8 +109,7 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
         when not defined(release):
             sourceDir = getAppDir() & "/" & sourceDir
             normalizePath(sourceDir)
-            discard Assets.init(sourceDir, publicDir)
-        App.hasAssetsEnabled = true
+            Assets.init(sourceDir, publicDir)
     else:
         App.appType = RESTful
 
@@ -210,10 +210,6 @@ template start*[A: Application](app: var A) =
 proc getAppType*[A: Application](app: A): AppType =
     result = app.appType
 
-proc hasAssets*[A: Application](app: A): bool =
-    ## Determine if current Supranim application has an Assets instance
-    result = app.hasAssetsEnabled
-
 proc hasTemplates*[A: Application](app: A): bool =
     ## Determine if current Supranim application has enabled the template engine
     result = false
@@ -313,7 +309,7 @@ proc printBootStatus*[A: Application](app: A) =
         defaultCompileOptions.add("Multi-threading: " & NO)
     
     # Compiling with static assets handler enabled or use Supranim as a REST API service
-    if app.hasAssets():
+    if Assets.exists():
         defaultCompileOptions.add("Static Assets Handler: " & YES)
 
     # Compiling with Template Engine or use Supranim asa REST API service
