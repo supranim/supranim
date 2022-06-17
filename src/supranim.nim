@@ -6,6 +6,8 @@
 #          https://supranim.com   |    https://github.com/supranim
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
+when not defined release:
+    import supranim/private/config/assets
 
 # when defined(webapp):
 #     import emitter
@@ -42,6 +44,18 @@ template handleHttpRouteRequest(verb: HttpMethod, req: Request, res: Response, r
                 res.send404 getErrorPage(Http404, "404 | Not found")
         else: res.response("Not Implemented", HttpCode(501))
 
+when not defined release:
+    template handleStaticAssetsDev() =
+        if App.hasAssets() and startsWith(reqRoute, Assets.getPublicPath()):
+            if Assets.hasFile(reqRoute):
+                if endsWith(reqRoute, ".css"):
+                    res.css(Assets.getFile(reqRoute))
+                else:
+                    res.response(Assets.getFile(reqRoute))
+            else:
+                res.send404 getErrorPage(Http404, "404 | Not found")
+            return
+
 proc onRequest(req: var Request, res: var Response, app: Application): Future[ void ] =
     ## Procedure called during runtime. Determine type of the current request
     ## find a route and return the callable, otherwise prompt a 404 Response.
@@ -53,15 +67,10 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
         var reqRoute = req.path.get()
         # Handle HttpGET requests
         if expect(req.httpMethod, HttpGet):
-            if app.hasAssets() and startsWith(reqRoute, app.instance(Assets).getPublicPath()):
-                if app.instance(Assets).hasFile(reqRoute):
-                    if endsWith(reqRoute, ".css"):
-                        res.css(app.instance(Assets).getFile(reqRoute))
-                    else:
-                        res.response(app.instance(Assets).getFile(reqRoute))
-                else:
-                    res.send404 getErrorPage(Http404, "404 | Not found")
-                return
+            when not defined release:
+                # Handle Static Assets for web development
+                handleStaticAssetsDev()
+            else: discard
             handleHttpRouteRequest(HttpGet, req, res, reqRoute)
             return
 

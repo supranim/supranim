@@ -8,20 +8,21 @@
 import nyml
 import std/tables
 
-when defined(webapp):
+when defined webapp:
     import emitter
 
 import std/macros
+when not defined release:
+    import ./private/config/assets
+
 from std/nativesockets import Domain
 from std/net import Port
 from std/logging import Logger
+from std/strutils import toUpperAscii, indent, split
 from std/os import getCurrentDir, putEnv, getEnv, fileExists,
                     getAppDir, normalizePath, walkDirRec
-from std/strutils import toUpperAscii, indent, split
 
-import ./config/assets
 export Port
-export assets
 export nyml.get, nyml.getInt, nyml.getStr, nyml.getBool
 
 const SECURE_PROTOCOL = "https"
@@ -33,7 +34,21 @@ type
     AppType* = enum
         WebApp, RESTful
 
+    AppDirectory* = enum
+        Config = "configs"
+        Controller = "controller"
+        Database = "database"
+        DatabaseMigrations = "database/migrations"
+        DatabaseModels = "database/models"
+        DatabaseSeeds = "database/seeds"
+        Events = "events"
+        EventListeners = "events/listeners"
+        EventSchedules = "events/schedules"
+        I18n = "i18n"
+        Middlewares = "middlewares"
+
     Application* = object
+        appType: AppType
         port: Port
             ## Specify a port or let retrieve one automatically
         address: string
@@ -47,8 +62,6 @@ type
         # database: DBConfig
         database: bool
             ## PostgreSQL Database credentials
-        assets: Assets
-            ## Hold source and public paths for retriving and rendering static assets
         views: string
             ## Path to Views source directory
         recyclable: bool
@@ -57,18 +70,20 @@ type
             ## Loggers used in background by current application instance
         config*: Document
             ## Holds Document representation of ``.env.yml`` configuration file
-        appType: AppType
+        hasAssetsEnabled: bool
 
 const yamlEnvFile = ".env.yml"
 
 var App* {.threadvar.}: Application
 App = Application()
 
-when not defined(inlineConfig):
+when not defined inlineConfig:
     const ymlConfigContents = staticRead(getProjectPath() & "/../bin/" & yamlEnvFile)
 
 proc parseEnvFile(configContents: string): Document =
-    # Private procedure for parsing and validating the ``.env.yml`` configuration file.
+    # Private procedure for parsing and validating the
+    # ``.env.yml`` configuration file.
+    # 
     # The YML contents is parsed with Nyml library, for more details
     # related to Nyml limitations and YAML syntax supported by Nyml
     # check official repository: https://github.com/openpeep/nyml
@@ -90,9 +105,11 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     let publicDir = App.config.get("app.assets.public").getStr
     var sourceDir = App.config.get("app.assets.source").getStr
     if publicDir.len != 0 and sourceDir.len != 0:
-        sourceDir = getAppDir() & "/" & sourceDir
-        normalizePath(sourceDir)
-        App.assets = Assets.init(sourceDir, publicDir)
+        when not defined(release):
+            sourceDir = getAppDir() & "/" & sourceDir
+            normalizePath(sourceDir)
+            discard Assets.init(sourceDir, publicDir)
+        App.hasAssetsEnabled = true
     else:
         App.appType = RESTful
 
@@ -102,6 +119,12 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     App.threads = App.config.get("app.threads").getInt
     App.recyclable = true
     result = App
+
+# proc loadEventListeners() {.compileTime.} = 
+#     ## Load application event listeners (if any)
+#     for files in Finder.files():
+#         echo file.getFileName()
+#         echo file.getFileSize()
 
 macro init*[A: Application](app: var A) =
     ## Initialize Supranim application based on current
@@ -189,15 +212,11 @@ proc getAppType*[A: Application](app: A): AppType =
 
 proc hasAssets*[A: Application](app: A): bool =
     ## Determine if current Supranim application has an Assets instance
-    result = app.assets != nil
+    result = app.hasAssetsEnabled
 
 proc hasTemplates*[A: Application](app: A): bool =
     ## Determine if current Supranim application has enabled the template engine
     result = false
-
-proc instance*[A: Application, B: typedesc[Assets]](app: A, assets: B): Assets =
-    ## Procedure for returning the Assets instance from current Application
-    result = app.assets
 
 proc getAddress*[A: Application](app: A, path = ""): string {.inline.}  =
     ## Get the current local address

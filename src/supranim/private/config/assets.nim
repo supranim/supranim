@@ -6,25 +6,24 @@
 #          
 #          Website https://supranim.com
 #          Github Repository: https://github.com/supranim
-
 import std/tables
+import ../../utils
+
 from std/os import fileExists, getCurrentDir, splitPath
 from std/strutils import strip, split
 
-import ../utils
-
-export tables
-
 type
-    Assets* = ref object
+    File = object
+        alias, path: string
+
+    AssetsHandler = ref object
         source: string
         public: string
         files: Table[string, File]
 
-    File = object
-        alias, path: string
-
     AssetsError* = CatchableError
+
+var Assets* = AssetsHandler()
 
 proc finder*(findArgs: seq[string] = @[], path=""): seq[string] {.thread.} =
     ## Simple file system procedure that discovers static files in a specific directory
@@ -36,27 +35,28 @@ proc finder*(findArgs: seq[string] = @[], path=""): seq[string] {.thread.} =
     else:
         result = files.split("\n")
 
-proc getPublicPath*[A: Assets](assets: A): string = 
+proc getPublicPath*[A: AssetsHandler](assets: A): string = 
     ## Retrieve the public path for assets
     result = "/" & assets.public
 
-proc getSourcePath*[A: Assets](assets: A): string =
+proc getSourcePath*[A: AssetsHandler](assets: A): string =
     ## Retrieve the source path for assets
     result = assets.source
 
-proc hasFile*[T: Assets](assets: T, alias: string): bool =
+proc hasFile*[T: AssetsHandler](assets: T, alias: string): bool =
     ## Determine if requested file exists
     if assets.files.hasKey(alias):
         result = fileExists(assets.files[alias].path)
 
-proc addFile*[T: Assets](assets: var T, alias, path: string) =
+proc addFile*[T: AssetsHandler](assets: var T, alias, path: string) =
     ## Add a new File object to Assets collection
     if not assets.hasFile(alias):
         assets.files[alias] = File(alias: alias, path: path)
 
-proc init*[T: typedesc[Assets]](newAssets: T, source, public: string): Assets =
+proc init*[T: AssetsHandler](assets: var T, source, public: string): AssetsHandler =
     ## Initialize a new Assets object collection
-    var assets = newAssets(source: source, public: public)
+    assets.source = source
+    assets.public = public
     let files = finder(findArgs = @["-type", "f", "-print"], path = source)
     if files.len != 0:
         for file in files:
@@ -64,6 +64,6 @@ proc init*[T: typedesc[Assets]](newAssets: T, source, public: string): Assets =
             assets.addFile("/" & public & "/" & f.tail, file)
     result = assets
 
-proc getFile*[T: Assets](assets: T, alias: string): string =
+proc getFile*[T: AssetsHandler](assets: T, alias: string): string =
     ## Retrieve the contents of requested file
     result = readFile(assets.files[alias].path)
