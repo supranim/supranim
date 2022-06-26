@@ -10,5 +10,5 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
-import ./http/server
+import ./core/http/server
 export server

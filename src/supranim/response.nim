@@ -6,7 +6,7 @@
 #          https://supranim.com   |    https://github.com/supranim
 
 from ./server import Response, Request
-import ./http/response
+import ./core/http/response
 
 export Request, Response, response, send404
 export json, json404, json500, json_error

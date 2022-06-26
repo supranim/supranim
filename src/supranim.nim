@@ -4,6 +4,7 @@
 # (c) 2021 Supranim is released under MIT License
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
+
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
 when not defined release:
@@ -14,28 +15,34 @@ when not defined release:
 
 from std/os import getAppDir, normalizedPath, getCurrentDir, fileExists
 from std/strutils import startsWith, endsWith
-
-from ./supranim/http/response import json_error, response, css, send404
+from ./supranim/core/http/response import json_error, response, css, send404, redirect
 
 export Port
 export App, application
-
 export Http200, Http301, Http302, Http403, Http404, Http500, Http503, HttpCode
 export HttpMethod, Request, Response
-
 export server.getParams, server.hasParams, server.getCurrentPath, server.isPage
 
 proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
     ## Determine if given HttpMethod is as expected
     result = httpMethod == some(expectMethod)
 
-template handleHttpRouteRequest(verb: HttpMethod, req: Request, res: Response, reqRoute: string) =
+template handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Response, reqRoute: string) =
     let runtime: RuntimeRoutePattern = Router.existsRuntime(verb, reqRoute, req, res)
-    if runtime.status == true:
+    case runtime.status:
+    of Found:
         if runtime.route.isDynamic():
             req.setParams(runtime.params)
         runtime.route.runCallable(req, res)
-    else:
+    of BlockedByRedirect:
+        # Resolve deferred HTTP redirects declared in current middleware
+        # TODO find better way to handle redirects
+        res.redirect(res.getRedirect())
+    of BlockedByAbort:
+        # Blocked by an `abort` from a middleware.
+        # TODO implement system logs
+        discard
+    of NotFound:
         case verb:
         of HttpGet:
             if App.getAppType == RESTful:
@@ -43,18 +50,19 @@ template handleHttpRouteRequest(verb: HttpMethod, req: Request, res: Response, r
             else:
                 res.send404 getErrorPage(Http404, "404 | Not found")
         else: res.response("Not Implemented", HttpCode(501))
+    return
 
-when not defined release:
-    template handleStaticAssetsDev() =
-        if Assets.exists() and startsWith(reqRoute, Assets.getPublicPath()):
-            if Assets.hasFile(reqRoute):
-                if endsWith(reqRoute, ".css"):
-                    res.css(Assets.getFile(reqRoute))
-                else:
-                    res.response(Assets.getFile(reqRoute))
+template handleStaticAssetsDev() =
+    if Assets.exists() and startsWith(reqRoute, Assets.getPublicPath()):
+        let assetsStatus: HttpCode = waitFor Assets.hasFile(reqRoute)
+        if assetsStatus == Http200:
+            if endsWith(reqRoute, ".css"):
+                res.css(Assets.getFile(reqRoute))
             else:
-                res.send404 getErrorPage(Http404, "404 | Not found")
-            return
+                res.response(Assets.getFile(reqRoute))
+        else:
+            res.send404 getErrorPage(Http404, "404 | Not found")
+        return
 
 proc onRequest(req: var Request, res: var Response, app: Application): Future[ void ] =
     ## Procedure called during runtime. Determine type of the current request
@@ -65,47 +73,42 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
     # method type of current request because, for some reasons,
     # simple if statements are faster than if/elif blocks.
         var reqRoute = req.path.get()
-        # Handle HttpGET requests
         if expect(req.httpMethod, HttpGet):
-            when not defined release:
-                # Handle Static Assets for web development
-                handleStaticAssetsDev()
-            else: discard
+            # Handle HttpGET requests
+            handleStaticAssetsDev()
             handleHttpRouteRequest(HttpGet, req, res, reqRoute)
-            return
 
-        # Handle HttpPost requests
         if expect(req.httpMethod, HttpPost):
+            # Handle HttpPost requests
             handleHttpRouteRequest(HttpPost, req, res, reqRoute)
-            return
 
-        # Handle HttpPut requests
         if expect(req.httpMethod, HttpPut):
-            discard
+            # Handle HttpPut requests
+            handleHttpRouteRequest(HttpPut, req, res, reqRoute)
 
-        # Handle HttpOptions requests
         if expect(req.httpMethod, HttpOptions):
-            discard
-        
-        # Handle HttpHead requests
+            # Handle HttpOptions requests
+            handleHttpRouteRequest(HttpOptions, req, res, reqRoute)
+
         if expect(req.httpMethod, HttpHead):
-            discard
-
-        # Handle HttpDelete requests
+            # Handle HttpHead requests
+            handleHttpRouteRequest(HttpHead, req, res, reqRoute)
+        
         if expect(req.httpMethod, HttpDelete):
-            discard
+            # Handle HttpDelete requests
+            handleHttpRouteRequest(HttpDelete, req, res, reqRoute)
 
-        # Handle HttpTrace requests
         if expect(req.httpMethod, HttpTrace):
-            discard
+            # Handle HttpTrace requests
+            handleHttpRouteRequest(HttpTrace, req, res, reqRoute)
 
-        # Handle HttpConnect requests
         if expect(req.httpMethod, HttpConnect):
-            discard
+            # Handle HttpConnect requests
+            handleHttpRouteRequest(HttpConnect, req, res, reqRoute)
 
-        # Handle HttpPatch requests
         if expect(req.httpMethod, HttpPatch):
-            discard
+            # Handle HttpPatch requests
+            handleHttpRouteRequest(HttpPatch, req, res, reqRoute)
 
 proc startServer*[A: Application](app: var A) =
     run(onRequest, app)

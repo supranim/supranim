@@ -15,10 +15,9 @@ import jsony
 
 from std/strutils import `%`
 from std/json import JsonNode
-from ./server import Request, Response, send, hasHeaders, getHeader, getRequestInstance, newRedirect
+from ./server import Request, Response, send, hasHeaders, getHeader, getRequest, newRedirect
 
 export Request, Response
-
 export hasHeaders, getHeader, jsony
 
 const
@@ -30,17 +29,16 @@ const
 #
 # Http Responses
 #
-
-method response*[R: Response](res: R, body: string, code = Http200, contentType = ContentTypeTextHtml) {.inline.} =
+method response*[R: Response](res: R, body: string, code = Http200, contentType = ContentTypeTextHtml) =
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
-    res.getRequestInstance().send(code, body, contentType)
+    res.getRequest().send(code, body, contentType)
 
-method send404*[R: Response](res: R, msg="404 | Not Found") {.inline.} =
+method send404*[R: Response](res: R, msg="404 | Not Found") =
     ## Sends a 404 HTTP Response with a default "404 | Not Found" message
     res.response(msg, Http404)
 
-method send500*[R: Response](res: R, msg="500 | Internal Error") {.inline.} =
+method send500*[R: Response](res: R, msg="500 | Internal Error") =
     ## Sends a 500 HTTP Response with a default "500 | Internal Error" message
     res.response(msg, Http500)
 
@@ -59,12 +57,12 @@ method json*[R: Response](res: R, body: untyped, code = Http200) =
     ## This template is using an untyped body parameter that is automatically
     ## converting ``seq``, ``objects``, ``string`` (and so on) to
     ## JSON (stringified) via ``jsony`` library.
-    getRequestInstance(res).send(code, toJson(body), ContentTypeJSON)
+    getRequest(res).send(code, toJson(body), ContentTypeJSON)
 
 method json*[R: Response](res: R, body: JsonNode, code = Http200) =
     ## Sends a JSON response with a default 200 (OK) status code.
     ## This template is using the native JsonNode for creating the response body.
-    getRequestInstance(res).send(code, $(body), ContentTypeJSON)
+    getRequest(res).send(code, $(body), ContentTypeJSON)
 
 method json404*[R: Response](res: R, body = "") =
     ## Sends a 404 JSON Response  with a default "Not found" message
@@ -78,15 +76,14 @@ method json500*[R: Response](res: R, body = "") =
 
 method json_error*[R: Response](res: R, body: untyped, code: HttpCode = Http501) = 
     ## Sends a JSON response followed by of a HttpCode (that represents an error)
-    getRequestInstance(res).send(code, toJson(body), ContentTypeJSON)
+    getRequest(res).send(code, toJson(body), ContentTypeJSON)
 
 #
 # HTTP Redirects procedures
 #
-
-method redirect*[R: Response](res: R, target: string, code = Http307) {.inline.} =
+method redirect*[R: Response](res: R, target: string, code = Http307) =
     ## Set a HTTP Redirect with a default ``Http307`` Temporary Redirect status code
-    getRequestInstance(res).send(code, "", HeaderHttpRedirect % [target])
+    getRequest(res).send(code, "", HeaderHttpRedirect % [target])
 
 # macro redirects*(procDef: typed): untyped =
 #     procDef.expectKind nnkProcDef
@@ -100,15 +97,21 @@ method redirect*[R: Response](res: R, target: string, code = Http307) {.inline.}
 
 # template redirects*(text: string) {.pragma.}
 template redirects*(target: string) =
+    ## Register a deferred 301 HTTP redirect in a middleware.
     res.newRedirect(target)
 
-# proc redirects*[R: Response](res: R, target: string, code = Http307) =
-#     ## Alias of `redirect` to be used in middleware callbacks
-#     echo "redirect in middleware"
+template abort*(httpCode: HttpCode = Http403) = 
+    ## Abort the current execution and return a 403 HTTP 
+    ## JSON response for REST (otherwise HTML for web apps).
+    ## TODO Support custom 403 error pages, if enabled, 
+    ## othwerwise send an empty 403 response so browsers
+    ## can prompt their built-in error page.
+    getRequest(res).send(httpCode, "You don't have authorisation to view this page", ContentTypeTextHtml)
+    return # block code execution after `abort`
 
-method redirect301*[R: Response](res: R, target:string) {.inline.} =
+method redirect301*(res: Response, target:string) =
     ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
-    getRequestInstance(res).send(Http301, "", HeaderHttpRedirect % [target])
+    getRequest(res).send(Http301, "", HeaderHttpRedirect % [target])
 
 method getAgent*(req: Request): string =
     ## Retrieves the user agent from request header

@@ -95,11 +95,8 @@ proc slowHeadersCheck(data: ptr Data): bool =
 proc bodyInTransit(data: ptr Data): bool =
     assert methodNeedsBody(data), "Calling bodyInTransit now is inefficient."
     assert data.headersFinished
-
     if data.headersFinishPos == -1: return false
-
     var trueLen = parseContentLength(data.data, start=0)
-
     let bodyLen = data.data.len - data.headersFinishPos
     assert(not (bodyLen > trueLen))
     return bodyLen != trueLen
@@ -112,6 +109,106 @@ proc genRequestID(): uint =
     return requestCounter
 
 proc validateRequest(req: Request): bool {.gcsafe.}
+
+template handleClientReadEvent() =
+    # Read until EAGAIN. We take advantage of the fact that the client
+    # will wait for a response after they send a request. So we can
+    # comfortably continue reading until the message ends with \c\l
+    # \c\l.
+    const size = 256
+    var buf: array[size, char]
+    while true:
+        let ret = recv(fd.SocketHandle, addr buf[0], size, 0.cint)
+        if ret == 0:
+            handleClientClosure(selector, fd)
+
+        if ret == -1:
+            let lastError = osLastError()
+            when defined posix:
+                if lastError.int32 in {EWOULDBLOCK, EAGAIN}: break
+            else:
+                if lastError.int == WSAEWOULDBLOCK: break
+            if isDisconnectionError({SocketFlag.SafeDisconn}, lastError):
+                handleClientClosure(selector, fd)
+            raiseOSError(lastError)
+
+        # Write buffer to our data.
+        let origLen = data.data.len
+        data.data.setLen(origLen + ret)
+        for i in 0 ..< ret: data.data[origLen+i] = buf[i]
+
+        if fastHeadersCheck(data) or slowHeadersCheck(data):
+            # First line and headers for request received.
+            data.headersFinished = true
+            when not defined(release):
+                if data.sendQueue.len != 0:
+                    logging.warn("sendQueue isn't empty.")
+                if data.bytesSent != 0:
+                    logging.warn("bytesSent isn't empty.")
+
+            # let m = parseHttpMethod(data.data, start=0);
+            # let waitingForBody = methodNeedsBody(data) and bodyInTransit(data)
+            let waitingForBody = false
+            if likely(not waitingForBody):
+                for start in parseRequests(data.data):
+                    # For pipelined requests, we need to reset this flag.
+                    data.headersFinished = true
+                    data.requestID = genRequestID()
+
+                    var req = Request(
+                        start: start,
+                        selector: selector,
+                        client: fd.SocketHandle,
+                        requestID: data.requestID,
+                        ip: data.ip
+                    )
+
+                    req.requestHeaders = parseHeaders(req.selector.getData(req.client).data, req.start)
+                    template validateResponse(capturedData: ptr Data): untyped =
+                        if capturedData.requestID == req.requestID:
+                            capturedData.headersFinished = false
+
+                    if validateRequest(req):
+                        var res = Response(req: req) # TODO something useful here
+                        data.reqFut = onRequest(req, res, app)
+                        if not data.reqFut.isNil:
+                            capture data:
+                                data.reqFut.addCallback(
+                                    proc (fut: Future[void]) =
+                                        onRequestFutureComplete(fut, selector, fd)
+                                        validateResponse(data)
+                                )
+                        else: validateResponse(data)
+        if ret != size:
+            # Assume there is nothing else for us right now and break.
+            break
+
+template handleClientWriteEvent() =
+    assert data.sendQueue.len > 0
+    assert data.bytesSent < data.sendQueue.len
+    # Write the sendQueue.
+    when defined posix:
+        let leftover = data.sendQueue.len - data.bytesSent
+    else:
+        let leftover = cint(data.sendQueue.len - data.bytesSent)
+    let ret = send(fd.SocketHandle, addr data.sendQueue[data.bytesSent], leftover, 0)
+    if ret == -1:
+        # Error!
+        let lastError = osLastError()
+        when defined posix:
+            if lastError.int32 in {EWOULDBLOCK, EAGAIN}: break
+        else:
+            if lastError.int32 == WSAEWOULDBLOCK: break
+        if isDisconnectionError({SocketFlag.SafeDisconn}, lastError):
+            handleClientClosure(selector, fd)
+        raiseOSError(lastError)
+    data.bytesSent.inc(ret)
+    if data.sendQueue.len == data.bytesSent:
+        data.bytesSent = 0
+        data.sendQueue.setLen(0)
+        data.data.setLen(0)
+        selector.updateHandle(fd.SocketHandle, {Event.Read})
+
 proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count: int, onRequest: OnRequest, app: Application) =
     for i in 0 ..< count:
         let fd = events[i].fd
@@ -136,105 +233,10 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
             else: discard
         of Client:
             if Event.Read in events[i].events:
-                const size = 256
-                var buf: array[size, char]
-                # Read until EAGAIN. We take advantage of the fact that the client
-                # will wait for a response after they send a request. So we can
-                # comfortably continue reading until the message ends with \c\l
-                # \c\l.
-                while true:
-                    let ret = recv(fd.SocketHandle, addr buf[0], size, 0.cint)
-                    if ret == 0:
-                        handleClientClosure(selector, fd)
-
-                    if ret == -1:
-                        let lastError = osLastError()
-                        when defined posix:
-                            if lastError.int32 in {EWOULDBLOCK, EAGAIN}: break
-                        else:
-                            if lastError.int == WSAEWOULDBLOCK: break
-                        if isDisconnectionError({SocketFlag.SafeDisconn}, lastError):
-                            handleClientClosure(selector, fd)
-                        raiseOSError(lastError)
-
-                    # Write buffer to our data.
-                    let origLen = data.data.len
-                    data.data.setLen(origLen + ret)
-                    for i in 0 ..< ret: data.data[origLen+i] = buf[i]
-
-                    if fastHeadersCheck(data) or slowHeadersCheck(data):
-                        # First line and headers for request received.
-                        data.headersFinished = true
-                        when not defined(release):
-                            if data.sendQueue.len != 0:
-                                logging.warn("sendQueue isn't empty.")
-                            if data.bytesSent != 0:
-                                logging.warn("bytesSent isn't empty.")
-
-                        let waitingForBody = methodNeedsBody(data) and bodyInTransit(data)
-                        if likely(not waitingForBody):
-                            for start in parseRequests(data.data):
-                                # For pipelined requests, we need to reset this flag.
-                                data.headersFinished = true
-                                data.requestID = genRequestID()
-
-                                var req = Request(
-                                    start: start,
-                                    selector: selector,
-                                    client: fd.SocketHandle,
-                                    requestID: data.requestID,
-                                    ip: data.ip
-                                )
-
-                                req.requestHeaders = parseHeaders(req.selector.getData(req.client).data, req.start)
-                                template validateResponse(capturedData: ptr Data): untyped =
-                                    if capturedData.requestID == req.requestID:
-                                        capturedData.headersFinished = false
-
-                                if validateRequest(req):
-                                    var res = Response(req: req) # TODO something useful here
-                                    data.reqFut = onRequest(req, res, app)
-                                    if not data.reqFut.isNil:
-                                        capture data:
-                                            data.reqFut.addCallback(
-                                                proc (fut: Future[void]) =
-                                                    onRequestFutureComplete(fut, selector, fd)
-                                                    validateResponse(data)
-                                            )
-                                    else: validateResponse(data)
-
-                    if ret != size:
-                        # Assume there is nothing else for us right now and break.
-                        break
+                handleClientReadEvent()
             elif Event.Write in events[i].events:
-                assert data.sendQueue.len > 0
-                assert data.bytesSent < data.sendQueue.len
-                # Write the sendQueue.
-                when defined posix:
-                    let leftover = data.sendQueue.len - data.bytesSent
-                else:
-                    let leftover = cint(data.sendQueue.len - data.bytesSent)
-                let ret = send(fd.SocketHandle, addr data.sendQueue[data.bytesSent], leftover, 0)
-                if ret == -1:
-                    # Error!
-                    let lastError = osLastError()
-                    when defined posix:
-                        if lastError.int32 in {EWOULDBLOCK, EAGAIN}: break
-                    else:
-                        if lastError.int32 == WSAEWOULDBLOCK: break
-                    if isDisconnectionError({SocketFlag.SafeDisconn}, lastError):
-                        handleClientClosure(selector, fd)
-                    raiseOSError(lastError)
-
-                data.bytesSent.inc(ret)
-
-                if data.sendQueue.len == data.bytesSent:
-                    data.bytesSent = 0
-                    data.sendQueue.setLen(0)
-                    data.data.setLen(0)
-                    selector.updateHandle(fd.SocketHandle, {Event.Read})
-            else:
-                assert false
+                handleClientWriteEvent()
+            else: assert false
 
 proc eventLoop(params: (OnRequest, Application)) =
     let (onRequest, app) = params

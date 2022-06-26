@@ -73,13 +73,10 @@ proc parsePath*(data: string, start: int): Option[string] =
 proc parseHeaders*(data: string, start: int): Option[HttpHeaders] =
     if unlikely(data.len == 0): return
     var pairs: seq[(string, string)] = @[]
-
     var i = start
     # Skip first line containing the method, path and HTTP version.
     while data[i] != '\l': i.inc
-
     i.inc # Skip \l
-
     var value = false
     var current: (string, string) = ("", "")
     while i < data.len:
@@ -99,7 +96,6 @@ proc parseHeaders*(data: string, start: int): Option[HttpHeaders] =
             if current[0].len == 0:
                 # End of headers.
                 return some(newHttpHeaders(pairs))
-
             pairs.add(current)
             value = false
             current = ("", "")
@@ -133,5 +129,4 @@ iterator parseRequests*(data: string): int =
             i.inc(4)
             if parseHttpMethod(data, i).isNone(): continue
             yield i
-
         i.inc()

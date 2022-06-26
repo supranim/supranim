@@ -9,22 +9,20 @@ import std/[tables, macros, with]
 
 from std/times import DateTime
 from std/options import Option
+from std/sequtils import toSeq
 from std/enumutils import symbolName
 from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit,
                         startsWith, toUpperAscii, contains
-from std/sequtils import toSeq
 from ../server import HttpMethod, Request, Response, RoutePattern,
                       RoutePatternTuple, RoutePatternRequest, HttpCode
 
 export HttpMethod, Response, Request, HttpCode
 
-{.experimental: "dynamicBindSym".}
-
 type
     Callable* = proc(req: Request, res: Response) {.nimcall.}
         ## Callable procedure for route controllers
 
-    MiddlewareFunction* = proc(res: Response) {.nimcall.}
+    Middleware* = proc(res: var Response): bool {.nimcall.}
         ## A callable Middleware procedure
 
     RouteType = enum
@@ -36,6 +34,9 @@ type
         getController = "get$1"
         postController = "get$1"
         putController = "put$1"
+
+    RouteStatus* = enum
+        NotFound, Found, BlockedByAbort, BlockedByRedirect
 
     Route* = object
         ## Route object used to manage application routes
@@ -63,7 +64,7 @@ type
             ## Determine if current Route object has one or
             ## more middleware attached to it.
             of true:
-                middlewares: seq[MiddlewareFunction]
+                middlewares: seq[Middleware]
                     ## A sequence of Middlewares. Note that middlewares
                     ## are always checked in the same order that have been provided.
             else: discard
@@ -75,7 +76,12 @@ type
                     ## The expiration DateTime
             else: discard
 
-    RuntimeRoutePattern* = tuple[status: bool, key: string, params: seq[RoutePatternRequest], route: ref Route]
+    RuntimeRoutePattern* = tuple[
+        status: RouteStatus,
+        key: string,
+        params: seq[RoutePatternRequest],
+        route: ref Route
+    ]
 
     VerbCollection* = TableRef[string, ref Route]
         ## ``VerbCollection``, is a table that contains Route Objects stored by their path
@@ -90,7 +96,6 @@ type
         httpGet, httpPost, httpPut, httpHead, httpConnect: VerbCollection
         httpDelete, httpPatch, httpTrace, httpOptions: VerbCollection
             ## VerbCollection reserved for all static routes (routes without specific patterns)
-
         httpGetDynam, httpPostDynam, httpPutDynam, httpHeadDynam, httpConnectDynam: VerbCollection
         httpDeleteDynam, httpPatchDynam, httpTraceDynam, httpOptionsDynam: VerbCollection
             ## VerbCollection reserved for dynamic routes (routes containing patterns)
@@ -121,15 +126,14 @@ include ./utils
 
 proc getNameByPath(route: string): string {.compileTime.} =
     if route == "/":
-        result = "Homepage"
-    else:
-        let paths =
-            if route[0] == '/':
-                split(route[1 .. ^1], {'/', '-'})
-            else: split(route, {'/', '-'})
-        for path in paths:
-            result &= toUpperAscii(path[0])
-            result &= path[1 .. ^1]
+        return "Homepage"
+    let paths =
+        if route[0] == '/':
+            split(route[1 .. ^1], {'/', '-'})
+        else: split(route, {'/', '-'})
+    for path in paths:
+        result &= toUpperAscii(path[0])
+        result &= path[1 .. ^1]
 
 proc initControllerName(methodType: HttpMethod, path: string): string {.compileTime.} =
     case methodType:
@@ -294,13 +298,13 @@ proc exists[R: HttpRouter](router: var R, verb: HttpMethod, path: string): bool 
     result = collection.hasKey(path)
 
 proc existsRuntime*[R: HttpRouter](router: var R, verb: HttpMethod, path: string,
-                                      req: Request, res: Response): RuntimeRoutePattern =
+                                      req: Request, res: var Response): RuntimeRoutePattern =
     ## Determine if route exists for given ``key/path`` based on current HttpMethod verb.
     ## This is a procedure called only on runtime on each request.
     let collection = router.getCollectionByVerb(verb)
-    result.status = collection.hasKey(path)
+    let status = collection.hasKey(path)
     result.key = path
-    if result.status == false:
+    if status == false:
         let dynamicCollection = router.getCollectionByVerb(verb, true)
         var reqPattern = getPatternsByStr(path)
         var matchRoutePattern: bool
@@ -326,7 +330,7 @@ proc existsRuntime*[R: HttpRouter](router: var R, verb: HttpMethod, path: string
                         break
                     inc i
             if matchRoutePattern:
-                result.status = true
+                result.status = Found
                 result.key = route.path
                 result.route = route
                 for reqPatternKey in reqPatternKeys:
@@ -336,14 +340,21 @@ proc existsRuntime*[R: HttpRouter](router: var R, verb: HttpMethod, path: string
                     reqPattern.del(reqPatternKey)
                 result.params = reqPattern
                 break
+            else:
+                result.status = NotFound
+                break
     else:
-        let routeInstance = collection[path]
-        if routeInstance.hasMiddleware:
-            for middlewareCallback in routeInstance.middlewares:
-                middlewareCallback(res)
-            result.route = routeInstance
-        else:
-            result.route = routeInstance
+        result.route = collection[path]
+        if result.route.hasMiddleware:
+            for middlewareCallback in result.route.middlewares:
+                let status = middlewareCallback(res)
+                if status == false:
+                    if res.hasRedirect():
+                        result.status = BlockedByRedirect
+                    else:
+                        result.status = BlockedByAbort
+                    return
+        result.status = Found
 
 proc isTemporary*[R: HttpRouter](router: R, verb: HttpMethod, path: string): bool =
     ## Determine if specified route has expiration time
@@ -364,37 +375,43 @@ proc getRouteInstance*[R: HttpRouter](router: var R, route: ref Route): ref Rout
     let collection = router.getCollectionByVerb(route.verb, route.routeType == DynamicRouteType)
     result = collection[route.path]
 
-proc get[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc get*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpGet` method
     result = parseRoute(path, HttpGet, callback)
     router.register(HttpGet, result)
     discard router.getRouteInstance(result)
 
-macro get*[R: HttpRouter](router: var typedesc[R], path: static string) =
+macro get*[R: HttpRouter](router: var typedesc[R], path: static string): typed =
+    ## Register a new `HttpGet` route with auto linked controller.
+    ## Where `/` is linked to `getHomepage`, `/profile` to `getProfile`
     let controllerCallback = ident initControllerName(HttpGet, path)
     result = newStmtList()
     result.add quote do:
         Router.get(`path`, `controllerCallback`)
 
-proc post[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc post*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpPost` method
     result = parseRoute(path, HttpPost, callback)
     router.register(HttpPost, result)
     discard router.getRouteInstance(result)
 
 macro post*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    ## Register a new `HttpPost` route with auto linked controller.
+    ## Where `/profile/update` will be linked to `postProfileUpdate`
     let controllerCallback = ident initControllerName(HttpPost, path)
     result = newStmtList()
     result.add quote do:
         Router.post(`path`, `controllerCallback`)
 
-proc put[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc put*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpPut` method
     result = parseRoute(path, HttpPut, callback)
     router.register(HttpPut, result)
     discard router.getRouteInstance(result)
 
 macro put*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    ## Register a new `HttpPut` route with auto linked controller.
+    ## Where `/profile/insert` will be linked to `putProfileInsert`
     let controllerCallback = ident initControllerName(HttpPut, path)
     result = newStmtList()
     result.add quote do:
@@ -407,18 +424,20 @@ proc head*[R: HttpRouter](router: var R, path: string, callback: Callable): ref 
     discard router.getRouteInstance(result)
 
 macro head*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    ## Register a new `HttpHead` route with auto linked controller.
     let controllerCallback = ident initControllerName(HttpHead, path)
     result = newStmtList()
     result.add quote do:
         Router.head(`path`, `controllerCallback`)
 
-proc connect[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc connect*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
     ## Register a new route for `HttpConnect` method
     result = parseRoute(path, HttpConnect, callback)
     router.register(HttpConnect, result)
     discard router.getRouteInstance(result)
 
 macro connect*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    ## Register a new `HttpConnect` route with auto linked controller.
     let controllerCallback = ident initControllerName(HttpConnect, path)
     result = newStmtList()
     result.add quote do:
@@ -431,6 +450,7 @@ proc delete*[R: HttpRouter](router: var R, path: string, callback: Callable): re
     discard router.getRouteInstance(result)
 
 macro delete*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    ## Register a new `HttpDelete` route with auto linked controller.
     let controllerCallback = ident initControllerName(HttpDelete, path)
     result = newStmtList()
     result.add quote do:
@@ -443,6 +463,7 @@ proc patch*[R: HttpRouter](router: var R, path: string, callback: Callable): ref
     discard router.getRouteInstance(result)
 
 macro patch*[R: HttpRouter](router: var typedesc[R], path: static string) =
+    ## Register a new `HttpPatch` route with auto linked controller.
     let controllerCallback = ident initControllerName(HttpPatch, path)
     result = newStmtList()
     result.add quote do:
@@ -487,9 +508,9 @@ proc getErrorPage*(httpCode: HttpCode, default: string): string =
         result = ErrorPages[httpCode.int]()
     else: result = default
 
-proc middleware*[R: Route](route: ref R, middlewares: varargs[MiddlewareFunction]) =
-    ## Add one or more middleware handlers as `varargs[MiddlewareFunction]`.
-    ## Middlewares are parsed in the provided order.
+proc middleware*[R: Route](route: ref R, middlewares: varargs[Middleware]) =
+    ## Attach one or more middleware handlers to current route.
+    ## Note that Middlewares are parsed in the given order.
     runnableExamples:
         Router.get("/profile").middleware(middlewares.auth, middlewares.membership)
     route.hasMiddleware = true

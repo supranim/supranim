@@ -83,7 +83,11 @@ type
             ## The ``HttpMethod`` of the request
 
     Response* = object
+        deferRedirect: string
+            ## Keep all deferred redirect paths collected
+            ## from all middlewares attached to the current route.
         req: Request
+            ## Holds the current `Request` instance
 
     OnRequest* = proc (req: var Request, res: var Response, app: Application): Future[void] {.gcsafe.}
         ## Procedure used on request
@@ -120,14 +124,15 @@ template withRequestData(req: Request, body: untyped) =
     let requestData {.inject.} = addr req.selector.getData(req.client)
     body
 
+proc getRequest*(res: Response): Request =
+    ## Returns the current Request instance
+    result = res.req
+
 #
 # Response Handler
 #
 
-proc getRequestInstance*(res: Response): Request {.inline.} =
-    result = res.req
-
-proc unsafeSend*(req: Request, data: string) {.inline.} =
+proc unsafeSend*(req: Request, data: string) =
     ## Sends the specified data on the request socket.
     ##
     ## This function can be called as many times as necessary.
@@ -170,11 +175,11 @@ include ./serve
 
 #[ API start ]#
 
-proc httpMethod*(req: Request): Option[HttpMethod] {.inline.} =
+proc httpMethod*(req: Request): Option[HttpMethod] =
     ## Parses the request's data to find the request HttpMethod.
     result = parseHttpMethod(req.selector.getData(req.client).data, req.start)
 
-proc path*(req: Request): Option[string] {.inline.} =
+proc path*(req: Request): Option[string] =
     ## Parses the request's data to find the request target.
     if unlikely(req.client notin req.selector): return
     result = parsePath(req.selector.getData(req.client).data, req.start)
@@ -204,6 +209,18 @@ proc setParams*(req: var Request, reqValues: seq[RoutePatternRequest]) =
     ## Add dynamic route values from current request 
     for reqVal in reqValues:
         req.patterns.add(reqVal)
+
+proc newRedirect*(res: var Response, target: string) =
+    ## Set a deferred redirect
+    res.deferRedirect = target
+
+proc getRedirect*(res: Response): string =
+    ## Get a deferred redirect
+    res.deferRedirect
+
+proc hasRedirect*(res: Response): bool =
+    ## Determine if response should resolve any deferred redirects
+    result = res.deferRedirect.len != 0
 
 proc headers*(req: Request): Option[HttpHeaders] =
     ## Parses the request's data to get the headers.
@@ -265,19 +282,13 @@ proc run*(onRequest: OnRequest, app: Application) =
     ## unlike most asynchronous procedures in Nim, it can return ``nil``
     ## for better performance, when no async operations are needed.
     # var loadedServices: seq[string] = @["Database", "Cookie", "Http Authentication", "Form Validation"]
-    const compiledWithThreads = compileOption("threads")
-    var numThreads = 1
-    when compiledWithThreads:
-        numThreads = if app.isMultithreading: app.getThreads() else: numThreads
     app.printBootStatus()
-    if numThreads == 1:
-        eventLoop((onRequest, app))
-    else:
-        when compiledWithThreads:
-            var threads = newSeq[Thread[(OnRequest, Application)]](numThreads)
-            for i in 0 ..< numThreads:
+    when compileOption("threads"):
+        if app.isMultithreading:
+            var threads = newSeq[Thread[(OnRequest, Application)]](app.getThreads)
+            for i in 0 ..< app.getThreads:
                 createThread[(OnRequest, Application)](threads[i], eventLoop, (onRequest, app))
-            # echo("Listening on port ", settings.port) # This line is used in the tester to signal readiness.
             joinThreads(threads)
-        else:
-            assert false
+        else: eventLoop((onRequest, app))
+    else:
+        eventLoop((onRequest, app))

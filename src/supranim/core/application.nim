@@ -5,17 +5,14 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
-import pkginfo, nyml, supplier
+import pkginfo, nyml
 import std/tables
 
 when defined webapp:
     import emitter
 
 import std/macros
-
-when not defined release:
-    # enable modules available for web development only
-    import ../private/config/assets
+import ../private/config/assets
 
 from std/nativesockets import Domain
 from std/net import Port
@@ -26,7 +23,6 @@ from std/os import getCurrentDir, putEnv, getEnv, fileExists,
 
 export Port
 export nyml.get, nyml.getInt, nyml.getStr, nyml.getBool
-export initSupplier
 
 const SECURE_PROTOCOL = "https"
 const UNSECURE_PROTOCOL = "http"
@@ -143,8 +139,8 @@ macro init*[A: Application](app: var A) =
     result = newStmtList()
     if doc.get().hasKey("services"):
         let services = doc.get("services")
-        for id, conf in pairs(services):
-            result.add(nnkImportStmt.newTree(ident id))
+        # for id, conf in pairs(services):
+            # result.add(nnkImportStmt.newTree(ident id))
             # var singleton = split(conf["singleton"].getStr, ':')
             # let singletonIdent = singleton[0]
             # let singletonObject = singleton[1]
