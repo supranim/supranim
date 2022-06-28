@@ -9,8 +9,11 @@
 import std/tables
 import ../../utils
 
-from std/os import fileExists, getCurrentDir, splitPath
-from std/strutils import strip, split
+import std/asyncdispatch
+from std/httpcore import HttpCode
+from std/strutils import strip, split, contains, replace
+from std/os import FilePermission, fileExists, getCurrentDir,
+                    splitPath, getFilePermissions
 
 type
     File = object
@@ -46,15 +49,21 @@ proc getSourcePath*[A: AssetsHandler](assets: A): string =
     ## Retrieve the source path for assets
     result = assets.source
 
-proc hasFile*[T: AssetsHandler](assets: T, alias: string): bool =
+proc hasFile*[T: AssetsHandler](assets: T, file: string): Future[HttpCode] {.async.} =
     ## Determine if requested file exists
-    if assets.files.hasKey(alias):
-        result = fileExists(assets.files[alias].path)
+    if assets.files.hasKey(file):
+        result = HttpCode(200)
+        if fileExists(assets.files[file].path):
+            var fp = getFilePermissions(assets.files[file].path)
+            if not fp.contains(fpOthersRead):
+                return HttpCode(403)
+    else:
+        result = HttpCode(404)
 
-proc addFile*[T: AssetsHandler](assets: var T, alias, path: string) =
+proc addFile*[T: AssetsHandler](assets: var T, fileName, filePath: string) =
     ## Add a new File object to Assets collection
-    if not assets.hasFile(alias):
-        assets.files[alias] = File(alias: alias, path: path)
+    if not assets.files.hasKey(fileName):
+        assets.files[fileName] = File(alias: fileName, path: filePath)
 
 proc init*[T: AssetsHandler](assets: var T, source, public: string) =
     ## Initialize a new Assets object collection
@@ -64,7 +73,8 @@ proc init*[T: AssetsHandler](assets: var T, source, public: string) =
     if files.len != 0:
         for file in files:
             let f = splitPath(file)
-            assets.addFile("/" & public & "/" & f.tail, file)
+            let head = f.head.replace(assets.source, "")
+            assets.addFile("/" & public & head & "/" & f.tail, file)
 
 proc getFile*[T: AssetsHandler](assets: T, alias: string): string =
     ## Retrieve the contents of requested file
