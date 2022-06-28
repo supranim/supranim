@@ -52,7 +52,7 @@ method css*[R: Response](res: R, data: string) =
 #
 # JSON Responses
 #
-method json*[R: Response](res: R, body: untyped, code = Http200) =
+method json*[R: Response, T](res: R, body: T, code = Http200) {.base.} =
     ## Sends a JSON Response with a default 200 (OK) status code
     ## This template is using an untyped body parameter that is automatically
     ## converting ``seq``, ``objects``, ``string`` (and so on) to

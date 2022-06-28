@@ -6,7 +6,6 @@
 #          https://supranim.com   |    https://github.com/supranim
 
 import std/[tables, macros, with]
-
 from std/times import DateTime
 from std/options import Option
 from std/sequtils import toSeq
@@ -32,8 +31,13 @@ type
 
     ControllerByVerb = enum
         getController = "get$1"
-        postController = "get$1"
+        postController = "post$1"
         putController = "put$1"
+        headController = "head$1"
+        deleteController = "delete$1"
+        connectController = "connect$1"
+        optionsController = "options$1"
+        traceController = "trace$1"
 
     RouteStatus* = enum
         NotFound, Found, BlockedByAbort, BlockedByRedirect
