@@ -76,6 +76,6 @@ proc init*[T: AssetsHandler](assets: var T, source, public: string) =
             let head = f.head.replace(assets.source, "")
             assets.addFile("/" & public & head & "/" & f.tail, file)
 
-proc getFile*[T: AssetsHandler](assets: T, alias: string): string =
+proc getFile*[T: AssetsHandler](assets: T, fileName: string): string =
     ## Retrieve the contents of requested file
-    result = readFile(assets.files[alias].path)
+    result = readFile(assets.files[fileName].path)

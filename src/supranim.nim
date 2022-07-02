@@ -7,8 +7,7 @@
 
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
-when not defined release:
-    import supranim/private/config/assets
+import supranim/private/config/assets
 
 # when defined(webapp):
 #     import emitter
@@ -50,7 +49,7 @@ template handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Res
             else:
                 res.send404 getErrorPage(Http404, "404 | Not found")
         else: res.response("Not Implemented", HttpCode(501))
-    return
+    return # block code execution
 
 template handleStaticAssetsDev() =
     if Assets.exists() and startsWith(reqRoute, Assets.getPublicPath()):

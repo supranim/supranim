@@ -295,9 +295,8 @@ proc parseRoute(path: string, verb: HttpMethod, callback: Callable): ref Route =
             routeType = StaticRouteType
             callback = callback
 
-proc exists[R: HttpRouter](router: var R, verb: HttpMethod, path: string): bool =
-    ## Determine if route exists for given ``key/path`` based on given ``HttpMethod``.
-    ## First, look for static routes. If not found will check the pattern-based routes
+proc exists*[R: HttpRouter](router: var R, verb: HttpMethod, path: string): bool =
+    ## Determine if requested route exists for given `HttpMethod`
     let collection = router.getCollectionByVerb(verb)
     result = collection.hasKey(path)
 

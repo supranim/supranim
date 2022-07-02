@@ -5,11 +5,8 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
-import pkginfo, nyml
 import std/tables
-
-when defined webapp:
-    import emitter
+import pkginfo, nyml, emitter
 
 import std/macros
 import ../private/config/assets
@@ -48,6 +45,21 @@ type
         I18n = "i18n"
         Middlewares = "middlewares"
 
+    DBDriver* = enum
+        PGSQL, MYSQL, SQLITE
+
+    DBConnection = ref object
+        port: Port
+        driver: DBDriver
+        address: Domain
+        name: string
+        username: string
+        password: string
+
+    DB = ref object
+        main: DBConnection
+        secondary: seq[DBConnection]
+
     Application* = object
         appType: AppType
         port: Port
@@ -60,16 +72,15 @@ type
             ## Boot in SSL mode (requires HTTPS Certificate)
         threads: int
             ## Boot Supranim on a specific number of threads
-        # database: DBConfig
-        database: bool
-            ## PostgreSQL Database credentials
+        database: DB
+            ## Holds all database credentials
         views: string
             ## Path to Views source directory
         recyclable: bool
             ## Whether to reuse current port or not
         loggers: seq[Logger]
             ## Loggers used in background by current application instance
-        config*: Document
+        configs: Document
             ## Holds Document representation of ``.env.yml`` configuration file
         isInitialized: bool
 
@@ -93,11 +104,14 @@ proc parseEnvFile(configContents: string): Document =
     var yml = Nyml.init(contents = configContents)
     result = yml.toJson()
 
+method config*[A: Application](app: A): Document =
+    result = app.configs
+
 proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string = ""): Application =
     ## Main procedure for initializing your Supranim Application.
     if App.isInitialized:
         raise newException(ApplicationDefect, "Application has already been initialized once")
-    App.config =
+    App.configs =
         when not defined(inlineConfig):
             # Load app config from a .env.yml file
             parseEnvFile(ymlConfigContents)
@@ -131,6 +145,9 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
 #         echo file.getFileName()
 #         echo file.getFileSize()
 
+# dumpAstGen:
+#     Event.emit("system.boot.services")
+
 macro init*[A: Application](app: var A) =
     ## Initialize Supranim application based on current
     ## configuration and available services.
@@ -139,6 +156,7 @@ macro init*[A: Application](app: var A) =
     result = newStmtList()
     if doc.get().hasKey("services"):
         let services = doc.get("services")
+        # TODO
         # for id, conf in pairs(services):
             # result.add(nnkImportStmt.newTree(ident id))
             # var singleton = split(conf["singleton"].getStr, ':')
@@ -204,6 +222,16 @@ macro init*[A: Application](app: var A) =
         )
     )
 
+    result.add(
+        nnkCall.newTree(
+            nnkDotExpr.newTree(
+                newIdentNode("Event"),
+                newIdentNode("emit")
+            ),
+            newLit("system.router.load")
+        )
+    )
+
     result.add quote do:
         discard init(threads = 1)
 
@@ -219,7 +247,7 @@ method hasTemplates*[A: Application](app: A): bool =
     ## TODO
     result = false
 
-method getAddress*[A: Application](app: A, path = ""): string {.inline.}  =
+method getAddress*[A: Application](app: A, path = ""): string =
     ## Get the current local address
     result = app.address
     if path.len != 0: add result, "/" & path
@@ -228,25 +256,25 @@ method getPort*[A: Application](app: A): Port =
     ## Get the current Port
     result = app.port
 
-method hasSSL*[A: Application](app: A): bool {.inline.}  =
+method hasSSL*[A: Application](app: A): bool =
     ## Determine if ssl is turned on
     result = app.ssl
 
-method hasDatabase*[A: Application](app: A): bool {.inline.} =
+method hasDatabase*[A: Application](app: A): bool =
     ## Determine if application has a database attached
     # result = app.database.main != nil
-    result = false
+    result = app.database != nil
 
-method hasMultiDatabase*[A: Application](app: A): bool {.inline.} =
+method hasMultiDatabase*[A: Application](app: A): bool =
     ## Determine if application has multi databases attached
-    # result = app.secondary.len != 0
-    result = false
+    if app.database != nil:
+        result = app.database.secondary.len != 0
 
-method isMultithreading*[A: Application](app: A): bool {.inline.}  =
+method isMultithreading*[A: Application](app: A): bool =
     ## Determine if application runs on multiple threads
     result = app.threads notin {0, 1}
 
-method getThreads*[A: Application](app: A): int {.inline.} =
+method getThreads*[A: Application](app: A): int =
     ## Get the number of available threads
     result = app.threads
 
@@ -279,7 +307,7 @@ proc getProjectDirectory(path: string, getAppPath = false): string =
     result = if getAppPath == true: getAppDir() else: getCurrentDir()
     result = result & path
 
-method getViewContent*(app: var Application, key: string, layout = "base"): string =
+method getViewContent*[A: Application](app: var A, key: string, layout = "base"): string =
     ## Retrieve contents of a specific view by view id.
     ## TODO, implement in a separate logic, integrate with Tim Engine
     let pathView = getProjectDirectory("/assets/" & key & ".html", true)
@@ -296,7 +324,7 @@ method printBootStatus*[A: Application](app: A) =
     echo("👌 Up & Running on http://", app.getAddress&":"& $app.getPort)
 
     var defaultCompileOptions: seq[string]
-    
+
     # Compiling with ``-opt:size``
     when compileOption("opt", "size"):
         defaultCompileOptions.add("Compiled with Size Optimization")
@@ -328,9 +356,5 @@ method printBootStatus*[A: Application](app: A) =
     for compileOptionLabel in defaultCompileOptions:
         echo indent("✓ " & compileOptionLabel, 2)
     
-    when defined(webapp):
-        Event.emit("system.boot.services")
-
-    # echo "--------- Service Providers ----------"
-    # for loadedService in loadedServices:
-    #     echo("✓ ", loadedService)
+    # Emit all listeners registered on `system.boot.services` event
+    Event.emit("system.boot.services")
