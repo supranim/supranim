@@ -26,10 +26,15 @@ proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
     ## Determine if given HttpMethod is as expected
     result = httpMethod == some(expectMethod)
 
-template handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Response, reqRoute: string) =
+template handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Response,
+                                reqRoute: string, hasTrailingSlash = false) =
     let runtime: RuntimeRoutePattern = Router.existsRuntime(verb, reqRoute, req, res)
     case runtime.status:
     of Found:
+        if verb == HttpGet:
+            if hasTrailingSlash:
+                res.redirect(reqRoute, code = HttpCode(301)) # handle trailing slashes for GET requests
+                return
         if runtime.route.isDynamic():
             req.setParams(runtime.params)
         runtime.route.runCallable(req, res)
@@ -71,11 +76,15 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
     # we are going to use only if statements in order to determine the
     # method type of current request because, for some reasons,
     # simple if statements are faster than if/elif blocks.
+        var hasTrailingSlash: bool
         var reqRoute = req.path.get()
+        if reqRoute[^1] == '/':
+            reqRoute = reqRoute[0 .. ^2]
+            hasTrailingSlash = true
         if expect(req.httpMethod, HttpGet):
             # Handle HttpGET requests
             handleStaticAssetsDev()
-            handleHttpRouteRequest(HttpGet, req, res, reqRoute)
+            handleHttpRouteRequest(HttpGet, req, res, reqRoute, hasTrailingSlash)
 
         if expect(req.httpMethod, HttpPost):
             # Handle HttpPost requests
