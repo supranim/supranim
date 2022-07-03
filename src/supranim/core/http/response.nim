@@ -15,7 +15,9 @@ import jsony
 
 from std/strutils import `%`
 from std/json import JsonNode
-from ./server import Request, Response, send, hasHeaders, getHeader, getRequest, newRedirect
+from ./server import Request, Response, CacheControlResponse, HttpHeaders,
+                    send, hasHeaders, getHeader, addHeader, getRequest,
+                    newRedirect
 
 export Request, Response
 export hasHeaders, getHeader, jsony
@@ -49,6 +51,19 @@ method css*[R: Response](res: R, data: string) =
     ## Send a response containing CSS contents with ``Content-Type: text/css``
     res.response(data, contentType = ContentTypeTextCSS)
 
+method addHeader*[R: Response](res: var R, key, val: string) =
+    ## Add a new header to current `Response` instance
+    ## TODO
+    runnableExamples:
+        # Cache-Control: must-revalidate, max-age=600
+        res.addHeader("cache-control", )
+
+method addCacheControl*[R: Response](res: var R, opts: openarray[tuple[k: CacheControlResponse, v: string]]) =
+    ## Method for adding a `Cache-Control` header to current `Response` instance
+    ## https://nim-lang.org/docs/httpcore.html#add%2CHttpHeaders%2Cstring%2Cstring
+    runnableExamples:
+        res.addCacheControl(opts = [(MaxAge, "3200")])
+    res.addHeader()
 #
 # JSON Responses
 #

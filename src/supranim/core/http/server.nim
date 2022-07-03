@@ -82,12 +82,67 @@ type
         methodType: HttpMethod
             ## The ``HttpMethod`` of the request
 
+    CacheControlResponse* = enum
+        ## The Cache-Control HTTP header field holds directives (instructions)
+        ## in both requests and responses — that control caching in browsers
+        ## and shared caches (e.g. Proxies, CDNs).
+        ## https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+        MaxAge = "max-age"
+            ## The max-age=N response directive indicates that the response
+            ## remains fresh until N seconds after the response is generated.
+        SMaxAge = "s-maxage"
+            ## The s-maxage response directive also indicates how long the
+            ## response is fresh for (similar to max-age) — but it is specific
+            ## to shared caches, and they will ignore max-age when it is present
+        NoCache = "no-cache"
+            ## The no-cache response directive indicates that the response can be
+            ## stored in caches, but the response must be validated with the origin
+            ## server before each reuse, even when the cache is disconnected from
+            ## the origin server.
+        NoStore = "no-store"
+            ## The no-store response directive indicates that any caches of any
+            ## kind (private or shared) should not store this response.
+        NoTransform = "no-transform"
+            ## Some intermediaries transform content for various reasons.
+            ## For example, some convert images to reduce transfer size.
+            ## In some cases, this is undesirable for the content provider.
+        MustRevalidate = "must-revalidate"
+            ## The must-revalidate response directive indicates that the response can
+            ## be stored in caches and can be reused while fresh. If the response
+            ## becomes stale, it must be validated with the origin server before reuse.
+        ProxyRevalidate = "proxy-revalidate"
+            ## The proxy-revalidate response directive is the equivalent of
+            ## must-revalidate, but specifically for shared caches only.
+        MustUnderstand = "must-understand"
+            ## The must-understand response directive indicates that a cache should
+            ## store the response only if it understands the requirements for caching
+            ## based on status code.
+        Private = "private"
+            ## The private response directive indicates that the response can be
+            ## stored only in a private cache (e.g. local caches in browsers).
+        Public = "public"
+            ## The public response directive indicates that the response can be stored
+            ## in a shared cache. Responses for requests with Authorization header fields
+            ## must not be stored in a shared cache; however, the public directive will
+            ## cause such responses to be stored in a shared cache.
+        Immutable = "immutable"
+            ## The immutable response directive indicates that the response will
+            ## not be updated while it's fresh.
+        StaleWhileRevalidate = "stale-while-revalidate"
+            ## The stale-while-revalidate response directive indicates that the
+            ## cache could reuse a stale response while it revalidates it to a cache.
+        StaleIfError = "stale-if-error"
+            ## The stale-if-error response directive indicates that the cache can
+            ## reuse a stale response when an origin server responds with an error
+            ## (500, 502, 503, or 504).
+
     Response* = object
         deferRedirect: string
-            ## Keep all deferred redirect paths collected
-            ## from all middlewares attached to the current route.
+            ## Keep a deferred Http redirect from a middleware
         req: Request
             ## Holds the current `Request` instance
+        headers: HttpHeaders
+            ## All response headers collected from controller
 
     OnRequest* = proc (req: var Request, res: var Response, app: Application): Future[void] {.gcsafe.}
         ## Procedure used on request
@@ -131,7 +186,6 @@ proc getRequest*(res: Response): Request =
 #
 # Response Handler
 #
-
 proc unsafeSend*(req: Request, data: string) =
     ## Sends the specified data on the request socket.
     ##
@@ -235,6 +289,10 @@ proc getHeader*(req: Request, key: string): string =
     let headers = req.requestHeaders.get()
     if headers.hasKey(key):
         result = headers[key]
+
+method addHeader*[R: Response](res: var R, key, value: string) =
+    ## Add a new header to current `Response` instance
+    res.headers.add(key, value)
 
 proc body*(req: Request): Option[string] =
     ## Retrieves the body of the request.
