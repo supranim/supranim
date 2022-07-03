@@ -13,6 +13,7 @@
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
             strutils, parseutils, options, logging, times, tables]
 
+from std/strutils import indent
 from std/sugar import capture
 from std/json import JsonNode, `$`
 from std/deques import len
@@ -290,9 +291,16 @@ proc getHeader*(req: Request, key: string): string =
     if headers.hasKey(key):
         result = headers[key]
 
-method addHeader*[R: Response](res: var R, key, value: string) =
-    ## Add a new header to current `Response` instance
+method addHeader*[R: Response](res: var R, key, value: string) {.base.} =
+    ## Add a new header value to current `Response` instance
     res.headers.add(key, value)
+
+method getHeaders*[R: Response](res: R, default: string): string {.base.} =
+    ## Return the current current stringified `Response` Headers
+    if res.headers.len != 0:
+        for h in res.headers.pairs():
+            result &= h.key & ":" & indent(h.value, 1)
+    else: result = default
 
 proc body*(req: Request): Option[string] =
     ## Retrieves the body of the request.

@@ -169,7 +169,7 @@ template handleClientReadEvent() =
                             capturedData.headersFinished = false
 
                     if validateRequest(req):
-                        var res = Response(req: req) # TODO something useful here
+                        var res = Response(req: req, headers: newHttpHeaders(titleCase = true))
                         data.reqFut = onRequest(req, res, app)
                         if not data.reqFut.isNil:
                             capture data:

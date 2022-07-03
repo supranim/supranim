@@ -18,7 +18,7 @@ from ../server import HttpMethod, Request, Response, RoutePattern,
 export HttpMethod, Response, Request, HttpCode
 
 type
-    Callable* = proc(req: Request, res: Response) {.nimcall.}
+    Callable* = proc(req: Request, res: var Response) {.nimcall.}
         ## Callable procedure for route controllers
 
     Middleware* = proc(res: var Response): bool {.nimcall.}

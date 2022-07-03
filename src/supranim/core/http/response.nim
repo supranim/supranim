@@ -16,11 +16,11 @@ import jsony
 from std/strutils import `%`
 from std/json import JsonNode
 from ./server import Request, Response, CacheControlResponse, HttpHeaders,
-                    send, hasHeaders, getHeader, addHeader, getRequest,
-                    newRedirect
+                    send, hasHeaders, getHeader, addHeader, getHeaders,
+                    getRequest, newRedirect
 
-export Request, Response
-export hasHeaders, getHeader, jsony
+export Request, hasHeaders, getHeader, jsony
+export Response, CacheControlResponse, addHeader
 
 const
     ContentTypeJSON = "Content-Type: application/json"
@@ -31,72 +31,68 @@ const
 #
 # Http Responses
 #
-method response*[R: Response](res: R, body: string, code = Http200, contentType = ContentTypeTextHtml) =
+method response*[R: Response](res: var R, body: string, code = Http200, contentType = ContentTypeTextHtml) =
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
-    res.getRequest().send(code, body, contentType)
+    res.getRequest().send(code, body, res.getHeaders(contentType))
 
-method send404*[R: Response](res: R, msg="404 | Not Found") =
+method send404*[R: Response](res: var R, msg="404 | Not Found") =
     ## Sends a 404 HTTP Response with a default "404 | Not Found" message
     res.response(msg, Http404)
 
-method send500*[R: Response](res: R, msg="500 | Internal Error") =
+method send500*[R: Response](res: var R, msg="500 | Internal Error") =
     ## Sends a 500 HTTP Response with a default "500 | Internal Error" message
     res.response(msg, Http500)
 
-template view*[R: Response](res: R, key: string, code = Http200) =
+template view*[R: Response](res: var R, key: string, code = Http200) =
     res.response(getViewContent(App, key))
 
-method css*[R: Response](res: R, data: string) =
+method css*[R: Response](res: var R, data: string) =
     ## Send a response containing CSS contents with ``Content-Type: text/css``
     res.response(data, contentType = ContentTypeTextCSS)
 
-method addHeader*[R: Response](res: var R, key, val: string) =
-    ## Add a new header to current `Response` instance
-    ## TODO
-    runnableExamples:
-        # Cache-Control: must-revalidate, max-age=600
-        res.addHeader("cache-control", )
-
-method addCacheControl*[R: Response](res: var R, opts: openarray[tuple[k: CacheControlResponse, v: string]]) =
+method addCacheControl*[R: Response](res: var R, opts: openarray[tuple[k: CacheControlResponse, v: string]]) {.base.} =
     ## Method for adding a `Cache-Control` header to current `Response` instance
     ## https://nim-lang.org/docs/httpcore.html#add%2CHttpHeaders%2Cstring%2Cstring
     runnableExamples:
         res.addCacheControl(opts = [(MaxAge, "3200")])
-    res.addHeader()
+    var cacheControlValue: string
+    for opt in opts:
+        cacheControlValue &= $opt.k & "=" & opt.v
+    res.addHeader("Cache-Control", cacheControlValue)
 #
 # JSON Responses
 #
-method json*[R: Response, T](res: R, body: T, code = Http200) {.base.} =
+method json*[R: Response, T](res: var R, body: T, code = Http200) {.base.} =
     ## Sends a JSON Response with a default 200 (OK) status code
     ## This template is using an untyped body parameter that is automatically
     ## converting ``seq``, ``objects``, ``string`` (and so on) to
     ## JSON (stringified) via ``jsony`` library.
     getRequest(res).send(code, toJson(body), ContentTypeJSON)
 
-method json*[R: Response](res: R, body: JsonNode, code = Http200) =
+method json*[R: Response](res: var R, body: JsonNode, code = Http200) =
     ## Sends a JSON response with a default 200 (OK) status code.
     ## This template is using the native JsonNode for creating the response body.
     getRequest(res).send(code, $(body), ContentTypeJSON)
 
-method json404*[R: Response](res: R, body = "") =
+method json404*[R: Response](res: var R, body = "") =
     ## Sends a 404 JSON Response  with a default "Not found" message
     var jbody = if body.len == 0: """{"status": 404, "message": "Not Found"}""" else: body
     res.json(jbody, Http404)
 
-method json500*[R: Response](res: R, body = "") =
+method json500*[R: Response](res: var R, body = "") =
     ## Sends a 500 JSON Response with a default "Internal Error" message
     var jbody = if body.len == 0: """{"status": 500, "message": "Internal Error"}""" else: body
     res.json(jbody, Http500)
 
-method json_error*[R: Response](res: R, body: untyped, code: HttpCode = Http501) = 
+method json_error*[R: Response](res: var R, body: untyped, code: HttpCode = Http501) = 
     ## Sends a JSON response followed by of a HttpCode (that represents an error)
     getRequest(res).send(code, toJson(body), ContentTypeJSON)
 
 #
 # HTTP Redirects procedures
 #
-method redirect*[R: Response](res: R, target: string, code = Http307) =
+method redirect*[R: Response](res: var R, target: string, code = Http307) =
     ## Set a HTTP Redirect with a default ``Http307`` Temporary Redirect status code
     getRequest(res).send(code, "", HeaderHttpRedirect % [target])
 
@@ -124,7 +120,7 @@ template abort*(httpCode: HttpCode = Http403) =
     getRequest(res).send(httpCode, "You don't have authorisation to view this page", ContentTypeTextHtml)
     return # block code execution after `abort`
 
-method redirect301*(res: Response, target:string) =
+method redirect301*(res: var Response, target:string) =
     ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
     getRequest(res).send(Http301, "", HeaderHttpRedirect % [target])
 

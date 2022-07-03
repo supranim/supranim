@@ -26,7 +26,7 @@ proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
     ## Determine if given HttpMethod is as expected
     result = httpMethod == some(expectMethod)
 
-template handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Response,
+proc handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Response,
                                 reqRoute: string, hasTrailingSlash = false) =
     let runtime: RuntimeRoutePattern = Router.existsRuntime(verb, reqRoute, req, res)
     case runtime.status:
@@ -54,7 +54,6 @@ template handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Res
             else:
                 res.send404 getErrorPage(Http404, "404 | Not found")
         else: res.response("Not Implemented", HttpCode(501))
-    return # block code execution
 
 template handleStaticAssetsDev() =
     if Assets.exists() and startsWith(reqRoute, Assets.getPublicPath()):
@@ -78,45 +77,55 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
     # simple if statements are faster than if/elif blocks.
         var hasTrailingSlash: bool
         var reqRoute = req.path.get()
-        if reqRoute[^1] == '/':
-            reqRoute = reqRoute[0 .. ^2]
-            hasTrailingSlash = true
+        if reqRoute != "/":
+            if reqRoute[^1] == '/':
+                reqRoute = reqRoute[0 .. ^2]
+                hasTrailingSlash = true
         if expect(req.httpMethod, HttpGet):
             # Handle HttpGET requests
             handleStaticAssetsDev()
             handleHttpRouteRequest(HttpGet, req, res, reqRoute, hasTrailingSlash)
+            return # block code execution
 
         if expect(req.httpMethod, HttpPost):
             # Handle HttpPost requests
             handleHttpRouteRequest(HttpPost, req, res, reqRoute)
+            return # block code execution
 
         if expect(req.httpMethod, HttpPut):
             # Handle HttpPut requests
             handleHttpRouteRequest(HttpPut, req, res, reqRoute)
+            return # block code execution
 
         if expect(req.httpMethod, HttpOptions):
             # Handle HttpOptions requests
             handleHttpRouteRequest(HttpOptions, req, res, reqRoute)
+            return # block code execution
 
         if expect(req.httpMethod, HttpHead):
             # Handle HttpHead requests
             handleHttpRouteRequest(HttpHead, req, res, reqRoute)
+            return # block code execution
         
         if expect(req.httpMethod, HttpDelete):
             # Handle HttpDelete requests
             handleHttpRouteRequest(HttpDelete, req, res, reqRoute)
+            return # block code execution
 
         if expect(req.httpMethod, HttpTrace):
             # Handle HttpTrace requests
             handleHttpRouteRequest(HttpTrace, req, res, reqRoute)
+            return # block code execution
 
         if expect(req.httpMethod, HttpConnect):
             # Handle HttpConnect requests
             handleHttpRouteRequest(HttpConnect, req, res, reqRoute)
+            return # block code execution
 
         if expect(req.httpMethod, HttpPatch):
             # Handle HttpPatch requests
             handleHttpRouteRequest(HttpPatch, req, res, reqRoute)
+            return # block code execution
 
 proc startServer*[A: Application](app: var A) =
     run(onRequest, app)
