@@ -1,3 +1,10 @@
+# Supranim is a simple MVC-style web framework for building
+# fast web applications, REST API microservices and other cool things.
+#
+# (c) 2021 Supranim is released under MIT License
+#          George Lemon | Made by Humans from OpenPeep
+#          https://supranim.com   |    https://github.com/supranim
+
 import nyml
 from std/net import Port
 from std/nativesockets import Domain
@@ -5,8 +12,7 @@ from std/nativesockets import Domain
 export Port, Domain
 
 type
-    AppKey = object
-        key: string
+    AppKey = distinct string
 
     AppConfig = object
         port: Port
@@ -25,13 +31,14 @@ type
         username: string
         password: string
 
-    DBConfig = object
-        main: Database
-        secondary: seq[Database]
+    Database = object
+        main: DBCredential
+            ## Main database credentials
+        secondary: seq[DBCredential]
+            ## A sequence of secondary database credentials
 
     Config = object
-        app: AppConfig
-        database: DBConfig
+        databases: Database
         services: seq[string]
 
 proc init[C: typedesc[Config]](ymlContents: string): Config =

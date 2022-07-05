@@ -3,11 +3,11 @@
 #
 # (c) 2021 Supranim is released under MIT License
 #          George Lemon | Made by Humans from OpenPeep
-#          https://supranim.com   |    https://github.com/supranim
+#          https://supranim.com  |  https://github.com/supranim
 
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
-import supranim/private/config/assets
+import supranim/core/config/assets
 
 # when defined(webapp):
 #     import emitter
@@ -40,7 +40,6 @@ proc handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Respons
         runtime.route.runCallable(req, res)
     of BlockedByRedirect:
         # Resolve deferred HTTP redirects declared in current middleware
-        # TODO find better way to handle redirects
         res.redirect(res.getRedirect())
     of BlockedByAbort:
         # Blocked by an `abort` from a middleware.

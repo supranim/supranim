@@ -9,7 +9,7 @@ import std/tables
 import pkginfo, nyml, emitter
 
 import std/macros
-import ../private/config/assets
+import ./config/assets
 
 from std/nativesockets import Domain
 from std/net import Port
@@ -124,10 +124,10 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     let publicDir = App.config.get("app.assets.public").getStr
     var sourceDir = App.config.get("app.assets.source").getStr
     if publicDir.len != 0 and sourceDir.len != 0:
-        when not defined(release):
-            sourceDir = getAppDir() & "/" & sourceDir
-            normalizePath(sourceDir)
-            Assets.init(sourceDir, publicDir)
+        # when not defined(release):
+        sourceDir = getAppDir() & "/" & sourceDir
+        normalizePath(sourceDir)
+        Assets.init(sourceDir, publicDir)
     else:
         App.appType = RESTful
 
