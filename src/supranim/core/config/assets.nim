@@ -26,17 +26,10 @@ type
 
     AssetsError* = CatchableError
 
-var Assets* = AssetsHandler()
-
-proc finder*(findArgs: seq[string] = @[], path=""): seq[string] {.thread.} =
-    ## Simple file system procedure that discovers static files in a specific directory
-    var args: seq[string] = findArgs
-    args.insert(path, 0)
-    var files = cmd("find", args).strip()
-    if files.len == 0:
-        raise newException(AssetsError, "Unable to find any static files")
-    else:
-        result = files.split("\n")
+when compileOption("threads"):
+    var Assets* {.threadvar.}: AssetsHandler
+else:
+    var Assets*: AssetsHandler
 
 proc exists*[A: AssetsHandler](assets: A): bool =
     result = Assets.files.len != 0
@@ -49,27 +42,27 @@ proc getSourcePath*[A: AssetsHandler](assets: A): string =
     ## Retrieve the source path for assets
     result = assets.source
 
-proc hasFile*[T: AssetsHandler](assets: T, file: string): Future[HttpCode] {.async.} =
+proc hasFile*[T: AssetsHandler](assets: T, filePath: string): Future[HttpCode] {.async.} =
     ## Determine if requested file exists
-    if assets.files.hasKey(file):
+    if assets.files.hasKey(filePath):
         result = HttpCode(200)
-        if fileExists(assets.files[file].path):
-            var fp = getFilePermissions(assets.files[file].path)
+        if fileExists(assets.files[filePath].path):
+            var fp = getFilePermissions(assets.files[filePath].path)
             if not fp.contains(fpOthersRead):
                 return HttpCode(403)
     else:
         result = HttpCode(404)
 
-proc addFile*[T: AssetsHandler](assets: var T, fileName, filePath: string) =
+proc addFile*[T: AssetsHandler](assets: var T, fn, filePath: string) =
     ## Add a new File object to Assets collection
-    if not assets.files.hasKey(fileName):
-        assets.files[fileName] = File(alias: fileName, path: filePath)
+    if not assets.files.hasKey(fn):
+        assets.files[fn] = File(alias: fn, path: filePath)
 
 proc init*[T: AssetsHandler](assets: var T, source, public: string) =
     ## Initialize a new Assets object collection
     assets.source = source
     assets.public = public
-    let files = finder(findArgs = @["-type", "f", "-print"], path = source)
+    let files = finder(findArgs = @["-type", "f", "-print", ], path = source)
     if files.len != 0:
         for file in files:
             let f = splitPath(file)
