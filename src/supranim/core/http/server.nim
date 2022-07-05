@@ -19,7 +19,9 @@ from std/json import JsonNode, `$`
 from std/deques import len
 
 when defined(windows):
-    import sets
+    import std/sets
+    import std/monotimes
+    import std/heapqueue
 else:
     import std/posix
     from std/osproc import countProcessors

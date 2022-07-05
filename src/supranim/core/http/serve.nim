@@ -282,5 +282,5 @@ proc eventLoop(params: (OnRequest, Application)) =
                 else:
                     selector.selectInto(20, events)
             if ret > 0:
-                processEvents(selector, events, ret, onRequest)
+                processEvents(selector, events, ret, onRequest, app)
             asyncdispatch.poll(0)
