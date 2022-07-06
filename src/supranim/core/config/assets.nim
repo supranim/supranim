@@ -13,7 +13,7 @@ import std/asyncdispatch
 from std/httpcore import HttpCode
 from std/strutils import strip, split, contains, replace
 from std/os import FilePermission, fileExists, getCurrentDir,
-                    splitPath, getFilePermissions
+                    splitPath, getFilePermissions, normalizedPath
 
 type
     File = object
@@ -26,10 +26,10 @@ type
 
     AssetsError* = CatchableError
 
-when compileOption("threads"):
-    var Assets* {.threadvar.}: AssetsHandler
-else:
-    var Assets*: AssetsHandler
+# when compileOption("threads"):
+#     var Assets* {.threadvar.}: AssetsHandler
+# else:
+var Assets* = AssetsHandler()
 
 proc exists*[A: AssetsHandler](assets: A): bool =
     result = Assets.files.len != 0
@@ -56,7 +56,7 @@ proc hasFile*[T: AssetsHandler](assets: T, filePath: string): Future[HttpCode] {
 proc addFile*[T: AssetsHandler](assets: var T, fn, filePath: string) =
     ## Add a new File object to Assets collection
     if not assets.files.hasKey(fn):
-        assets.files[fn] = File(alias: fn, path: filePath)
+        assets.files[fn] = File(alias: fn, path: normalizedPath(filePath))
 
 proc init*[T: AssetsHandler](assets: var T, source, public: string) =
     ## Initialize a new Assets object collection
@@ -66,7 +66,9 @@ proc init*[T: AssetsHandler](assets: var T, source, public: string) =
     if files.len != 0:
         for file in files:
             let f = splitPath(file)
-            let head = f.head.replace(assets.source, "")
+            var head = f.head.replace(assets.source, "")
+            when defined windows:
+                head = head.replace("\\", "/")
             assets.addFile("/" & public & head & "/" & f.tail, file)
 
 proc getFile*[T: AssetsHandler](assets: T, fileName: string): string =

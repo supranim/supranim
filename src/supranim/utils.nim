@@ -13,7 +13,7 @@ proc cmdExec*(inputCmd: string): tuple[output: TaintedString, exitCode: int] =
 proc finder*(findArgs: seq[string] = @[], path: string, ext = ""): seq[string] {.thread.} =
     ## TODO Support search for multiple extensions
     when defined windows:
-        var byExtension = if ext.len != 0: false else: true
+        var byExtension = if ext.len == 0: false else: true
         for file in walkDirRec(path):
             if file.isHidden: continue
             if byExtension:
