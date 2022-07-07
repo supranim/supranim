@@ -15,6 +15,10 @@ from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit,
 from ../server import HttpMethod, Request, Response, RoutePattern,
                       RoutePatternTuple, RoutePatternRequest, HttpCode
 
+when not defined release:
+    import std/times
+    import ../response
+
 export HttpMethod, Response, Request, HttpCode
 
 type
@@ -120,6 +124,7 @@ proc initCollectionTables[R: HttpRouter](router: var R) =
 
 var Router* = HttpRouter()   # Singleton of HttpRouter
 var ErrorPages*: ErrorPagesTable
+
 Router.initCollectionTables()   # https://forum.nim-lang.org/t/5631#34992
 
 proc isDynamic*[R: Route](route: ref R): bool =
@@ -518,3 +523,22 @@ proc middleware*[R: Route](route: ref R, middlewares: varargs[Middleware]) =
         Router.get("/profile").middleware(middlewares.auth, middlewares.membership)
     route.hasMiddleware = true
     route.middlewares = toSeq(middlewares)
+
+when not defined release:
+    type
+        LiveReload = object
+            state: int64
+
+    var liveReload = LiveReload()
+
+    method initLiveReload*[R: HttpRouter](router: var R) {.base.} =
+        ## Initialize API endpoint for reloading current screen
+        let reloadCallback = proc(req: Request, res: var Response) =
+            res.json(liveReload)
+        Router.get("/watchout", reloadCallback)
+
+    method refresh*[R: HttpRouter](router: var R) {.base.} =
+        ## Internal method for refreshing current `HttpGet` screens.
+        liveReload.state = now().toTime.toUnix
+
+    Router.initLiveReload()
