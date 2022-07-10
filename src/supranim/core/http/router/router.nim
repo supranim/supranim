@@ -133,25 +133,6 @@ proc isDynamic*[R: Route](route: ref R): bool =
 
 include ./utils
 
-proc getNameByPath(route: string): string {.compileTime.} =
-    if route == "/":
-        return "Homepage"
-    let paths =
-        if route[0] == '/':
-            split(route[1 .. ^1], {'/', '-'})
-        else: split(route, {'/', '-'})
-    for path in paths:
-        result &= toUpperAscii(path[0])
-        result &= path[1 .. ^1]
-
-proc initControllerName(methodType: HttpMethod, path: string): string {.compileTime.} =
-    case methodType:
-    of HttpGet:
-        result = $getController % [getNameByPath(path)]
-    of HttpPost:
-        result = $postController % [getNameByPath(path)]
-    else: result = ""
-
 proc getCollectionByVerb[R: HttpRouter](router: var R, verb: HttpMethod, hasParams = false): VerbCollection  =
     ## Get `VerbCollection`, `Table[string, Route]` based on given verb
     result = case verb:
@@ -170,7 +151,7 @@ proc register[R: HttpRouter](router: var R, verb: HttpMethod, route: ref Route) 
     router.getCollectionByVerb(verb, route.routeType == DynamicRouteType)[route.path] = route
 
 proc getPatternsByStr(path: string): seq[RoutePatternRequest] =
-    ## Create a sequence of RoutePattern of current path request.
+    ## Create a sequence of RoutePattern for requested path.
     let pathSeq: seq[string] = path.split("/")
     for pathStr in pathSeq:
         if pathStr.len == 0: continue
@@ -299,6 +280,43 @@ proc parseRoute(path: string, verb: HttpMethod, callback: Callable): ref Route =
             verb = verb
             routeType = StaticRouteType
             callback = callback
+
+proc getNameByPath(route: string): string {.compileTime.} =
+    # A compile time procedure to generate controller names
+    # based on the linked route.
+    # 
+    # For example if your route is
+    # ```Router.get("/")```
+    # Then, the controller will be
+    # ```proc getHomepage(req: Request, res: var Response) =```
+    # 
+    # Also, if a route is
+    # ```Router.get("/users")
+    # The controller name will be 
+    # ```proc getUsers(req: Request, res: var Response) =```
+    # 
+    # TODO
+    # Support controller generation name for routes
+    # that contains dynamic patterns as `{id}`, `{slug}` and so on.
+    # where a route like `/users/{id}/edit` will look
+    # for a controller named `getUsersByIdEdit`
+    if route == "/": return "Homepage"
+    var paths =
+        if route[0] == '/':
+            split(route[1 .. ^1], {'/', '-'})
+        else: split(route, {'/', '-'})
+    for path in paths:
+        result &= toUpperAscii(path[0])
+        result &= path[1 .. ^1]
+
+proc initControllerName(methodType: HttpMethod, path: string): string {.compileTime.} =
+    case methodType:
+    of HttpGet:
+        result = $getController % [getNameByPath(path)]
+    of HttpPost:
+        result = $postController % [getNameByPath(path)]
+    else: result = ""
+
 
 proc exists*[R: HttpRouter](router: var R, verb: HttpMethod, path: string): bool =
     ## Determine if requested route exists for given `HttpMethod`
