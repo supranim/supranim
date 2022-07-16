@@ -227,17 +227,9 @@ proc send*(req: Request, code: HttpCode) =
     ## is the same as the HttpCode description.
     send(req, code, $code)
 
-# Supranim is a simple MVC-style web framework for building
-# fast web applications, REST API microservices and other cool things.
-# 
-# The http module is modified version of httpbeast.
-#          (c) Dominik Picheta
-#          https://github.com/dom96/httpbeast
 #
-# (c) 2021 Supranim is released under MIT License
-#          
-#          Made by Humans from OpenPeep
-#          https://supranim.com   |    https://github.com/supranim
+# Socket API
+#
 
 proc initData(fdKind: FdKind, ip = ""): Data =
     Data(fdKind: fdKind,
