@@ -1,13 +1,15 @@
 # Supranim is a simple MVC-style web framework for building
 # fast web applications, REST API microservices and other cool things.
 #
-# (c) 2021 Supranim is released under MIT License
-#          George Lemon | Made by Humans from OpenPeep
-#          https://supranim.com  |  https://github.com/supranim
+# (c) 2022 Supranim is released under MIT License
+#          Made by Humans from OpenPeep
+#          https://supranim.com | https://github.com/supranim
 
 import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
 import supranim/core/config/assets
+import supranim/support/session
+import supranim/support/uuid
 
 # when defined(webapp):
 #     import emitter
@@ -127,4 +129,5 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
             return # block code execution
 
 proc startServer*[A: Application](app: var A) =
+    Session.init() # TODO move to application
     run(onRequest, app)

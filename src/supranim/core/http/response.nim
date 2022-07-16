@@ -1,23 +1,20 @@
-# Supranim is a simple Hyper Server and Web Framework developed
-# for building safe & fast in-house projects.
-# 
-# Supranim - Response Handler
-# This is an include-only file, part of the ./server.nim
-# 
-# (c) 2021 Supranim is released under MIT License
-#          Developed by Humans from OpenPeep
-#          
-#          Website: https://supranim.com
-#          Github Repository: https://github.com/supranim
+# Supranim is a simple MVC-style web framework for building
+# fast web applications, REST API microservices and other cool things.
+#
+# (c) 2022 Supranim is released under MIT License
+#          Made by Humans from OpenPeep
+#          https://supranim.com | https://github.com/supranim
 
 import std/[httpcore, macros]
 import jsony
+import ../../support/session
 
+from ../../support/str import unquote
 from std/strutils import `%`
 from std/json import JsonNode
 from ./server import Request, Response, CacheControlResponse, HttpHeaders,
                     send, hasHeaders, getHeader, addHeader, getHeaders,
-                    getRequest, newRedirect
+                    getRequest, newRedirect, getSessionInstance
 
 export Request, hasHeaders, getHeader, jsony
 export Response, CacheControlResponse, addHeader
@@ -124,6 +121,14 @@ method redirect301*(res: var Response, target:string) =
     ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
     getRequest(res).send(Http301, "", HeaderHttpRedirect % [target])
 
+method session*(res: var Response): ref SessionInstance =
+    ## Gets the current `SessionInstance` from `Response` object.
+    result = res.getSessionInstance()
+
+# 
+# Request Methods
+# 
+
 method getAgent*(req: Request): string =
     ## Retrieves the user agent from request header
     result = req.getHeader("user-agent")
@@ -132,9 +137,7 @@ method getPlatform*(req: Request): string =
     ## Return the platform name, It can be one of the following common platform values:
     ## ``Android``, ``Chrome OS``, ``iOS``, ``Linux``, ``macOS``, ``Windows``, or ``Unknown``.
     # https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform
-    let currOs = req.getHeader("sec-ch-ua-platform")
-    if currOs[0] == '"' and currOs[^1] == '"':
-        result = currOs[1 .. ^2]
+    result = unquote(req.getHeader("sec-ch-ua-platform"))
 
 method isMacOS*(req: Request): bool =
     ## Determine if current request is made from ``macOS`` platform

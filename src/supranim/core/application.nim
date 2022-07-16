@@ -2,14 +2,15 @@
 # fast web applications, REST API microservices and other cool things.
 #
 # (c) 2021 Supranim is released under MIT License
-#          George Lemon | Made by Humans from OpenPeep
-#          https://supranim.com   |    https://github.com/supranim
+#          Made by Humans from OpenPeep
+#          https://supranim.com | https://github.com/supranim
 
 import std/tables
 import pkginfo, nyml, emitter
 
 import std/macros
 import ./config/assets
+import ./supplier
 
 from std/nativesockets import Domain
 from std/net import Port

@@ -1,6 +1,6 @@
 import osproc
 from std/os import walkDirRec, isHidden
-from std/strutils import endsWith
+from std/strutils import endsWith, strip, split
 
 proc cmd*(inputCmd: string, inputArgs: openarray[string]): any {.discardable.} =
     ## Short hand for executing shell commands via execProcess

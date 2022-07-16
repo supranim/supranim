@@ -5,10 +5,8 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-from ./server import Response, Request
-
-import ./core/http/response
-import ./support/[session, uuid]
-
-export Request, Response
-export response, session, uuid
+proc unquote*(s: string): string =
+    if s.len == 0: return
+    if s[0] == '"' and s[^1] == '"':
+        return s[1 .. ^2]
+    result = s

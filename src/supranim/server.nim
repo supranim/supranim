@@ -5,10 +5,9 @@
 #          (c) Dominik Picheta
 #          https://github.com/dom96/httpbeast
 #
-# (c) 2021 Supranim is released under MIT License
-#          
+# (c) 2022 Supranim is released under MIT License
 #          Made by Humans from OpenPeep
-#          https://supranim.com   |    https://github.com/supranim
+#          https://supranim.com | https://github.com/supranim
 
 import ./core/http/server
 export server
