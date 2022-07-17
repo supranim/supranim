@@ -144,7 +144,7 @@ type
         deferRedirect: string           ## Keep a deferred Http redirect from a middleware
         req: Request                    ## Holds the current `Request` instance
         headers: HttpHeaders            ## All response headers collected from controller
-        session: ref SessionInstance
+        session: SessionInstance
 
     OnRequest* = proc (req: var Request, res: var Response, app: Application): Future[void] {.gcsafe.}
         ## Procedure used on request
@@ -168,8 +168,6 @@ type
     RoutePatternRequest* = tuple[pattern: RoutePattern, str: string]
         ## Similar to ``RoutePatternTuple``, the only difference is that is used
         ## during runtime for parsing each path request.
-
-const serverInfo = "Supranim" # TODO Support whitelabel signatures
 
 var serverDate {.threadvar.}: string
 
@@ -216,8 +214,8 @@ proc send*(req: Request, code: HttpCode, body: string, headers="") =
         var
             text = (
                 "HTTP/1.1 $#\c\L" &
-                "Content-Length: $#\c\LServer: $#\c\LDate: $#$#\c\L\c\L$#"
-            ) % [$code, $body.len, serverInfo, serverDate, otherHeaders, body]
+                "Content-Length: $#\c\LDate: $#$#\c\L\c\L$#"
+            ) % [$code, $body.len, serverDate, otherHeaders, body]
 
         requestData.sendQueue.add(text)
     req.selector.updateHandle(req.client, {Event.Read, Event.Write})
@@ -335,31 +333,31 @@ proc validateRequest(req: Request): bool {.gcsafe.}
 #
 # Request API
 #
-method getHeaders*(req: Request): Option[HttpHeaders] =
-    ## Returns all `HttpHeaders` from current `Request` instance
-    result = req.reqHeaders
-
 method hasHeaders*(req: Request): bool =
     ## Determine if current Request instance has any headers
     result = req.reqHeaders.get() != nil
 
+proc hasHeaders*(headers: Option[HttpHeaders]): bool =
+    ## Checks for existing headers for given `Option[HttpHeaders]`
+    result = headers.get() != nil
+
+method getHeaders*(req: Request): Option[HttpHeaders] =
+    ## Returns all `HttpHeaders` from current `Request` instance
+    result = req.reqHeaders
+
 method hasHeader*(req: Request, key: string): bool =
     ## Determine if current Request instance has a specific header
     result = req.reqHeaders.get().hasKey(key)
+
+proc hasHeader*(headers: Option[HttpHeaders], key: string): bool =
+    ## Determine if current `Request` intance contains a specific header by `key`
+    result = headers.get().hasKey(key)
 
 method getHeader*(req: Request, key: string): string = 
     ## Retrieves a specific header from given `Option[HttpHeaders]`
     let headers = req.reqHeaders.get()
     if headers.hasKey(key):
         result = headers[key]
-
-proc hasHeaders*(headers: Option[HttpHeaders]): bool =
-    ## Checks for existing headers for given `Option[HttpHeaders]`
-    result = headers.get() != nil
-
-proc hasHeader*(headers: Option[HttpHeaders], key: string): bool =
-    ## Determine if current `Request` intance contains a specific header by `key`
-    result = headers.get().hasKey(key)
 
 proc getHeader*(headers: Option[HttpHeaders], key: string): string = 
     ## Retrieves a specific header from given `Option[HttpHeaders]`
@@ -374,9 +372,7 @@ template handleClientReadEvent() =
     var buf: array[size, char]
     while true:
         let ret = recv(fd.SocketHandle, addr buf[0], size, 0.cint)
-        if ret == 0:
-            handleClientClosure(selector, fd)
-
+        if ret == 0: handleClientClosure(selector, fd)
         if ret == -1:
             let lastError = osLastError()
             when defined posix:
@@ -409,7 +405,6 @@ template handleClientReadEvent() =
                     # For pipelined requests, we need to reset this flag.
                     data.headersFinished = true
                     data.requestID = genRequestID()
-
                     var req = Request(
                         start: start,
                         selector: selector,
@@ -417,27 +412,27 @@ template handleClientReadEvent() =
                         requestID: data.requestID,
                         ip: data.ip
                     )
-
                     req.reqHeaders = parseHeaders(req.selector.getData(req.client).data, req.start)
                     template validateResponse(capturedData: ptr Data): untyped =
                         if capturedData.requestID == req.requestID:
                             capturedData.headersFinished = false
+
                     if validateRequest(req):
                         # Once validated, initialize a new Response object
                         # to be sent together with Headers and a Session ID.
                         let reqHeaders = req.getHeaders()
-                        let clientPlatform = reqHeaders.getHeader("sec-ch-ua-platform")
-                        let clientIsMobile = reqHeaders.getHeader("sec-ch-ua-mobile") == "true"
-                        var res = Response(req: req)
-                        res.headers = newHttpHeaders()
-                        res.session = Session.newSession((
-                            cookies: reqHeaders.getHeader("Cookie"),
-                            agent: reqHeaders.getHeader("user-agent"),
-                            os: clientPlatform,
-                            mobile: clientIsMobile and clientPlatform in ["Android", "iOS"]
-                        ))
-                        for k, cookie in res.session.getCookies.pairs():
-                            res.headers.add("set-cookie", $cookie)
+                        # let clientPlatform = reqHeaders.getHeader("sec-ch-ua-platform")
+                        # let clientIsMobile = reqHeaders.getHeader("sec-ch-ua-mobile") == "true"
+                        var res = Response(req: req, headers: newHttpHeaders())
+                        # res.session = Session.newSession((
+                        #     cookies: reqHeaders.getHeader("Cookie"),
+                        #     agent: reqHeaders.getHeader("user-agent"),
+                        #     os: clientPlatform,
+                        #     mobile: clientIsMobile and clientPlatform in ["Android", "iOS"]
+                        # ))
+                        # for k, cookie in mpairs(res.session.getCookies):
+                        #     res.headers.add("set-cookie", $cookie)
+
                         data.reqFut = onRequest(req, res, app)
                         if not data.reqFut.isNil:
                             capture data:
@@ -447,9 +442,7 @@ template handleClientReadEvent() =
                                         validateResponse(data)
                                 )
                         else: validateResponse(data)
-        if ret != size:
-            # Assume there is nothing else for us right now and break.
-            break
+        if ret != size: break
 
 template handleClientWriteEvent() =
     assert data.sendQueue.len > 0
@@ -598,7 +591,7 @@ method getRedirect*(res: Response): string =
     ## Get a deferred redirect
     res.deferRedirect
 
-method getSessionInstance*(res: Response): ref SessionInstance =
+method getSessionInstance*(res: Response): SessionInstance =
     result = res.session
 
 method hasRedirect*(res: Response): bool =

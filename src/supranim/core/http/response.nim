@@ -18,6 +18,7 @@ from ./server import Request, Response, CacheControlResponse, HttpHeaders,
 
 export Request, hasHeaders, getHeader, jsony
 export Response, CacheControlResponse, addHeader
+export session except newSession
 
 const
     ContentTypeJSON = "Content-Type: application/json"
@@ -28,27 +29,27 @@ const
 #
 # Http Responses
 #
-method response*[R: Response](res: var R, body: string, code = Http200, contentType = ContentTypeTextHtml) =
+method response*(res: var Response, body: string, code = Http200, contentType = ContentTypeTextHtml) =
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
     res.getRequest().send(code, body, res.getHeaders(contentType))
 
-method send404*[R: Response](res: var R, msg="404 | Not Found") =
+method send404*(res: var Response, msg="404 | Not Found") =
     ## Sends a 404 HTTP Response with a default "404 | Not Found" message
     res.response(msg, Http404)
 
-method send500*[R: Response](res: var R, msg="500 | Internal Error") =
+method send500*(res: var Response, msg="500 | Internal Error") =
     ## Sends a 500 HTTP Response with a default "500 | Internal Error" message
     res.response(msg, Http500)
 
-template view*[R: Response](res: var R, key: string, code = Http200) =
+template view*(res: var Response, key: string, code = Http200) =
     res.response(getViewContent(App, key))
 
-method css*[R: Response](res: var R, data: string) =
+method css*(res: var Response, data: string) =
     ## Send a response containing CSS contents with ``Content-Type: text/css``
     res.response(data, contentType = ContentTypeTextCSS)
 
-method addCacheControl*[R: Response](res: var R, opts: openarray[tuple[k: CacheControlResponse, v: string]]) {.base.} =
+method addCacheControl*(res: var Response, opts: openarray[tuple[k: CacheControlResponse, v: string]]) =
     ## Method for adding a `Cache-Control` header to current `Response` instance
     ## https://nim-lang.org/docs/httpcore.html#add%2CHttpHeaders%2Cstring%2Cstring
     runnableExamples:
@@ -67,29 +68,29 @@ method json*[R: Response, T](res: var R, body: T, code = Http200) {.base.} =
     ## JSON (stringified) via ``jsony`` library.
     getRequest(res).send(code, toJson(body), ContentTypeJSON)
 
-method json*[R: Response](res: var R, body: JsonNode, code = Http200) =
+method json*[R: Response](res: R, body: JsonNode, code = Http200) =
     ## Sends a JSON response with a default 200 (OK) status code.
     ## This template is using the native JsonNode for creating the response body.
-    getRequest(res).send(code, $(body), ContentTypeJSON)
+    getRequest(res).send(code, $body, ContentTypeJSON)
 
-method json404*[R: Response](res: var R, body = "") =
+method json404*(res: var Response, body = "") =
     ## Sends a 404 JSON Response  with a default "Not found" message
     var jbody = if body.len == 0: """{"status": 404, "message": "Not Found"}""" else: body
     res.json(jbody, Http404)
 
-method json500*[R: Response](res: var R, body = "") =
+method json500*(res: var Response, body = "") =
     ## Sends a 500 JSON Response with a default "Internal Error" message
     var jbody = if body.len == 0: """{"status": 500, "message": "Internal Error"}""" else: body
     res.json(jbody, Http500)
 
-method json_error*[R: Response](res: var R, body: untyped, code: HttpCode = Http501) = 
+template json_error*(res: var Response, body: untyped, code: HttpCode = Http501) = 
     ## Sends a JSON response followed by of a HttpCode (that represents an error)
     getRequest(res).send(code, toJson(body), ContentTypeJSON)
 
 #
 # HTTP Redirects procedures
 #
-method redirect*[R: Response](res: var R, target: string, code = Http307) =
+method redirect*(res: var Response, target: string, code = Http307) =
     ## Set a HTTP Redirect with a default ``Http307`` Temporary Redirect status code
     getRequest(res).send(code, "", HeaderHttpRedirect % [target])
 
@@ -121,14 +122,13 @@ method redirect301*(res: var Response, target:string) =
     ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
     getRequest(res).send(Http301, "", HeaderHttpRedirect % [target])
 
-method session*(res: var Response): ref SessionInstance =
+method session*(res: var Response): SessionInstance =
     ## Gets the current `SessionInstance` from `Response` object.
     result = res.getSessionInstance()
 
 # 
 # Request Methods
 # 
-
 method getAgent*(req: Request): string =
     ## Retrieves the user agent from request header
     result = req.getHeader("user-agent")

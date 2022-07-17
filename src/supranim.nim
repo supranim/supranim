@@ -9,7 +9,6 @@ import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
 import supranim/core/config/assets
 import supranim/support/session
-import supranim/support/uuid
 
 # when defined(webapp):
 #     import emitter
@@ -82,6 +81,7 @@ proc onRequest(req: var Request, res: var Response, app: Application): Future[ v
             if reqRoute[^1] == '/':
                 reqRoute = reqRoute[0 .. ^2]
                 hasTrailingSlash = true
+
         if expect(req.httpMethod, HttpGet):
             # Handle HttpGET requests
             handleStaticAssetsDev()

@@ -96,8 +96,7 @@ when not defined inlineConfig:
     const confPath = getProjectPath() & "/../bin/"
     const ymlConfPath = confPath & ".env.yml"
     static:
-        if not fileExists(ymlConfPath):
-            writeFile(ymlConfPath, ymlConfigSample)
+        if not fileExists(ymlConfPath): writeFile(ymlConfPath, ymlConfigSample)
     const ymlConfigContents = staticRead(ymlConfPath)
 
 proc parseEnvFile(configContents: string): Document =
