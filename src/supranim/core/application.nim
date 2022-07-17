@@ -11,13 +11,13 @@ import pkginfo, nyml, emitter
 import std/macros
 import ./config/assets
 import ./supplier
-
+from ../utils import ymlConfigSample
 from std/nativesockets import Domain
 from std/net import Port
 from std/logging import Logger
 from std/strutils import toUpperAscii, indent, split
 from std/os import getCurrentDir, putEnv, getEnv, fileExists,
-                    getAppDir, normalizePath, walkDirRec
+                    getAppDir, normalizePath, walkDirRec, copyFile
 
 export Port
 export nyml.get, nyml.getInt, nyml.getStr, nyml.getBool
@@ -93,7 +93,12 @@ var App* {.threadvar.}: Application
 App = Application()
 
 when not defined inlineConfig:
-    const ymlConfigContents = staticRead(getProjectPath() & "/../bin/" & yamlEnvFile)
+    const confPath = getProjectPath() & "/../bin/"
+    const ymlConfPath = confPath & ".env.yml"
+    static:
+        if not fileExists(ymlConfPath):
+            writeFile(ymlConfPath, ymlConfigSample)
+    const ymlConfigContents = staticRead(ymlConfPath)
 
 proc parseEnvFile(configContents: string): Document =
     # Private procedure for parsing and validating the

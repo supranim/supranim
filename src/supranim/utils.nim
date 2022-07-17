@@ -2,6 +2,29 @@ import osproc
 from std/os import walkDirRec, isHidden
 from std/strutils import endsWith, strip, split
 
+const ymlConfigSample* = """
+app:
+  port: 9933
+  address: "127.0.0.1"
+  name: "Supranim Application"
+  key: ""
+  threads: 1
+  assets:
+    source: "./assets"
+    public: "assets"
+  views: "views"
+
+database:
+  main:
+    driver: "pgsql"
+    port: 5432
+    host: "localhost"
+    prefix: "my_"
+    name: "app_sample"
+    user: "username"
+    password: "postgres"
+"""
+
 proc cmd*(inputCmd: string, inputArgs: openarray[string]): any {.discardable.} =
     ## Short hand for executing shell commands via execProcess
     result = execProcess(inputCmd, args=inputArgs, options={poStdErrToStdOut, poUsePath})
