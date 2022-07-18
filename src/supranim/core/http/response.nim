@@ -94,17 +94,10 @@ method redirect*(res: var Response, target: string, code = Http307) =
     ## Set a HTTP Redirect with a default ``Http307`` Temporary Redirect status code
     getRequest(res).send(code, "", HeaderHttpRedirect % [target])
 
-# macro redirects*(procDef: typed): untyped =
-#     procDef.expectKind nnkProcDef
-#     let procName = procDef[0].toStrLit
-#     let procNameId = ident "procName"
-#     let pnameDef = quote do:
-#         let procNameId = `procName`
-#         echo procNameId
-#     # procDef.body.insert(0, pnameDef)
-#     return procDef
+method redirect301*(res: var Response, target:string) =
+    ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
+    getRequest(res).send(Http301, "", HeaderHttpRedirect % [target])
 
-# template redirects*(text: string) {.pragma.}
 template redirects*(target: string) =
     ## Register a deferred 301 HTTP redirect in a middleware.
     res.newRedirect(target)
@@ -117,10 +110,6 @@ template abort*(httpCode: HttpCode = Http403) =
     ## can prompt their built-in error page.
     getRequest(res).send(httpCode, "You don't have authorisation to view this page", ContentTypeTextHtml)
     return # block code execution after `abort`
-
-method redirect301*(res: var Response, target:string) =
-    ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
-    getRequest(res).send(Http301, "", HeaderHttpRedirect % [target])
 
 method session*(res: var Response): SessionInstance =
     ## Gets the current `SessionInstance` from `Response` object.
