@@ -9,6 +9,7 @@ import std/[asyncdispatch, options, times]
 import supranim/[application, router, server]
 import supranim/core/config/assets
 import supranim/support/session
+import emitter
 
 # when defined(webapp):
 #     import emitter
@@ -41,19 +42,20 @@ proc handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Respons
         runtime.route.runCallable(req, res)
     of BlockedByRedirect:
         # Resolve deferred HTTP redirects declared in current middleware
+        Event.emit("system.http.501")
         res.redirect(res.getRedirect())
     of BlockedByAbort:
         # Blocked by an `abort` from a middleware.
-        # TODO implement system logs
-        discard
+        Event.emit("system.http.middleware.redirect")
     of NotFound:
         case verb:
         of HttpGet:
-            if App.getAppType == RESTful:
-                res.send404 getErrorPage(Http404, "404 | Not found")
-            else:
-                res.send404 getErrorPage(Http404, "404 | Not found")
-        else: res.response("Not Implemented", HttpCode(501))
+            Event.emit("system.http.404")
+            if App.getAppType == RESTful:   res.send404 getErrorPage(Http404, "404 | Not found")
+            else:                           res.send404 getErrorPage(Http404, "404 | Not found")
+        else:
+            Event.emit("system.http.501")
+            res.response("Not Implemented", HttpCode(501))
 
 template handleStaticAssetsDev() =
     if Assets.exists() and startsWith(reqRoute, Assets.getPublicPath()):
@@ -64,6 +66,7 @@ template handleStaticAssetsDev() =
             else:
                 res.response(Assets.getFile(reqRoute))
         else:
+            Event.emit("system.http.assets.404")
             res.send404 getErrorPage(Http404, "404 | Not found")
         return
 
