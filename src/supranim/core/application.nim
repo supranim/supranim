@@ -11,9 +11,10 @@ import pkginfo, nyml, emitter
 import std/macros
 import ./config/assets
 import ./supplier
+
 from ../utils import ymlConfigSample
 from std/nativesockets import Domain
-from std/net import Port
+from std/net import `$`, Port, getPrimaryIPAddr
 from std/logging import Logger
 from std/strutils import toUpperAscii, indent, split
 from std/os import getCurrentDir, putEnv, getEnv, fileExists,
@@ -136,7 +137,8 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     else:
         App.appType = RESTful
 
-    App.address = App.config.get("app.address").getStr
+    let appAddress = App.config.get("app.address") 
+    App.address = if appAddress.kind == JNULL: $getPrimaryIPAddr() else: appAddress.getStr  
     App.domain = Domain.AF_INET
     App.port = Port(App.config.get("app.port").getInt)
     App.threads = App.config.get("app.threads").getInt
@@ -240,10 +242,6 @@ macro init*[A: Application](app: var A) =
     result.add quote do:
         discard init(threads = 1)
 
-template start*[A: Application](app: var A) =
-    ## Boot Supranim application
-    app.startServer()
-
 method getAppType*[A: Application](app: A): AppType =
     result = app.appType
 
@@ -322,6 +320,10 @@ method getViewContent*[A: Application](app: var A, key: string, layout = "base")
 method isRecyclable*[A: Application](app: A): bool =
     ## Determine if application instance can reuse the same Port
     result = app.recyclable
+
+template start*[A: Application](app: var A) =
+    ## Boot Supranim application
+    app.startServer()
 
 method printBootStatus*[A: Application](app: A) =
     ## Public procedure used to print various informations related to current application instance
