@@ -11,7 +11,8 @@
 
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
             strutils, parseutils, options, logging, times, tables]
-import ../../support/session
+
+import ../../support/[session, uuid]
 
 from std/strutils import indent
 from std/sugar import capture
@@ -140,7 +141,7 @@ type
         deferRedirect: string           ## Keep a deferred Http redirect from a middleware
         req: Request                    ## Holds the current `Request` instance
         headers: HttpHeaders            ## All response headers collected from controller
-        session: SessionInstance
+        sessionId: Uuid
 
     OnRequest* = proc (req: var Request, res: var Response, app: Application): Future[void] {.gcsafe.}
         ## Procedure used on request
@@ -484,6 +485,25 @@ proc getHeader*(headers: Option[HttpHeaders], key: string): string =
     ## Retrieves a specific header from given `Option[HttpHeaders]`
     if headers.hasHeader(key): result = headers.get()[key]
 
+template createNewUserSession(res: var Response) =
+    var userSession = Session.newUserSession()
+    res.sessionId = userSession.getUuid()
+    res.headers.add("set-cookie", $userSession.getCookie("ssid"))
+
+proc setUserSessionId(res: var Response, headerCookies: string) =
+    if headerCookies.len != 0:
+        let reqCookies = parseCookies(headerCookies)
+        if reqCookies.hasKey("ssid"):
+            let ssid = reqCookies["ssid"].getValue()
+            if Session.isValid(ssid):
+                try:
+                    res.sessionId = uuid4(ssid)
+                except ValueError:
+                    createNewUserSession res
+            else: createNewUserSession res
+        else: createNewUserSession res
+    else: createNewUserSession res
+
 template handleClientReadEvent() =
     # Read until EAGAIN. We take advantage of the fact that the client
     # will wait for a response after they send a request. So we can
@@ -542,17 +562,15 @@ template handleClientReadEvent() =
                         # Once validated, initialize a new Response object
                         # to be sent together with Headers and a Session ID.
                         let reqHeaders = req.getHeaders()
+                        
                         # let clientPlatform = reqHeaders.getHeader("sec-ch-ua-platform")
                         # let clientIsMobile = reqHeaders.getHeader("sec-ch-ua-mobile") == "true"
-                        var res = Response(req: req, headers: newHttpHeaders())
-                        # res.session = Session.newSession((
-                        #     cookies: reqHeaders.getHeader("Cookie"),
-                        #     agent: reqHeaders.getHeader("user-agent"),
-                        #     os: clientPlatform,
-                        #     mobile: clientIsMobile and clientPlatform in ["Android", "iOS"]
-                        # ))
-                        # for k, cookie in mpairs(res.session.getCookies):
-                        #     res.headers.add("set-cookie", $cookie)
+                        var res = Response(
+                            req: req,
+                            headers: newHttpHeaders()
+                        )
+                        # TODO find a better way to set session id
+                        setUserSessionId(res, reqHeaders.getHeader("Cookie"))
 
                         data.reqFut = onRequest(req, res, app)
                         if not data.reqFut.isNil:
@@ -712,8 +730,9 @@ method getRedirect*(res: Response): string =
     ## Get a deferred redirect
     res.deferRedirect
 
-method getSessionInstance*(res: Response): SessionInstance =
-    result = res.session
+method getUserSessionUuid*(res: Response): Uuid =
+    ## Returns current `SessionInstance`
+    result = res.sessionId
 
 method hasRedirect*(res: Response): bool =
     ## Determine if response should resolve any deferred redirects

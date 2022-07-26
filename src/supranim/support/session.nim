@@ -4,10 +4,13 @@
 # (c) 2022 Supranim is released under MIT License
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
+
 import ./uuid
 import std/[cookies, tables, times, options]
+
 from ./str import unquote
 from std/strutils import indent, split
+
 export times, uuid
 
 type
@@ -23,12 +26,12 @@ type
         sameSite: SameSite
     
     CookiesTable* = TableRef[string, ref Cookie]
-    SessionInstance* = object
+    UserSession* = object
         id: Uuid
         backend: CookiesTable
         client: CookiesTable
     
-    Sessions = TableRef[string, SessionInstance]
+    Sessions = Table[string, UserSession]
     ClientSession* = tuple[cookies: string, agent, os: string, mobile: bool]
 
     SessionManager = object
@@ -39,18 +42,7 @@ when compileOption("threads"):
     # with multi threading support
     var Session* {.threadvar.}: SessionManager
 else:
-    var Session: SessionManager
-
-#
-# SessionInstance API
-#
-method exists*(session: SessionInstance, key: string): bool =
-    ## Check if there is a Cookie based on given key.
-    result = session.backend.hasKey(key) and session.client.hasKey(key)
-
-method getCookies*(session: SessionInstance): CookiesTable =
-    ## Retrieve all Cookies from Backend
-    result = session.backend
+    var Session*: SessionManager
 
 #
 # Cookie API 
@@ -71,7 +63,12 @@ proc newCookie(name, value: string, expires: TimeInterval, maxAge = none(int), d
     result.sameSite = sameSite
 
 method getName*(cookie: ref Cookie): string =
+    ## Returns the Cookie name
     result = cookie.name
+
+method getValue*(cookie: ref Cookie): string =
+    ## Returns the Cookie value
+    result = cookie.value
 
 method getDomain*(cookie: ref Cookie): string =
     result = cookie.domain
@@ -92,7 +89,8 @@ method getSameSite*(cookie: ref Cookie): string =
 method getPartitionKey*(cookie: ref Cookie): string =
     ## TODO
 
-proc parseCookies(cookies: string): CookiesTable =
+proc parseCookies*(cookies: string): CookiesTable =
+    if cookies.len == 0: return
     new result
     for cookie in cookies.split(";"):
         var kv = cookie.split("=")
@@ -105,45 +103,55 @@ proc `$`*(cookie: ref Cookie): string =
     result.add kv(cookie.name, cookie.value)
     result.add kv("HttpOnly", $cookie.httpOnly)
     result.add kv("Expires", cookie.expires)
-    result.add kv("MaxAge", $cookie.maxAge)
+    # result.add kv("MaxAge", $(cookie.maxAge.get))
     result.add kv("Domain", $cookie.domain)
     result.add kv("Path", $cookie.path)
     result.add kv("Secure", $cookie.secure)
     result.add kv("SameSite", $cookie.sameSite)
 
 #
-# Session API
+# UserSession API
+#
+method exists*(session: UserSession, key: string): bool =
+    ## Check if there is a Cookie based on given key.
+    result = session.backend.hasKey(key) and session.client.hasKey(key)
+
+method getCookies*(session: UserSession): CookiesTable =
+    ## Retrieve all Cookies from Backend
+    result = session.backend
+
+method getCookie*(session: UserSession, name: string): ref Cookie =
+    ## Try get a Cookie by name
+    if session.backend.hasKey(name):
+        result = session.backend[name]
+
+method getUuid*(session: UserSession): Uuid =
+    result = session.id
+
+proc initUserSession(newUuid: Uuid): UserSession =
+    result = UserSession(id: newUuid)
+    result.backend = newTable[string, ref Cookie]()
+    result.backend["ssid"] = newCookie("ssid", $result.id, 30.minutes)
+
+#
+# SessionManager API
 #
 proc init*(sessions: var SessionManager) =
     ## Initialize a singleton instance of SessionManger
-    Session = SessionManager(sessions: newTable[string, SessionInstance]())
+    Session = SessionManager()
 
-method flush*(manager: var SessionManager) =
-    ## Clear all expired Sessions. This method gets called from `QueueServices`.
-    ## For adjusting flushing timing go to your app configuration file.
-    ## TODO
+method isValid*(manager: var SessionManager, id: string): bool =
+    result = manager.sessions.hasKey(id)
 
-proc initClientSession(): SessionInstance =
-    result = SessionInstance(id: uuid4())
-    result.backend = newTable[string, ref Cookie]()
-    result.backend["sessid"] = newCookie("sessid", $result.id, 30.minutes)
+method newUserSession*(manager: var SessionManager): UserSession =
+    var newUuid: Uuid = uuid4()
+    while true:
+        if manager.sessions.hasKey($newUuid):
+           newUuid = uuid4()
+        else: break
+    result = initUserSession(newUuid)
+    manager.sessions[$result.id] = result
 
-method newSession*(manager: var SessionManager, client: ClientSession): SessionInstance =
-    ## Creates a new Session on both sides for client and backend.
-    ## If client provides a valid `sessid` cookie, will use that,
-    ## otherwise initialize a new client session id.
-    if client.cookies.len == 0:
-        result = initClientSession()
-        manager.sessions[$result.id] = result
-        return manager.sessions[$result.id]
-    let clientCookies = parseCookies(client.cookies)
-    if clientCookies.hasKey("sessid"):
-        if not manager.sessions.hasKey(clientCookies["sessid"].value):
-            let sess = initClientSession()
-            manager.sessions[$sess.id] = sess
-            return manager.sessions[$sess.id]
-        result = manager.sessions[clientCookies["sessid"].value]
-
-method getId*(session: SessionInstance): Uuid =
-    ## Returns `UUID` of the current `SessionInstance`
-    result = session.id
+method getCurrentSession*(manager: var SessionManager, id: Uuid): UserSession =
+    ## Returns the current `UserSession`
+    result = manager.sessions[$id]

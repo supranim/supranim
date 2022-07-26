@@ -14,11 +14,11 @@ from std/strutils import `%`
 from std/json import JsonNode
 from ./server import Request, Response, CacheControlResponse, HttpHeaders,
                     send, hasHeaders, getHeader, addHeader, getHeaders,
-                    getRequest, newRedirect, getSessionInstance
+                    getRequest, newRedirect, getUserSessionUuid
 
 export Request, hasHeaders, getHeader, jsony
 export Response, CacheControlResponse, addHeader
-export session except newSession
+export session
 
 const
     ContentTypeJSON = "Content-Type: application/json"
@@ -111,9 +111,11 @@ template abort*(httpCode: HttpCode = Http403) =
     getRequest(res).send(httpCode, "You don't have authorisation to view this page", ContentTypeTextHtml)
     return # block code execution after `abort`
 
-method session*(res: var Response): SessionInstance =
-    ## Gets the current `SessionInstance` from `Response` object.
-    result = res.getSessionInstance()
+method getUserSession*(res: Response): UserSession =
+    result = Session.getCurrentSession(res.getUserSessionUuid())
+
+method getUserSessionId*(res: Response): Uuid =
+    result = res.getUserSessionUuid()
 
 # 
 # Request Methods

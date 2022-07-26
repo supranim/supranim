@@ -42,8 +42,7 @@ proc uuid4*(): Uuid =
 proc normalizeUuidStr(candidateStr: string): string =
     let uuidStr = candidateStr.split('-').join()
     if len(uuidStr) != 32:
-        raise newException(ValueError,
-            "expected 8-4-4-4-12 or 32 characters format")
+        raise newException(ValueError, "expected 8-4-4-4-12 or 32 characters format")
     result = uuidStr
 
 proc uuid4*(uuidStr: string): Uuid =
@@ -52,12 +51,17 @@ proc uuid4*(uuidStr: string): Uuid =
     # idx is the index into the result's bytes array; it must be doubled
     # to index into the string. We know that the string is 32 characters
     # because we normalized it above.
-    assert uuidStrClean.len == 32
+    # assert uuidStrClean.len == 32
     for idx in 0 .. 15:
         let byteStr = uuidStrClean[2*idx .. 2*idx+1]
         if parseHex(byteStr, result.bytes[idx]) != 2:
             raise newException(ValueError,
                 "Could not parse a hex character from " & fmt"'{byteStr}' at index {2*idx}")
+    result.strv = result.toStr()
+
+proc uuid4*(uuidBytes: array[16, uint8]): Uuid =
+  ## Create a UUID directly from 16 bytes.
+  result.bytes = uuidBytes
 
 proc `$`*(uuid: Uuid): string =
     ## Return the string version of `UUID`
