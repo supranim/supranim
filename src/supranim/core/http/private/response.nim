@@ -7,14 +7,14 @@
 
 import std/[httpcore, macros]
 import jsony
-import ../../support/session
+import ../../../support/session
 
-from ../../support/str import unquote
+from ../../../support/str import unquote
 from std/strutils import `%`
 from std/json import JsonNode
-from ./server import Request, Response, CacheControlResponse, HttpHeaders,
+from ../server import Request, Response, CacheControlResponse, HttpHeaders,
                     send, hasHeaders, getHeader, addHeader, getHeaders,
-                    getRequest, newRedirect, getUserSessionUuid
+                    getRequest, newRedirect, getUserSessionUuid, addCookieHeader
 
 export Request, hasHeaders, getHeader, jsony
 export Response, CacheControlResponse, addHeader
@@ -116,6 +116,14 @@ method getUserSession*(res: Response): UserSession =
 
 method getUserSessionId*(res: Response): Uuid =
     result = res.getUserSessionUuid()
+
+method hasExpiredSession*(res: Response): bool =
+    ## Determine if current Session is expired
+    result = res.getUserSession().hasExpired
+
+method newCookie*(res: var Response, name, value: string) =
+    ## Alias method that creates a new `Cookie` for the current `Response`
+    res.addCookieHeader(res.getUserSession().newCookie(name, value))
 
 # 
 # Request Methods

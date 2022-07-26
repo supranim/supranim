@@ -16,7 +16,7 @@ import emitter
 
 from std/os import getAppDir, normalizedPath, getCurrentDir, fileExists
 from std/strutils import startsWith, endsWith
-from ./supranim/core/http/response import json_error, response, css, send404, redirect
+from supranim/response import json_error, response, css, send404, redirect
 
 export Port
 export App, application

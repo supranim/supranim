@@ -5,10 +5,8 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-from ./server import Response, Request
-
-import ./core/http/response
+include ./core/http/private/response
 import ./support/[session, uuid]
 
 export Request, Response
-export response, session, uuid
+export session, uuid

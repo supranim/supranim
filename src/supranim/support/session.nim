@@ -30,6 +30,7 @@ type
         id: Uuid
         backend: CookiesTable
         client: CookiesTable
+        created: DateTime
     
     Sessions = Table[string, UserSession]
     ClientSession* = tuple[cookies: string, agent, os: string, mobile: bool]
@@ -106,7 +107,7 @@ proc `$`*(cookie: ref Cookie): string =
     # result.add kv("MaxAge", $(cookie.maxAge.get))
     result.add kv("Domain", $cookie.domain)
     result.add kv("Path", $cookie.path)
-    result.add kv("Secure", $cookie.secure)
+    # result.add kv("Secure", $cookie.secure)
     result.add kv("SameSite", $cookie.sameSite)
 
 #
@@ -120,16 +121,23 @@ method getCookies*(session: UserSession): CookiesTable =
     ## Retrieve all Cookies from Backend
     result = session.backend
 
+method newCookie*(session: UserSession, name, value: string): ref Cookie =
+    result = newCookie(name, value, 1.hours)
+    session.backend[name] = result
+
 method getCookie*(session: UserSession, name: string): ref Cookie =
     ## Try get a Cookie by name
     if session.backend.hasKey(name):
         result = session.backend[name]
 
+method hasExpired*(session: UserSession): bool =
+    result = now() - session.created >= initDuration(minutes = 1) 
+
 method getUuid*(session: UserSession): Uuid =
     result = session.id
 
 proc initUserSession(newUuid: Uuid): UserSession =
-    result = UserSession(id: newUuid)
+    result = UserSession(id: newUuid, created: now())
     result.backend = newTable[string, ref Cookie]()
     result.backend["ssid"] = newCookie("ssid", $result.id, 30.minutes)
 
@@ -141,7 +149,10 @@ proc init*(sessions: var SessionManager) =
     Session = SessionManager()
 
 method isValid*(manager: var SessionManager, id: string): bool =
-    result = manager.sessions.hasKey(id)
+    ## Validates a session by `UUID` and creation time.
+    if manager.sessions.hasKey(id):
+        if not manager.sessions[id].hasExpired():
+            result = true
 
 method newUserSession*(manager: var SessionManager): UserSession =
     var newUuid: Uuid = uuid4()

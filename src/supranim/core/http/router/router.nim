@@ -17,7 +17,7 @@ from ../server import HttpMethod, Request, Response, RoutePattern,
 
 when not defined release:
     import std/times
-    import ../response
+    import ../private/response
 
 export HttpMethod, Response, Request, HttpCode
 

@@ -6,7 +6,7 @@
 #          https://supranim.com   |    https://github.com/supranim
 import std/macros
 from ./core/http/server import newRedirect, getRedirect
-from ./core/http/response import redirects, abort
+from ./response import redirects, abort
 from ./core/http/router/router import Middleware, Response
 
 export abort, redirects, newRedirect, getRedirect
