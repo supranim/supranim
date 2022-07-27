@@ -21,18 +21,16 @@ export Response, CacheControlResponse, addHeader
 export session
 
 const
-    ContentTypeJSON = "Content-Type: application/json"
-    ContentTypeTextHtml = "Content-Type: text/html"
-    ContentTypeTextCSS = "Content-Type: text/css"
     HeaderHttpRedirect = "Location: $1"
 
 #
 # Http Responses
 #
-method response*(res: var Response, body: string, code = Http200, contentType = ContentTypeTextHtml) =
+method response*(res: var Response, body: string, code = Http200, contentType = "text/html") =
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
-    res.getRequest().send(code, body, res.getHeaders(contentType))
+    res.addHeader("Content-Type", contentType)
+    res.getRequest().send(code, body, res.getHeaders())
 
 method send404*(res: var Response, msg="404 | Not Found") =
     ## Sends a 404 HTTP Response with a default "404 | Not Found" message
@@ -46,8 +44,11 @@ template view*(res: var Response, key: string, code = Http200) =
     res.response(getViewContent(App, key))
 
 method css*(res: var Response, data: string) =
-    ## Send a response containing CSS contents with ``Content-Type: text/css``
-    res.response(data, contentType = ContentTypeTextCSS)
+    ## Send a response containing CSS contents with `Content-Type: text/css`
+    res.response(data, contentType = "text/css;charset=UTF-8")
+
+method js*(res: var Response, data: string) =
+    res.response(data, contentType = "text/javascript;charset=UTF-8")
 
 method addCacheControl*(res: var Response, opts: openarray[tuple[k: CacheControlResponse, v: string]]) =
     ## Method for adding a `Cache-Control` header to current `Response` instance
@@ -66,12 +67,12 @@ method json*[R: Response, T](res: var R, body: T, code = Http200) {.base.} =
     ## This template is using an untyped body parameter that is automatically
     ## converting ``seq``, ``objects``, ``string`` (and so on) to
     ## JSON (stringified) via ``jsony`` library.
-    getRequest(res).send(code, toJson(body), ContentTypeJSON)
+    getRequest(res).send(code, toJson(body), "application/json;charset=UTF-8")
 
 method json*[R: Response](res: R, body: JsonNode, code = Http200) =
     ## Sends a JSON response with a default 200 (OK) status code.
     ## This template is using the native JsonNode for creating the response body.
-    getRequest(res).send(code, $body, ContentTypeJSON)
+    getRequest(res).send(code, $body, "application/json;charset=UTF-8")
 
 method json404*(res: var Response, body = "") =
     ## Sends a 404 JSON Response  with a default "Not found" message
@@ -85,10 +86,10 @@ method json500*(res: var Response, body = "") =
 
 template json_error*(res: var Response, body: untyped, code: HttpCode = Http501) = 
     ## Sends a JSON response followed by of a HttpCode (that represents an error)
-    getRequest(res).send(code, toJson(body), ContentTypeJSON)
+    getRequest(res).send(code, toJson(body), "application/json;charset=UTF-8")
 
 #
-# HTTP Redirects procedures
+# HTTP Redirects
 #
 method redirect*(res: var Response, target: string, code = Http307) =
     ## Set a HTTP Redirect with a default ``Http307`` Temporary Redirect status code
@@ -108,18 +109,31 @@ template abort*(httpCode: HttpCode = Http403) =
     ## TODO Support custom 403 error pages, if enabled, 
     ## othwerwise send an empty 403 response so browsers
     ## can prompt their built-in error page.
-    getRequest(res).send(httpCode, "You don't have authorisation to view this page", ContentTypeTextHtml)
+    getRequest(res).send(httpCode, "You don't have authorisation to view this page", "text/html")
     return # block code execution after `abort`
 
+#
+# UserSession by Response
+#
 method getUserSession*(res: Response): UserSession =
-    result = Session.getCurrentSession(res.getUserSessionUuid())
+    ## Returns the current `UserSession` instance 
+    result = Session.getCurrentSession(res.getUserSessionUuid)
+
+method getSession*(res: var Response): UserSession =
+    ## Alias method for `getUserSession`
+    result = res.getUserSession()
 
 method getUserSessionId*(res: Response): Uuid =
+    ## Returns the `UUID` from `UserSession` instance  
     result = res.getUserSessionUuid()
 
 method hasExpiredSession*(res: Response): bool =
     ## Determine if current Session is expired
     result = res.getUserSession().hasExpired
+
+method isExpiringSoon*(res: Response): bool =
+    ## Determine if current Session will expire soon based on given interval
+    ## TODO
 
 method newCookie*(res: var Response, name, value: string) =
     ## Alias method that creates a new `Cookie` for the current `Response`

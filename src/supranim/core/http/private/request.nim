@@ -145,12 +145,12 @@ method addHeader*(res: var Response, key, value: string) =
     ## Add a new Response Header to given instance.
     res.headers.add(key, value)
 
-method getHeaders*(res: Response, default: string): string =
+method getHeaders*(res: Response): string =
     ## Returns the stringified HTTP Headers of `Response` instance
-    result = default
-    result &= "\n"
+    var hstr: seq[string]
     for h in res.headers.pairs():
-      result &= h.key & ":" & indent(h.value, 1) & "\n"
+        hstr.add(h.key & ":" & indent(h.value, 1))
+    result &= hstr.join("\n")
 
 proc body*(req: Request): Option[string] =
     ## Retrieves the body of the request.

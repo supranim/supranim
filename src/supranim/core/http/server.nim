@@ -141,7 +141,7 @@ type
         deferRedirect: string           ## Keep a deferred Http redirect from a middleware
         req: Request                    ## Holds the current `Request` instance
         headers: HttpHeaders            ## All response headers collected from controller
-        sessionId: Uuid
+        sessionId: Uuid                 ## An `UUID` representing the current `UserSession`
 
     OnRequest* = proc (req: var Request, res: var Response, app: Application): Future[void] {.gcsafe.}
         ## Procedure used on request
@@ -171,7 +171,6 @@ var serverDate {.threadvar.}: string
 proc updateDate(fd: AsyncFD): bool =
     result = false # Returning true signifies we want timer to stop.
     serverDate = now().utc().format("ddd, dd MMM yyyy HH:mm:ss 'GMT'")
-
 
 proc parseHttpMethod*(data: string, start: int): Option[HttpMethod] =
     ## Parses Request data in order to find the current HttpMethod
@@ -437,8 +436,8 @@ template handleClientReadEvent() =
                     logging.warn("bytesSent isn't empty.")
 
             # let m = parseHttpMethod(data.data, start=0);
-            # let waitingForBody = methodNeedsBody(data) and bodyInTransit(data)
-            let waitingForBody = false
+            let waitingForBody = methodNeedsBody(data) and bodyInTransit(data)
+            # let waitingForBody = false
             if likely(not waitingForBody):
                 for start in parseRequests(data.data):
                     # For pipelined requests, we need to reset this flag.
@@ -582,8 +581,6 @@ proc eventLoop(params: (OnRequest, Application)) =
             if ret > 0:
                 processEvents(selector, events, ret, onRequest, app)
             asyncdispatch.poll(0)
-
-#[ API start ]#
 
 proc run*(onRequest: OnRequest, app: Application) =
     ## Starts the HTTP server and calls `onRequest` for each request.

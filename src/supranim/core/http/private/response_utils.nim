@@ -1,9 +1,17 @@
 
 method addCookieHeader*(res: var Response, cookie: ref Cookie) =
-    ## Add a new `Cookie`
+    ## Add a new `Cookie` to given Response instance.
+    ## Do not call this method directly. Instead,
+    ## you can use `newCookie()` method from `supranim/support/session` module
     if not res.headers.hasKey("set-cookie"):
         res.headers.table["set-cookie"] = newSeq[string]()
     res.headers.table["set-cookie"].add($cookie)
+
+method deleteCookieHeader*(res: var Response, name: string) =
+    ## Invalidate a Cookie on client side for the given `Response` 
+    ## Do not call this method directly. Instead,
+    ## you can use `deleteCookie()` method from `supranim/support/session` module
+    ## TODO
 
 template createNewUserSession(res: var Response) =
     # Create a new `UserSession` UUID and send the `Cookie` in the next `Response`
