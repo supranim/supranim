@@ -16,7 +16,7 @@ import emitter
 
 from std/os import getAppDir, normalizedPath, getCurrentDir, fileExists
 from std/strutils import startsWith, endsWith
-from supranim/response import json_error, response, css, send404, redirect
+from supranim/response import json_error, response, css, js, send404, redirect
 
 export Port
 export App, application
@@ -63,6 +63,8 @@ template handleStaticAssetsDev() =
         if assetsStatus == Http200:
             if endsWith(reqRoute, ".css"):
                 res.css(Assets.getFile(reqRoute))
+            elif endsWith(reqRoute, ".js"):
+                res.js(Assets.getFile(reqRoute))
             else:
                 res.response(Assets.getFile(reqRoute))
         else:

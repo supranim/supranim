@@ -130,6 +130,16 @@ method getCookie*(session: UserSession, name: string): ref Cookie =
     if session.backend.hasKey(name):
         result = session.backend[name]
 
+method deleteCookie*(session: UserSession, name: string): bool =
+    ## Delete a Cookie from both, backend and client-side
+    if session.backend.hasKey(name):
+        session.backend.del(name)
+        return true
+
+method hasCookie*(session: UserSession, name: string): bool =
+    ## Determine if current session has a specific Cookie by name
+    result = session.backend.hasKey(name)
+
 method hasExpired*(session: UserSession): bool =
     result = now() - session.created >= initDuration(minutes = 1) 
 
