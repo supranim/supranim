@@ -9,8 +9,10 @@ import std/tables
 import pkginfo, nyml, emitter
 
 import std/macros
-import ./config/assets
-import ./supplier
+# import ./supplier TODO
+
+when defined webapp:
+    import ./config/assets
 
 from ../utils import ymlConfigSample
 from std/nativesockets import Domain
@@ -126,16 +128,15 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
             # embedding Supranim in other libraries, for example
             # Chocotone https://github.com/chocotone
             parseEnvFile(inlineConfigStr)
-
-    let publicDir = App.config.get("app.assets.public").getStr
-    var sourceDir = App.config.get("app.assets.source").getStr
-    if publicDir.len != 0 and sourceDir.len != 0:
-        # when not defined(release):
+    
+    when defined webapp:
+        let publicDir = App.config.get("app.assets.public").getStr
+        var sourceDir = App.config.get("app.assets.source").getStr
+        if publicDir.len != 0 and sourceDir.len != 0:
+            raise newException(ApplicationDefect, "Invalid project structure. Missing `public` and `source` directories")
         sourceDir = getAppDir() & "/" & sourceDir
         normalizePath(sourceDir)
         Assets.init(sourceDir, publicDir)
-    else:
-        App.appType = RESTful
 
     let appAddress = App.config.get("app.address") 
     App.address = if appAddress.kind == JNULL: $getPrimaryIPAddr() else: appAddress.getStr  
@@ -146,15 +147,6 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     App.isInitialized = true
     result = App
 
-# proc loadEventListeners() {.compileTime.} = 
-#     ## Load application event listeners (if any)
-#     for files in Finder.files():
-#         echo file.getFileName()
-#         echo file.getFileSize()
-
-# dumpAstGen:
-#     Event.emit("system.boot.services")
-
 macro init*[A: Application](app: var A) =
     ## Initialize Supranim application based on current
     ## configuration and available services.
@@ -163,65 +155,6 @@ macro init*[A: Application](app: var A) =
     result = newStmtList()
     if doc.get().hasKey("services"):
         let services = doc.get("services")
-        # TODO
-        # for id, conf in pairs(services):
-            # result.add(nnkImportStmt.newTree(ident id))
-            # var singleton = split(conf["singleton"].getStr, ':')
-            # let singletonIdent = singleton[0]
-            # let singletonObject = singleton[1]
-            # var callable = nnkCall.newTree()
-            # callable.add(ident "init")
-            # callable.add(ident singletonObject)
-            # if conf.hasKey("settings"):
-            #     for pId, pVal in pairs(conf["settings"]):
-            #         case pVal.kind:
-            #         of JString:
-            #             callable.add(
-            #                 nnkExprEqExpr.newTree(
-            #                     ident pId,
-            #                     newLit pVal.getStr
-            #                 )
-            #             )
-            #         of JBool:
-            #             callable.add(
-            #                 nnkExprEqExpr.newTree(
-            #                     ident pId,
-            #                     newLit pVal.getBool
-            #                 )
-            #             )
-            #         of JInt:
-            #             callable.add(
-            #                 nnkExprEqExpr.newTree(
-            #                     ident pId,
-            #                     newLit pVal.getInt
-            #                 )
-            #             )
-            #         else: discard # TODO
-            #     result.add(
-            #         nnkVarSection.newTree(
-            #             nnkIdentDefs.newTree(
-            #                 nnkPostfix.newTree(
-            #                     ident "*",
-            #                     ident singletonIdent
-            #                 ),
-            #                 newEmptyNode(),
-            #                 callable
-            #             )
-            #         )
-            #     )
-            # else:
-            #     result.add(
-            #         nnkVarSection.newTree(
-            #             nnkIdentDefs.newTree(
-            #                 nnkPostfix.newTree(
-            #                     ident "*",
-            #                     ident singletonIdent
-            #                 ),
-            #                 newEmptyNode(),
-            #                 callable
-            #             )
-            #         )
-            #     )
     # Include application routes.nim file
     result.add(
         nnkIncludeStmt.newTree(
@@ -337,7 +270,7 @@ method printBootStatus*[A: Application](app: A) =
         defaultCompileOptions.add("Compiled with Size Optimization")
     
     # Compiling for a ``-d:release`` version
-    when defined(release):
+    when defined release:
         defaultCompileOptions.add("Release mode: Production")
     else:
         defaultCompileOptions.add("Release mode: Development")
@@ -347,14 +280,12 @@ method printBootStatus*[A: Application](app: A) =
         defaultCompileOptions.add("Multi-threading: " & YES & " (threads: " & $app.getThreads & ")")
     else:
         defaultCompileOptions.add("Multi-threading: " & NO)
-
-    if Assets.exists():
-        # Web apps can serve Static Assets
-        defaultCompileOptions.add("Static Assets Handler: " & YES)
-
-    # Compiling with Template Engine or use Supranim asa REST API service
-    if app.hasTemplates():
-        defaultCompileOptions.add("Template Engine: " & YES)
+    
+    when defined webapp:
+        if Assets.exists():         # Web apps can serve Static Assets
+            defaultCompileOptions.add("Static Assets Handler: " & YES)
+        if app.hasTemplates():      # Web apps can render templates via Tim Engine
+            defaultCompileOptions.add("Template Engine: " & YES)
 
     # Compiling with DatabaseService
     if app.hasDatabase():

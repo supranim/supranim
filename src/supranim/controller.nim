@@ -5,6 +5,7 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
+import jsony
 import std/[options, sequtils]
 
 from std/uri import decodeQuery
@@ -30,59 +31,65 @@ method getFields*(req: Request): seq[(string, string)] =
     ## data submission.
     result = toSeq(req.getBody().decodeQuery)
 
-proc isPage*(req: Request, key: string): bool =
-    ## Determine if current page is as expected
-    result = req.getCurrentPath() == key
+when defined webapp:
+    proc isPage*(req: Request, key: string): bool =
+        ## Determine if current page is as expected
+        result = req.getCurrentPath() == key
 
-method getAgent*(req: Request): string =
-    ## Retrieves the user agent from request header
-    result = req.getHeader("user-agent")
+    method getAgent*(req: Request): string =
+        ## Retrieves the user agent from request header
+        result = req.getHeader("user-agent")
 
-method getPlatform*(req: Request): string =
-    ## Return the platform name, It can be one of the following common platform values:
-    ## ``Android``, ``Chrome OS``, ``iOS``, ``Linux``, ``macOS``, ``Windows``, or ``Unknown``.
-    # https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform
-    result = unquote(req.getHeader("sec-ch-ua-platform"))
+    method getPlatform*(req: Request): string =
+        ## Return the platform name, It can be one of the following common platform values:
+        ## ``Android``, ``Chrome OS``, ``iOS``, ``Linux``, ``macOS``, ``Windows``, or ``Unknown``.
+        # https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform
+        result = unquote(req.getHeader("sec-ch-ua-platform"))
 
-method isMacOS*(req: Request): bool =
-    ## Determine if current request is made from ``macOS`` platform
-    result = req.getPlatform() == "macOS"
+    method isMacOS*(req: Request): bool =
+        ## Determine if current request is made from ``macOS`` platform
+        result = req.getPlatform() == "macOS"
 
-method isLinux*(req: Request): bool =
-    ## Determine if current request is made from ``Linux`` platform
-    result = req.getPlatform() == "Linux"
+    method isLinux*(req: Request): bool =
+        ## Determine if current request is made from ``Linux`` platform
+        result = req.getPlatform() == "Linux"
 
-method isWindows*(req: Request): bool =
-    ## Determine if current request is made from ``Window`` platform
-    result = req.getPlatform() == "Windows"
+    method isWindows*(req: Request): bool =
+        ## Determine if current request is made from ``Window`` platform
+        result = req.getPlatform() == "Windows"
 
-method isChromeOS*(req: Request): bool =
-    ## Determine if current request is made from ``Chrome OS`` platform
-    result = req.getPlatform() == "Chrome OS"
+    method isChromeOS*(req: Request): bool =
+        ## Determine if current request is made from ``Chrome OS`` platform
+        result = req.getPlatform() == "Chrome OS"
 
-method isIOS*(req: Request): bool =
-    ## Determine if current request is made from ``iOS`` platform
-    result = req.getPlatform() == "iOS"
+    method isIOS*(req: Request): bool =
+        ## Determine if current request is made from ``iOS`` platform
+        result = req.getPlatform() == "iOS"
 
-method isAndroid*(req: Request): bool =
-    ## Determine if current request is made from ``Android`` platform
-    result = req.getPlatform() == "Android"
+    method isAndroid*(req: Request): bool =
+        ## Determine if current request is made from ``Android`` platform
+        result = req.getPlatform() == "Android"
 
-method isMobile*(req: Request): bool =
-    ## Determine if current request is made from a mobile device
-    ## https://wicg.github.io/ua-client-hints/#sec-ch-ua-mobile
-    result = req.getPlatform() in ["Android", "iOS"] and
-             req.getHeader("sec-ch-ua-mobile") == "true"
+    method isMobile*(req: Request): bool =
+        ## Determine if current request is made from a mobile device
+        ## https://wicg.github.io/ua-client-hints/#sec-ch-ua-mobile
+        result = req.getPlatform() in ["Android", "iOS"] and
+                 req.getHeader("sec-ch-ua-mobile") == "true"
 
 #
 # Response - Higher-level
 #
 # import ./support/[session, uuid]
 from ./core/http/server import Response, response, send404, send500,
-                            view, css, js, addCacheControl, json,
+                            addCacheControl, json,
                             json404, json500, redirect, redirects, abort,
                             newCookie, getDeferredRedirect
-export Response, response, send404, send500, view, css, js,
+
+when defined webapp:
+    from ./core/http/server import view, css, js
+    export view, css, js
+
+export Response, response, send404, send500,
         addCacheControl, json, json404, json500, redirect,
         redirects, abort, newCookie, getDeferredRedirect
 

@@ -24,7 +24,7 @@ proc unsafeSend*(req: Request, data: string) =
     if req.client notin req.selector: return
     withRequestData(req):
         requestData.sendQueue.add(data)
-    req.selector.updateHandle(req.client, {Event.Read, Event.Write})
+    req.selector.updateHandle(req.client, {selectors.Event.Read, selectors.Event.Write})
 
 proc send*(req: Request, code: HttpCode, body: string, headers="") =
     ## Responds with the specified HttpCode and body.
@@ -43,7 +43,7 @@ proc send*(req: Request, code: HttpCode, body: string, headers="") =
             ) % [$code, $body.len, serverDate, otherHeaders, body]
 
         requestData.sendQueue.add(text)
-    req.selector.updateHandle(req.client, {Event.Read, Event.Write})
+    req.selector.updateHandle(req.client, {selectors.Event.Read, selectors.Event.Write})
 
 proc send*(req: Request, code: HttpCode) =
     ## Responds with the specified HttpCode. The body of the response

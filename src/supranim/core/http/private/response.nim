@@ -12,18 +12,23 @@ import ../../../support/session
 from std/strutils import `%`
 export jsony, HttpCode, Response
 
-const HeaderHttpRedirect = "Location: $1"
+let
+    HeaderHttpRedirect = "Location: $1"
+    ContentTypeJson = "application/json"
+    ContentTypeHTML = "text/html"
 
 #
 # Response - Http Interface API
 #
-method response*(res: var Response, body: string, code = Http200, contentType = "text/html")
+
+method response*(res: var Response, body: string, code = Http200, contentType = ContentTypeHTML)
 method send404*(res: var Response, msg="404 | Not Found")
 method send500*(res: var Response, msg="500 | Internal Error")
-method css*(res: var Response, data: string)
-method js*(res: var Response, data: string)
+when defined webapp:
+    method css*(res: var Response, data: string)
+    method js*(res: var Response, data: string)
 method json*[R: Response, T](res: var R, body: T, code = Http200) {.base.}
-method json*(res: Response, body: JsonNode, code = Http200)
+method json*(res: var Response, body: JsonNode, code = Http200)
 method json404*(res: var Response, body = "")
 method json500*(res: var Response, body = "")
 
@@ -45,7 +50,7 @@ method getSessionId*(res: Response): Uuid
 #
 # Http Responses
 #
-method response*(res: var Response, body: string, code = Http200, contentType = "text/html") =
+method response*(res: var Response, body: string, code = Http200, contentType = ContentTypeHTML) =
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
     res.addHeader("Content-Type", contentType)
@@ -59,15 +64,16 @@ method send500*(res: var Response, msg="500 | Internal Error") =
     ## Sends a 500 HTTP Response with a default "500 | Internal Error" message
     res.response(msg, Http500)
 
-template view*(res: var Response, key: string, code = Http200) =
-    res.response(getViewContent(App, key))
+when defined webapp:
+    template view*(res: var Response, key: string, code = Http200) =
+        res.response(getViewContent(App, key))
 
-method css*(res: var Response, data: string) =
-    ## Send a response containing CSS contents with `Content-Type: text/css`
-    res.response(data, contentType = "text/css;charset=UTF-8")
+    method css*(res: var Response, data: string) =
+        ## Send a response containing CSS contents with `Content-Type: text/css`
+        res.response(data, contentType = "text/css;charset=UTF-8")
 
-method js*(res: var Response, data: string) =
-    res.response(data, contentType = "text/javascript;charset=UTF-8")
+    method js*(res: var Response, data: string) =
+        res.response(data, contentType = "text/javascript;charset=UTF-8")
 
 method addCacheControl*(res: var Response, opts: openarray[tuple[k: CacheControlResponse, v: string]]) =
     ## Method for adding a `Cache-Control` header to current `Response` instance
@@ -87,26 +93,26 @@ method json*[R: Response, T](res: var R, body: T, code = Http200) {.base.} =
     ## This template is using an untyped body parameter that is automatically
     ## converting ``seq``, ``objects``, ``string`` (and so on) to
     ## JSON (stringified) via ``jsony`` library.
-    getRequest(res).send(code, toJson(body), "application/json;charset=UTF-8")
+    res.response(toJson(body), code, ContentTypeJson)
 
-method json*(res: Response, body: JsonNode, code = Http200) =
+method json*(res: var Response, body: JsonNode, code = Http200) =
     ## Sends a JSON response with a default 200 (OK) status code.
     ## This template is using the native JsonNode for creating the response body.
-    getRequest(res).send(code, $body, "application/json;charset=UTF-8")
+    res.response($body, code, ContentTypeJson)
 
 method json404*(res: var Response, body = "") =
     ## Sends a 404 JSON Response  with a default "Not found" message
     var jbody = if body.len == 0: """{"status": 404, "message": "Not Found"}""" else: body
-    res.json(jbody, Http404)
+    res.response(jbody, Http404)
 
 method json500*(res: var Response, body = "") =
     ## Sends a 500 JSON Response with a default "Internal Error" message
     var jbody = if body.len == 0: """{"status": 500, "message": "Internal Error"}""" else: body
-    res.json(jbody, Http500)
+    res.response(jbody, Http500)
 
 template json_error*(res: var Response, body: untyped, code: HttpCode = Http501) = 
     ## Sends a JSON response followed by of a HttpCode (that represents an error)
-    getRequest(res).send(code, toJson(body), "application/json;charset=UTF-8")
+    response(res, toJson(body), code, ContentTypeJson)
 
 
 #

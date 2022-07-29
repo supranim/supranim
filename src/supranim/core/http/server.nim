@@ -142,7 +142,7 @@ type
         headers: HttpHeaders            ## All response headers collected from controller
         sessionId: Uuid                 ## An `UUID` representing the current `UserSession`
 
-    OnRequest* = proc (req: var Request, res: var Response): Future[void]
+    OnRequest* = proc (req: var Request, res: var Response): Future[void] {.gcsafe.}
         ## Procedure used on request
 
     AppConfig = tuple[onRequest: OnRequest, domain: Domain, address: string, port: Port, isReusable: bool]
@@ -522,9 +522,6 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
             # else: assert false
 
 proc eventLoop(app: AppConfig) =
-    # for logger in app.getLoggers:
-    #     addHandler(logger)
-
     let selector = newSelector[Data]()
     let server = newSocket(app.domain)
     server.setSockOpt(OptReuseAddr, true)
