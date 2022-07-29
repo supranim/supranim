@@ -5,120 +5,48 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import ./uuid
-import std/[cookies, tables, times, options]
+import ./uuid, ./cookie
+import std/[tables, times, options]
 
 from ./str import unquote
-from std/strutils import indent, split
 
-export times, uuid
+export times, uuid, cookie
 
 type
-    Cookie* = object
-        # A cookie object structure
-        name, value: string
-        expires: string
-        domain: string
-        path: string
-        secure: bool
-        httpOnly: bool
-        maxAge: Option[int]
-        sameSite: SameSite
-    
-    CookiesTable* = TableRef[string, ref Cookie]
     UserSession* = object
         id: Uuid
-        backend: CookiesTable
-        client: CookiesTable
+            ## ID representing the current UserSession
+        backend, client: CookiesTable
         created: DateTime
+            ## The creation time for current UserSession
     
-    Sessions = Table[string, UserSession]
-    ClientSession* = tuple[cookies: string, agent, os: string, mobile: bool]
+    ID* = string
+        ## The stringified `UUID`
+
+    Sessions = Table[ID, UserSession]
+        ## A table containing all UserSession instances
+
+    SessionOptions* = tuple[expiration: Duration]
+        ## Global options for `SessionManager` instance
 
     SessionManager = object
         sessions: Sessions
+        options: SessionOptions
+
+    SessionDefect* = object of Defect
 
 when compileOption("threads"):
-    # Create a singleton instance of RateLimiter
-    # with multi threading support
     var Session* {.threadvar.}: SessionManager
 else:
     var Session*: SessionManager
 
 #
-# Cookie API 
-#
-
-proc newCookie(name, value: string, expires: TimeInterval, maxAge = none(int), domain = "",
-                path = "", secure = false, httpOnly = true, sameSite = Lax): ref Cookie =
-    let expirationDate = now() + expires
-    new result
-    result.name = name
-    result.value = value
-    result.expires = format(expirationDate.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
-    result.maxAge = maxAge
-    result.domain = domain
-    result.path = path
-    result.secure = secure
-    result.httpOnly = httpOnly
-    result.sameSite = sameSite
-
-method getName*(cookie: ref Cookie): string =
-    ## Returns the Cookie name
-    result = cookie.name
-
-method getValue*(cookie: ref Cookie): string =
-    ## Returns the Cookie value
-    result = cookie.value
-
-method getDomain*(cookie: ref Cookie): string =
-    result = cookie.domain
-
-method isExpired*(cookie: ref Cookie): bool =
-    ## Determine if given Cookie is expired
-    result = parse(cookie.expires, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'") > now()
-
-method expire*(cookie: ref Cookie) =
-    ## TODO
-
-method isSecure*(cookie: ref Cookie): bool =
-    ## TODO
-
-method getSameSite*(cookie: ref Cookie): string =
-    ## TODO
-
-method getPartitionKey*(cookie: ref Cookie): string =
-    ## TODO
-
-proc parseCookies*(cookies: string): CookiesTable =
-    if cookies.len == 0: return
-    new result
-    for cookie in cookies.split(";"):
-        var kv = cookie.split("=")
-        result[kv[0]] = newCookie(kv[0], kv[1], 1.hours)
-
-proc kv(k, v: string): string =
-    result = k & "=" & v & ";"
-
-proc `$`*(cookie: ref Cookie): string =
-    result.add kv(cookie.name, cookie.value)
-    result.add kv("HttpOnly", $cookie.httpOnly)
-    result.add kv("Expires", cookie.expires)
-    # result.add kv("MaxAge", $(cookie.maxAge.get))
-    result.add kv("Domain", $cookie.domain)
-    result.add kv("Path", $cookie.path)
-    # result.add kv("Secure", $cookie.secure)
-    result.add kv("SameSite", $cookie.sameSite)
-
-#
 # UserSession API
 #
 method exists*(session: UserSession, key: string): bool =
-    ## Check if there is a Cookie based on given key.
     result = session.backend.hasKey(key) and session.client.hasKey(key)
 
 method getCookies*(session: UserSession): CookiesTable =
-    ## Retrieve all Cookies from Backend
     result = session.backend
 
 method newCookie*(session: UserSession, name, value: string): ref Cookie =
@@ -126,12 +54,10 @@ method newCookie*(session: UserSession, name, value: string): ref Cookie =
     session.backend[name] = result
 
 method getCookie*(session: UserSession, name: string): ref Cookie =
-    ## Try get a Cookie by name
     if session.backend.hasKey(name):
         result = session.backend[name]
 
 method deleteCookie*(session: UserSession, name: string): bool =
-    ## Delete a Cookie from both, backend and client-side
     if session.backend.hasKey(name):
         session.backend.del(name)
         return true
@@ -141,9 +67,13 @@ method hasCookie*(session: UserSession, name: string): bool =
     result = session.backend.hasKey(name)
 
 method hasExpired*(session: UserSession): bool =
+    ## Determine the state of the given session instance.
+    ## by checking the creation time and 
     result = now() - session.created >= initDuration(minutes = 1) 
 
 method getUuid*(session: UserSession): Uuid =
+    ## Retrieves the `UUID` of given the given session instance
+    ## Use `$` in order to stringify the ID.
     result = session.id
 
 proc initUserSession(newUuid: Uuid): UserSession =
@@ -153,18 +83,19 @@ proc initUserSession(newUuid: Uuid): UserSession =
 
 #
 # SessionManager API
-#
-proc init*(sessions: var SessionManager) =
-    ## Initialize a singleton instance of SessionManger
-    Session = SessionManager()
+# 
+proc init*(sessions: var SessionManager, opts: SessionOptions) =
+    ## Initialize a singleton of `SessionManager` as `Session`.
+    ## Optionally, you can adjust the duration of a session using `SessionOptions`.
+    Session = SessionManager(options: opts)
 
 method isValid*(manager: var SessionManager, id: string): bool =
     ## Validates a session by `UUID` and creation time.
     if manager.sessions.hasKey(id):
-        if not manager.sessions[id].hasExpired():
-            result = true
+        result = manager.sessions[id].hasExpired() == false
 
 method newUserSession*(manager: var SessionManager): UserSession =
+    ## Create a new UserSession instance via `SessionManager` singleton
     var newUuid: Uuid = uuid4()
     while true:
         if manager.sessions.hasKey($newUuid):
@@ -173,6 +104,6 @@ method newUserSession*(manager: var SessionManager): UserSession =
     result = initUserSession(newUuid)
     manager.sessions[$result.id] = result
 
-method getCurrentSession*(manager: var SessionManager, id: Uuid): UserSession =
-    ## Returns the current `UserSession`
+method getCurrentSessionByUuid*(manager: var SessionManager, id: Uuid): UserSession =
+    ## Returns an `UserSession` via `SessionManager` based on given id.
     result = manager.sessions[$id]

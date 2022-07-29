@@ -6,57 +6,41 @@
 #          https://supranim.com | https://github.com/supranim
 
 import jsony
-import std/[httpcore, macros]
+import std/[httpcore, macros, json]
 import ../../../support/session
 
 from std/strutils import `%`
-from std/json import JsonNode
-# from ../server import Request, Response, CacheControlResponse, HttpHeaders,
-#                     send, addHeader, getHeaders, getRequest,
-#                     getUserSessionUuid, addCookieHeader
-
-export jsony, session, HttpCode, Response, CacheControlResponse
+export jsony, HttpCode, Response
 
 const HeaderHttpRedirect = "Location: $1"
 
+#
+# Response - Http Interface API
+#
+method response*(res: var Response, body: string, code = Http200, contentType = "text/html")
+method send404*(res: var Response, msg="404 | Not Found")
+method send500*(res: var Response, msg="500 | Internal Error")
+method css*(res: var Response, data: string)
+method js*(res: var Response, data: string)
+method json*[R: Response, T](res: var R, body: T, code = Http200) {.base.}
+method json*(res: Response, body: JsonNode, code = Http200)
+method json404*(res: var Response, body = "")
+method json500*(res: var Response, body = "")
 
-method addCookieHeader*(res: var Response, cookie: ref Cookie) =
-    ## Add a new `Cookie` to given Response instance.
-    ## Do not call this method directly. Instead,
-    ## you can use `newCookie()` method from `supranim/support/session` module
-    if not res.headers.hasKey("set-cookie"):
-        res.headers.table["set-cookie"] = newSeq[string]()
-    res.headers.table["set-cookie"].add($cookie)
+#
+# Response - Redirect Interface API
+#
+method newDeferredRedirect*(res: var Response, target: string)
+method getDeferredRedirect*(res: Response): string
+method redirect*(res: var Response, target: string, code = Http303)
+method redirect301*(res: var Response, target:string)
 
-method deleteCookieHeader*(res: var Response, name: string) =
-    ## Invalidate a Cookie on client side for the given `Response` 
-    ## Do not call this method directly. Instead,
-    ## you can use `deleteCookie()` method from `supranim/support/session` module
-    ## TODO
-
-proc createNewUserSession(res: var Response) =
-    # Create a new `UserSession` UUID and send the `Cookie` in the next `Response`
-    var userSession = Session.newUserSession()
-    res.sessionId = userSession.getUuid()
-    res.addCookieHeader(userSession.getCookie("ssid"))
-
-proc createNewUserSession(res: var Response, clientCookies: string) =
-    # Set a new `UserSession` UUID or use the given one from `Request` if valid.
-    if clientCookies.len == 0:
-        createNewUserSession res
-    else:
-        let reqCookies = parseCookies(clientCookies)
-        if not reqCookies.hasKey("ssid"):
-            createNewUserSession res
-            return
-        let ssid = reqCookies["ssid"].getValue()
-        if Session.isValid(ssid):
-            try:
-                res.sessionId = uuid4(ssid)
-            except ValueError:
-                createNewUserSession res
-        else: createNewUserSession res
-
+#
+# Response - User Session API
+#
+method getUserSession*(res: Response): UserSession
+method getSession*(res: var Response): UserSession
+method getSessionId*(res: Response): Uuid
 
 #
 # Http Responses
@@ -65,7 +49,7 @@ method response*(res: var Response, body: string, code = Http200, contentType = 
     ## Sends a HTTP 200 OK response with the specified body.
     ## **Warning:** This can only be called once in the OnRequest callback.
     res.addHeader("Content-Type", contentType)
-    res.getRequest().send(code, body, res.getHeaders())
+    getRequest(res).send(code, body, res.getHeaders())
 
 method send404*(res: var Response, msg="404 | Not Found") =
     ## Sends a 404 HTTP Response with a default "404 | Not Found" message
@@ -105,7 +89,7 @@ method json*[R: Response, T](res: var R, body: T, code = Http200) {.base.} =
     ## JSON (stringified) via ``jsony`` library.
     getRequest(res).send(code, toJson(body), "application/json;charset=UTF-8")
 
-method json*[R: Response](res: R, body: JsonNode, code = Http200) =
+method json*(res: Response, body: JsonNode, code = Http200) =
     ## Sends a JSON response with a default 200 (OK) status code.
     ## This template is using the native JsonNode for creating the response body.
     getRequest(res).send(code, $body, "application/json;charset=UTF-8")
@@ -123,6 +107,7 @@ method json500*(res: var Response, body = "") =
 template json_error*(res: var Response, body: untyped, code: HttpCode = Http501) = 
     ## Sends a JSON response followed by of a HttpCode (that represents an error)
     getRequest(res).send(code, toJson(body), "application/json;charset=UTF-8")
+
 
 #
 # HTTP Redirects
@@ -156,29 +141,66 @@ template abort*(httpCode: HttpCode = Http403) =
     getRequest(res).send(httpCode, "You don't have authorisation to view this page", "text/html")
     return # block code execution after `abort`
 
+
 #
 # UserSession by Response
 #
-method getUserSession*(res: Response): ref UserSession =
-    ## Returns the current `UserSession` instance 
-    result = Session.getCurrentSession(res.getUserSessionUuid)
+method shouldRedirect*(res: Response): bool =
+    ## Determine if response should resolve any deferred redirects
+    result = res.deferRedirect.len != 0
 
-method getSession*(res: var Response): ref UserSession =
+method getUserSession*(res: Response): UserSession =
+    ## Returns the current `UserSession` instance 
+    ## from given `Response`
+    result = Session.getCurrentSessionByUuid(res.sessionId)
+
+method getSession*(res: var Response): UserSession =
     ## Alias method for `getUserSession`
     result = res.getUserSession()
 
-method getUserSessionId*(res: Response): Uuid =
+method getSessionId*(res: Response): Uuid =
     ## Returns the `UUID` from `UserSession` instance  
-    result = res.getUserSessionUuid()
+    ## Returns the unique ID representing the `UserSession`
+    ## for given `Response`
+    result = res.sessionId
 
-method hasExpiredSession*(res: Response): bool =
-    ## Determine if current Session is expired
-    result = res.getUserSession().hasExpired
-
-method isExpiringSoon*(res: Response): bool =
-    ## Determine if current Session will expire soon based on given interval
-    ## TODO
+method addCookieHeader*(res: var Response, cookie: ref Cookie) =
+    ## Add a new `Cookie` to given Response instance.
+    ## Do not call this method directly. Instead,
+    ## you can use `newCookie()` method from `supranim/support/session` module
+    if not res.headers.hasKey("set-cookie"):
+        res.headers.table["set-cookie"] = newSeq[string]()
+    res.headers.table["set-cookie"].add($cookie)
 
 method newCookie*(res: var Response, name, value: string) =
     ## Alias method that creates a new `Cookie` for the current `Response`
     res.addCookieHeader(res.getUserSession().newCookie(name, value))
+
+method deleteCookieHeader*(res: var Response, name: string) =
+    ## Invalidate a Cookie on client side for the given `Response` 
+    ## Do not call this method directly. Instead,
+    ## you can use `deleteCookie()` method from `supranim/support/session` module
+    ## TODO
+
+proc createNewUserSession(res: var Response) =
+    # Create a new `UserSession` UUID and send the `Cookie` in the next `Response`
+    var userSession = Session.newUserSession()
+    res.sessionId = userSession.getUuid()
+    res.addCookieHeader(userSession.getCookie("ssid"))
+
+proc createNewUserSession(res: var Response, clientCookies: string) =
+    # Set a new `UserSession` UUID or use the given one from `Request` if valid.
+    if clientCookies.len == 0:
+        createNewUserSession res
+    else:
+        let reqCookies = parseCookies(clientCookies)
+        if not reqCookies.hasKey("ssid"):
+            createNewUserSession res
+            return
+        let ssid = reqCookies["ssid"].getValue()
+        if Session.isValid(ssid):
+            try:
+                res.sessionId = uuid4(ssid)
+            except ValueError:
+                createNewUserSession res
+        else: createNewUserSession res

@@ -124,15 +124,6 @@ proc setParams*(req: var Request, reqValues: seq[RoutePatternRequest]) =
     for reqVal in reqValues:
         req.patterns.add(reqVal)
 
-
-method getUserSessionUuid*(res: Response): Uuid =
-    ## Returns current `SessionInstance`
-    result = res.sessionId
-
-method shouldRedirect*(res: Response): bool =
-    ## Determine if response should resolve any deferred redirects
-    result = res.deferRedirect.len != 0
-
 method headers*(req: Request): Option[HttpHeaders] =
     ## Parses the request's data to get the headers.
     if unlikely(req.client notin req.selector):
