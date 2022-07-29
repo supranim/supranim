@@ -5,9 +5,10 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 import std/macros
-from ./core/http/server import newRedirect, getRedirect
-from ./response import redirects, abort
+
+from ./core/http/server import newDeferredRedirect, getDeferredRedirect
+from ./controller import redirects, abort
 from ./core/http/router/router import Middleware, Response
 
-export abort, redirects, newRedirect, getRedirect
+export abort, redirects, newDeferredRedirect, getDeferredRedirect
 export Middleware, Response

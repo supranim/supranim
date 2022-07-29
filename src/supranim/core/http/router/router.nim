@@ -6,18 +6,24 @@
 #          https://supranim.com   |    https://github.com/supranim
 
 import std/[tables, macros, with]
+
 from std/times import DateTime
 from std/options import Option
 from std/sequtils import toSeq
 from std/enumutils import symbolName
+
 from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit,
                         startsWith, toUpperAscii, contains
+
 from ../server import HttpMethod, Request, Response, RoutePattern,
-                      RoutePatternTuple, RoutePatternRequest, HttpCode
+                      RoutePatternTuple, RoutePatternRequest, HttpCode, shouldRedirect
 
 when not defined release:
+    # Register a dev-only route for hot code reloading support.
+    # See method `initLiveReload` at the bottom of this file
     import std/times
     import ../private/response
+
 
 export HttpMethod, Response, Request, HttpCode
 
@@ -42,6 +48,7 @@ type
         connectController = "connect$1"
         optionsController = "options$1"
         traceController = "trace$1"
+        patchController = "patch$"
 
     RouteStatus* = enum
         NotFound, Found, BlockedByAbort, BlockedByRedirect
@@ -66,8 +73,6 @@ type
                     ## to retrieve the pattern value from request
             else: discard
         callback: Callable
-            ## A callable callback of type
-            ## Callable = proc (req: Request, res: Response){.nimcall.}
         case hasMiddleware: bool
             ## Determine if current Route object has one or
             ## more middleware attached to it.
@@ -76,15 +81,8 @@ type
                     ## A sequence of Middlewares. Note that middlewares
                     ## are always checked in the same order that have been provided.
             else: discard
-        case isTemporary: bool
-            ## Determine if current Route object is set as a temporary route.
-            ## In this case, the route access can expire in a certain amount of time.
-            of true:
-                expiration: Option[DateTime]
-                    ## The expiration DateTime
-            else: discard
 
-    RuntimeRoutePattern* = tuple[
+    RuntimeRouteStatus* = tuple[
         status: RouteStatus,
         key: string,
         params: seq[RoutePatternRequest],
@@ -133,7 +131,7 @@ proc isDynamic*[R: Route](route: ref R): bool =
 
 include ./utils
 
-proc getCollectionByVerb[R: HttpRouter](router: var R, verb: HttpMethod, hasParams = false): VerbCollection  =
+method getCollectionByVerb(router: var HttpRouter, verb: HttpMethod, hasParams = false): VerbCollection  =
     ## Get `VerbCollection`, `Table[string, Route]` based on given verb
     result = case verb:
         of HttpGet:     router.getCollection("httpGet", hasParams)
@@ -146,7 +144,7 @@ proc getCollectionByVerb[R: HttpRouter](router: var R, verb: HttpMethod, hasPara
         of HttpTrace:   router.getCollection("httpTrace", hasParams)
         of HttpOptions: router.getCollection("httpOptions", hasParams)
 
-proc register[R: HttpRouter](router: var R, verb: HttpMethod, route: ref Route) =
+method register(router: var HttpRouter, verb: HttpMethod, route: ref Route) =
     ## Register a new route by given Verb and Route object
     router.getCollectionByVerb(verb, route.routeType == DynamicRouteType)[route.path] = route
 
@@ -311,31 +309,43 @@ proc getNameByPath(route: string): string {.compileTime.} =
 
 proc initControllerName(methodType: HttpMethod, path: string): string {.compileTime.} =
     case methodType:
-    of HttpGet:
-        result = $getController % [getNameByPath(path)]
-    of HttpPost:
-        result = $postController % [getNameByPath(path)]
-    else: result = ""
-
+    of HttpGet:     result = $getController
+    of HttpPost:    result = $postController
+    of HttpPut:     result = $putController
+    of HttpHead:    result = $headController
+    of HttpConnect: result = $connectController
+    of HttpDelete:  result = $deleteController
+    of HttpPatch:   result = $deleteController
+    of HttpTrace:   result = $traceController
+    of HttpOptions: result = $optionsController
+    result = result % [getNameByPath(path)]
 
 proc exists*[R: HttpRouter](router: var R, verb: HttpMethod, path: string): bool =
     ## Determine if requested route exists for given `HttpMethod`
     let collection = router.getCollectionByVerb(verb)
     result = collection.hasKey(path)
 
-proc existsRuntime*[R: HttpRouter](router: var R, verb: HttpMethod, path: string,
-                                      req: Request, res: var Response): RuntimeRoutePattern =
-    ## Determine if route exists for given ``key/path`` based on current HttpMethod verb.
-    ## This is a procedure called only on runtime on each request.
-    let collection = router.getCollectionByVerb(verb)
-    let status = collection.hasKey(path)
-    result.key = path
-    if status == false:
-        let dynamicCollection = router.getCollectionByVerb(verb, true)
+proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
+                    req: Request, res: var Response): RuntimeRouteStatus =
+    let staticRoutes = router.getCollectionByVerb(verb)
+    try:
+        result.route = staticRoutes[path]
+        if result.route.hasMiddleware:
+            for middlewareCallback in result.route.middlewares:
+                let status = middlewareCallback(res)
+                if status == false:
+                    if res.shouldRedirect():
+                        result.status = BlockedByRedirect
+                    else:
+                        result.status = BlockedByAbort
+                    return
+        result.status = Found
+    except ValueError:
+        let dynamicRoutes = router.getCollectionByVerb(verb, true)
         var reqPattern = getPatternsByStr(path)
         var matchRoutePattern: bool
         var reqPatternKeys: seq[int]
-        for key, route in dynamicCollection.pairs():
+        for key, route in dynamicRoutes.pairs():
             let routePatternsLen = route.patterns.len
             let reqPatternsLen = reqPattern.len
             # TODO handle optional patterns
@@ -369,23 +379,6 @@ proc existsRuntime*[R: HttpRouter](router: var R, verb: HttpMethod, path: string
             else:
                 result.status = NotFound
                 break
-    else:
-        result.route = collection[path]
-        if result.route.hasMiddleware:
-            for middlewareCallback in result.route.middlewares:
-                let status = middlewareCallback(res)
-                if status == false:
-                    if res.hasRedirect():
-                        result.status = BlockedByRedirect
-                    else:
-                        result.status = BlockedByAbort
-                    return
-        result.status = Found
-
-proc isTemporary*[R: HttpRouter](router: R, verb: HttpMethod, path: string): bool =
-    ## Determine if specified route has expiration time
-    let collection = router.getCollectionByVerb(verb)
-    result = collection[path].isTemporary
 
 proc runCallable*[R: Route](route: ref R, req: var Request, res: var Response) =
     ## Run callable from route controller
@@ -558,5 +551,4 @@ when not defined release:
     method refresh*[R: HttpRouter](router: var R) {.base.} =
         ## Internal method for refreshing current `HttpGet` screens.
         liveReload.state = now().toTime.toUnix
-
     Router.initLiveReload()

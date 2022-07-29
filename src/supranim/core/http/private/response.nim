@@ -5,23 +5,58 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import std/[httpcore, macros]
 import jsony
+import std/[httpcore, macros]
 import ../../../support/session
 
-from ../../../support/str import unquote
 from std/strutils import `%`
 from std/json import JsonNode
-from ../server import Request, Response, CacheControlResponse, HttpHeaders,
-                    send, hasHeaders, getHeader, addHeader, getHeaders,
-                    getRequest, newRedirect, getUserSessionUuid, addCookieHeader
+# from ../server import Request, Response, CacheControlResponse, HttpHeaders,
+#                     send, addHeader, getHeaders, getRequest,
+#                     getUserSessionUuid, addCookieHeader
 
-export Request, hasHeaders, getHeader, jsony
-export Response, CacheControlResponse, addHeader
-export session
+export jsony, session, HttpCode, Response, CacheControlResponse
 
-const
-    HeaderHttpRedirect = "Location: $1"
+const HeaderHttpRedirect = "Location: $1"
+
+
+method addCookieHeader*(res: var Response, cookie: ref Cookie) =
+    ## Add a new `Cookie` to given Response instance.
+    ## Do not call this method directly. Instead,
+    ## you can use `newCookie()` method from `supranim/support/session` module
+    if not res.headers.hasKey("set-cookie"):
+        res.headers.table["set-cookie"] = newSeq[string]()
+    res.headers.table["set-cookie"].add($cookie)
+
+method deleteCookieHeader*(res: var Response, name: string) =
+    ## Invalidate a Cookie on client side for the given `Response` 
+    ## Do not call this method directly. Instead,
+    ## you can use `deleteCookie()` method from `supranim/support/session` module
+    ## TODO
+
+proc createNewUserSession(res: var Response) =
+    # Create a new `UserSession` UUID and send the `Cookie` in the next `Response`
+    var userSession = Session.newUserSession()
+    res.sessionId = userSession.getUuid()
+    res.addCookieHeader(userSession.getCookie("ssid"))
+
+proc createNewUserSession(res: var Response, clientCookies: string) =
+    # Set a new `UserSession` UUID or use the given one from `Request` if valid.
+    if clientCookies.len == 0:
+        createNewUserSession res
+    else:
+        let reqCookies = parseCookies(clientCookies)
+        if not reqCookies.hasKey("ssid"):
+            createNewUserSession res
+            return
+        let ssid = reqCookies["ssid"].getValue()
+        if Session.isValid(ssid):
+            try:
+                res.sessionId = uuid4(ssid)
+            except ValueError:
+                createNewUserSession res
+        else: createNewUserSession res
+
 
 #
 # Http Responses
@@ -59,6 +94,7 @@ method addCacheControl*(res: var Response, opts: openarray[tuple[k: CacheControl
     for opt in opts:
         cacheControlValue &= $opt.k & "=" & opt.v
     res.addHeader("Cache-Control", cacheControlValue)
+
 #
 # JSON Responses
 #
@@ -91,8 +127,16 @@ template json_error*(res: var Response, body: untyped, code: HttpCode = Http501)
 #
 # HTTP Redirects
 #
-method redirect*(res: var Response, target: string, code = Http307) =
-    ## Set a HTTP Redirect with a default ``Http307`` Temporary Redirect status code
+method newDeferredRedirect*(res: var Response, target: string) =
+    ## Set a deferred redirect
+    res.deferRedirect = target
+
+method getDeferredRedirect*(res: Response): string =
+    ## Get a deferred redirect
+    res.deferRedirect
+
+method redirect*(res: var Response, target: string, code = Http303) =
+    ## Setup a HttpRedirect with a default 303 `HttpCode`
     getRequest(res).send(code, "", HeaderHttpRedirect % [target])
 
 method redirect301*(res: var Response, target:string) =
@@ -101,7 +145,7 @@ method redirect301*(res: var Response, target:string) =
 
 template redirects*(target: string) =
     ## Register a deferred 301 HTTP redirect in a middleware.
-    res.newRedirect(target)
+    res.newDeferredRedirect(target)
 
 template abort*(httpCode: HttpCode = Http403) = 
     ## Abort the current execution and return a 403 HTTP 
@@ -115,11 +159,11 @@ template abort*(httpCode: HttpCode = Http403) =
 #
 # UserSession by Response
 #
-method getUserSession*(res: Response): UserSession =
+method getUserSession*(res: Response): ref UserSession =
     ## Returns the current `UserSession` instance 
     result = Session.getCurrentSession(res.getUserSessionUuid)
 
-method getSession*(res: var Response): UserSession =
+method getSession*(res: var Response): ref UserSession =
     ## Alias method for `getUserSession`
     result = res.getUserSession()
 
@@ -138,46 +182,3 @@ method isExpiringSoon*(res: Response): bool =
 method newCookie*(res: var Response, name, value: string) =
     ## Alias method that creates a new `Cookie` for the current `Response`
     res.addCookieHeader(res.getUserSession().newCookie(name, value))
-
-# 
-# Request Methods
-# 
-method getAgent*(req: Request): string =
-    ## Retrieves the user agent from request header
-    result = req.getHeader("user-agent")
-
-method getPlatform*(req: Request): string =
-    ## Return the platform name, It can be one of the following common platform values:
-    ## ``Android``, ``Chrome OS``, ``iOS``, ``Linux``, ``macOS``, ``Windows``, or ``Unknown``.
-    # https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform
-    result = unquote(req.getHeader("sec-ch-ua-platform"))
-
-method isMacOS*(req: Request): bool =
-    ## Determine if current request is made from ``macOS`` platform
-    result = req.getPlatform() == "macOS"
-
-method isLinux*(req: Request): bool =
-    ## Determine if current request is made from ``Linux`` platform
-    result = req.getPlatform() == "Linux"
-
-method isWindows*(req: Request): bool =
-    ## Determine if current request is made from ``Window`` platform
-    result = req.getPlatform() == "Windows"
-
-method isChromeOS*(req: Request): bool =
-    ## Determine if current request is made from ``Chrome OS`` platform
-    result = req.getPlatform() == "Chrome OS"
-
-method isIOS*(req: Request): bool =
-    ## Determine if current request is made from ``iOS`` platform
-    result = req.getPlatform() == "iOS"
-
-method isAndroid*(req: Request): bool =
-    ## Determine if current request is made from ``Android`` platform
-    result = req.getPlatform() == "Android"
-
-method isMobile*(req: Request): bool =
-    ## Determine if current request is made from a mobile device
-    ## https://wicg.github.io/ua-client-hints/#sec-ch-ua-mobile
-    result = req.getPlatform() in ["Android", "iOS"] and
-             req.getHeader("sec-ch-ua-mobile") == "true"

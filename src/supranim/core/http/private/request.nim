@@ -1,3 +1,12 @@
+# Supranim is a simple MVC-style web framework for building
+# fast web applications, REST API microservices and other cool things.
+#
+# (c) 2022 Supranim is released under MIT License
+#          Made by Humans from OpenPeep
+#          https://supranim.com | https://github.com/supranim
+
+# This is an include-only module
+
 proc getRequest*(res: Response): Request =
     ## Returns the current Request instance
     result = res.req
@@ -12,8 +21,7 @@ proc unsafeSend*(req: Request, data: string) =
     ##
     ## It does not check whether the socket is in
     ## a state that can be written so be careful when using it.
-    if req.client notin req.selector:
-        return
+    if req.client notin req.selector: return
     withRequestData(req):
         requestData.sendQueue.add(data)
     req.selector.updateHandle(req.client, {Event.Read, Event.Write})
@@ -23,12 +31,10 @@ proc send*(req: Request, code: HttpCode, body: string, headers="") =
     ## **Warning:** This can only be called once in the OnRequest callback.
     if req.client notin req.selector:
         return
-
     withRequestData(req):
         # assert requestData.headersFinished, "Selector not ready to send."
-        if requestData.requestID != req.requestID:
-            raise SupranimDefect(msg: "You are attempting to send data to a stale request.")
-
+        # if requestData.requestID != req.requestID:
+            # raise SupranimDefect(msg: "You are attempting to send data to a stale request.")
         let otherHeaders = if likely(headers.len == 0): "" else: "\c\L" & headers
         var
             text = (
@@ -51,7 +57,11 @@ proc genRequestID(): uint =
     requestCounter += 1
     return requestCounter
 
-proc validateRequest(req: Request): bool {.gcsafe.}
+method validateRequest(req: Request): bool {.gcsafe.}
+
+method getVerb*(req: Request): HttpMethod = 
+    ## Retrieve the `HttpMethod` from given `Request`
+    result = req.methodType
 
 method hasHeaders*(req: Request): bool =
     ## Determine if current Request instance has any headers
@@ -83,24 +93,20 @@ proc getHeader*(headers: Option[HttpHeaders], key: string): string =
     ## Retrieves a specific header from given `Option[HttpHeaders]`
     if headers.hasHeader(key): result = headers.get()[key]
 
-proc httpMethod*(req: Request): Option[HttpMethod] =
+method httpMethod*(req: Request): Option[HttpMethod] =
     ## Parses the request's data to find the request HttpMethod.
     result = parseHttpMethod(req.selector.getData(req.client).data, req.start)
 
-proc path*(req: Request): Option[string] =
+method path*(req: Request): Option[string] =
     ## Parses the request's data to find the request target.
     if unlikely(req.client notin req.selector): return
     result = parsePath(req.selector.getData(req.client).data, req.start)
 
-proc getCurrentPath*(req: Request): string = 
+method getCurrentPath*(req: Request): string = 
     ## Alias for retrieving the route path from current request
     result = req.path().get()
     if result[0] == '/':
         result = result[1 .. ^1]
-
-proc isPage*(req: Request, key: string): bool =
-    ## Determine if current page is as expected
-    result = req.getCurrentPath() == key
 
 proc getParams*(req: Request): seq[RoutePatternRequest] =
     ## Retrieves all dynamic patterns (key/value)
@@ -119,19 +125,11 @@ proc setParams*(req: var Request, reqValues: seq[RoutePatternRequest]) =
         req.patterns.add(reqVal)
 
 
-method newRedirect*(res: var Response, target: string) =
-    ## Set a deferred redirect
-    res.deferRedirect = target
-
-method getRedirect*(res: Response): string =
-    ## Get a deferred redirect
-    res.deferRedirect
-
 method getUserSessionUuid*(res: Response): Uuid =
     ## Returns current `SessionInstance`
     result = res.sessionId
 
-method hasRedirect*(res: Response): bool =
+method shouldRedirect*(res: Response): bool =
     ## Determine if response should resolve any deferred redirects
     result = res.deferRedirect.len != 0
 
@@ -152,8 +150,8 @@ method getHeaders*(res: Response): string =
         hstr.add(h.key & ":" & indent(h.value, 1))
     result &= hstr.join("\n")
 
-proc body*(req: Request): Option[string] =
-    ## Retrieves the body of the request.
+method requestBody*(req: Request): Option[string] =
+    ## Retrieves the body from current Request
     let pos = req.selector.getData(req.client).headersFinishPos
     if pos == -1: return none(string)
     result = req.selector.getData(req.client).data[pos .. ^1].some()
@@ -169,7 +167,7 @@ proc body*(req: Request): Option[string] =
 #     ## Retrieves the IP address from request
 #     req.selector.getData(req.client).ip
 
-proc forget*(req: Request) =
+method forget*(req: Request) =
     ## Unregisters the underlying request's client socket from event loop.
     ##
     ## This is useful when you want to register ``req.client`` in your own
@@ -178,7 +176,7 @@ proc forget*(req: Request) =
     assert req.selector.getData(req.client).requestID == req.requestID
     req.selector.unregister(req.client)
 
-proc validateRequest(req: Request): bool =
+method validateRequest(req: Request): bool =
     ## Handles protocol-mandated responses.
     ##
     ## Returns ``false`` when the request has been handled.

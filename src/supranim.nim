@@ -5,134 +5,76 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
+import emitter
 import std/[asyncdispatch, options, times]
-import supranim/[application, router, server]
+import supranim/core/http/server
+import supranim/[application, router]
 import supranim/core/config/assets
 import supranim/support/session
-import emitter
-
-# when defined(webapp):
-#     import emitter
+import supranim/controller
 
 from std/os import getAppDir, normalizedPath, getCurrentDir, fileExists
-from std/strutils import startsWith, endsWith
-from supranim/response import json_error, response, css, js, send404, redirect
+from std/strutils import startsWith, endsWith, parseEnum
+
 
 export Port
 export App, application
 export Http200, Http301, Http302, Http403, Http404, Http500, Http503, HttpCode
 export HttpMethod, Request, Response
-export server.getParams, server.hasParams, server.getCurrentPath, server.isPage
+export server.getParams, server.hasParams, server.getCurrentPath
 
-proc expect(httpMethod: Option[HttpMethod], expectMethod: HttpMethod): bool =
-    ## Determine if given HttpMethod is as expected
-    result = httpMethod == some(expectMethod)
+template serveStaticAssets() =
+    let assetsStatus: HttpCode = waitFor Assets.hasFile(reqRoute)
+    if assetsStatus == Http200:
+        if endsWith(reqRoute, ".css"):
+            res.css(Assets.getFile(reqRoute))
+        elif endsWith(reqRoute, ".js"):
+            res.js(Assets.getFile(reqRoute))
+        else:
+            res.response(Assets.getFile(reqRoute))
+    else:
+        Event.emit("system.http.assets.404")
+        res.send404 getErrorPage(Http404, "404 | Not found")
 
-proc handleHttpRouteRequest(verb: HttpMethod, req: var Request, res: var Response,
-                                reqRoute: string, hasTrailingSlash = false) =
-    let runtime: RuntimeRoutePattern = Router.existsRuntime(verb, reqRoute, req, res)
+proc onRequest(req: var Request, res: var Response): Future[ void ] =
+    var fixTrailingSlash: bool
+    var reqRoute = req.path.get()
+    let verb = req.httpMethod.get()
+    if verb == HttpGet:
+        if startsWith(reqRoute, Assets.getPublicPath()):
+            serveStaticAssets() 
+        else:
+            if reqRoute != "/" and reqRoute[^1] == '/':
+                reqRoute = reqRoute[0 .. ^2]
+                fixTrailingSlash = true
+    let runtime: RuntimeRouteStatus = Router.runtimeExists(verb, reqRoute, req, res)
     case runtime.status:
     of Found:
-        if verb == HttpGet:
-            if hasTrailingSlash:
-                res.redirect(reqRoute, code = HttpCode(301)) # handle trailing slashes for GET requests
-                return
-        if runtime.route.isDynamic():
-            req.setParams(runtime.params)
-        runtime.route.runCallable(req, res)
+        if fixTrailingSlash == true:
+            res.redirect(reqRoute, code = HttpCode(301))
+        else:
+            if runtime.route.isDynamic():
+                req.setParams(runtime.params)
+            runtime.route.runCallable(req, res)
     of BlockedByRedirect:
         # Resolve deferred HTTP redirects declared in current middleware
         Event.emit("system.http.501")
-        res.redirect(res.getRedirect())
+        res.redirect(res.getDeferredRedirect())
     of BlockedByAbort:
-        # Blocked by an `abort` from a middleware.
+        # When blocked by an `abort` from middleware will
+        # Emit the `system.http.middleware.redirect` event
         Event.emit("system.http.middleware.redirect")
     of NotFound:
-        case verb:
-        of HttpGet:
+        if verb == HttpGet:
             Event.emit("system.http.404")
-            if App.getAppType == RESTful:   res.send404 getErrorPage(Http404, "404 | Not found")
-            else:                           res.send404 getErrorPage(Http404, "404 | Not found")
+            if App.getAppType == RESTful:
+                res.send404 getErrorPage(Http404, "404 | Not found")
+            else:
+                res.json404("Resource not found")
         else:
             Event.emit("system.http.501")
             res.response("Not Implemented", HttpCode(501))
 
-template handleStaticAssetsDev() =
-    if Assets.exists() and startsWith(reqRoute, Assets.getPublicPath()):
-        let assetsStatus: HttpCode = waitFor Assets.hasFile(reqRoute)
-        if assetsStatus == Http200:
-            if endsWith(reqRoute, ".css"):
-                res.css(Assets.getFile(reqRoute))
-            elif endsWith(reqRoute, ".js"):
-                res.js(Assets.getFile(reqRoute))
-            else:
-                res.response(Assets.getFile(reqRoute))
-        else:
-            Event.emit("system.http.assets.404")
-            res.send404 getErrorPage(Http404, "404 | Not found")
-        return
-
-proc onRequest(req: var Request, res: var Response, app: Application): Future[ void ] =
-    ## Procedure called during runtime. Determine type of the current request
-    ## find a route and return the callable, otherwise prompt a 404 Response.
-    {.gcsafe.}:
-    # This procedure covers all methods from HttpMethod. Note that
-    # we are going to use only if statements in order to determine the
-    # method type of current request because, for some reasons,
-    # simple if statements are faster than if/elif blocks.
-        var hasTrailingSlash: bool
-        var reqRoute = req.path.get()
-        if reqRoute != "/":
-            if reqRoute[^1] == '/':
-                reqRoute = reqRoute[0 .. ^2]
-                hasTrailingSlash = true
-
-        if expect(req.httpMethod, HttpGet):
-            # Handle HttpGET requests
-            handleStaticAssetsDev()
-            handleHttpRouteRequest(HttpGet, req, res, reqRoute, hasTrailingSlash)
-            return # block code execution
-
-        if expect(req.httpMethod, HttpPost):
-            # Handle HttpPost requests
-            handleHttpRouteRequest(HttpPost, req, res, reqRoute)
-            return # block code execution
-
-        if expect(req.httpMethod, HttpPut):
-            # Handle HttpPut requests
-            handleHttpRouteRequest(HttpPut, req, res, reqRoute)
-            return # block code execution
-
-        if expect(req.httpMethod, HttpOptions):
-            # Handle HttpOptions requests
-            handleHttpRouteRequest(HttpOptions, req, res, reqRoute)
-            return # block code execution
-
-        if expect(req.httpMethod, HttpHead):
-            # Handle HttpHead requests
-            handleHttpRouteRequest(HttpHead, req, res, reqRoute)
-            return # block code execution
-        
-        if expect(req.httpMethod, HttpDelete):
-            # Handle HttpDelete requests
-            handleHttpRouteRequest(HttpDelete, req, res, reqRoute)
-            return # block code execution
-
-        if expect(req.httpMethod, HttpTrace):
-            # Handle HttpTrace requests
-            handleHttpRouteRequest(HttpTrace, req, res, reqRoute)
-            return # block code execution
-
-        if expect(req.httpMethod, HttpConnect):
-            # Handle HttpConnect requests
-            handleHttpRouteRequest(HttpConnect, req, res, reqRoute)
-            return # block code execution
-
-        if expect(req.httpMethod, HttpPatch):
-            # Handle HttpPatch requests
-            handleHttpRouteRequest(HttpPatch, req, res, reqRoute)
-            return # block code execution
-
 proc startServer*[A: Application](app: var A) =
-    Session.init() # TODO move to application
+    # Session.init() # TODO move to application
     run(onRequest, app)

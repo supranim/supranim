@@ -25,7 +25,6 @@ when defined(windows):
     import std/heapqueue
 else:
     import std/posix
-    # from std/osproc import countProcessors
 
 import ../application
 
@@ -143,8 +142,10 @@ type
         headers: HttpHeaders            ## All response headers collected from controller
         sessionId: Uuid                 ## An `UUID` representing the current `UserSession`
 
-    OnRequest* = proc (req: var Request, res: var Response, app: Application): Future[void] {.gcsafe.}
+    OnRequest* = proc (req: var Request, res: var Response): Future[void]
         ## Procedure used on request
+
+    AppConfig = tuple[onRequest: OnRequest, domain: Domain, address: string, port: Port, isReusable: bool]
 
     SupranimDefect* = ref object of Defect
         ## Catchable object error
@@ -152,10 +153,6 @@ type
     RoutePattern* = enum
         ## Base route patterns
         None, Id, Slug, Alpha, Digits, Date, DateYear, DateMonth, DateDay
-
-    # CacheableRoutes = object
-    #     ## Cache routes response for a certain amount of time
-    #     expiration: Option[DateTime]
 
     RoutePatternTuple* = tuple[pattern: RoutePattern, str: string, optional, dynamic: bool]
         ## RoutePattern tuple is used for all Route object instances.
@@ -295,7 +292,6 @@ iterator parseRequests*(data: string): int =
             yield i
         i.inc()
 
-
 template withRequestData(req: Request, body: untyped) =
     let requestData {.inject.} = addr req.selector.getData(req.client)
     body
@@ -399,7 +395,7 @@ proc bodyInTransit(data: ptr Data): bool =
 # Request & Response API
 #
 include ./private/request
-include ./private/response_utils
+include ./private/response
 
 template handleClientReadEvent() =
     # Read until EAGAIN. We take advantage of the fact that the client
@@ -424,7 +420,8 @@ template handleClientReadEvent() =
         # Write buffer to our data.
         let origLen = data.data.len
         data.data.setLen(origLen + ret)
-        for i in 0 ..< ret: data.data[origLen+i] = buf[i]
+        for i in 0 ..< ret:
+            data.data[origLen+i] = buf[i]
 
         if fastHeadersCheck(data) or slowHeadersCheck(data):
             # First line and headers for request received.
@@ -456,20 +453,10 @@ template handleClientReadEvent() =
                             capturedData.headersFinished = false
 
                     if validateRequest(req):
-                        # Once validated, initialize a new Response object
-                        # to be sent together with Headers and a Session ID.
-                        let reqHeaders = req.getHeaders()
-                        
-                        # let clientPlatform = reqHeaders.getHeader("sec-ch-ua-platform")
-                        # let clientIsMobile = reqHeaders.getHeader("sec-ch-ua-mobile") == "true"
-                        var res = Response(
-                            req: req,
-                            headers: newHttpHeaders()
-                        )
-                        # TODO find a better way to set session id
-                        setUserSessionId(res, reqHeaders.getHeader("Cookie"))
-
-                        data.reqFut = onRequest(req, res, app)
+                        var res = Response(req: req, headers: newHttpHeaders())
+                        # let clientCookie = req.getHeaders().getHeader("Cookie")
+                        # createNewUserSession(res, clientCookie)
+                        data.reqFut = onRequest(req, res)
                         if not data.reqFut.isNil:
                             capture data:
                                 data.reqFut.addCallback(
@@ -506,7 +493,7 @@ template handleClientWriteEvent() =
         data.data.setLen(0)
         selector.updateHandle(fd.SocketHandle, {Event.Read})
 
-proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count: int, onRequest: OnRequest, app: Application) =
+proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count: int, onRequest: OnRequest) =
     for i in 0 ..< count:
         let fd = events[i].fd
         var data: ptr Data = addr(selector.getData(fd))
@@ -520,8 +507,7 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
         of Server:
             if Event.Read in events[i].events:
                 handleAcceptClient()
-            else:
-                assert false, "Only Read events are expected for the server"
+            # else: assert false, "Only Read events are expected for the server"
         of Dispatcher:
             # Handle the dispatcher loop
             when defined posix:
@@ -533,38 +519,30 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
                 handleClientReadEvent()
             elif Event.Write in events[i].events:
                 handleClientWriteEvent()
-            else: assert false
+            # else: assert false
 
-proc eventLoop(params: (OnRequest, Application)) =
-    let (onRequest, app) = params
-
-    for logger in app.getLoggers:
-        addHandler(logger)
+proc eventLoop(app: AppConfig) =
+    # for logger in app.getLoggers:
+    #     addHandler(logger)
 
     let selector = newSelector[Data]()
-    let server = newSocket(app.getDomain)
+    let server = newSocket(app.domain)
     server.setSockOpt(OptReuseAddr, true)
-
-    if compileOption("threads") and not app.isRecyclable:
-        raise SupranimDefect(msg: "--threads:on requires reusePort to be enabled in settings")
-
-    server.setSockOpt(OptReusePort, app.isRecyclable)
-    server.bindAddr(app.getPort, app.getAddress)
+    server.setSockOpt(OptReusePort, app.isReusable)
+    server.bindAddr(app.port, app.address)
     server.listen()
     server.getFd().setBlocking(false)
     selector.registerHandle(server.getFd(), {Event.Read}, initData(Server))
-
     # Set up timer to get current date/time.
     discard updateDate(0.AsyncFD)
     asyncdispatch.addTimer(1000, false, updateDate)
-
     let disp = getGlobalDispatcher()
     when defined posix:
         selector.registerHandle(getIoHandler(disp).getFd(), {Event.Read}, initData(Dispatcher))
         var events: array[64, ReadyKey]
         while true:
             let ret = selector.selectInto(-1, events)
-            processEvents(selector, events, ret, onRequest, app)
+            processEvents(selector, events, ret, app.onRequest)
             # Ensure callbacks list doesn't grow forever in asyncdispatch.
             # @SEE https://github.com/nim-lang/Nim/issues/7532.
             # Not processing callbacks can also lead to exceptions being silently lost!
@@ -579,7 +557,7 @@ proc eventLoop(params: (OnRequest, Application)) =
                 else:
                     selector.selectInto(20, events)
             if ret > 0:
-                processEvents(selector, events, ret, onRequest, app)
+                processEvents(selector, events, ret, app.onRequest)
             asyncdispatch.poll(0)
 
 proc run*(onRequest: OnRequest, app: Application) =
@@ -587,14 +565,22 @@ proc run*(onRequest: OnRequest, app: Application) =
     ## The ``onRequest`` procedure returns a ``Future[void]`` type. But
     ## unlike most asynchronous procedures in Nim, it can return ``nil``
     ## for better performance, when no async operations are needed.
-    # var loadedServices: seq[string] = @["Database", "Cookie", "Http Authentication", "Form Validation"]
     app.printBootStatus()
     when compileOption("threads"):
         if app.isMultithreading:
-            var threads = newSeq[Thread[(OnRequest, Application)]](app.getThreads)
-            for i in 0 ..< app.getThreads:
-                createThread[(OnRequest, Application)](threads[i], eventLoop, (onRequest, app))
+            # tuple[onRequest: OnRequest, address: string, port: Port, recyclable: bool]
+            var threads = newSeq[Thread[AppConfig]](app.getThreads())
+            for i in 0 ..< app.getThreads():
+                createThread[AppConfig](
+                    threads[i], eventLoop, (
+                        onRequest,
+                        app.getDomain(),
+                        app.getAddress(),
+                        app.getPort(),
+                        app.isRecyclable()
+                    )
+                )
             joinThreads(threads)
-        else: eventLoop((onRequest, app))
+        else: eventLoop((onRequest, app.getDomain(), app.getAddress(), app.getPort(), app.isRecyclable()))
     else:
-        eventLoop((onRequest, app))
+        eventLoop((onRequest, app.getDomain(), app.getAddress(), app.getPort(), app.isRecyclable()))
