@@ -132,13 +132,10 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     when defined webapp:
         let publicDir = App.config.get("app.assets.public").getStr
         var sourceDir = App.config.get("app.assets.source").getStr
-        
-        if publicDir.len != 0 and sourceDir.len != 0:
-            raise newException(ApplicationDefect,
-                "Invalid project structure. Missing `public` and `source` directories")
-        
-        sourceDir = normalizedPath(getAppDir() & "/" & sourceDir)
-        App.appType = WebApp
+        if publicDir.len == 0 and sourceDir.len == 0:
+            raise newException(ApplicationDefect, "Invalid project structure. Missing `public` and `source` directories")
+        sourceDir = getAppDir() & "/" & sourceDir
+        normalizePath(sourceDir)
         Assets.init(sourceDir, publicDir)
     else:
         App.appType = RESTful
