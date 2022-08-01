@@ -5,11 +5,11 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import std/tables
-import pkginfo, nyml, emitter
-
-import std/macros
-# import ./supplier TODO
+import pkginfo
+import std/[macros, tables]
+when requires "emitter":
+    import emitter
+import nyml
 
 when defined webapp:
     import ./config/assets
@@ -20,7 +20,7 @@ from std/net import `$`, Port, getPrimaryIPAddr
 from std/logging import Logger
 from std/strutils import toUpperAscii, indent, split
 from std/os import getCurrentDir, putEnv, getEnv, fileExists,
-                    getAppDir, normalizePath, walkDirRec, copyFile
+                    getAppDir, normalizedPath, walkDirRec, copyFile
 
 export Port
 export nyml.get, nyml.getInt, nyml.getStr, nyml.getBool
@@ -100,7 +100,7 @@ when not defined inlineConfig:
     const ymlConfPath = confPath & ".env.yml"
     static:
         if not fileExists(ymlConfPath): writeFile(ymlConfPath, ymlConfigSample)
-    const ymlConfigContents = staticRead(ymlConfPath)
+    const ymlConfigContents* = staticRead(ymlConfPath)
 
 proc parseEnvFile(configContents: string): Document =
     # Private procedure for parsing and validating the
@@ -132,11 +132,16 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     when defined webapp:
         let publicDir = App.config.get("app.assets.public").getStr
         var sourceDir = App.config.get("app.assets.source").getStr
+        
         if publicDir.len != 0 and sourceDir.len != 0:
-            raise newException(ApplicationDefect, "Invalid project structure. Missing `public` and `source` directories")
-        sourceDir = getAppDir() & "/" & sourceDir
-        normalizePath(sourceDir)
+            raise newException(ApplicationDefect,
+                "Invalid project structure. Missing `public` and `source` directories")
+        
+        sourceDir = normalizedPath(getAppDir() & "/" & sourceDir)
+        App.appType = WebApp
         Assets.init(sourceDir, publicDir)
+    else:
+        App.appType = RESTful
 
     let appAddress = App.config.get("app.address") 
     App.address = if appAddress.kind == JNULL: $getPrimaryIPAddr() else: appAddress.getStr  
@@ -150,13 +155,13 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
 macro init*[A: Application](app: var A) =
     ## Initialize Supranim application based on current
     ## configuration and available services.
-    var yml = Nyml.init(contents = ymlConfigContents)
-    let doc: Document = yml.toJson()
     result = newStmtList()
-    if doc.get().hasKey("services"):
-        let services = doc.get("services")
     # Include application routes.nim file
     result.add(
+        # nnkImportStmt.newTree(
+        #     ident "supranim/router"
+        # ),
+
         nnkIncludeStmt.newTree(
             ident getProjectPath() & "/" & "routes.nim"
         )
@@ -173,6 +178,9 @@ macro init*[A: Application](app: var A) =
     )
 
     result.add quote do:
+        # Router.init()
+        # when not defined release:
+            # Router.initLiveReload()
         discard init(threads = 1)
 
 method getAppType*[A: Application](app: A): AppType =
@@ -254,10 +262,6 @@ method isRecyclable*[A: Application](app: A): bool =
     ## Determine if application instance can reuse the same Port
     result = app.recyclable
 
-template start*[A: Application](app: var A) =
-    ## Boot Supranim application
-    app.startServer()
-
 method printBootStatus*[A: Application](app: A) =
     ## Public procedure used to print various informations related to current application instance
     echo "----------------- ⚡️ -----------------"
@@ -295,4 +299,5 @@ method printBootStatus*[A: Application](app: A) =
         echo indent("✓ " & compileOptionLabel, 2)
     
     # Emit all listeners registered on `system.boot.services` event
-    Event.emit("system.boot.services")
+    when requires "emitter":
+        Event.emit("system.boot.services")

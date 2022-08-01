@@ -4,7 +4,9 @@
 # (c) 2022 Supranim is released under MIT License
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
-
+import pkginfo
+when requires "emitter":
+    import emitter
 import ./uuid, ./cookie
 import std/[tables, times, options]
 
@@ -17,6 +19,9 @@ type
         id: Uuid
             ## ID representing the current UserSession
         backend, client: CookiesTable
+            ## Table representing all Cookies for both backend and clientside.
+            ## Note that `client` table gets parsed data from client side
+            ## and gets cleaned after each Response.
         created: DateTime
             ## The creation time for current UserSession
     
@@ -29,7 +34,7 @@ type
     SessionOptions* = tuple[expiration: Duration]
         ## Global options for `SessionManager` instance
 
-    SessionManager = object
+    SessionManager = ref object
         sessions: Sessions
         options: SessionOptions
 
@@ -69,7 +74,7 @@ method hasCookie*(session: UserSession, name: string): bool =
 method hasExpired*(session: UserSession): bool =
     ## Determine the state of the given session instance.
     ## by checking the creation time and 
-    result = now() - session.created >= initDuration(minutes = 1) 
+    result = now() - session.created >= Session.options.expiration
 
 method getUuid*(session: UserSession): Uuid =
     ## Retrieves the `UUID` of given the given session instance
@@ -84,15 +89,32 @@ proc initUserSession(newUuid: Uuid): UserSession =
 #
 # SessionManager API
 # 
-proc init*(sessions: var SessionManager, opts: SessionOptions) =
+proc init*[S: SessionManager](m: var S, opts: SessionOptions = (expiration: initDuration(minutes = 30))) =
     ## Initialize a singleton of `SessionManager` as `Session`.
+    ##
     ## Optionally, you can adjust the duration of a session using `SessionOptions`.
+    if Session != nil:
+        raise newException(SessionDefect, "Session Manager has already been initialized")
     Session = SessionManager(options: opts)
 
 method isValid*(manager: var SessionManager, id: string): bool =
     ## Validates a session by `UUID` and creation time.
     if manager.sessions.hasKey(id):
         result = manager.sessions[id].hasExpired() == false
+
+method flush*(manager: var SessionManager) =
+    ## Flush expired `UserSession` instances.
+    ##
+    ## Do not call this method directly!
+    ##
+    ## The process of flushing expired sessions is handled
+    ## by Scheduler module in a separate thread.
+    if manager == nil: return
+    var expired: seq[UserSession]
+    for id, userSession in manager.sessions.pairs():
+        if userSession.hasExpired():
+            expired.add userSession
+    echo expired.len
 
 method newUserSession*(manager: var SessionManager): UserSession =
     ## Create a new UserSession instance via `SessionManager` singleton

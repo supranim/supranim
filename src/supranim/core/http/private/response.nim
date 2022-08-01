@@ -5,12 +5,13 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
+from std/json import JsonNode
 import jsony
-import std/[httpcore, macros, json]
+import std/[httpcore, macros]
 import ../../../support/session
 
 from std/strutils import `%`
-export jsony, HttpCode, Response
+export HttpCode, Response
 
 let
     HeaderHttpRedirect = "Location: $1"
@@ -29,9 +30,6 @@ when defined webapp:
     method js*(res: var Response, data: string)
 method json*[R: Response, T](res: var R, body: T, code = Http200) {.base.}
 method json*(res: var Response, body: JsonNode, code = Http200)
-method json404*(res: var Response, body = "")
-method json500*(res: var Response, body = "")
-
 #
 # Response - Redirect Interface API
 #
@@ -100,20 +98,19 @@ method json*(res: var Response, body: JsonNode, code = Http200) =
     ## This template is using the native JsonNode for creating the response body.
     res.response($body, code, ContentTypeJson)
 
-method json404*(res: var Response, body = "") =
-    ## Sends a 404 JSON Response  with a default "Not found" message
-    var jbody = if body.len == 0: """{"status": 404, "message": "Not Found"}""" else: body
-    res.response(jbody, Http404)
-
-method json500*(res: var Response, body = "") =
-    ## Sends a 500 JSON Response with a default "Internal Error" message
-    var jbody = if body.len == 0: """{"status": 500, "message": "Internal Error"}""" else: body
-    res.response(jbody, Http500)
-
 template json_error*(res: var Response, body: untyped, code: HttpCode = Http501) = 
     ## Sends a JSON response followed by of a HttpCode (that represents an error)
     response(res, toJson(body), code, ContentTypeJson)
 
+template json404*(res: var Response, body: untyped = "") =
+    ## Sends a 404 JSON Response  with a default "Not found" message
+    var jbody = if body.len == 0: """{"status": 404, "message": "Not Found"}""" else: body
+    json_error(res, jbody, Http404)
+
+template json500*(res: var Response, body: untyped = "") =
+    ## Sends a 500 JSON Response with a default "Internal Error" message
+    var jbody = if body.len == 0: """{"status": 500, "message": "Internal Error"}""" else: body
+    json_error(res, jbody, Http500)
 
 #
 # HTTP Redirects

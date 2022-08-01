@@ -12,7 +12,8 @@
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
             strutils, parseutils, options, logging, times, tables]
 
-import ../../support/[session, uuid]
+# import ../../support/session
+import ../../support/uuid
 
 from std/strutils import indent, join
 from std/sugar import capture
@@ -26,7 +27,8 @@ when defined(windows):
 else:
     import std/posix
 
-import ../application
+from ../application import App, getDomain, getThreads, getAddress,
+                    getPort, isRecyclable, printBootStatus, isMultithreading
 
 export httpcore except parseHeader
 export asyncdispatch, options
@@ -530,6 +532,7 @@ proc eventLoop(app: AppConfig) =
     server.listen()
     server.getFd().setBlocking(false)
     selector.registerHandle(server.getFd(), {Event.Read}, initData(Server))
+
     # Set up timer to get current date/time.
     discard updateDate(0.AsyncFD)
     asyncdispatch.addTimer(1000, false, updateDate)
@@ -557,27 +560,27 @@ proc eventLoop(app: AppConfig) =
                 processEvents(selector, events, ret, app.onRequest)
             asyncdispatch.poll(0)
 
-proc run*(onRequest: OnRequest, app: Application) =
+proc run*(onRequest: OnRequest) =
     ## Starts the HTTP server and calls `onRequest` for each request.
     ## The ``onRequest`` procedure returns a ``Future[void]`` type. But
     ## unlike most asynchronous procedures in Nim, it can return ``nil``
     ## for better performance, when no async operations are needed.
-    app.printBootStatus()
+    App.printBootStatus()
     when compileOption("threads"):
-        if app.isMultithreading:
+        if App.isMultithreading:
             # tuple[onRequest: OnRequest, address: string, port: Port, recyclable: bool]
-            var threads = newSeq[Thread[AppConfig]](app.getThreads())
-            for i in 0 ..< app.getThreads():
+            var threads = newSeq[Thread[AppConfig]](App.getThreads())
+            for i in 0 ..< App.getThreads():
                 createThread[AppConfig](
                     threads[i], eventLoop, (
                         onRequest,
-                        app.getDomain(),
-                        app.getAddress(),
-                        app.getPort(),
-                        app.isRecyclable()
+                        App.getDomain(),
+                        App.getAddress(),
+                        App.getPort(),
+                        App.isRecyclable()
                     )
                 )
             joinThreads(threads)
-        else: eventLoop((onRequest, app.getDomain(), app.getAddress(), app.getPort(), app.isRecyclable()))
+        else: eventLoop((onRequest, App.getDomain(), App.getAddress(), App.getPort(), App.isRecyclable()))
     else:
-        eventLoop((onRequest, app.getDomain(), app.getAddress(), app.getPort(), app.isRecyclable()))
+        eventLoop((onRequest, App.getDomain(), App.getAddress(), App.getPort(), App.isRecyclable()))

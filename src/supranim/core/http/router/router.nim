@@ -21,9 +21,9 @@ from ../server import HttpMethod, Request, Response, RoutePattern,
 when not defined release:
     # Register a dev-only route for hot code reloading support.
     # See method `initLiveReload` at the bottom of this file
-    import std/times
-    import ../private/response
-
+    import jsony
+    import std/[times, json]
+    from ../server import json
 
 export HttpMethod, Response, Request, HttpCode
 
@@ -117,13 +117,21 @@ template initTables(router: object): untyped =
         for k, v in fieldPairs(router):
             setField(k, v)
 
-proc initCollectionTables[R: HttpRouter](router: var R) =
-    router.initTables()
+proc initCollectionTables*(router: var HttpRouter) = router.initTables()
 
-var Router* = HttpRouter()   # Singleton of HttpRouter
+# when compileOption("threads"):
+#     var Router* {.threadvar.}: HttpRouter
+#     var ErrorPages* {.threadvar.}: ErrorPagesTable
+# else:
+var Router*: HttpRouter
 var ErrorPages*: ErrorPagesTable
 
+Router = HttpRouter()
 Router.initCollectionTables()   # https://forum.nim-lang.org/t/5631#34992
+
+# proc init*(router: var HttpRouter) =
+#     Router = HttpRouter()
+#     Router.initCollectionTables()   # https://forum.nim-lang.org/t/5631#34992
 
 proc isDynamic*[R: Route](route: ref R): bool =
     ## Determine if current routeType of route object instance is type of ``DynamicRouteType``
@@ -539,13 +547,11 @@ when not defined release:
     type
         LiveReload = object
             state: int64
-
     var liveReload = LiveReload()
-
     method initLiveReload*[R: HttpRouter](router: var R) {.base.} =
         ## Initialize API endpoint for reloading current screen
         let reloadCallback = proc(req: Request, res: var Response) =
-            res.json(liveReload)
+            json(res, liveReload)
         Router.get("/watchout", reloadCallback)
 
     method refresh*[R: HttpRouter](router: var R) {.base.} =
