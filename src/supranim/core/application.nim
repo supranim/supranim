@@ -78,8 +78,7 @@ type
             ## Boot Supranim on a specific number of threads
         database: DB
             ## Holds all database credentials
-        views: string
-            ## Path to Views source directory
+        hasTemplates: bool
         recyclable: bool
             ## Whether to reuse current port or not
         loggers: seq[Logger]
@@ -118,7 +117,8 @@ method config*[A: Application](app: A): Document =
 proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string = ""): Application =
     ## Main procedure for initializing your Supranim Application.
     if App.isInitialized:
-        raise newException(ApplicationDefect, "Application has already been initialized once")
+        raise newException(ApplicationDefect,
+            "Application has already been initialized once")
     App.configs =
         when not defined(inlineConfig):
             # Load app config from a .env.yml file
@@ -128,7 +128,7 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
             # embedding Supranim in other libraries, for example
             # Chocotone https://github.com/chocotone
             parseEnvFile(inlineConfigStr)
-    
+
     when defined webapp:
         let publicDir = App.config.get("app.assets.public").getStr
         var sourceDir = App.config.get("app.assets.source").getStr
@@ -136,6 +136,7 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
             raise newException(ApplicationDefect, "Invalid project structure. Missing `public` and `source` directories")
         sourceDir = normalizedPath(getAppDir() & "/" & sourceDir)
         Assets.init(sourceDir, publicDir)
+        App.hasTemplates = true
     else:
         App.appType = RESTful
 
@@ -146,6 +147,11 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     App.threads = App.config.get("app.threads").getInt
     App.recyclable = true
     App.isInitialized = true
+
+    let dbCredentials = App.config.get("database.main")
+    if dbCredentials.exists():
+        let dbDriver = dbCredentials["driver"].getStr
+
     result = App
 
 macro init*[A: Application](app: var A) =
@@ -154,10 +160,11 @@ macro init*[A: Application](app: var A) =
     result = newStmtList()
     # Include application routes.nim file
     result.add(
-        # nnkImportStmt.newTree(
-        #     ident "supranim/router"
-        # ),
-
+        # Auto import Router module
+        nnkImportStmt.newTree(
+            ident "supranim/router"
+        ),
+        # Auto include current application `routes.nim` file
         nnkIncludeStmt.newTree(
             ident getProjectPath() & "/" & "routes.nim"
         )
@@ -174,18 +181,12 @@ macro init*[A: Application](app: var A) =
     )
 
     result.add quote do:
-        # Router.init()
-        # when not defined release:
-            # Router.initLiveReload()
         discard init(threads = 1)
 
 method getAppType*[A: Application](app: A): AppType =
+    ## Retrieve the current Application type, it can be either
+    ## `RESTful` or `WebApp`.
     result = app.appType
-
-method hasTemplates*[A: Application](app: A): bool =
-    ## Determine if current app has Tim Engine templates
-    ## TODO
-    result = false
 
 method getAddress*[A: Application](app: A, path = ""): string =
     ## Get the current local address
@@ -202,7 +203,6 @@ method hasSSL*[A: Application](app: A): bool =
 
 method hasDatabase*[A: Application](app: A): bool =
     ## Determine if application has a database attached
-    # result = app.database.main != nil
     result = app.database != nil
 
 method hasMultiDatabase*[A: Application](app: A): bool =
@@ -284,7 +284,7 @@ method printBootStatus*[A: Application](app: A) =
     when defined webapp:
         if Assets.exists():         # Web apps can serve Static Assets
             defaultCompileOptions.add("Static Assets Handler: " & YES)
-        if app.hasTemplates():      # Web apps can render templates via Tim Engine
+        if app.hasTemplates:      # Web apps can render templates via Tim Engine
             defaultCompileOptions.add("Template Engine: " & YES)
 
     # Compiling with DatabaseService
