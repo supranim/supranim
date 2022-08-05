@@ -6,7 +6,8 @@
 #          https://supranim.com | https://github.com/supranim
 
 import pkginfo
-import std/[macros, tables]
+import std/[macros, tables, strutils]
+
 when requires "emitter":
     import emitter
 import nyml
@@ -18,9 +19,12 @@ from ../utils import ymlConfigSample
 from std/nativesockets import Domain
 from std/net import `$`, Port, getPrimaryIPAddr
 from std/logging import Logger
-from std/strutils import toUpperAscii, indent, split
 from std/os import getCurrentDir, putEnv, getEnv, fileExists,
                     getAppDir, normalizedPath, walkDirRec, copyFile
+
+import ../finder
+import ./misc
+import ./private/services
 
 export Port
 export nyml.get, nyml.getInt, nyml.getStr, nyml.getBool
@@ -37,17 +41,16 @@ type
 
     AppDirectory* = enum
         ## Known Supranim application paths
-        Config = "configs"
-        Controller = "controller"
-        Database = "database"
-        DatabaseMigrations = "database/migrations"
-        DatabaseModels = "database/models"
-        DatabaseSeeds = "database/seeds"
-        Events = "events"
-        EventListeners = "events/listeners"
-        EventSchedules = "events/schedules"
-        I18n = "i18n"
-        Middlewares = "middlewares"
+        Config              = "configs"
+        Controller          = "controller"
+        Database            = "database"
+        DatabaseMigrations  = "database/migrations"
+        DatabaseModels      = "database/models"
+        DatabaseSeeds       = "database/seeds"
+        EventListeners      = "events/listeners"
+        EventSchedules      = "events/schedules"
+        I18n                = "i18n"
+        Middlewares         = "middlewares"
 
     DBDriver* = enum
         PGSQL, MYSQL, SQLITE
@@ -111,6 +114,9 @@ proc parseEnvFile(configContents: string): Document =
     var yml = Nyml.init(contents = configContents)
     result = yml.toJson()
 
+proc getAppDir(appDir: AppDirectory): string =
+    result = getProjectPath() & "/" & $appDir
+
 method config*[A: Application](app: A): Document =
     result = app.configs
 
@@ -154,10 +160,21 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
 
     result = App
 
+proc getModule(file: string): string {.compileTime.} =
+    result = "supranim/support/" & toLowerAscii(file)
+
 macro init*[A: Application](app: var A) =
-    ## Initialize Supranim application based on current
-    ## configuration and available services.
+    ## Supranim application initializer.
     result = newStmtList()
+    loadServiceCenter()
+    let appEvents = staticFinder(SearchFiles, getAppDir(EventListeners))
+    for appEventFile in appEvents:
+        result.add(
+            nnkIncludeStmt.newTree(
+                ident appEventFile
+            )
+        )
+
     # Include application routes.nim file
     result.add(
         # Auto import Router module
@@ -166,16 +183,14 @@ macro init*[A: Application](app: var A) =
         ),
         # Auto include current application `routes.nim` file
         nnkIncludeStmt.newTree(
-            ident getProjectPath() & "/" & "routes.nim"
+            ident getProjectPath() & "/routes.nim"
         )
     )
 
     result.add(
-        nnkCall.newTree(
-            nnkDotExpr.newTree(
-                newIdentNode("Event"),
-                newIdentNode("emit")
-            ),
+        newCall(
+            ident "emit",
+            ident "Event",
             newLit("system.router.load")
         )
     )

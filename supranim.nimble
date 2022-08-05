@@ -8,6 +8,7 @@ srcDir        = "src"
 
 # Dependencies
 requires "nim >= 1.4.8"
+requires "nimcrypto"
 requires "jsony"
 requires "nyml"
 requires "pkginfo"

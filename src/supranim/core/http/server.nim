@@ -12,7 +12,7 @@
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
             strutils, parseutils, options, logging, times, tables]
 
-# import ../../support/session
+import ../../support/session
 import ../../support/uuid
 
 from std/strutils import indent, join
@@ -456,8 +456,6 @@ template handleClientReadEvent() =
 
                     if validateRequest(req):
                         var res = Response(req: req, headers: newHttpHeaders())
-                        # let clientCookie = req.getHeaders().getHeader("Cookie")
-                        # createNewUserSession(res, clientCookie)
                         data.reqFut = onRequest(req, res)
                         if not data.reqFut.isNil:
                             capture data:

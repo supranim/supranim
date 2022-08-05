@@ -16,7 +16,6 @@ when defined webapp:
     import supranim/core/config/assets
     from std/strutils import startsWith, endsWith
 
-# import supranim/support/session
 import supranim/controller
 
 export Port
@@ -85,10 +84,10 @@ proc onRequest(req: var Request, res: var Response): Future[ void ] =
                 Event.emit("system.http.middleware.redirect")
         of NotFound:
             if verb == HttpGet:
-                if App.getAppType == RESTful:
-                    res.json404("Resource not found")
-                else:
+                when defined webapp:
                     res.send404 getErrorPage(Http404, "404 | Not found")
+                else:
+                    res.json404("Resource not found")
                 when requires "emitter":
                     Event.emit("system.http.404")
             else:
@@ -97,6 +96,4 @@ proc onRequest(req: var Request, res: var Response): Future[ void ] =
                 res.response("Not Implemented", HttpCode(501))
 
 proc start*[A: Application](app: A) =
-    # Session.init()
-    # Schedule.init()
     run(onRequest)

@@ -31,12 +31,9 @@ type
     Sessions = Table[ID, UserSession]
         ## A table containing all UserSession instances
 
-    SessionOptions* = tuple[expiration: Duration]
-        ## Global options for `SessionManager` instance
-
     SessionManager = ref object
         sessions: Sessions
-        options: SessionOptions
+        expiration: Duration
 
     SessionDefect* = object of Defect
 
@@ -74,7 +71,7 @@ method hasCookie*(session: UserSession, name: string): bool =
 method hasExpired*(session: UserSession): bool =
     ## Determine the state of the given session instance.
     ## by checking the creation time and 
-    result = now() - session.created >= Session.options.expiration
+    result = now() - session.created >= Session.expiration
 
 method getUuid*(session: UserSession): Uuid =
     ## Retrieves the `UUID` of given the given session instance
@@ -89,13 +86,11 @@ proc initUserSession(newUuid: Uuid): UserSession =
 #
 # SessionManager API
 # 
-proc init*[S: SessionManager](m: var S, opts: SessionOptions = (expiration: initDuration(minutes = 30))) =
+proc init*[S: SessionManager](m: var S, expiration = initDuration(minutes = 30)) =
     ## Initialize a singleton of `SessionManager` as `Session`.
-    ##
-    ## Optionally, you can adjust the duration of a session using `SessionOptions`.
     if Session != nil:
         raise newException(SessionDefect, "Session Manager has already been initialized")
-    Session = SessionManager(options: opts)
+    Session = SessionManager(expiration: expiration)
 
 method isValid*(manager: var SessionManager, id: string): bool =
     ## Validates a session by `UUID` and creation time.

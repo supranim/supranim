@@ -185,25 +185,5 @@ method deleteCookieHeader*(res: var Response, name: string) =
     ## you can use `deleteCookie()` method from `supranim/support/session` module
     ## TODO
 
-proc createNewUserSession(res: var Response) =
-    # Create a new `UserSession` UUID and send the `Cookie` in the next `Response`
-    var userSession = Session.newUserSession()
-    res.sessionId = userSession.getUuid()
-    res.addCookieHeader(userSession.getCookie("ssid"))
-
-proc createNewUserSession(res: var Response, clientCookies: string) =
-    # Set a new `UserSession` UUID or use the given one from `Request` if valid.
-    if clientCookies.len == 0:
-        createNewUserSession res
-    else:
-        let reqCookies = parseCookies(clientCookies)
-        if not reqCookies.hasKey("ssid"):
-            createNewUserSession res
-            return
-        let ssid = reqCookies["ssid"].getValue()
-        if Session.isValid(ssid):
-            try:
-                res.sessionId = uuid4(ssid)
-            except ValueError:
-                createNewUserSession res
-        else: createNewUserSession res
+method setSessionId*(res: var Response, id: Uuid) =
+    res.sessionId = id
