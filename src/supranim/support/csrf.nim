@@ -8,10 +8,11 @@
 import nimcrypto
 import std/[tables, times]
 
+from std/httpcore import `$`, HttpCode
 from std/sysrand import urandom
 from std/strutils import toHex, toLowerAscii
 
-export times
+export `$`, times, HttpCode
 
 type
     TokenState* = enum
@@ -57,10 +58,16 @@ method isValid*(this: var SecurityTokens, token: string): bool =
     let tokenState = this.checkToken(token)
     result = tokenState == NewToken
 
-method use*(this: var SecurityTokens, token: string) =
+method use*(this: var SecurityTokens, token: string): HttpCode =
     ## Use the given token and change its state
     if this.isValid token:
         this.tokens[token].state = UsedToken
+        result = HttpCode(200)
+    else:
+        result = HttpCode(403)
+
+method use*(this: var SecurityTokens, token: Token): HttpCode =
+    result = use(this, token.key)
 
 method `$`*(token: Token): string =
     result = token.key
