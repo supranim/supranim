@@ -34,11 +34,6 @@ else:
 proc init*(this: var SecurityTokens) =
     Csrf = SecurityTokens(tokens: newTable[string, Token]())
 
-proc randomBytesSeq*(size = 32): seq[byte] {.inline.} =
-    ## Generates a new system random sequence of bytes.
-    result = newSeq[byte](size)
-    discard urandom(result)
-
 method newToken*(this: var SecurityTokens): string =
     ## Generate a new CSRF token
     var randBytes = newSeq[byte](32)
