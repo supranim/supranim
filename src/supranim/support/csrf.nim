@@ -5,54 +5,55 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import pkginfo
-
-when requires "nimcrypto":
-    import nimcrypto
-else:
-    {.error: "CSRF module requires nimcrypto".}
-
+import nimcrypto
 import std/[tables, times]
 
 from std/sysrand import urandom
 from std/strutils import toHex, toLowerAscii
 
+export times
+
 type
     TokenState* = enum
         InvalidToken, ExpiredToken, UsedToken, NewToken
 
-    Token* = tuple[state: TokenState, token: string]
+    Token* = object
+        state: TokenState
+        key: string
+        created: DateTime
 
     SecurityTokens = object
         tokens: TableRef[string, Token]
+        ttl: Duration
 
 when compileOption("threads"):
     var Csrf* {.threadvar.}: SecurityTokens
 else:
     var Csrf*: SecurityTokens
 
-proc init*(this: var SecurityTokens) =
-    Csrf = SecurityTokens(tokens: newTable[string, Token]())
+proc init*(this: var SecurityTokens, ttl = initDuration(minutes = 60)) =
+    ## Initialize a `Csrf` singleton
+    Csrf = SecurityTokens(tokens: newTable[string, Token](), ttl: ttl)
 
-method newToken*(this: var SecurityTokens): string =
+method newToken*(this: var SecurityTokens): Token =
     ## Generate a new CSRF token
     var randBytes = newSeq[byte](32)
     discard urandom(randBytes)
-    result = toLowerAscii($digest(sha1, randBytes.toHex))
-    this.tokens[result] = (state: NewToken, token: result)
+    let key = toLowerAscii($digest(sha1, randBytes.toHex))
+    result = Token(state: NewToken, key: key, created: now())
+    this.tokens[key] = result
 
 method checkToken*(this: var SecurityTokens, token: string): TokenState =
-    ## Check a string token and determine its state. Non existing tokens
-    ## will return `InvalidToken`.
+    ## Check a string token and determine its state.
+    ## Invalid or non existing tokens will return `InvalidToken`.
     if this.tokens.hasKey token:
+        if now() - this.tokens[token].created >= this.ttl:
+            return ExpiredToken
         result = this.tokens[token].state
-
-method getTokenState*(this: var SecurityTokens, token: string): TokenState =
-    ## Alias of `checkToken` method
-    result = this.checkToken token
 
 method isValid*(this: var SecurityTokens, token: string): bool =
     ## Validates a string token.
+    ## TODO create a csrf middleware to handle 403 responses
     let tokenState = this.checkToken(token)
     result = tokenState == NewToken
 
@@ -60,6 +61,9 @@ method use*(this: var SecurityTokens, token: string) =
     ## Use the given token and change its state
     if this.isValid token:
         this.tokens[token].state = UsedToken
+
+method `$`*(token: Token): string =
+    result = token.key
 
 method flush*(this: var SecurityTokens) =
     ## Flush all tokens that have been used or expired.
