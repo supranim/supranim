@@ -5,25 +5,27 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
+import nyml
 import pkginfo
+
 import std/[macros, tables, strutils]
 
 when requires "emitter":
     import emitter
-import nyml
 
 when defined webapp:
     import ./config/assets
 
 import ../utils
+
 from std/nativesockets import Domain
 from std/net import `$`, Port, getPrimaryIPAddr
 from std/logging import Logger
 from std/os import getCurrentDir, putEnv, getEnv, fileExists,
-                    getAppDir, normalizedPath, walkDirRec, copyFile
+                    getAppDir, normalizedPath, walkDirRec, copyFile,
+                    dirExists, `/../`
 
 import ../finder
-import ./misc
 import ./private/services
 
 export Port
@@ -35,6 +37,7 @@ const NO = "no"
 const YES = "yes"
 
 var AppConfig {.compileTime.}: Document
+let baseCachePath* {.compileTime.} = getProjectPath() /../ ".cache"
 
 type
     AppType* = enum
@@ -254,40 +257,21 @@ proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string 
     if App.isInitialized:
         raise newException(ApplicationDefect,
             "Application has already been initialized once")
-    static:    
+    static:
         AppConfig = parseEnvFile(
             when defined inlineConfig:
                 inlineConfigStr
             else:
                 ymlConfigContents
         )
-
-    # when defined webapp:
-    #     let publicDir = App.config.get("app.assets.public").getStr
-    #     var sourceDir = App.config.get("app.assets.source").getStr
-    #     if publicDir.len == 0 and sourceDir.len == 0:
-    #         raise newException(ApplicationDefect, "Invalid project structure. Missing `public` and `source` directories")
-    #     sourceDir = normalizedPath(getAppDir() & "/" & sourceDir)
-    #     Assets.init(sourceDir, publicDir)
-    #     App.hasTemplates = true
-    # else:
-    #     App.appType = RESTful
-
     writeAppConfig()
-
-    # let dbCredentials = App.config.get("database.main")
-    # if dbCredentials.exists():
-    #     let dbDriver = dbCredentials["driver"].getStr
-
-    # result = App
-
-proc getModule(file: string): string {.compileTime.} =
-    result = "supranim/support/" & toLowerAscii(file)
 
 macro init*[A: Application](app: var A) =
     ## Supranim application initializer.
+    if not dirExists(baseCachePath):
+        discard staticExec("mkdir " & baseCachePath)
     result = newStmtList()
-    loadServiceCenter()
+    loadServiceCenter(baseCachePath)
     let appEvents = staticFinder(SearchFiles, getAppDir(EventListeners))
     for appEventFile in appEvents:
         result.add(
@@ -308,15 +292,9 @@ macro init*[A: Application](app: var A) =
         )
     )
 
-    result.add(
-        newCall(
-            ident "emit",
-            ident "Event",
-            newLit("system.router.load")
-        )
-    )
-
     result.add quote do:
+        when requires "emitter":
+            Event.emit("system.router.load")
         init(threads = 1)
 
 method getAppType*[A: Application](app: A): AppType =

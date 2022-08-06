@@ -1,6 +1,9 @@
 import pkginfo
 import std/tables
 
+from std/strutils import toLowerAscii
+from std/os import `/`
+
 type
     ServiceType* = enum
         InstanceDefault
@@ -31,7 +34,10 @@ type
 
 include ./runtime
 
-template loadServiceCenter*() =
+proc getModule(file: string): string {.compileTime.} =
+    result = "supranim" / "support" / toLowerAscii(file)
+
+template loadServiceCenter*(path: string) =
     var runtimeHandler = Runtime()
     var serviceCenter = ServiceCenter()
     serviceCenter.services["session"] = Service(
@@ -108,4 +114,4 @@ template loadServiceCenter*() =
         else:
             runtimeHandler.add(id, true)
 
-    writeFile(getProjectCachePath("runtime.nim"), runtimeHandler.getCode())
+    writeFile(path / "runtime.nim", runtimeHandler.getCode())

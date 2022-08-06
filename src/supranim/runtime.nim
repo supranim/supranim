@@ -1,15 +1,13 @@
-import supranim/core/misc
+from supranim/core/application import baseCachePath
 from std/os import `/`, dirExists
 import std/macros
 
-macro init() =
+macro initRuntime() =
     result = newStmtList()
-    if not dirExists baseCachePath:
-        discard staticExec("mkdir " & baseCachePath)
     result.add(
         nnkIncludeStmt.newTree(
-            ident(getProjectCachePath("runtime.nim"))
+            ident(baseCachePath / "runtime.nim")
         )
     )
 
-init()
+initRuntime()
