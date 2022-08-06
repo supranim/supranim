@@ -15,7 +15,7 @@ import nyml
 when defined webapp:
     import ./config/assets
 
-from ../utils import ymlConfigSample
+import ../utils
 from std/nativesockets import Domain
 from std/net import `$`, Port, getPrimaryIPAddr
 from std/logging import Logger
@@ -33,6 +33,8 @@ const SECURE_PROTOCOL = "https"
 const UNSECURE_PROTOCOL = "http"
 const NO = "no"
 const YES = "yes"
+
+var AppConfig {.compileTime.}: Document
 
 type
     AppType* = enum
@@ -104,7 +106,7 @@ when not defined inlineConfig:
         if not fileExists(ymlConfPath): writeFile(ymlConfPath, ymlConfigSample)
     const ymlConfigContents* = staticRead(ymlConfPath)
 
-proc parseEnvFile(configContents: string): Document =
+proc parseEnvFile(configContents: string): Document {.compileTime.} =
     # Private procedure for parsing and validating the
     # ``.env.yml`` configuration file.
     # 
@@ -120,45 +122,164 @@ proc getAppDir(appDir: AppDirectory): string =
 method config*[A: Application](app: A): Document =
     result = app.configs
 
-proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string = ""): Application =
+macro writeAppConfig() =
+    result = newStmtList()
+    let appAddrConfig = AppConfig.get("app.address")
+    var appAddrNodeVal: NimNode
+    if appAddrConfig.kind == JNull:
+        appAddrNodeVal = newCall(ident "$", ident "getPrimaryIPAddr")
+    else:
+        appAddrNodeVal = newLit appAddrConfig.getStr
+
+    result.add(
+        # when defined webapp
+        newWhenStmt(
+            (
+                nnkCommand.newTree(
+                    ident "defined",
+                    ident "webapp"
+                ),
+                nnkStmtList.newTree(
+                    newLetStmt(
+                        ident "publicDir",
+                        newLit(AppConfig.get("app.assets.public").getStr)
+                    ),
+                    newVarStmt(
+                        ident "sourceDir",
+                        newLit(AppConfig.get("app.assets.source").getStr)
+                    ),
+
+                    newIfStmt(
+                        (
+                            nnkInfix.newTree(
+                                ident "and",
+                                nnkInfix.newTree(
+                                    ident "==",
+                                    newDotExpr(
+                                        ident "publicDir",
+                                        ident "len"
+                                    ),
+                                    newLit(0)
+                                ),
+                                nnkInfix.newTree(
+                                    ident "==",
+                                    newDotExpr(
+                                        ident "sourceDir",
+                                        ident "len"
+                                    ),
+                                    newLit(0)
+                                )
+                            ),
+                            newExceptionStmt(
+                                ident "ApplicationDefect",
+                                newLit "Invalid project structure. Missing `public` and `source` directories"
+                            )
+                        )
+                    ),
+                    newAssignment(
+                        ident "sourceDir",
+                        newCall(
+                            ident "normalizedPath",
+                            nnkInfix.newTree(
+                                ident "&",
+                                nnkInfix.newTree(
+                                    ident "&",
+                                    newCall(ident "getAppDir"),
+                                    newLit("/")
+                                ),
+                                ident "sourceDir"
+                            )
+                        )
+                    ),
+                    newCall(
+                        newDotExpr(
+                            ident "Assets",
+                            ident "init"
+                        ),
+                        ident "sourceDir",
+                        ident "publicDir",
+                    ),
+                    newAssignment(
+                        newDotExpr(
+                            ident "App",
+                            ident "hasTemplates"
+                        ),
+                        ident "true"
+                    )
+                )
+            ),
+            # else
+            newAssignment(
+                newDotExpr(
+                    ident "App",
+                    ident "appType"
+                ),
+                ident "RESTful"
+            )
+        )
+    )
+
+    result.add(
+        newAssignment(
+            newDotExpr(ident "App", ident "domain"),
+            ident "AF_INET"
+        ),
+        newAssignment(
+            newDotExpr(ident "App", ident "address"),
+            appAddrNodeVal
+        ),
+        newAssignment(
+            newDotExpr(ident "App", ident "port"),
+            newCall(
+                ident "Port",
+                newLit AppConfig.get("app.port").getInt
+            )
+        ),
+        newAssignment(
+            newDotExpr(ident "App", ident "threads"),
+            newLit AppConfig.get("app.address").getInt
+        ),
+        newAssignment(
+            newDotExpr(ident "App", ident "recyclable"),
+            newLit(true)
+        ),
+        newAssignment(
+            newDotExpr(ident "App", ident "isInitialized"),
+            newLit(true)
+        ),
+    )
+
+proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string = "") =
     ## Main procedure for initializing your Supranim Application.
     if App.isInitialized:
         raise newException(ApplicationDefect,
             "Application has already been initialized once")
-    App.configs =
-        when not defined(inlineConfig):
-            # Load app config from a .env.yml file
-            parseEnvFile(ymlConfigContents)
-        else:
-            # load app config from `inlineConfigStr`. Useful for
-            # embedding Supranim in other libraries, for example
-            # Chocotone https://github.com/chocotone
-            parseEnvFile(inlineConfigStr)
+    static:    
+        AppConfig = parseEnvFile(
+            when defined inlineConfig:
+                inlineConfigStr
+            else:
+                ymlConfigContents
+        )
 
-    when defined webapp:
-        let publicDir = App.config.get("app.assets.public").getStr
-        var sourceDir = App.config.get("app.assets.source").getStr
-        if publicDir.len == 0 and sourceDir.len == 0:
-            raise newException(ApplicationDefect, "Invalid project structure. Missing `public` and `source` directories")
-        sourceDir = normalizedPath(getAppDir() & "/" & sourceDir)
-        Assets.init(sourceDir, publicDir)
-        App.hasTemplates = true
-    else:
-        App.appType = RESTful
+    # when defined webapp:
+    #     let publicDir = App.config.get("app.assets.public").getStr
+    #     var sourceDir = App.config.get("app.assets.source").getStr
+    #     if publicDir.len == 0 and sourceDir.len == 0:
+    #         raise newException(ApplicationDefect, "Invalid project structure. Missing `public` and `source` directories")
+    #     sourceDir = normalizedPath(getAppDir() & "/" & sourceDir)
+    #     Assets.init(sourceDir, publicDir)
+    #     App.hasTemplates = true
+    # else:
+    #     App.appType = RESTful
 
-    let appAddress = App.config.get("app.address") 
-    App.address = if appAddress.kind == JNULL: $getPrimaryIPAddr() else: appAddress.getStr  
-    App.domain = Domain.AF_INET
-    App.port = Port(App.config.get("app.port").getInt)
-    App.threads = App.config.get("app.threads").getInt
-    App.recyclable = true
-    App.isInitialized = true
+    writeAppConfig()
 
-    let dbCredentials = App.config.get("database.main")
-    if dbCredentials.exists():
-        let dbDriver = dbCredentials["driver"].getStr
+    # let dbCredentials = App.config.get("database.main")
+    # if dbCredentials.exists():
+    #     let dbDriver = dbCredentials["driver"].getStr
 
-    result = App
+    # result = App
 
 proc getModule(file: string): string {.compileTime.} =
     result = "supranim/support/" & toLowerAscii(file)
@@ -196,7 +317,7 @@ macro init*[A: Application](app: var A) =
     )
 
     result.add quote do:
-        discard init(threads = 1)
+        init(threads = 1)
 
 method getAppType*[A: Application](app: A): AppType =
     ## Retrieve the current Application type, it can be either

@@ -1,4 +1,4 @@
-import osproc
+import std/[osproc, macros]
 from std/os import walkDirRec, isHidden
 from std/strutils import endsWith, strip, split
 
@@ -54,3 +54,30 @@ proc finder*(findArgs: seq[string] = @[], path: string, ext = ""): seq[string] {
             for file in files.split("\n"):
                 if file.isHidden: continue
                 result.add file
+
+proc newWhenStmt*(whenBranch: tuple[cond, body: NimNode]): NimNode =
+    ## Constructor for `when` statements.
+    result = newNimNode(nnkWhenStmt)
+    # if len(branches) < 1:
+    #     error("When statement must have at least one branch")
+    result.add(newTree(nnkElifBranch, whenBranch.cond, whenBranch.body))
+
+proc newWhenStmt*(whenBranch: tuple[cond, body: NimNode], elseBranch: NimNode): NimNode =
+    ## Constructor for `when` statements.
+    result = newNimNode(nnkWhenStmt)
+    # if len(branches) < 1:
+    #     error("When statement must have at least one branch")
+    result.add(newTree(nnkElifBranch, whenBranch.cond, whenBranch.body))
+    result.add(newTree(nnkElse, elseBranch))
+
+proc newExceptionStmt*(exception: NimNode, msg: NimNode): NimNode =
+    expectKind(exception, nnkIdent)
+    expectKind(msg, nnkStrLit)
+    result = newNimNode(nnkRaiseStmt)
+    result.add(
+        newCall(
+            ident "newException",
+            ident exception.strVal,
+            newLit msg.strVal
+        )
+    )

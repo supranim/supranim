@@ -1,3 +1,4 @@
+import pkginfo
 import std/tables
 
 type
@@ -43,23 +44,25 @@ template loadServiceCenter*() =
         `type`: SingletonDefault
     )
 
-    serviceCenter.services["tim"] = Service(
-        name: "Tim",
-        `type`: SingletonPackage,
-        withArgs: true,
-        args: @[
-            SArg(k: "source", v: "./templates"),
-            SArg(k: "output", v: "./storage/templates"),
-            SArg(k: "indent", v: "4", kind: ArgTypeInt),
-            SArg(k: "minified", v: "true", kind: ArgTypeBool)
-        ]
-    )
+    when requires "tim":
+        serviceCenter.services["tim"] = Service(
+            name: "Tim",
+            `type`: SingletonPackage,
+            withArgs: true,
+            args: @[
+                SArg(k: "source", v: "./templates"),
+                SArg(k: "output", v: "./storage/templates"),
+                SArg(k: "indent", v: "4", kind: ArgTypeInt),
+                SArg(k: "minified", v: "true", kind: ArgTypeBool)
+            ]
+        )
 
-    serviceCenter.services["emitter"] = Service(
-        name: "Event",
-        `type`: SingletonPackage,
-        expose: true
-    )
+    when requires "emitter":
+        serviceCenter.services["emitter"] = Service(
+            name: "Event",
+            `type`: SingletonPackage,
+            expose: true
+        )
 
     for id, service in pairs(serviceCenter.services):
         if service.`type` in {SingletonDefault, InstanceDefault}:

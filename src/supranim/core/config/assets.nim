@@ -62,7 +62,7 @@ proc init*[T: AssetsHandler](assets: var T, source, public: string) =
     ## Initialize a new Assets object collection
     assets.source = source
     assets.public = public
-    let files = finder(findArgs = @["-type", "f", "-print", ], path = source)
+    let files = finder(findArgs = @["-type", "f", "-print"], path = source)
     if files.len != 0:
         for file in files:
             let f = splitPath(file)
