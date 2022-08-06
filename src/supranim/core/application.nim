@@ -5,9 +5,7 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import nyml
-import pkginfo
-
+import nyml, pkginfo
 import std/[macros, tables, strutils]
 
 when requires "emitter":
@@ -16,8 +14,6 @@ when requires "emitter":
 when defined webapp:
     import ./config/assets
 
-import ../utils
-
 from std/nativesockets import Domain
 from std/net import `$`, Port, getPrimaryIPAddr
 from std/logging import Logger
@@ -25,19 +21,12 @@ from std/os import getCurrentDir, putEnv, getEnv, fileExists,
                     getAppDir, normalizedPath, walkDirRec, copyFile,
                     dirExists, `/../`
 
+import ../utils
 import ../finder
-import ./private/services
 
 export Port
 export nyml.get, nyml.getInt, nyml.getStr, nyml.getBool
 
-const SECURE_PROTOCOL = "https"
-const UNSECURE_PROTOCOL = "http"
-const NO = "no"
-const YES = "yes"
-
-var AppConfig {.compileTime.}: Document
-let baseCachePath* {.compileTime.} = getProjectPath() /../ ".cache"
 
 type
     AppType* = enum
@@ -97,160 +86,11 @@ type
 
     ApplicationDefect* = object of CatchableError
 
-const yamlEnvFile = ".env.yml"
 
 var App* {.threadvar.}: Application
 App = Application()
 
-when not defined inlineConfig:
-    const confPath = getProjectPath() & "/../bin/"
-    const ymlConfPath = confPath & ".env.yml"
-    static:
-        if not fileExists(ymlConfPath): writeFile(ymlConfPath, ymlConfigSample)
-    const ymlConfigContents* = staticRead(ymlConfPath)
-
-proc parseEnvFile(configContents: string): Document {.compileTime.} =
-    # Private procedure for parsing and validating the
-    # ``.env.yml`` configuration file.
-    # 
-    # The YML contents is parsed with Nyml library, for more details
-    # related to Nyml limitations and YAML syntax supported by Nyml
-    # check official repository: https://github.com/openpeep/nyml
-    var yml = Nyml.init(contents = configContents)
-    result = yml.toJson()
-
-proc getAppDir(appDir: AppDirectory): string =
-    result = getProjectPath() & "/" & $appDir
-
-method config*[A: Application](app: A): Document =
-    result = app.configs
-
-macro writeAppConfig() =
-    result = newStmtList()
-    let appAddrConfig = AppConfig.get("app.address")
-    var appAddrNodeVal: NimNode
-    if appAddrConfig.kind == JNull:
-        appAddrNodeVal = newCall(ident "$", ident "getPrimaryIPAddr")
-    else:
-        appAddrNodeVal = newLit appAddrConfig.getStr
-
-    result.add(
-        # when defined webapp
-        newWhenStmt(
-            (
-                nnkCommand.newTree(
-                    ident "defined",
-                    ident "webapp"
-                ),
-                nnkStmtList.newTree(
-                    newLetStmt(
-                        ident "publicDir",
-                        newLit(AppConfig.get("app.assets.public").getStr)
-                    ),
-                    newVarStmt(
-                        ident "sourceDir",
-                        newLit(AppConfig.get("app.assets.source").getStr)
-                    ),
-
-                    newIfStmt(
-                        (
-                            nnkInfix.newTree(
-                                ident "and",
-                                nnkInfix.newTree(
-                                    ident "==",
-                                    newDotExpr(
-                                        ident "publicDir",
-                                        ident "len"
-                                    ),
-                                    newLit(0)
-                                ),
-                                nnkInfix.newTree(
-                                    ident "==",
-                                    newDotExpr(
-                                        ident "sourceDir",
-                                        ident "len"
-                                    ),
-                                    newLit(0)
-                                )
-                            ),
-                            newExceptionStmt(
-                                ident "ApplicationDefect",
-                                newLit "Invalid project structure. Missing `public` and `source` directories"
-                            )
-                        )
-                    ),
-                    newAssignment(
-                        ident "sourceDir",
-                        newCall(
-                            ident "normalizedPath",
-                            nnkInfix.newTree(
-                                ident "&",
-                                nnkInfix.newTree(
-                                    ident "&",
-                                    newCall(ident "getAppDir"),
-                                    newLit("/")
-                                ),
-                                ident "sourceDir"
-                            )
-                        )
-                    ),
-                    newCall(
-                        newDotExpr(
-                            ident "Assets",
-                            ident "init"
-                        ),
-                        ident "sourceDir",
-                        ident "publicDir",
-                    ),
-                    newAssignment(
-                        newDotExpr(
-                            ident "App",
-                            ident "hasTemplates"
-                        ),
-                        ident "true"
-                    )
-                )
-            ),
-            # else
-            newAssignment(
-                newDotExpr(
-                    ident "App",
-                    ident "appType"
-                ),
-                ident "RESTful"
-            )
-        )
-    )
-
-    result.add(
-        newAssignment(
-            newDotExpr(ident "App", ident "domain"),
-            ident "AF_INET"
-        ),
-        newAssignment(
-            newDotExpr(ident "App", ident "address"),
-            appAddrNodeVal
-        ),
-        newAssignment(
-            newDotExpr(ident "App", ident "port"),
-            newCall(
-                ident "Port",
-                newLit AppConfig.get("app.port").getInt
-            )
-        ),
-        newAssignment(
-            newDotExpr(ident "App", ident "threads"),
-            newLit AppConfig.get("app.address").getInt
-        ),
-        newAssignment(
-            newDotExpr(ident "App", ident "recyclable"),
-            newLit(true)
-        ),
-        newAssignment(
-            newDotExpr(ident "App", ident "isInitialized"),
-            newLit(true)
-        ),
-    )
+include ./private/system
 
 proc init*(port = Port(3399), ssl = false, threads = 1, inlineConfigStr: string = "") =
     ## Main procedure for initializing your Supranim Application.
@@ -270,8 +110,15 @@ macro init*[A: Application](app: var A) =
     ## Supranim application initializer.
     if not dirExists(baseCachePath):
         discard staticExec("mkdir " & baseCachePath)
+
     result = newStmtList()
+    
+    # Load - Application Services
+    # Note that this applies only for packages
+    # that implements Supranim Service interface
     loadServiceCenter(baseCachePath)
+
+    # Load - Application Event Listeners
     let appEvents = staticFinder(SearchFiles, getAppDir(EventListeners))
     for appEventFile in appEvents:
         result.add(
