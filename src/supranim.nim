@@ -4,29 +4,31 @@
 # (c) 2022 Supranim is released under MIT License
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
+
+import std/[asyncdispatch, options, times]
+
 import pkginfo
+
+import supranim/core/http/server
+import supranim/core/http/router/router
+
+import supranim/core/application
+import supranim/controller
 
 when requires "emitter":
     import emitter
 
-import std/[asyncdispatch, options, times]
+export application, App, Port
+export HttpCode, Http200, Http301, Http302,
+        Http403, Http404, Http500, Http503
 
-import supranim/core/http/server
-import supranim/[application, router]
+export HttpMethod, Request, Response
 
 when defined webapp:
-    import supranim/core/config/assets
+    # Enable Static Assets Handler for web apps
+    import supranim/core/assets
     from std/strutils import startsWith, endsWith
 
-import supranim/controller
-
-export Port
-export App, application
-export Http200, Http301, Http302, Http403, Http404, Http500, Http503, HttpCode
-export HttpMethod, Request, Response
-export server.getParams, server.hasParams, server.getCurrentPath
-
-when defined webapp:
     template serveStaticAssets() =
         let assetsStatus: HttpCode = waitFor Assets.hasFile(reqRoute)
         if assetsStatus == Http200:
@@ -43,6 +45,7 @@ when defined webapp:
             when requires "emitter":
                 Event.emit("system.http.assets.404")
             res.send404 getErrorPage(Http404, "404 | Not found")
+
 
 proc onRequest(req: var Request, res: var Response): Future[ void ] =
     {.gcsafe.}:
@@ -97,5 +100,6 @@ proc onRequest(req: var Request, res: var Response): Future[ void ] =
                     Event.emit("system.http.501")
                 res.response("Not Implemented", HttpCode(501))
 
-proc start*[A: Application](app: A) =
+template start*(app: var Application) =
+    printBootStatus()
     run(onRequest)

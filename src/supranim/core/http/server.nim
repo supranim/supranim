@@ -27,8 +27,8 @@ when defined(windows):
 else:
     import std/posix
 
-from ../application import App, getDomain, getThreads, getAddress,
-                    getPort, isRecyclable, printBootStatus, isMultithreading
+# from ../application import App, getDomain, getThreads, getAddress,
+#                     getPort, isRecyclable, printBootStatus, isMultithreading
 
 export httpcore except parseHeader
 export asyncdispatch, options
@@ -563,22 +563,22 @@ proc run*(onRequest: OnRequest) =
     ## The ``onRequest`` procedure returns a ``Future[void]`` type. But
     ## unlike most asynchronous procedures in Nim, it can return ``nil``
     ## for better performance, when no async operations are needed.
-    App.printBootStatus()
-    when compileOption("threads"):
-        if App.isMultithreading:
-            # tuple[onRequest: OnRequest, address: string, port: Port, recyclable: bool]
-            var threads = newSeq[Thread[AppConfig]](App.getThreads())
-            for i in 0 ..< App.getThreads():
-                createThread[AppConfig](
-                    threads[i], eventLoop, (
-                        onRequest,
-                        App.getDomain(),
-                        App.getAddress(),
-                        App.getPort(),
-                        App.isRecyclable()
-                    )
-                )
-            joinThreads(threads)
-        else: eventLoop((onRequest, App.getDomain(), App.getAddress(), App.getPort(), App.isRecyclable()))
-    else:
-        eventLoop((onRequest, App.getDomain(), App.getAddress(), App.getPort(), App.isRecyclable()))
+    # App.printBootStatus()
+    # when compileOption("threads"):
+        # if App.isMultithreading:
+        #     # tuple[onRequest: OnRequest, address: string, port: Port, recyclable: bool]
+        #     var threads = newSeq[Thread[AppConfig]](App.getThreads())
+        #     for i in 0 ..< App.getThreads():
+        #         createThread[AppConfig](
+        #             threads[i], eventLoop, (
+        #                 onRequest,
+        #                 App.getDomain(),
+        #                 App.getAddress(),
+        #                 App.getPort(),
+        #                 App.isRecyclable()
+        #             )
+        #         )
+        #     joinThreads(threads)
+        # else: eventLoop((onRequest, App.getDomain(), App.getAddress(), App.getPort(), App.isRecyclable()))
+    # else:
+    eventLoop((onRequest, Domain.AF_INET, "127.0.0.1", Port(9933), true))

@@ -55,6 +55,18 @@ proc finder*(findArgs: seq[string] = @[], path: string, ext = ""): seq[string] {
                 if file.isHidden: continue
                 result.add file
 
+proc newImport*(id: string): NimNode =
+    result = newNimNode(nnkImportStmt)
+    result.add ident(id)
+
+proc newInclude*(id: string): NimNode =
+    result = newNimNode(nnkIncludeStmt)
+    result.add ident(id)
+
+proc newExclude*(id: string): NimNode =
+    result = newNimNode(nnkExportStmt)
+    result.add ident(id)
+
 proc newWhenStmt*(whenBranch: tuple[cond, body: NimNode]): NimNode =
     ## Constructor for `when` statements.
     result = newNimNode(nnkWhenStmt)

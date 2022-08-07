@@ -6,10 +6,9 @@
 #          
 #          Website https://supranim.com
 #          Github Repository: https://github.com/supranim
-import std/tables
-import ../../utils
+import std/[tables, asyncdispatch]
+import ../utils
 
-import std/asyncdispatch
 from std/httpcore import HttpCode
 from std/strutils import strip, split, contains, replace
 from std/os import FilePermission, fileExists, getCurrentDir,
