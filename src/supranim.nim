@@ -5,13 +5,11 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import std/[asyncdispatch, options, times]
-
 import pkginfo
+import std/[asyncdispatch, options, times]
 
 import supranim/core/http/server
 import supranim/core/http/router/router
-
 import supranim/core/application
 import supranim/controller
 
@@ -45,7 +43,6 @@ when defined webapp:
             when requires "emitter":
                 Event.emit("system.http.assets.404")
             res.send404 getErrorPage(Http404, "404 | Not found")
-
 
 proc onRequest(req: var Request, res: var Response): Future[ void ] =
     {.gcsafe.}:
@@ -83,10 +80,11 @@ proc onRequest(req: var Request, res: var Response): Future[ void ] =
                 Event.emit("system.http.501")
             res.redirect(res.getDeferredRedirect())
         of BlockedByAbort:
-            # When blocked by an `abort` from middleware will
+            # Blocked by an middleware `abort` will
             # Emit the `system.http.middleware.redirect` event
             when requires "emitter":
                 Event.emit("system.http.middleware.redirect")
+            res.response("", HttpCode 403)
         of NotFound:
             if verb == HttpGet:
                 when defined webapp:
@@ -98,7 +96,7 @@ proc onRequest(req: var Request, res: var Response): Future[ void ] =
             else:
                 when requires "emitter":
                     Event.emit("system.http.501")
-                res.response("Not Implemented", HttpCode(501))
+                res.response("Not Implemented", HttpCode 501)
 
 template start*(app: var Application) =
     printBootStatus()

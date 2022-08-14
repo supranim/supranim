@@ -1,5 +1,5 @@
 import pkginfo, nyml
-import std/[macros, tables, strutils, cpuinfo]
+import std/[macros, tables, strutils, cpuinfo, compilesettings]
 
 import ./config
 import ../utils
@@ -11,7 +11,7 @@ when defined webapp:
     import ./assets
 
 from std/nativesockets import Domain
-from std/net import `$`, Port, getPrimaryIPAddr
+from std/net import `$`, Port
 from std/logging import Logger
 from std/os import getCurrentDir, putEnv, getEnv, fileExists,
                     getAppDir, normalizedPath, walkDirRec, copyFile,
@@ -40,7 +40,7 @@ type
 when compileOption "threads":
     var App* {.threadvar.}: Application
 else:
-    App = Application()
+    var App* = Application()
 
 proc getAppDir(appDir: AppDirectory): string =
     result = getProjectPath() & "/" & $appDir
@@ -48,7 +48,6 @@ proc getAppDir(appDir: AppDirectory): string =
 macro init*(app: var Application) =
     ## Supranim application initializer.
     result = newStmtList()
-    
     Config.init()
     when defined webapp:
         let publicDirPath = Config.getPublicPathAssets()
@@ -58,10 +57,8 @@ macro init*(app: var Application) =
             var sourceDir = `sourceDirPath`
             if publicDir.len == 0 or sourceDir.len == 0:
                 raise newException(AppDefect, "Invalid project structure. Missing `public` or `source` directories")
-
             sourceDir = normalizedPath(getAppDir() / sourceDir)
             Assets.init(sourceDir, publicDir)
-
     loadServiceCenter()
 
     let appEvents = staticFinder(SearchFiles, getAppDir(EventListeners))
@@ -91,6 +88,8 @@ macro printBootStatus*() =
 
     # when compileOption("threads"):
     #     compileOpts.add("Threads:" & indent("$1", 1))
+
+    # echo querySetting(SingleValueSetting.compileOptions)
 
     for optLabel in compileOpts:
         result.add(

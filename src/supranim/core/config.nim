@@ -4,12 +4,18 @@
 # (c) 2021 Supranim is released under MIT License
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
+#
 
+## App Configuration Module
+##
+## This module handle application configuration at compile-time.
+## Basically, Config module is parsing `.env.yml` file at compile-time
+## and builds the final binary application based on available config.
 import nyml, pkginfo
 import std/[macros, tables]
 import ../utils
 
-from std/net import Port
+from std/net import Port, getPrimaryIPAddr
 from std/nativesockets import Domain
 from std/strutils import toLowerAscii, capitalizeAscii, join, indent
 from std/os import `/`, dirExists, `/../`, fileExists
@@ -27,14 +33,15 @@ type
         InstancePackage
         SingletonPackage
 
-    ArgType* = enum
-        ArgTypeString
-        ArgTypeBool
-        ArgTypeInt
+    ArgT* {.pure.} = enum
+        typeString
+        typeBool
+        typeInt
+        typeIdent
 
     SArg* = ref object
         k*, v*: string
-        kind*: ArgType
+        kind*: ArgT
 
     Service* = object
         name*: string
@@ -48,6 +55,10 @@ type
     ServiceLoader* = object
         services*: Table[string, Service]
 
+    ServiceConfig = tuple[
+        `type`: string
+    ]
+
     StaticConfig = object
         ## A static object (available on compile-time),
         ## that holds the entire application config parsed from `.env.yml`
@@ -60,7 +71,9 @@ type
             threads: int,
             assets: tuple[source, public: string]
         ]
-        services: Table[string, string]
+        services: Table[string, ServiceConfig]
+
+    AppConfigDefect* = object of CatchableError
 
 var Config* {.compileTime.}: StaticConfig
     ## A singleton of `StaticConfig`, entirely exposed on compile-time.
@@ -125,6 +138,8 @@ proc getModule(file: string): string {.compileTime.} =
     result = "supranim" / "support" / toLowerAscii(file)
 
 template loadDefaultServices(serviceLoader: var ServiceLoader) =
+    # Configure and load default Supranim Services such as
+    # Session, Cookie, CSRF, Database
     for serviceName in ["session", "csrf"]:
         serviceLoader.services[serviceName] = Service(
             name: capitalizeAscii(serviceName),
@@ -132,11 +147,12 @@ template loadDefaultServices(serviceLoader: var ServiceLoader) =
         )
 
 template loadServiceCenter*() =
+    # Configure and load all Application services at compile time.
     var runtimeHandler = RuntimeLoader()
     var serviceLoader = ServiceLoader()
 
     loadDefaultServices(serviceLoader)
-
+    echo Config.services
     when requires "tim":
         serviceLoader.services["tim"] = Service(
             name: "Tim",
@@ -145,11 +161,14 @@ template loadServiceCenter*() =
             args: @[
                 SArg(k: "source", v: "./templates"),
                 SArg(k: "output", v: "./storage/templates"),
-                SArg(k: "indent", v: "4", kind: ArgTypeInt),
-                SArg(k: "minified", v: "true", kind: ArgTypeBool)
+                SArg(k: "indent", v: "2", kind: ArgT.typeInt),
+                SArg(k: "minified", v: "false", kind: ArgT.typeBool),
+                SArg(k: "reloader", v: "HttpReloader", kind: ArgT.typeIdent)
             ]
         )
 
+    # Configure and load some Supranim packages
+    # when required in the current project application
     when requires "emitter":
         serviceLoader.services["emitter"] = Service(
             name: "Event",
@@ -161,7 +180,7 @@ template loadServiceCenter*() =
         if service.`type` in {SingletonDefault, InstanceDefault}:
             result.add(newImport(getModule id))             # import built-in services
         else:
-            result.add(newImport id )                       # import third-party services
+            result.add(newImport id)                        # import third-party services
         if service.expose:
             result.add(newExclude(id))
 
@@ -172,10 +191,12 @@ template loadServiceCenter*() =
             for arg in service.args:
                 var argLit: NimNode
                 case arg.kind
-                of ArgTypeBool:
+                of ArgT.typeBool:
                     argLit = newLit(parseBool(arg.v))
-                of ArgTypeInt:
+                of ArgT.typeInt:
                     argLit = newLit(parseInt(arg.v))
+                of ArgT.typeIdent:
+                    argLit = ident(arg.v)
                 else:
                     argLit = newLit(arg.v)
                 callWithArgs.add(argLit)
@@ -186,152 +207,13 @@ template loadServiceCenter*() =
             runtimeHandler.add(id, true, true)
         else:
             runtimeHandler.add(id, true)
-
     writeFile(baseCachePath / "runtime.nim", runtimeHandler.getCode())
 
-template init*(config: var StaticConfig) = 
+macro init*(config: var StaticConfig) = 
+    ## Parse and validates the YAML config file
+    ## `.env.yml` to `Config` object
     if not dirExists(baseCachePath):
         discard staticExec("mkdir " & baseCachePath)
-
-    # Compile-time proc for parsing and validating YAML
-    # config file `.env.yml` to `Config` object
-    # Parse and validates YAML config file `.env.yml`
-    # to `Config` object    when defined webapp:
-        let publicDir = Config.app.assets.public
-        result.add quote do:
-            let publicDir = `publicDir`
     Config = ymlParser(configContents, StaticConfig)
-
     if Config.app.address.len == 0:
         Config.app.address = $getPrimaryIPAddr()
-
-# macro writeAppConfig() =
-#     result = newStmtList()
-#     var appAddrNode: NimNode
-#     if Config.app.address.len == 0:
-#         appAddrNode = nnkPrefix.newTree(
-#             ident "$",
-#             nnkPar.newTree(
-#                 newCall(ident "getPrimaryIPAddr")
-#             )
-#         )
-#     else:
-#         appAddrNode = newLit(Config.app.address)
-
-#     result.add(
-#         # when defined webapp
-#         newWhenStmt(
-#             (
-#                 nnkCommand.newTree(
-#                     ident "defined",
-#                     ident "webapp"
-#                 ),
-#                 nnkStmtList.newTree(
-#                     newLetStmt(
-#                         ident "publicDir",
-#                         newLit(Config.app.assets.public)
-#                     ),
-#                     newVarStmt(
-#                         ident "sourceDir",
-#                         newLit(Config.app.assets.source)
-#                     ),
-
-#                     newIfStmt(
-#                         (
-#                             nnkInfix.newTree(
-#                                 ident "and",
-#                                 nnkInfix.newTree(
-#                                     ident "==",
-#                                     newDotExpr(
-#                                         ident "publicDir",
-#                                         ident "len"
-#                                     ),
-#                                     newLit(0)
-#                                 ),
-#                                 nnkInfix.newTree(
-#                                     ident "==",
-#                                     newDotExpr(
-#                                         ident "sourceDir",
-#                                         ident "len"
-#                                     ),
-#                                     newLit(0)
-#                                 )
-#                             ),
-#                             newExceptionStmt(
-#                                 ident "ApplicationDefect",
-#                                 newLit "Invalid project structure. Missing `public` and `source` directories"
-#                             )
-#                         )
-#                     ),
-#                     newAssignment(
-#                         ident "sourceDir",
-#                         newCall(
-#                             ident "normalizedPath",
-#                             nnkInfix.newTree(
-#                                 ident "&",
-#                                 nnkInfix.newTree(
-#                                     ident "&",
-#                                     newCall(ident "getAppDir"),
-#                                     newLit("/")
-#                                 ),
-#                                 ident "sourceDir"
-#                             )
-#                         )
-#                     ),
-#                     newCall(
-#                         newDotExpr(
-#                             ident "Assets",
-#                             ident "init"
-#                         ),
-#                         ident "sourceDir",
-#                         ident "publicDir",
-#                     ),
-#                     newAssignment(
-#                         newDotExpr(
-#                             ident "App",
-#                             ident "hasTemplates"
-#                         ),
-#                         ident "true"
-#                     )
-#                 )
-#             ),
-#             # else
-#             newAssignment(
-#                 newDotExpr(
-#                     ident "App",
-#                     ident "appType"
-#                 ),
-#                 ident "RESTful"
-#             )
-#         )
-#     )
-
-#     result.add(
-#         newAssignment(
-#             newDotExpr(ident "App", ident "domain"),
-#             ident "AF_INET"
-#         ),
-#         newAssignment(
-#             newDotExpr(ident "App", ident "address"),
-#             appAddrNode
-#         ),
-#         newAssignment(
-#             newDotExpr(ident "App", ident "port"),
-#             newCall(
-#                 ident "Port",
-#                 newLit Config.app.port
-#             )
-#         ),
-#         newAssignment(
-#             newDotExpr(ident "App", ident "threads"),
-#             newLit Config.app.threads
-#         ),
-#         newAssignment(
-#             newDotExpr(ident "App", ident "recyclable"),
-#             newLit(true)
-#         ),
-#         newAssignment(
-#             newDotExpr(ident "App", ident "isInitialized"),
-#             newLit(true)
-#         ),
-#     )
