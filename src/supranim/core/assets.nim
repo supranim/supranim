@@ -11,8 +11,8 @@ import ../utils
 
 from std/httpcore import HttpCode
 from std/strutils import strip, split, contains, replace
-from std/os import FilePermission, fileExists, getCurrentDir,
-                    splitPath, getFilePermissions, normalizedPath
+from std/os import FilePermission, fileExists, splitPath, 
+                  getFilePermissions, normalizedPath, `/`
 
 type
     File = object

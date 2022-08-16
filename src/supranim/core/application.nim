@@ -57,8 +57,8 @@ macro init*(app: var Application) =
                 let publicDir = `publicDirPath`
                 var sourceDir = `sourceDirPath`
                 if publicDir.len == 0 or sourceDir.len == 0:
-                    raise newException(AppDefect, "Invalid project structure. Missing `public` or `source` directories")
-                sourceDir = normalizedPath(getAppDir() / sourceDir)
+                    raise newException(AppDefect,
+                        "Invalid project structure. Missing `public` or `source` directories")
                 Assets.init(sourceDir, publicDir)
     loadServiceCenter()
 

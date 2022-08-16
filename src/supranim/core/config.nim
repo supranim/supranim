@@ -19,7 +19,7 @@ import ../utils
 from std/net import Port, getPrimaryIPAddr
 from std/nativesockets import Domain
 from std/strutils import toLowerAscii, capitalizeAscii, join, indent
-from std/os import `/`, dirExists, `/../`, fileExists
+from std/os import `/`, dirExists, `/../`, fileExists, normalizedPath
 
 export Port, Domain
 
@@ -123,10 +123,10 @@ proc getAddress*(config: var StaticConfig): string {.compileTime.} =
     result = config.app.address
 
 proc getPublicPathAssets*(config: var StaticConfig): string {.compileTime.} =
-    result = config.app.assets.public
+    result = normalizedPath(config.app.assets.public)
 
 proc getSourcePathAssets*(config: var StaticConfig): string {.compileTime.} =
-    result = config.app.assets.source
+    result = normalizedPath(config.projectPath / config.app.assets.source)
 
 proc hasService*(config: var StaticConfig, id: string): bool {.compileTime.} =
     ## Get a specific Service by id
@@ -163,8 +163,8 @@ template loadServiceCenter*() =
             `type`: SingletonPackage,
             withArgs: true,
             args: @[
-                SArg(k: "source", v: Config.projectPath /../ "templates"),
-                SArg(k: "output", v: Config.projectPath /../ "storage/templates"),
+                SArg(k: "source", v: Config.projectPath / "templates"),
+                SArg(k: "output", v: Config.projectPath / "storage/templates"),
                 SArg(k: "indent", v: "2", kind: ArgT.typeInt),
                 SArg(k: "minified", v: "true", kind: ArgT.typeBool),
                 SArg(k: "reloader", v: "HttpReloader", kind: ArgT.typeIdent)
@@ -219,6 +219,6 @@ macro init*(config: var StaticConfig) =
     if not dirExists(baseCachePath):
         discard staticExec("mkdir " & baseCachePath)
     Config = ymlParser(configContents, StaticConfig)
-    Config.projectPath = getProjectPath()
+    Config.projectPath = normalizedPath(getProjectPath() /../ "")
     if Config.app.address.len == 0:
         Config.app.address = $getPrimaryIPAddr()
