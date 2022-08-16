@@ -73,6 +73,8 @@ type
             assets: tuple[source, public: string]
         ]
         services: Table[string, ServiceConfig]
+        projectPath: string
+            ## Contains the absolute directory path
 
     AppConfigDefect* = object of CatchableError
 
@@ -130,6 +132,8 @@ proc hasService*(config: var StaticConfig, id: string): bool {.compileTime.} =
     ## Get a specific Service by id
     result = config.services.hasKey(id)
 
+proc getProjectPath*(config: var StaticConfig): string {.compileTime.} =
+    result = Config.projectPath
 
 #
 # Service Center - API
@@ -152,15 +156,15 @@ template loadServiceCenter*() =
     var serviceLoader = ServiceLoader()
 
     loadDefaultServices(serviceLoader)
-    echo Config.services
+    # echo Config.services
     when requires "tim":
         serviceLoader.services["tim"] = Service(
             name: "Tim",
             `type`: SingletonPackage,
             withArgs: true,
             args: @[
-                SArg(k: "source", v: "./templates"),
-                SArg(k: "output", v: "./storage/templates"),
+                SArg(k: "source", v: Config.projectPath /../ "templates"),
+                SArg(k: "output", v: Config.projectPath /../ "storage/templates"),
                 SArg(k: "indent", v: "2", kind: ArgT.typeInt),
                 SArg(k: "minified", v: "false", kind: ArgT.typeBool),
                 SArg(k: "reloader", v: "HttpReloader", kind: ArgT.typeIdent)
@@ -215,5 +219,6 @@ macro init*(config: var StaticConfig) =
     if not dirExists(baseCachePath):
         discard staticExec("mkdir " & baseCachePath)
     Config = ymlParser(configContents, StaticConfig)
+    Config.projectPath = getProjectPath()
     if Config.app.address.len == 0:
         Config.app.address = $getPrimaryIPAddr()
