@@ -28,6 +28,7 @@ method send500*(res: var Response, msg="500 | Internal Error")
 when defined webapp:
     method css*(res: var Response, data: string)
     method js*(res: var Response, data: string)
+    method svg*(res: var Response, data: string)
 method json*[R: Response, T](res: var R, body: T, code = Http200) {.base.}
 method json*(res: var Response, body: JsonNode, code = Http200)
 #
@@ -72,6 +73,9 @@ when defined webapp:
 
     method js*(res: var Response, data: string) =
         res.response(data, contentType = "text/javascript;charset=UTF-8")
+
+    method svg*(res: var Response, data: string) =
+        res.response(data, contentType = "image/svg+xml;charset=UTF-8")
 
 method addCacheControl*(res: var Response, opts: openarray[tuple[k: CacheControlResponse, v: string]]) =
     ## Method for adding a `Cache-Control` header to current `Response` instance

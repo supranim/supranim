@@ -36,6 +36,9 @@ when defined webapp:
             elif endsWith(reqRoute, ".js"):
                 let jsContent = Assets.getFile(reqRoute)
                 res.js(jsContent)
+            elif endsWith(reqRoute, ".svg"):
+                let svgContent = Assets.getFile(reqRoute)
+                res.svg(svgContent)
             else:
                 let staticAsset = Assets.getFile(reqRoute)
                 res.response(staticAsset)
