@@ -1,9 +1,10 @@
 # Supranim is a simple MVC-style web framework for building
 # fast web applications, REST API microservices and other cool things.
 #
-# (c) 2021 Supranim is released under MIT License
-#          George Lemon | Made by Humans from OpenPeep
-#          https://supranim.com   |    https://github.com/supranim
+# (c) 2021 Supranim | MIT License
+#          Made by Humans from OpenPeep
+#          Check Supranim Website: https://supranim.com
+#          We <3 GitHub: https://github.com/supranim
 #
 
 ## App Configuration Module
@@ -101,7 +102,6 @@ proc getCode*(runtime: var RuntimeLoader): string {.compileTime.} =
     result &= "\n" & tkExport & "\n"
     result &= indent(runtime.exports.join(",\n"), 4)
 
-
 when not defined inlineConfig:
     static:
         let configPath = getProjectPath() /../ "bin/.env.yml"
@@ -180,9 +180,9 @@ template loadServiceCenter*() =
         if service.`type` in {SingletonDefault, InstanceDefault}:
             result.add(newImport(getModule id))             # import built-in services
         else:
-            result.add(newImport id)                        # import third-party services
+            result.add newImport(id)                        # import third-party services
         if service.expose:
-            result.add(newExclude(id))
+            result.add newExclude(id)
 
         if service.withArgs:
             var callWithArgs = nnkCall.newTree()
