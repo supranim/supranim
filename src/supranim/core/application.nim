@@ -50,15 +50,16 @@ macro init*(app: var Application) =
     result = newStmtList()
     Config.init()
     when defined webapp:
-        let publicDirPath = Config.getPublicPathAssets()
-        let sourceDirPath = Config.getSourcePathAssets()
-        result.add quote do:
-            let publicDir = `publicDirPath`
-            var sourceDir = `sourceDirPath`
-            if publicDir.len == 0 or sourceDir.len == 0:
-                raise newException(AppDefect, "Invalid project structure. Missing `public` or `source` directories")
-            sourceDir = normalizedPath(getAppDir() / sourceDir)
-            Assets.init(sourceDir, publicDir)
+        when not defined release:
+            let publicDirPath = Config.getPublicPathAssets()
+            let sourceDirPath = Config.getSourcePathAssets()
+            result.add quote do:
+                let publicDir = `publicDirPath`
+                var sourceDir = `sourceDirPath`
+                if publicDir.len == 0 or sourceDir.len == 0:
+                    raise newException(AppDefect, "Invalid project structure. Missing `public` or `source` directories")
+                sourceDir = normalizedPath(getAppDir() / sourceDir)
+                Assets.init(sourceDir, publicDir)
     loadServiceCenter()
 
     let appEvents = staticFinder(SearchFiles, getAppDir(EventListeners))

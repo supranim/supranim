@@ -23,29 +23,30 @@ export HttpCode, Http200, Http301, Http302,
 export HttpMethod, Request, Response
 
 when defined webapp:
-    # Enable Static Assets Handler for web apps
-    import supranim/core/assets
-    from std/strutils import startsWith, endsWith
+    when not defined release:
+        # Enable Static Assets Handler for web apps
+        import supranim/core/assets
+        from std/strutils import startsWith, endsWith
 
-    template serveStaticAssets() =
-        let assetsStatus: HttpCode = waitFor Assets.hasFile(reqRoute)
-        if assetsStatus == Http200:
-            if endsWith(reqRoute, ".css"):
-                let cssContent = Assets.getFile(reqRoute)
-                res.css(cssContent)
-            elif endsWith(reqRoute, ".js"):
-                let jsContent = Assets.getFile(reqRoute)
-                res.js(jsContent)
-            elif endsWith(reqRoute, ".svg"):
-                let svgContent = Assets.getFile(reqRoute)
-                res.svg(svgContent)
+        template serveStaticAssets() =
+            let assetsStatus: HttpCode = waitFor Assets.hasFile(reqRoute)
+            if assetsStatus == Http200:
+                if endsWith(reqRoute, ".css"):
+                    let cssContent = Assets.getFile(reqRoute)
+                    res.css(cssContent)
+                elif endsWith(reqRoute, ".js"):
+                    let jsContent = Assets.getFile(reqRoute)
+                    res.js(jsContent)
+                elif endsWith(reqRoute, ".svg"):
+                    let svgContent = Assets.getFile(reqRoute)
+                    res.svg(svgContent)
+                else:
+                    let staticAsset = Assets.getFile(reqRoute)
+                    res.response(staticAsset)
             else:
-                let staticAsset = Assets.getFile(reqRoute)
-                res.response(staticAsset)
-        else:
-            when requires "emitter":
-                Event.emit("system.http.assets.404")
-            res.send404 getErrorPage(Http404, "404 | Not found")
+                when requires "emitter":
+                    Event.emit("system.http.assets.404")
+                res.send404 getErrorPage(Http404, "404 | Not found")
 
 proc onRequest(req: var Request, res: var Response): Future[ void ] =
     {.gcsafe.}:
@@ -53,16 +54,17 @@ proc onRequest(req: var Request, res: var Response): Future[ void ] =
         var reqRoute = req.path.get()
         let verb = req.httpMethod.get()
         when defined webapp:
-            if verb == HttpGet:
-                if startsWith(reqRoute, Assets.getPublicPath()):
-                    # TODO Implement a base middleware to serve static assets
-                    serveStaticAssets()
-                else:
-                    if reqRoute != "/" and reqRoute[^1] == '/':
-                        # TODO implement a base middleware to
-                        # handle redirects for trailing slashes on GET requests
-                        reqRoute = reqRoute[0 .. ^2]
-                        fixTrailingSlash = true
+            when not defined release:
+                if verb == HttpGet:
+                    if startsWith(reqRoute, Assets.getPublicPath()):
+                        # TODO Implement a base middleware to serve static assets
+                        serveStaticAssets()
+                    else:
+                        if reqRoute != "/" and reqRoute[^1] == '/':
+                            # TODO implement a base middleware to
+                            # handle redirects for trailing slashes on GET requests
+                            reqRoute = reqRoute[0 .. ^2]
+                            fixTrailingSlash = true
         let runtime: RuntimeRouteStatus = Router.runtimeExists(verb, reqRoute, req, res)
         case runtime.status:
         of Found:
