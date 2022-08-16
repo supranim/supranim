@@ -166,7 +166,7 @@ template loadServiceCenter*() =
                 SArg(k: "source", v: Config.projectPath /../ "templates"),
                 SArg(k: "output", v: Config.projectPath /../ "storage/templates"),
                 SArg(k: "indent", v: "2", kind: ArgT.typeInt),
-                SArg(k: "minified", v: "false", kind: ArgT.typeBool),
+                SArg(k: "minified", v: "true", kind: ArgT.typeBool),
                 SArg(k: "reloader", v: "HttpReloader", kind: ArgT.typeIdent)
             ]
         )
