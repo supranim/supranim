@@ -15,8 +15,8 @@ from std/enumutils import symbolName
 from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit,
                         startsWith, toUpperAscii, contains
 
-from ../server import HttpMethod, Request, Response, RoutePattern,
-                      RoutePatternTuple, RoutePatternRequest, HttpCode, shouldRedirect
+from ./server import HttpMethod, Request, Response, RoutePattern,
+                    RoutePatternTuple, RoutePatternRequest, HttpCode, shouldRedirect
 
 when not defined release:
     # Register a dev-only route for hot code reloading support.
@@ -137,7 +137,28 @@ proc isDynamic*[R: Route](route: ref R): bool =
     ## Determine if current routeType of route object instance is type of ``DynamicRouteType``
     result = route.routeType == DynamicRouteType
 
-include ./utils
+macro getCollection(router: object, field: string, hasParams: bool): untyped =
+    ## Retrieve a Collection of routes from ``RouterHandler``
+    result = nnkStmtList.newTree()
+    result.add(
+        nnkIfStmt.newTree(
+            nnkElifBranch.newTree(
+                nnkInfix.newTree(
+                    newIdentNode("=="),
+                    newIdentNode(hasParams.strVal),
+                    newIdentNode("true")
+                ),
+                nnkStmtList.newTree(
+                    newDotExpr(router, newIdentNode(field.strVal & "Dynam"))
+                )
+            ),
+            nnkElse.newTree(
+                nnkStmtList.newTree(
+                    newDotExpr(router, newIdentNode(field.strVal))
+                )
+            )
+        )
+    )
 
 method getCollectionByVerb(router: var HttpRouter, verb: HttpMethod, hasParams = false): VerbCollection  =
     ## Get `VerbCollection`, `Table[string, Route]` based on given verb

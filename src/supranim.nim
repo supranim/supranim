@@ -8,9 +8,8 @@
 import pkginfo
 import std/[asyncdispatch, options, times]
 
-import supranim/core/http/server
-import supranim/core/http/router/router
 import supranim/core/application
+import supranim/core/http/[server, router]
 import supranim/controller
 
 when requires "emitter":
