@@ -45,7 +45,7 @@ else:
 proc getAppDir(appDir: AppDirectory): string =
     result = getProjectPath() & "/" & $appDir
 
-macro init*(app: var Application) =
+macro init*(app: var Application, autoIncludeRoutes: static bool = true) =
     ## Supranim application initializer.
     result = newStmtList()
     Config.init()
@@ -62,11 +62,13 @@ macro init*(app: var Application) =
                 Assets.init(sourceDir, publicDir)
     loadServiceCenter()
 
-    let appEvents = staticFinder(SearchFiles, getAppDir(EventListeners))
-    for appEventFile in appEvents:
-        result.add(newInclude(appEventFile))
+    when requires "emitter":
+        let appEvents = staticFinder(SearchFiles, getAppDir(EventListeners))
+        for appEventFile in appEvents:
+            result.add(newInclude(appEventFile))
     result.add newImport("supranim/router")
-    result.add newInclude(getProjectPath() / "routes.nim")
+    if autoIncludeRoutes:
+        result.add newInclude(getProjectPath() / "routes.nim")
 
 macro printBootStatus*() =
     result = newStmtList()

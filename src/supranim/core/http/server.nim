@@ -27,9 +27,6 @@ when defined(windows):
 else:
     import std/posix
 
-# from ../application import App, getDomain, getThreads, getAddress,
-#                     getPort, isRecyclable, printBootStatus, isMultithreading
-
 export httpcore except parseHeader
 export asyncdispatch, options
 

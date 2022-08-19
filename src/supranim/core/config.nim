@@ -220,5 +220,6 @@ macro init*(config: var StaticConfig) =
         discard staticExec("mkdir " & baseCachePath)
     Config = ymlParser(configContents, StaticConfig)
     Config.projectPath = normalizedPath(getProjectPath() /../ "")
-    if Config.app.address.len == 0:
-        Config.app.address = $getPrimaryIPAddr()
+    # TODO find a way to get the local IP on compile time
+    # if Config.app.address.len == 0:
+        # Config.app.address = $getPrimaryIPAddr()
