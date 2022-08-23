@@ -23,7 +23,7 @@ when not defined release:
     # See method `initLiveReload` at the bottom of this file
     import jsony
     import std/[times, json]
-    from ../server import json
+    from ./server import json
 
 export HttpMethod, Response, Request, HttpCode
 

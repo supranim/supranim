@@ -8,7 +8,7 @@ import std/macros
 
 from ./core/http/server import newDeferredRedirect, getDeferredRedirect
 from ./controller import redirects, abort
-from ./core/http/router/router import Middleware, Response
+from ./core/http/router import Middleware, Response
 
 export abort, redirects, newDeferredRedirect, getDeferredRedirect
 export Middleware, Response
