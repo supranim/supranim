@@ -109,8 +109,7 @@ method getCurrentPath*(req: Request): string =
         result = result[1 .. ^1]
 
 proc getParams*(req: Request): seq[RoutePatternRequest] =
-    ## Retrieves all dynamic patterns (key/value)
-    ## from current request
+    ## Retrieve all URL parameters from current request.
     result = req.patterns
 
 proc hasParams*(req: Request): bool =
