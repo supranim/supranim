@@ -32,16 +32,16 @@ when defined webapp:
             if assetsStatus == Http200:
                 if endsWith(reqRoute, ".css"):
                     let cssContent = Assets.getFile(reqRoute)
-                    res.css(cssContent)
+                    res.css(cssContent.src)
                 elif endsWith(reqRoute, ".js"):
                     let jsContent = Assets.getFile(reqRoute)
-                    res.js(jsContent)
+                    res.js(jsContent.src)
                 elif endsWith(reqRoute, ".svg"):
                     let svgContent = Assets.getFile(reqRoute)
-                    res.svg(svgContent)
+                    res.svg(svgContent.src)
                 else:
                     let staticAsset = Assets.getFile(reqRoute)
-                    res.response(staticAsset)
+                    res.response(staticAsset.src, contentType = staticAsset.fileType)
             else:
                 when requires "emitter":
                     Event.emit("system.http.assets.404")
@@ -52,18 +52,18 @@ proc onRequest(req: var Request, res: var Response): Future[ void ] =
         var fixTrailingSlash: bool
         var reqRoute = req.path.get()
         let verb = req.httpMethod.get()
-        when defined webapp:
-            when not defined release:
-                if verb == HttpGet:
+        if verb == HttpGet:
+            when defined webapp:
+                when not defined release:
                     if startsWith(reqRoute, Assets.getPublicPath()):
                         # TODO Implement a base middleware to serve static assets
                         serveStaticAssets()
-                    else:
-                        if reqRoute != "/" and reqRoute[^1] == '/':
-                            # TODO implement a base middleware to
-                            # handle redirects for trailing slashes on GET requests
-                            reqRoute = reqRoute[0 .. ^2]
-                            fixTrailingSlash = true
+                        return
+            if reqRoute != "/" and reqRoute[^1] == '/':
+                # TODO implement a base middleware to
+                # handle redirects for trailing slashes on GET requests
+                reqRoute = reqRoute[0 .. ^2]
+                fixTrailingSlash = true
         let runtime: RuntimeRouteStatus = Router.runtimeExists(verb, reqRoute, req, res)
         case runtime.status:
         of Found:
