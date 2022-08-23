@@ -6,6 +6,8 @@
 #          
 #          Website https://supranim.com
 #          Github Repository: https://github.com/supranim
+
+import filetype
 import std/[tables, asyncdispatch]
 import ../utils
 
@@ -17,6 +19,7 @@ from std/os import FilePermission, fileExists, splitPath,
 type
     File = object
         alias, path: string
+        fileType: FileType
 
     AssetsHandler = ref object
         source: string
@@ -55,7 +58,8 @@ proc hasFile*[T: AssetsHandler](assets: T, filePath: string): Future[HttpCode] {
 proc addFile*[T: AssetsHandler](assets: var T, fn, filePath: string) =
     ## Add a new File object to Assets collection
     if not assets.files.hasKey(fn):
-        assets.files[fn] = File(alias: fn, path: normalizedPath(filePath))
+        let normalizedFilePath = normalizedPath(filePath)
+        assets.files[fn] = File(alias: fn, path: normalizedFilePath, fileType: matchFile(normalizedFilePath))
 
 proc init*[T: AssetsHandler](assets: var T, source, public: string) =
     ## Initialize a new Assets object collection
@@ -70,6 +74,6 @@ proc init*[T: AssetsHandler](assets: var T, source, public: string) =
                 head = head.replace("\\", "/")
             assets.addFile("/" & public & head & "/" & f.tail, file)
 
-proc getFile*[T: AssetsHandler](assets: T, fileName: string): string =
+proc getFile*[T: AssetsHandler](assets: T, fileName: string): tuple[src, fileType: string] =
     ## Retrieve the contents of requested file
-    result = readFile(assets.files[fileName].path)
+    result = (readFile(assets.files[fileName].path), assets.files[fileName].fileType.mime.value)
