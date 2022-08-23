@@ -12,11 +12,13 @@ from std/uri import decodeQuery
 from ./support/str import unquote
 from ./core/http/server import Request, requestBody,
                                 hasHeaders, hasHeader, getHeaders, getHeader,
-                                path, getCurrentPath, getVerb, HttpCode
+                                path, getCurrentPath, getVerb, HttpCode,
+                                getParams, hasParams, path
 
-export Request, hasHeaders, hasHeader, getHeaders, 
-       getHeader, path, getCurrentPath, HttpCode
 export jsony
+export Request, hasHeaders, hasHeader, getHeaders, 
+       getHeader, path, getCurrentPath, HttpCode,
+       getParams, hasParams, path
 
 #
 # Request - Higher-level
