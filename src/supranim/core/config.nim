@@ -18,7 +18,7 @@ import ../utils
 
 from std/net import Port, getPrimaryIPAddr
 from std/nativesockets import Domain
-from std/strutils import toLowerAscii, capitalizeAscii, join, indent
+from std/strutils import toLowerAscii, capitalizeAscii, join, indent, strip
 from std/os import `/`, dirExists, `/../`, fileExists, normalizedPath
 
 export Port, Domain
@@ -221,5 +221,7 @@ macro init*(config: var StaticConfig) =
     Config = ymlParser(configContents, StaticConfig)
     Config.projectPath = normalizedPath(getProjectPath() /../ "")
     # TODO find a way to get the local IP on compile time
-    # if Config.app.address.len == 0:
-        # Config.app.address = $getPrimaryIPAddr()
+    when defined unix:
+        if Config.app.address.len == 0:
+            let localIp = staticExec("ipconfig getifaddr en0")
+            Config.app.address = strip(localIp)
