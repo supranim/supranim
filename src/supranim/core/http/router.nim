@@ -5,7 +5,7 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
-import std/[tables, macros, with]
+import std/[tables, macros, with, uri]
 
 from std/times import DateTime
 from std/options import Option
@@ -357,8 +357,10 @@ proc exists*[R: HttpRouter](router: var R, verb: HttpMethod, path: string): bool
 proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
                     req: Request, res: var Response): RuntimeRouteStatus =
     let staticRoutes = router.getCollectionByVerb(verb)
+    var requestUri: Uri = parseUri(path)
+    var requestPath = requestUri.path
     try:
-        result.route = staticRoutes[path]
+        result.route = staticRoutes[requestPath]
         if result.route.hasMiddleware:
             for middlewareCallback in result.route.middlewares:
                 let status = middlewareCallback(res)
@@ -371,7 +373,7 @@ proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
         result.status = Found
     except ValueError:
         let dynamicRoutes = router.getCollectionByVerb(verb, true)
-        var reqPattern = getPatternsByStr(path)
+        var reqPattern = getPatternsByStr(requestPath)
         var matchRoutePattern: bool
         var reqPatternKeys: seq[int]
         for key, route in dynamicRoutes.pairs():
