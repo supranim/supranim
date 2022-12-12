@@ -50,7 +50,7 @@ when defined webapp:
 proc onRequest(req: var Request, res: var Response): Future[ void ] =
     {.gcsafe.}:
         var fixTrailingSlash: bool
-        var reqRoute = req.path.get()
+        var reqRoute = req.getRequestPath()
         let verb = req.httpMethod.get()
         if verb == HttpGet:
             when defined webapp:
