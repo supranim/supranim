@@ -7,6 +7,7 @@
 
 import jsony
 import std/[options, sequtils]
+import ./core/config
 
 from std/uri import decodeQuery
 from ./support/str import unquote
@@ -15,7 +16,7 @@ from ./core/http/server import Request, requestBody,
                                 path, getCurrentPath, getVerb, HttpCode,
                                 getParams, hasParams, path
 
-export jsony
+export jsony, config
 export Request, hasHeaders, hasHeader, getHeaders, 
        getHeader, path, getCurrentPath, HttpCode,
        getParams, hasParams, path
@@ -35,6 +36,7 @@ method getFields*(req: Request): seq[(string, string)] =
     result = toSeq(req.getBody().decodeQuery)
 
 when defined webapp:
+    ## Controller methods available for `webapp` projects *(gui apps)
     proc isPage*(req: Request, key: string): bool =
         ## Determine if current page is as expected
         result = req.getCurrentPath() == key
@@ -89,6 +91,7 @@ from ./core/http/server import Response, response, send404, send500,
 export json_error
 
 when defined webapp:
+    ## Export methods for `webapp` projects
     from ./core/http/server import view, css, js
     export view, css, js
 
