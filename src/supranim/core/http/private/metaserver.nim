@@ -55,6 +55,7 @@ type
             ## Holds all GET parameters from current request
         reqHeaders: Option[HttpHeaders]
             ## Holds all headers from current request
+        uri: Uri
         ip: string
             ## The public IP address from request
         methodType: HttpMethod

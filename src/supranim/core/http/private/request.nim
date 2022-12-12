@@ -102,6 +102,12 @@ method path*(req: Request): Option[string] =
     if unlikely(req.client notin req.selector): return
     result = parsePath(req.selector.getData(req.client).data, req.start)
 
+method getRequestPath*(req: Request): string =
+    result = req.uri.path
+
+method getRequestQuery*(req: Request): string =
+    result = req.uri.query
+
 method getCurrentPath*(req: Request): string = 
     ## Alias for retrieving the route path from current request
     result = req.path().get()

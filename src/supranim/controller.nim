@@ -14,7 +14,7 @@ from ./support/str import unquote
 from ./core/http/server import Request, requestBody,
                                 hasHeaders, hasHeader, getHeaders, getHeader,
                                 path, getCurrentPath, getVerb, HttpCode,
-                                getParams, hasParams, path
+                                getParams, hasParams, path, getRequestQuery
 
 export jsony, config
 export Request, hasHeaders, hasHeader, getHeaders, 
@@ -30,10 +30,12 @@ method getBody*(req: Request): string =
     result = req.requestBody.get()
 
 method getFields*(req: Request): seq[(string, string)] =
-    ## Parse a body from given Reuqest and return as paris (field, value)
-    ## This is useful for `POST` requests in order to handle
-    ## data submission.
+    ## Decodes the query string from current `Request`
     result = toSeq(req.getBody().decodeQuery)
+
+method getQuery*(req: Request): seq[(string, string)] =
+    ## Decodes the query string from current `Request` of `HttpGet`
+    result = toSeq(decodeQuery(req.getRequestQuery))
 
 when defined webapp:
     ## Controller methods available for `webapp` projects *(gui apps)

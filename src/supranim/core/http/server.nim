@@ -10,7 +10,7 @@
 #          https://supranim.com | https://github.com/supranim
 
 import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
-            strutils, parseutils, options, logging, times, tables]
+            strutils, parseutils, options, logging, times, tables, uri]
 
 import ../../support/session
 import ../../support/uuid
@@ -28,7 +28,7 @@ else:
     import std/posix
 
 export httpcore except parseHeader
-export asyncdispatch, options
+export asyncdispatch, options, uri
 
 include ./private/metaserver
 
@@ -315,6 +315,7 @@ template handleClientReadEvent() =
                         ip: data.ip
                     )
                     req.reqHeaders = parseHeaders(req.selector.getData(req.client).data, req.start)
+                    req.uri = parseUri(req.path.get())
                     template validateResponse(capturedData: ptr Data): untyped =
                         if capturedData.requestID == req.requestID:
                             capturedData.headersFinished = false
