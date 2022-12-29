@@ -74,7 +74,7 @@ type
         ]
         services: Table[string, ServiceConfig]
         projectPath: string
-            ## Contains the absolute directory path
+        custom: Table[string, string]
 
     AppConfigDefect* = object of CatchableError
 
@@ -217,11 +217,14 @@ macro init*(config: var StaticConfig) =
     ## Parse and validates the YAML config file
     ## `.env.yml` to `Config` object
     if not dirExists(baseCachePath):
+        # create `./bin` directory
         discard staticExec("mkdir " & baseCachePath)
     Config = ymlParser(configContents, StaticConfig)
     Config.projectPath = normalizedPath(getProjectPath() /../ "")
-    # TODO find a way to get the local IP on compile time
-    when defined unix:
-        if Config.app.address.len == 0:
-            let localIp = staticExec("ipconfig getifaddr en0")
-            Config.app.address = strip(localIp)
+    if Config.app.address.len == 0:
+        var localIp: string
+        when defined macos:
+            localIp = staticExec("hostname | cut -d' ' -f1")
+        when defined linux:
+            localIp = staticExec("hostname -I | cut -d' ' -f1")
+        Config.app.address = strip(localIp)
