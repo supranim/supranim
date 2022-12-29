@@ -575,7 +575,7 @@ when not defined release:
         ## Initialize API endpoint for reloading current screen
         let reloadCallback = proc(req: Request, res: var Response) =
             json(res, liveReload)
-        Router.get("/watchout", reloadCallback)
+        Router.get("/dev/live", reloadCallback)
 
     method refresh*[R: HttpRouter](router: var R) {.base.} =
         ## Internal method for refreshing current `HttpGet` screens.
