@@ -13,3 +13,9 @@ requires "jsony"
 requires "nyml"
 requires "filetype"
 requires "pkginfo"
+
+task docgen, "Generate API documentation":
+  exec "nim doc --project --index:on --outdir:htmldocs src/supranim.nim"
+
+task devrouter, "Build router for testing purpose":
+  exec "nim c -r src/supranim/core/router.nim"

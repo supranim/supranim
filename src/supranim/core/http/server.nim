@@ -189,7 +189,7 @@ template handleAcceptClient() =
     setBlocking(client, false)
     selector.registerHandle(client, {Event.Read}, initData(Client, ip=address))
 
-template handleClientClosure(selector: Selector[Data], fd: SocketHandle|int, inLoop=true) =
+template handleClientClosure(selector: Selector[Data], fd: SocketHandle, inLoop=true) =
     # TODO: Logging that the socket was closed.
     # TODO: Can POST body be sent with Connection: Close?
     var data: ptr Data = addr selector.getData(fd)
@@ -197,7 +197,7 @@ template handleClientClosure(selector: Selector[Data], fd: SocketHandle|int, inL
     if isRequestComplete:
         # The `onRequest` callback isn't in progress, so we can close the socket.
         selector.unregister(fd)
-        fd.SocketHandle.close()
+        SocketHandle(fd).close()
     else:
         # Close the socket only once the `onRequest` callback completes.
         data.reqFut.addCallback(
@@ -210,7 +210,7 @@ template handleClientClosure(selector: Selector[Data], fd: SocketHandle|int, inL
     when inLoop:    break
     else:           return
 
-proc onRequestFutureComplete(theFut: Future[void], selector: Selector[Data], fd: int) =
+proc onRequestFutureComplete(theFut: Future[void], selector: Selector[Data]) =
     if theFut.failed:
         raise theFut.error
 
@@ -220,17 +220,14 @@ template fastHeadersCheck(data: ptr Data): untyped =
      if res: data.headersFinishPos = data.data.len;
      res)
 
-template methodNeedsBody(data: ptr Data): untyped =
+template methodNeedsBody(m: Option[HttpMethod]): untyped =
     # Only idempotent methods can be pipelined (GET/HEAD/PUT/DELETE), they
     # never need a body, so we just assume `start` at 0.
-    (
-        let m = parseHttpMethod(data.data, start=0);
-        m.isSome() and m.get() in {HttpPost, HttpPut, HttpConnect, HttpPatch}
-    )
+    (m.isSome() and m.get() in {HttpPost, HttpPut, HttpConnect, HttpPatch})
 
-proc slowHeadersCheck(data: ptr Data): bool =
+proc slowHeadersCheck(data: ptr Data, m: Option[HttpMethod]): bool =
     # TODO: See how this `unlikely` affects ASM.
-    if unlikely(methodNeedsBody(data)):
+    if unlikely(methodNeedsBody(m)):
         # Look for \c\l\c\l inside data.
         data.headersFinishPos = 0
         template ch(i): untyped =
@@ -249,8 +246,8 @@ proc slowHeadersCheck(data: ptr Data): bool =
 
         data.headersFinishPos = -1
 
-proc bodyInTransit(data: ptr Data): bool =
-    assert methodNeedsBody(data), "Calling bodyInTransit now is inefficient."
+proc bodyInTransit(data: ptr Data, m: Option[HttpMethod]): bool =
+    assert methodNeedsBody(m), "Calling bodyInTransit now is inefficient."
     assert data.headersFinished
     if data.headersFinishPos == -1: return false
     var trueLen = parseContentLength(data.data, start=0)
@@ -272,7 +269,7 @@ template handleClientReadEvent() =
     const size = 256
     var buf: array[size, char]
     while true:
-        let ret = recv(fd.SocketHandle, addr buf[0], size, 0.cint)
+        let ret = recv(SocketHandle(fd), addr buf[0], size, cint(0))
         if ret == 0: handleClientClosure(selector, fd)
         if ret == -1:
             let lastError = osLastError()
@@ -290,7 +287,8 @@ template handleClientReadEvent() =
         for i in 0 ..< ret:
             data.data[origLen+i] = buf[i]
 
-        if fastHeadersCheck(data) or slowHeadersCheck(data):
+        let reqHttpMethod = parseHttpMethod(data.data, start=0)
+        if fastHeadersCheck(data) or slowHeadersCheck(data, reqHttpMethod):
             # First line and headers for request received.
             data.headersFinished = true
             when not defined(release):
@@ -299,9 +297,7 @@ template handleClientReadEvent() =
                 if data.bytesSent != 0:
                     logging.warn("bytesSent isn't empty.")
 
-            # let m = parseHttpMethod(data.data, start=0);
-            let waitingForBody = methodNeedsBody(data) and bodyInTransit(data)
-            # let waitingForBody = false
+            let waitingForBody = methodNeedsBody(reqHttpMethod) and bodyInTransit(data, reqHttpMethod)
             if likely(not waitingForBody):
                 for start in parseRequests(data.data):
                     # For pipelined requests, we need to reset this flag.
@@ -310,7 +306,7 @@ template handleClientReadEvent() =
                     var req = Request(
                         start: start,
                         selector: selector,
-                        client: fd.SocketHandle,
+                        client: fd,
                         requestID: data.requestID,
                         ip: data.ip
                     )
@@ -327,7 +323,7 @@ template handleClientReadEvent() =
                             capture data:
                                 data.reqFut.addCallback(
                                     proc (fut: Future[void]) =
-                                        onRequestFutureComplete(fut, selector, fd)
+                                        onRequestFutureComplete(fut, selector)
                                         validateResponse(data)
                                 )
                         else: validateResponse(data)
@@ -361,7 +357,7 @@ template handleClientWriteEvent() =
 
 proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count: int, onRequest: OnRequest) =
     for i in 0 ..< count:
-        let fd = events[i].fd
+        let fd: SocketHandle = SocketHandle(events[i].fd)
         var data: ptr Data = addr(selector.getData(fd))
         # Handle error events first.
         if Event.Error in events[i].events:
@@ -379,7 +375,7 @@ proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count:
             when defined posix:
                 assert events[i].events == {Event.Read}
                 asyncdispatch.poll(0)
-            else: discard
+            # else: discard
         of Client:
             if Event.Read in events[i].events:
                 handleClientReadEvent()

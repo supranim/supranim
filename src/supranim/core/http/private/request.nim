@@ -57,13 +57,13 @@ proc genRequestID(): uint =
     requestCounter += 1
     return requestCounter
 
-method validateRequest(req: Request): bool {.gcsafe.}
+proc validateRequest(req: Request): bool {.gcsafe.}
 
-method getVerb*(req: Request): HttpMethod = 
+proc getVerb*(req: Request): HttpMethod = 
     ## Retrieve the `HttpMethod` from given `Request`
     result = req.methodType
 
-method hasHeaders*(req: Request): bool =
+proc hasHeaders*(req: Request): bool =
     ## Determine if current Request instance has any headers
     result = req.reqHeaders.get() != nil
 
@@ -71,11 +71,11 @@ proc hasHeaders*(headers: Option[HttpHeaders]): bool =
     ## Checks for existing headers for given `Option[HttpHeaders]`
     result = headers.get() != nil
 
-method getHeaders*(req: Request): Option[HttpHeaders] =
+proc getHeaders*(req: Request): Option[HttpHeaders] =
     ## Returns all `HttpHeaders` from current `Request` instance
     result = req.reqHeaders
 
-method hasHeader*(req: Request, key: string): bool =
+proc hasHeader*(req: Request, key: string): bool =
     ## Determine if current Request instance has a specific header
     result = req.reqHeaders.get().hasKey(key)
 
@@ -83,7 +83,7 @@ proc hasHeader*(headers: Option[HttpHeaders], key: string): bool =
     ## Determine if current `Request` intance contains a specific header by `key`
     result = headers.get().hasKey(key)
 
-method getHeader*(req: Request, key: string): string = 
+proc getHeader*(req: Request, key: string): string = 
     ## Retrieves a specific header from given `Option[HttpHeaders]`
     let headers = req.reqHeaders.get()
     if headers.hasKey(key):
@@ -93,22 +93,25 @@ proc getHeader*(headers: Option[HttpHeaders], key: string): string =
     ## Retrieves a specific header from given `Option[HttpHeaders]`
     if headers.hasHeader(key): result = headers.get()[key]
 
-method httpMethod*(req: Request): Option[HttpMethod] =
+proc httpMethod*(req: Request): Option[HttpMethod] =
     ## Parses the request's data to find the request HttpMethod.
     result = parseHttpMethod(req.selector.getData(req.client).data, req.start)
 
-method path*(req: Request): Option[string] =
+proc path*(req: Request): Option[string] =
     ## Parses the request's data to find the request target.
     if unlikely(req.client notin req.selector): return
     result = parsePath(req.selector.getData(req.client).data, req.start)
 
-method getRequestPath*(req: Request): string =
+proc getUri*(req: Request): Uri =
+    result = req.uri
+
+proc getRequestPath*(req: Request): string =
     result = req.uri.path
 
-method getRequestQuery*(req: Request): string =
+proc getRequestQuery*(req: Request): string =
     result = req.uri.query
 
-method getCurrentPath*(req: Request): string = 
+proc getCurrentPath*(req: Request): string = 
     ## Alias for retrieving the route path from current request
     result = req.path().get()
     if result[0] == '/':
@@ -129,24 +132,24 @@ proc setParams*(req: var Request, reqValues: seq[RoutePatternRequest]) =
     for reqVal in reqValues:
         req.patterns.add(reqVal)
 
-method headers*(req: Request): Option[HttpHeaders] =
+proc headers*(req: Request): Option[HttpHeaders] =
     ## Parses the request's data to get the headers.
     if unlikely(req.client notin req.selector):
         return
     parseHeaders(req.selector.getData(req.client).data, req.start)
 
-method addHeader*(res: var Response, key, value: string) =
+proc addHeader*(res: var Response, key, value: string) =
     ## Add a new Response Header to given instance.
     res.headers.add(key, value)
 
-method getHeaders*(res: Response): string =
+proc getHeaders*(res: Response): string =
     ## Returns the stringified HTTP Headers of `Response` instance
     var hstr: seq[string]
     for h in res.headers.pairs():
         hstr.add(h.key & ":" & indent(h.value, 1))
     result &= hstr.join("\n")
 
-method requestBody*(req: Request): Option[string] =
+proc requestBody*(req: Request): Option[string] =
     ## Retrieves the body from current Request
     let pos = req.selector.getData(req.client).headersFinishPos
     if pos == -1: return none(string)
@@ -163,7 +166,7 @@ method requestBody*(req: Request): Option[string] =
 #     ## Retrieves the IP address from request
 #     req.selector.getData(req.client).ip
 
-method forget*(req: Request) =
+proc forget*(req: Request) =
     ## Unregisters the underlying request's client socket from event loop.
     ##
     ## This is useful when you want to register ``req.client`` in your own
@@ -172,13 +175,13 @@ method forget*(req: Request) =
     assert req.selector.getData(req.client).requestID == req.requestID
     req.selector.unregister(req.client)
 
-method validateRequest(req: Request): bool =
+proc validateRequest(req: Request): bool =
     ## Handles protocol-mandated responses.
     ##
     ## Returns ``false`` when the request has been handled.
     result = true
 
-    # From RFC7231: "When a request method is received
+    # From RFC7231: "When a request proc is received
     # that is unrecognized or not implemented by an origin server, the
     # origin server SHOULD respond with the 501 (Not Implemented) status
     # code."

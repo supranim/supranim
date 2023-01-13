@@ -38,10 +38,10 @@ proc newCookie*(name, value: string, expires: TimeInterval, maxAge = none(int), 
     result.httpOnly = httpOnly
     result.sameSite = sameSite
 
-method getName*(cookie: ref Cookie): string = result = cookie.name
-method getValue*(cookie: ref Cookie): string = result = cookie.value
-method getDomain*(cookie: ref Cookie): string = result = cookie.domain
-method isExpired*(cookie: ref Cookie): bool =
+proc getName*(cookie: ref Cookie): string = result = cookie.name
+proc getValue*(cookie: ref Cookie): string = result = cookie.value
+proc getDomain*(cookie: ref Cookie): string = result = cookie.domain
+proc isExpired*(cookie: ref Cookie): bool =
     result = parse(cookie.expires, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'") > now()
 
 proc parseCookies*(cookies: string): CookiesTable =
