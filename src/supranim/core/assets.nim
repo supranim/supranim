@@ -26,8 +26,6 @@ type
         public: string
         files: Table[string, File]
 
-    AssetsError* = CatchableError
-
 # when compileOption("threads"):
 #     var Assets* {.threadvar.}: AssetsHandler
 # else:

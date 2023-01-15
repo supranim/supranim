@@ -31,17 +31,29 @@ when defined webapp:
       let assetsStatus: HttpCode = waitFor Assets.hasFile(reqRoute)
       if assetsStatus == Http200:
         if endsWith(reqRoute, ".css"):
-          let cssContent = Assets.getFile(reqRoute)
-          res.css(cssContent.src)
+          try:
+            let cssContent = Assets.getFile(reqRoute)
+            res.css(cssContent.src)
+          except IOError:
+            res.send404()
         elif endsWith(reqRoute, ".js"):
-          let jsContent = Assets.getFile(reqRoute)
-          res.js(jsContent.src)
+          try:
+            let jsContent = Assets.getFile(reqRoute)
+            res.js(jsContent.src)
+          except IOError:
+            res.send404()
         elif endsWith(reqRoute, ".svg"):
-          let svgContent = Assets.getFile(reqRoute)
-          res.svg(svgContent.src)
+          try:
+            let svgContent = Assets.getFile(reqRoute)
+            res.svg(svgContent.src)
+          except IOError:
+            res.send404()
         else:
-          let staticAsset = Assets.getFile(reqRoute)
-          res.response(staticAsset.src, contentType = staticAsset.fileType)
+          try:
+            let staticAsset = Assets.getFile(reqRoute)
+            res.response(staticAsset.src, contentType = staticAsset.fileType)
+          except IOError:
+            res.send404()
       else:
         when requires "emitter":
           Event.emit("system.http.assets.404")
