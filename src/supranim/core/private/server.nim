@@ -15,6 +15,7 @@ import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
 import ../../support/session
 import ../../support/uuid
 
+from ../application import Application
 from std/strutils import indent, join
 from std/sugar import capture
 from std/json import JsonNode, `$`
@@ -30,7 +31,7 @@ else:
 export httpcore except parseHeader
 export asyncdispatch, options, uri
 
-include ./private/metaserver
+include ./metaserver
 
 proc updateDate(fd: AsyncFD): bool =
     result = false # Returning true signifies we want timer to stop.
@@ -258,8 +259,8 @@ proc bodyInTransit(data: ptr Data, m: Option[HttpMethod]): bool =
 #
 # Request & Response API
 #
-include ./private/request
-include ./private/response
+include ./request
+include ./response
 
 template handleClientReadEvent() =
     # Read until EAGAIN. We take advantage of the fact that the client
@@ -318,7 +319,7 @@ template handleClientReadEvent() =
 
                     if validateRequest(req):
                         var res = Response(req: req, headers: newHttpHeaders())
-                        data.reqFut = onRequest(req, res)
+                        data.reqFut = appConfig.onRequest(appConfig.app, req, res)
                         if not data.reqFut.isNil:
                             capture data:
                                 data.reqFut.addCallback(
@@ -355,7 +356,7 @@ template handleClientWriteEvent() =
         data.data.setLen(0)
         selector.updateHandle(fd.SocketHandle, {Event.Read})
 
-proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count: int, onRequest: OnRequest) =
+proc processEvents(selector: Selector[Data], events: array[64, ReadyKey], count: int, appConfig: AppConfig) =
     for i in 0 ..< count:
         let fd: SocketHandle = SocketHandle(events[i].fd)
         var data: ptr Data = addr(selector.getData(fd))
@@ -402,7 +403,7 @@ proc eventLoop(app: AppConfig) =
         var events: array[64, ReadyKey]
         while true:
             let ret = selector.selectInto(-1, events)
-            processEvents(selector, events, ret, app.onRequest)
+            processEvents(selector, events, ret, app)
             # Ensure callbacks list doesn't grow forever in asyncdispatch.
             # @SEE https://github.com/nim-lang/Nim/issues/7532.
             # Not processing callbacks can also lead to exceptions being silently lost!
@@ -417,10 +418,10 @@ proc eventLoop(app: AppConfig) =
                 else:
                     selector.selectInto(20, events)
             if ret > 0:
-                processEvents(selector, events, ret, app.onRequest)
+                processEvents(selector, events, ret, app)
             asyncdispatch.poll(0)
 
-proc run*(onRequest: OnRequest) =
+proc run*(app: Application, onRequest: OnRequest) =
     ## Starts the HTTP server and calls `onRequest` for each request.
     ## The ``onRequest`` procedure returns a ``Future[void]`` type. But
     ## unlike most asynchronous procedures in Nim, it can return ``nil``
@@ -443,4 +444,4 @@ proc run*(onRequest: OnRequest) =
         #     joinThreads(threads)
         # else: eventLoop((onRequest, App.getDomain(), App.getAddress(), App.getPort(), App.isRecyclable()))
     # else:
-    eventLoop((onRequest, Domain.AF_INET, "127.0.0.1", Port(9933), true))
+    eventLoop((app, onRequest, Domain.AF_INET, "127.0.0.1", Port(9933), true))

@@ -8,7 +8,7 @@
 from std/json import JsonNode
 import jsony
 import std/[httpcore, macros]
-import ../../../support/session
+import ../../support/session
 
 from std/strutils import `%`
 export HttpCode, Response
@@ -25,6 +25,8 @@ let
 proc response*(res: var Response, body: string, code = Http200, contentType = ContentTypeHTML)
 proc send404*(res: var Response, msg="404 | Not Found")
 proc send500*(res: var Response, msg="500 | Internal Error")
+proc send503*(res: var Response, msg="503 | Service Unavailable")
+
 when defined webapp:
   proc css*(res: var Response, data: string)
   proc js*(res: var Response, data: string)
@@ -62,6 +64,10 @@ proc send404*(res: var Response, msg="404 | Not Found") =
 proc send500*(res: var Response, msg="500 | Internal Error") =
   ## Sends a 500 HTTP Response with a default "500 | Internal Error" message
   res.response(msg, Http500)
+
+proc send503*(res: var Response, msg="503 | Service Unavailable") =
+  ## Sends a 503 HTTP Response with a default "503 | Service Unavailable" message
+  res.response(msg, Http503)
 
 when defined webapp:
   template view*(res: var Response, key: string, code = Http200) =
@@ -115,6 +121,11 @@ template json500*(res: var Response, body: untyped = "") =
   ## Sends a 500 JSON Response with a default "Internal Error" message
   var jbody = if body.len == 0: """{"status": 500, "message": "Internal Error"}""" else: body
   json_error(res, jbody, Http500)
+
+template json503*(res: var Response, body: untyped = "") =
+  ## Sends a 503 JSON response with a default "Service Unavailable" message
+  var jbody = if body.len == 0: """{"status": 503, "message": "Service Unavailable"}""" else: body
+  json_error(res, jbody, Http503)  
 
 #
 # HTTP Redirects

@@ -121,10 +121,10 @@ type
         headers: HttpHeaders            ## All response headers collected from controller
         sessionId: Uuid                 ## An `UUID` representing the current `UserSession`
 
-    OnRequest* = proc (req: var Request, res: var Response): Future[void] {.gcsafe.}
+    OnRequest* = proc(app: Application, req: var Request, res: var Response): Future[void] {.gcsafe.}
         ## Procedure used on request
 
-    AppConfig = tuple[onRequest: OnRequest, domain: Domain, address: string, port: Port, isReusable: bool]
+    AppConfig* = tuple[app: Application, onRequest: OnRequest, domain: Domain, address: string, port: Port, isReusable: bool]
 
     SupranimDefect* = ref object of Defect
         ## Catchable object error
