@@ -14,9 +14,6 @@ import ../utils
 when requires "watchout":
   import pkg/watchout
 
-when requires "sass":
-  import sass
-
 from std/httpcore import HttpCode
 from std/strutils import strip, split, contains, replace
 from std/os import FilePermission, fileExists, splitFile, 
@@ -31,7 +28,6 @@ type
     source: string
     public: string
     files: TableRef[string, File]
-    scss: TableRef[string, File]
 
 # when compileOption("threads"):
 #   var Assets* {.threadvar.}: AssetsHandler
@@ -83,14 +79,11 @@ proc init*(assets: var AssetsHandler, source, public: string) =
     for file in files:
       let f = splitFile(file)
       if f.ext in [".sass", ".scss"]:
-        # discard
-        compileSass(file, f.dir & "/../css/base.css", outputStyle = Compressed)
-        # assets.addSassFile("/" & public & head & "/" & f.name & f.ext, file)
-      else:
-        var head = f.dir.replace(assets.source, "")
-        when defined windows:
-          head = head.replace("\\", "/")
-        assets.addFile("/" & public & head & "/" & f.name & f.ext, file)
+        continue
+      var head = f.dir.replace(assets.source, "")
+      when defined windows:
+        head = head.replace("\\", "/")
+      assets.addFile("/" & public & head & "/" & f.name & f.ext, file)
 
 proc getFile*(assets: AssetsHandler, fileName: string): tuple[src, fileType: string] =
   ## Retrieve the contents of requested file

@@ -59,7 +59,7 @@ proc genRequestID(): uint =
 
 proc validateRequest(req: Request): bool {.gcsafe.}
 
-proc getVerb*(req: Request): HttpMethod = 
+proc getVerb*(req: Request): Option[HttpMethod] = 
     ## Retrieve the `HttpMethod` from given `Request`
     result = req.methodType
 
@@ -94,8 +94,28 @@ proc getHeader*(headers: Option[HttpHeaders], key: string): string =
     if headers.hasHeader(key): result = headers.get()[key]
 
 proc httpMethod*(req: Request): Option[HttpMethod] =
-    ## Parses the request's data to find the request HttpMethod.
+    ## Parses the request's data to find HttpMethod.
     result = parseHttpMethod(req.selector.getData(req.client).data, req.start)
+
+proc parsePath*(data: string, start: int): Option[string] =
+  ## Parses the request path from the specified data.
+  if unlikely(data.len == 0): return
+  # Find the first ' '.
+  # We can actually start ahead a little here. Since we know
+  # the shortest HTTP method: 'GET'/'PUT'.
+  var i = start+2
+  while data[i] notin {' ', '\0'}: i.inc()
+
+  if likely(data[i] == ' '):
+    # Find the second ' '.
+    i.inc() # Skip first ' '.
+    let start = i
+    while data[i] notin {' ', '\0'}: i.inc()
+
+    if likely(data[i] == ' '):
+      return some(data[start..<i])
+  else:
+    return none(string)
 
 proc path*(req: Request): Option[string] =
     ## Parses the request's data to find the request target.
@@ -185,6 +205,8 @@ proc validateRequest(req: Request): bool =
     # that is unrecognized or not implemented by an origin server, the
     # origin server SHOULD respond with the 501 (Not Implemented) status
     # code."
-    if req.httpMethod().isNone():
+    let httpMethod = req.httpMethod()
+    if httpMethod.isNone():
         req.send(Http501)
         return false
+    req.methodType = httpMethod

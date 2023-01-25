@@ -123,15 +123,11 @@ proc initCollectionTables*(router: var HttpRouter) = router.initTables()
 #     var Router* {.threadvar.}: HttpRouter
 #     var ErrorPages* {.threadvar.}: ErrorPagesTable
 # else:
-var Router* {.threadvar.}: HttpRouter
+var Router*: HttpRouter
 var ErrorPages*: ErrorPagesTable
 
 Router = HttpRouter()
 Router.initCollectionTables()   # https://forum.nim-lang.org/t/5631#34992
-
-# proc init*(router: var HttpRouter) =
-#     Router = HttpRouter()
-#     Router.initCollectionTables()   # https://forum.nim-lang.org/t/5631#34992
 
 proc isDynamic*[R: Route](route: ref R): bool =
   ## Determine if current routeType of route object instance is type of ``DynamicRouteType``
