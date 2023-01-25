@@ -6,7 +6,7 @@
 #          https://supranim.com | https://github.com/supranim
 
 proc unquote*(s: string): string =
-    if s.len == 0: return
-    if s[0] == '"' and s[^1] == '"':
-        return s[1 .. ^2]
-    result = s
+  if s.len == 0: return
+  if s[0] == '"' and s[^1] == '"':
+    return s[1 .. ^2]
+  result = s
