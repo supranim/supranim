@@ -7,16 +7,15 @@
 
 import jsony
 import std/[options, sequtils]
-import ./core/config
 
 from std/uri import decodeQuery
 from ./support/str import unquote
-from ./core/http/server import Request, requestBody,
+from ./core/private/server import Request, requestBody,
                 hasHeaders, hasHeader, getHeaders, getHeader,
                 path, getCurrentPath, getVerb, HttpCode,
                 getParams, hasParams, path, getRequestQuery
 
-export jsony, config
+export jsony
 export Request, hasHeaders, hasHeader, getHeaders, 
      getHeader, path, getCurrentPath, HttpCode,
      getParams, hasParams, path
@@ -25,15 +24,15 @@ export Request, hasHeaders, hasHeader, getHeaders,
 # Request - Higher-level
 #
 
-method getBody*(req: Request): string =
+proc getBody*(req: Request): string =
   ## Retrieve the body of given `Request`
   result = req.requestBody.get()
 
-method getFields*(req: Request): seq[(string, string)] =
+proc getFields*(req: Request): seq[(string, string)] =
   ## Decodes the query string from current `Request`
   result = toSeq(req.getBody().decodeQuery)
 
-method getQuery*(req: Request): seq[(string, string)] =
+proc getQuery*(req: Request): seq[(string, string)] =
   ## Decodes the query string from current `Request` of `HttpGet`
   result = toSeq(decodeQuery(req.getRequestQuery))
 
@@ -43,41 +42,41 @@ when defined webapp:
     ## Determine if current page is as expected
     result = req.getCurrentPath() == key
 
-  method getAgent*(req: Request): string =
+  proc getAgent*(req: Request): string =
     ## Retrieves the user agent from request header
     result = req.getHeader("user-agent")
 
-  method getPlatform*(req: Request): string =
+  proc getPlatform*(req: Request): string =
     ## Return the platform name, It can be one of the following common platform values:
     ## ``Android``, ``Chrome OS``, ``iOS``, ``Linux``, ``macOS``, ``Windows``, or ``Unknown``.
     # https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform
     result = unquote(req.getHeader("sec-ch-ua-platform"))
 
-  method isMacOS*(req: Request): bool =
+  proc isMacOS*(req: Request): bool =
     ## Determine if current request is made from ``macOS`` platform
     result = req.getPlatform() == "macOS"
 
-  method isLinux*(req: Request): bool =
+  proc isLinux*(req: Request): bool =
     ## Determine if current request is made from ``Linux`` platform
     result = req.getPlatform() == "Linux"
 
-  method isWindows*(req: Request): bool =
+  proc isWindows*(req: Request): bool =
     ## Determine if current request is made from ``Window`` platform
     result = req.getPlatform() == "Windows"
 
-  method isChromeOS*(req: Request): bool =
+  proc isChromeOS*(req: Request): bool =
     ## Determine if current request is made from ``Chrome OS`` platform
     result = req.getPlatform() == "Chrome OS"
 
-  method isIOS*(req: Request): bool =
+  proc isIOS*(req: Request): bool =
     ## Determine if current request is made from ``iOS`` platform
     result = req.getPlatform() == "iOS"
 
-  method isAndroid*(req: Request): bool =
+  proc isAndroid*(req: Request): bool =
     ## Determine if current request is made from ``Android`` platform
     result = req.getPlatform() == "Android"
 
-  method isMobile*(req: Request): bool =
+  proc isMobile*(req: Request): bool =
     ## Determine if current request is made from a mobile device
     ## https://wicg.github.io/ua-client-hints/#sec-ch-ua-mobile
     result = req.getPlatform() in ["Android", "iOS"] and
@@ -86,7 +85,7 @@ when defined webapp:
 #
 # Response - Higher-level
 #
-from ./core/http/server import Response, response, send404, send500,
+from ./core/private/server import Response, response, send404, send500,
               addCacheControl, json, json404, json500, json_error,
               redirect, redirects, abort, newCookie, getDeferredRedirect,
               setSessionId, addCookieHeader
@@ -94,12 +93,20 @@ export json_error
 
 when defined webapp:
   ## Export methods for `webapp` projects
-  from ./core/http/server import view, css, js
+  from ./core/private/server import view, css, js
   export view, css, js
+
+  import pkg/pkginfo
+  when requires "tim":
+    template render*(view: string, layout = "base", data: untyped): untyped =
+      res.response(Tim.render(view, layout, data))
+
+    template render*(view: string, layout = "base"): untyped =
+      res.response(Tim.render(view, layout))
 
 export Response, response, send404, send500,
     addCacheControl, json, json404, json500, redirect,
     redirects, abort, newCookie, getDeferredRedirect
 
-method send*(res: var Response, body: string, code = HttpCode(200), contentType = "text/html") =
+proc send*(res: var Response, body: string, code = HttpCode(200), contentType = "text/html") =
   response(res, body, code, contentType)

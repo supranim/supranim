@@ -87,9 +87,15 @@ proc getPort*(config: var Document): Port {.compileTime.} =
   ## Get application port
   result = Port(config.get("port").getInt)
 
+proc getPort*(app: Application): Port =
+  result = app.config.port
+
 proc getAddress*(config: var Document): string {.compileTime.} =
   ## Get application address
   result = config.get("address").getStr
+
+proc getAddress*(app: Application): string =
+  result = app.config.address
 
 proc getPublicPathAssets*(config: var Document): string {.compileTime.} =
   result = normalizedPath(config.get("app.assets.public").getStr)
@@ -151,6 +157,7 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
       localIp = staticExec("hostname | cut -d' ' -f1")
     when defined linux:
       localIp = staticExec("hostname -I | cut -d' ' -f1")
+    echo localIp
     appAssignments[1][1] = newLit strip(localIp)
 
   var appAssetsPaths = [
@@ -304,7 +311,7 @@ macro printBootStatus*() =
   let YES = "yes"
   result.add quote do:
     echo "----------------- ⚡️ -----------------"
-    echo("👌 Up & Running on http://127.0.0.1:9933")
+    echo("👌 Up & Running on http://$1:$2" % [App.getAddress, $(App.getPort)])
 
   when compileOption("opt", "size"):
     compileOpts.add("Size Optimization")

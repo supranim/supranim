@@ -5,11 +5,11 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import pkginfo
+import pkg/pkginfo
 import std/[asyncdispatch, options, times]
 
 import supranim/core/application
-import supranim/core/http/[server, router]
+import supranim/core/private/[server, router, websockets]
 import supranim/controller
 
 when requires "emitter":
@@ -48,6 +48,8 @@ when defined webapp:
             res.svg(svgContent.src)
           except IOError:
             res.send404()
+        elif endsWith(reqRoute, ".wasm"):
+          res.response(Assets.getFile(reqRoute).src, contentType = "application/wasm")
         else:
           try:
             let staticAsset = Assets.getFile(reqRoute)
@@ -59,8 +61,16 @@ when defined webapp:
           Event.emit("system.http.assets.404")
         res.send404 getErrorPage(Http404, "404 | Not found")
 
-proc onRequest(req: var Request, res: var Response): Future[ void ] =
+template ensureServiceAvailability() =
+  if app.state == false:
+    when defined webapp:
+      res.send503 getErrorPage(Http503, "Service Unavailable")
+    else:
+      res.json503("Service Unavailable")
+
+proc onRequest(app: Application, req: var Request, res: var Response): Future[ void ] =
   {.gcsafe.}:
+    ensureServiceAvailability()
     var fixTrailingSlash: bool
     var reqRoute = req.getRequestPath()
     let verb = req.httpMethod.get()
@@ -114,6 +124,37 @@ proc onRequest(req: var Request, res: var Response): Future[ void ] =
           Event.emit("system.http.501")
         res.response("Not Implemented", HttpCode 501)
 
-template start*(app: var Application) =
+when requires "zmq":
+  # Check if current application requires ZeroMQ
+  # https://github.com/nim-lang/nim-zmq
+  # https://nim-lang.github.io/nim-zmq/zmq.html
+  when defined enableSup:
+    # Enables extra functionalities based on ZeroMQ Wrapper
+    # This will allow SUP CLI to communicate with your Supranim apps
+    import pkg/zmq
+    var supThread: Thread[ptr Application]
+    proc newZeromq(app: ptr Application) {.thread.} =
+      var z = zmq.listen("tcp://127.0.0.1:5555", REP)
+      while true:
+        var req = z.receive()
+        if req == "sup.down":
+          if app[].state:
+            app[].state = false
+            z.send "ok"
+          else:
+            z.send "notok"
+        elif req == "sup.up":
+          if not app[].state:
+            app[].state = true
+            z.send "ok"
+          else:
+            z.send "notok"
+      z.close()
+    
+template start*(app: Application) =
   printBootStatus()
-  run(onRequest)
+  when requires "zmq":
+    when defined enableSup:
+      createThread(supThread, newZeromq, app.addr)
+  app.state = true # todo
+  run(app, onRequest)

@@ -15,7 +15,7 @@ import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
 import ../../support/session
 import ../../support/uuid
 
-from ../application import Application, getThreads
+from ../application import Application, getThreads, getAddress, getPort
 from std/strutils import indent, join
 from std/sugar import capture
 from std/json import JsonNode, `$`
@@ -405,7 +405,7 @@ proc run*(app: Application, onRequest: OnRequest) =
   ## unlike most asynchronous procedures in Nim, it can return ``nil``
   ## for better performance, when no async operations are needed.
   # App.printBootStatus()
-  let appConfig = (app, onRequest, Domain.AF_INET, "127.0.0.1", Port(9933), true)
+  let appConfig = (app, onRequest, Domain.AF_INET, app.getAddress(), app.getPort(), true)
   when compileOption("threads"):
     var thr = newSeq[Thread[AppConfig]](app.getThreads())
     for i in 0 ..< app.getThreads():

@@ -5,5 +5,5 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import ./core/http/router
+import ./core/private/router
 export router
