@@ -4,7 +4,7 @@
     a <code>Model</code> <code>View</code> <code>Controller</code> structure and other cool things.
 </p>
 
-<p align="center">👉 Work in progress</p>
+<p align="center">👉 Unstable API. Hold your horses. Work in progress</p>
 
 ## Key Features
 - [x] Made for Unix Systems
