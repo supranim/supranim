@@ -41,7 +41,7 @@ proc exists*(assets: AssetsHandler): bool =
 
 proc getPublicPath*(assets: AssetsHandler): string = 
   ## Retrieve the public path for assets
-  result = "/" & assets.public
+  result = assets.public
 
 proc getSourcePath*(assets: AssetsHandler): string =
   ## Retrieve the source path for assets
@@ -73,7 +73,7 @@ proc init*(assets: var AssetsHandler, source, public: string) =
   ## Initialize a new Assets object collection
   assets.files = newTable[string, File]()
   assets.source = source
-  assets.public = public
+  assets.public = if public[0] == '/': public else: '/' & public
   let files = finder(findArgs = @["-type", "f", "-print"], path = source)
   if files.len != 0:
     for file in files:
@@ -83,7 +83,7 @@ proc init*(assets: var AssetsHandler, source, public: string) =
       var head = f.dir.replace(assets.source, "")
       when defined windows:
         head = head.replace("\\", "/")
-      assets.addFile("/" & public & head & "/" & f.name & f.ext, file)
+      assets.addFile(public & head & "/" & f.name & f.ext, file)
 
 proc getFile*(assets: AssetsHandler, fileName: string): tuple[src, fileType: string] =
   ## Retrieve the contents of requested file
