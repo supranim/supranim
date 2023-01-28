@@ -5,11 +5,11 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import pkg/pkginfo
 import std/[asyncdispatch, options, times]
+import pkg/[pkginfo]
 
 import supranim/core/application
-import supranim/core/private/[server, router, websockets]
+import supranim/core/private/[server, router]
 import supranim/controller
 
 when requires "emitter":
@@ -32,41 +32,51 @@ when defined webapp:
       if assetsStatus == Http200:
         if endsWith(reqRoute, ".css"):
           try:
-            let cssContent = Assets.getFile(reqRoute)
-            res.css(cssContent.src)
+            let responseBody = res.css(Assets.getFile(reqRoute).src)
+            req.sendResponse(res, responseBody)
           except IOError:
-            res.send404()
+            req.send404Response(res)
         elif endsWith(reqRoute, ".js"):
           try:
-            let jsContent = Assets.getFile(reqRoute)
-            res.js(jsContent.src)
+            let responseBody = res.js(Assets.getFile(reqRoute).src)
+            req.sendResponse(res, responseBody)
           except IOError:
-            res.send404()
+            req.send404Response(res)
         elif endsWith(reqRoute, ".svg"):
           try:
-            let svgContent = Assets.getFile(reqRoute)
-            res.svg(svgContent.src)
+            let responseBody = res.svg(Assets.getFile(reqRoute).src)
+            req.sendResponse(res, responseBody)
           except IOError:
-            res.send404()
+            req.send404Response(res)
         elif endsWith(reqRoute, ".wasm"):
-          res.response(Assets.getFile(reqRoute).src, contentType = "application/wasm")
+          try:
+            let responseBody = res.response(Assets.getFile(reqRoute).src,
+                                    contentType = "application/wasm")
+            req.sendResponse(res, responseBody)
+          except IOError:
+            req.send404Response(res)
         else:
           try:
             let staticAsset = Assets.getFile(reqRoute)
-            res.response(staticAsset.src, contentType = staticAsset.fileType)
+            let responseBody = res.response(staticAsset.src,
+                                            contentType = staticAsset.fileType)
+            req.sendResponse(res, responseBody)
           except IOError:
-            res.send404()
+            req.send404Response(res)
       else:
         when requires "emitter":
           Event.emit("system.http.assets.404")
-        res.send404 getErrorPage(Http404, "404 | Not found")
+        let responseBody = res.send404 getErrorPage(Http404, "404 | Not found")
+        req.sendResponse(res, responseBody)
 
 template ensureServiceAvailability() =
   if app.state == false:
     when defined webapp:
-      res.send503 getErrorPage(Http503, "Service Unavailable")
+      let responseBody: HttpResponse = res.send503 getErrorPage(Http503, "Service Unavailable")
+      req.sendResponse(res, responseBody)
     else:
-      res.json503("Service Unavailable")
+      let responseBody: HttpResponse = res.json503("Service Unavailable")
+      req.sendResponse(res, responseBody)
 
 proc onRequest(app: Application, req: var Request, res: var Response): Future[ void ] =
   {.gcsafe.}:
@@ -95,62 +105,64 @@ proc onRequest(app: Application, req: var Request, res: var Response): Future[ v
         else:
           if runtime.route.isDynamic():
             req.setParams(runtime.params)
-          runtime.route.runCallable(req, res)
+          let responseBody: HttpResponse = runtime.route.runCallable(req, res)
+          req.sendResponse(res, responseBody)
       else:
         if runtime.route.isDynamic():
           req.setParams(runtime.params)
-        runtime.route.runCallable(req, res)
+        let responseBody: HttpResponse = runtime.route.runCallable(req, res)
+        req.sendResponse(res, responseBody)
     of BlockedByRedirect:
       # Resolve deferred HTTP redirects declared in current middleware
       when requires "emitter":
         Event.emit("system.http.501")
       res.redirect(res.getDeferredRedirect())
     of BlockedByAbort:
-      # Blocked by an middleware `abort` will
+      # Blocked via Middleware by `abort` handler will
       # Emit the `system.http.middleware.redirect` event
       when requires "emitter":
         Event.emit("system.http.middleware.redirect")
-      res.response("", HttpCode 403)
+      let responseBody: HttpResponse = res.response("", HttpCode 403)
+      req.sendResponse(res, responseBody)
     of NotFound:
       if verb == HttpGet:
-        when defined webapp:
-          res.send404 getErrorPage(Http404, "404 | Not found")
-        else:
-          res.json404("Resource not found")
         when requires "emitter":
           Event.emit("system.http.404")
+        when defined webapp:
+          let responseBody: HttpResponse = res.send404 getErrorPage(Http404, "404 | Not found")
+          req.sendResponse(res, responseBody)
+        else:
+          let responseBody: HttpResponse = res.json404("Resource not found")
+          req.sendResponse(res, responseBody)
       else:
         when requires "emitter":
           Event.emit("system.http.501")
-        res.response("Not Implemented", HttpCode 501)
+        let responseBody: HttpResponse = res.response("Not Implemented", HttpCode 501)
+        req.sendResponse(res, responseBody)
 
-when requires "zmq":
-  # Check if current application requires ZeroMQ
-  # https://github.com/nim-lang/nim-zmq
-  # https://nim-lang.github.io/nim-zmq/zmq.html
-  when defined enableSup:
-    # Enables extra functionalities based on ZeroMQ Wrapper
-    # This will allow SUP CLI to communicate with your Supranim apps
-    import pkg/zmq
-    var supThread: Thread[ptr Application]
-    proc newZeromq(app: ptr Application) {.thread.} =
-      var z = zmq.listen("tcp://127.0.0.1:5555", REP)
-      while true:
-        var req = z.receive()
-        if req == "sup.down":
-          if app[].state:
-            app[].state = false
-            z.send "ok"
-          else:
-            z.send "notok"
-        elif req == "sup.up":
-          if not app[].state:
-            app[].state = true
-            z.send "ok"
-          else:
-            z.send "notok"
-      z.close()
-    
+when defined enableSup:
+  # Enables extra functionalities based on ZeroMQ Wrapper
+  # This will allow SUP CLI to communicate with your Supranim apps
+  import pkg/zmq
+  var supThread: Thread[ptr Application]
+  proc newZeromq(app: ptr Application) {.thread.} =
+    var z = zmq.listen("tcp://" & app.getSupAddress & ":" & app.getSupPort(true), REP)
+    while true:
+      var req = z.receive()
+      if req == "sup.down":
+        if app[].state:
+          app[].state = false
+          z.send "ok"
+        else:
+          z.send "notok"
+      elif req == "sup.up":
+        if not app[].state:
+          app[].state = true
+          z.send "ok"
+        else:
+          z.send "notok"
+    z.close()
+  
 template start*(app: Application) =
   printBootStatus()
   when requires "zmq":

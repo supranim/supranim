@@ -5,7 +5,7 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import jsony
+import pkg/[pkginfo, jsony]
 import std/[options, sequtils]
 
 from std/uri import decodeQuery
@@ -13,10 +13,15 @@ from ./support/str import unquote
 from ./core/private/server import Request, requestBody,
                 hasHeaders, hasHeader, getHeaders, getHeader,
                 path, getCurrentPath, getVerb, HttpCode,
-                getParams, hasParams, path, getRequestQuery
+                getParams, hasParams, path, getRequestQuery,
+                HttpResponse
+
+when requires "kashae":
+  import kashae
+  export kashae
 
 export jsony
-export Request, hasHeaders, hasHeader, getHeaders, 
+export Request, HttpResponse, hasHeaders, hasHeader, getHeaders, 
      getHeader, path, getCurrentPath, HttpCode,
      getParams, hasParams, path
 
@@ -86,17 +91,15 @@ when defined webapp:
 # Response - Higher-level
 #
 from ./core/private/server import Response, response, send404, send500,
-              addCacheControl, json, json404, json500, json_error,
+              addCacheControl, json, json404, json500,
               redirect, redirects, abort, newCookie, getDeferredRedirect,
               setSessionId, addCookieHeader
-export json_error
 
 when defined webapp:
   ## Export methods for `webapp` projects
   from ./core/private/server import view, css, js
   export view, css, js
 
-  import pkg/pkginfo
   when requires "tim":
     template render*(view: string, layout = "base", data: untyped): untyped =
       res.response(Tim.render(view, layout, data))
@@ -108,5 +111,5 @@ export Response, response, send404, send500,
     addCacheControl, json, json404, json500, redirect,
     redirects, abort, newCookie, getDeferredRedirect
 
-proc send*(res: var Response, body: string, code = HttpCode(200), contentType = "text/html") =
+proc send*(res: var Response, body: string, code = HttpCode(200), contentType = "text/html"): HttpResponse =
   response(res, body, code, contentType)

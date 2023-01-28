@@ -113,8 +113,11 @@ type
       ## The stale-if-error response directive indicates that the cache can
       ## reuse a stale response when an origin server responds with an error
       ## (500, 502, 503, or 504).
+  
+  HttpResponse* = distinct string
 
   Response* = ref object
+    code*: HttpCode
     deferRedirect: string           ## Keep a deferred Http redirect from a middleware
     req: Request                    ## Holds the current `Request` instance
     headers: HttpHeaders            ## All response headers collected from controller

@@ -158,7 +158,7 @@ proc headers*(req: Request): Option[HttpHeaders] =
         return
     parseHeaders(req.selector.getData(req.client).data, req.start)
 
-proc addHeader*(res: var Response, key, value: string) =
+proc addHeader*(res: Response, key, value: string) =
     ## Add a new Response Header to given instance.
     res.headers.add(key, value)
 
