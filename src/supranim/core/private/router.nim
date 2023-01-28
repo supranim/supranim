@@ -16,7 +16,8 @@ from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit,
             startsWith, toUpperAscii, contains
 
 from ./server import HttpMethod, Request, Response, RoutePattern,
-          RoutePatternTuple, RoutePatternRequest, HttpCode, shouldRedirect
+                    RoutePatternTuple, RoutePatternRequest, HttpCode,
+                    HttpResponse, shouldRedirect
 
 when not defined release:
   # Register a dev-only route for hot code reloading support.
@@ -28,7 +29,8 @@ when not defined release:
 export HttpMethod, Response, Request, HttpCode
 
 type
-  Callable* = proc(req: Request, res: var Response) {.nimcall.}
+
+  Callable* = proc(req: Request, res: var Response): HttpResponse {.nimcall.}
     ## Callable procedure for route controllers
 
   Middleware* = proc(res: var Response): bool {.nimcall.}
@@ -192,41 +194,8 @@ proc getPatternsByStr(path: string): seq[RoutePatternRequest] =
     result.add((pattern: pattern, str: pathStr))
     pattern = None
 
-proc getPattern(curr, str: string, opt, dynamic = false): RoutePatternTuple =
-  ## Create a RoutePattern based on given string pattern containing:
-  ## ``tuple[pattern: Pattern, str: string, optional: bool]``
-  ## - ``pattern`` field must be an item from Pattern enum,
-  ## - ``str`` field is auto filled if route is statically declared,
-  ## - ``opt`` if pattern should be considered optional.
-  var pattern: RoutePattern
-  case curr:
-    of "id":
-      pattern = Id            # accepts max 64 length Digits only (no hyphen)
-    of "slug":
-      pattern = Slug          # ASCII mix between Alpha, Digits separated by Hyphen
-    of "alpha":
-      pattern = Alpha         # accepts only [A..Z][a..z]
-    of "digit":
-      pattern = Digits        # accepts only digits 0..9
-    of "date":
-      pattern = Date          # a group of DateYear-DateMonth-DateDay separated by Hyphen 
-    of "year":
-      pattern = DateYear      # accepts only 4 group numbers, like 1995, 2022
-    of "month":
-      pattern = DateMonth     # accepts only numbers from 1 to 12
-    of "day":
-      pattern = DateDay       # accepts only numbers from 1 to 31
-    else:
-      for currChar in curr.toSeq:
-        if isDigit(currChar):
-          if pattern == Slug: discard
-          else: pattern = Id
-        elif isAlphanumeric(currChar):  pattern = Slug
-        elif isAlphaAscii(currChar):    pattern = Alpha
-  result = (pattern: pattern, str: str, optional: opt, dynamic: dynamic)
-
 proc tokenize(path: string): tuple[routeType: RouteType, patterns: seq[RoutePatternTuple]] =
-  proc getPatternByStr(str: string, isOptional, isDynamic = false): RoutePatternTuple =
+  proc getPattern(str: string, isOptional, isDynamic = false): RoutePatternTuple =
     var pattern: RoutePattern
     if str == "id":
       pattern = Id
@@ -253,14 +222,14 @@ proc tokenize(path: string): tuple[routeType: RouteType, patterns: seq[RoutePatt
         add patt, tks[i]
         inc i
         if i> tksLen: break
-      result.patterns.add getPatternByStr(patt)
+      result.patterns.add getPattern(patt)
     of {'a' .. 'z'}:
       setLen(patt, 0)
       while tks[i] notin {'{', '/'}:
         add patt, tks[i]
         inc i
         if i > tksLen: break
-      result.patterns.add getPatternByStr(patt)
+      result.patterns.add getPattern(patt)
     of '{':
       inc i
       setLen(patt, 0)
@@ -275,7 +244,7 @@ proc tokenize(path: string): tuple[routeType: RouteType, patterns: seq[RoutePatt
         add patt, tks[i]
         inc i
       inc i # }
-      result.patterns.add getPatternByStr(patt, isOptional, true)
+      result.patterns.add getPattern(patt, isOptional, true)
       isDynamic = true
     of '/':
       inc i
@@ -420,7 +389,7 @@ proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
         result.status = NotFound
         break
 
-proc runCallable*[R: Route](route: ref R, req: var Request, res: var Response) =
+proc runCallable*[R: Route](route: ref R, req: var Request, res: var Response): HttpResponse =
   ## Run callable from route controller
   route.callback(req, res)
 
@@ -582,7 +551,7 @@ when not defined release:
   var liveReload = LiveReload()
   method initLiveReload*[R: HttpRouter](router: var R) {.base.} =
     ## Initialize API endpoint for reloading current screen
-    let reloadCallback = proc(req: Request, res: var Response) =
+    let reloadCallback = proc(req: Request, res: var Response): HttpResponse =
       json(res, liveReload)
     Router.get("/dev/live", reloadCallback)
 
