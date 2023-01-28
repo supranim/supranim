@@ -5,6 +5,10 @@ import supranim/[utils, finder, support/uuid]
 when defined webapp:
   import ./assets
 
+when not defined release:
+  when requires "profiler":
+    import profiler
+
 from std/nativesockets import Domain
 from std/net import `$`, Port
 # from std/logging import Logger
@@ -51,12 +55,16 @@ type
     # database: DBConfig
     projectPath: string
     facades: Facades
+    sup: tuple[address: string, port: Port, enabled: bool]
 
   ConfigDefect* = object of CatchableError
 
   Application* {.acyclic.} = ref object
     state*: bool
     config: Configurator
+    when not defined release:
+      when requires "profiler":
+        profiler: Profiler
 
   AppDefect* = object of CatchableError
 
@@ -74,12 +82,11 @@ let
 
 #
 # Facade API
+# TODO
+
 #
-# proc newFacade(facades: var FacadeLoader, id: FacadeId) {.compileTime.} =
-
-# dumpAstGen:
-  # Config.app.port = Port(doc.get("app.port").getInt)
-
+# App Config API
+#
 proc initConfigurator*(): Configurator =
   Configurator()
 
@@ -110,6 +117,18 @@ proc getAppDir*(appDir: AppDirectory, suffix: varargs[string] = ""): string {.co
 
 proc getThreads*(app: Application): int =
   result = app.config.threads
+
+proc getSupAddress*(app: ptr Application): string =
+  ## Return address for running SUP server
+  result = app.config.sup.address
+
+proc getSupPort*(app: ptr Application): Port =
+  ## Return Port for running SUP server
+  result = app.config.sup.port
+
+proc getSupPort*(app: ptr Application, toStr: bool): string =
+  ## Return Port for running SUP server
+  result = $app.config.sup.port
 
 macro path*(appDir: AppDirectory, append: static string = ""): untyped =
   var getPath: string = getProjectPath() & "/" & $appDir.getImpl
@@ -189,6 +208,32 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
       )
     )
 
+  # SUP Config initializer
+  when defined enableSup:
+    let supConfig = doc.get("sup")
+    if supConfig != nil:
+      var supAssignments = [
+        ("address", newLit doc.get("sup.address", %* "127.0.0.1").getStr),
+        ("port", newCall(ident "Port", newLit doc.get("sup.port", %* 9955).getInt)),
+        ("enabled", newLit doc.get("sup.enable", %* true).getBool)
+      ]
+
+      for assign in supAssignments:
+        stmts.add(
+          newAssignment(
+            newDotExpr(
+              newDotExpr(
+                configsAppField,
+                ident "sup"
+              ),
+              ident assign[0]
+            ),
+            assign[1]
+          )
+        )
+    else: warning("Unable to setup SUP server. Missing configuration in `.env.yml`")
+
+  # Facade Initializer
   let facadeFile = getAppDir(Config, "facade.yml")
   if fileExists(facadeFile):
     var
@@ -270,11 +315,6 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
     stmts.add newImport("supranim/facade")
     stmts.add initFrameworkFacades
     stmts.add initFacades
-    # echo stmts.repr
-  # StaticConfig.projectPath = dirProjectPath
-  # StaticConfig.app.key = $uuid4()
-  # stmts.add quote do:
-    # Configs.app.key = uuid4()
 
 macro init*(app: Application, autoIncludeRoutes: static bool = true) =
   ## Supranim application initializer.
@@ -322,11 +362,6 @@ macro printBootStatus*() =
     compileOpts.add("Memory Management:" & indent("ARC", 1))
   when compileOption("gc", "orc"):
     compileOpts.add("Memory Management:" & indent("ORC", 1))
-
-  # when compileOption("threads"):
-  #     compileOpts.add("Threads:" & indent("$1", 1))
-
-  # echo querySetting(SingleValueSetting.compileOptions)
 
   for optLabel in compileOpts:
     result.add(
