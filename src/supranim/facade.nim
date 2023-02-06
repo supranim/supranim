@@ -2,12 +2,12 @@ from supranim/core/application import dirCachePath
 from std/os import `/`, dirExists
 import std/macros
 
-macro initRuntime() =
+macro initFacades() =
     result = newStmtList()
     result.add(
         nnkIncludeStmt.newTree(
-            ident(dirCachePath / "runtime.nim")
+            ident(dirCachePath / "facade.nim")
         )
     )
 
-initRuntime()
+initFacades()

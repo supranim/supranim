@@ -5,12 +5,17 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-from std/json import JsonNode
-import jsony
+import pkg/[pkginfo, jsony]
 import std/[httpcore, macros]
 import ../../support/session
 
 from std/strutils import `%`
+
+when requires "pkginfo":
+  from pkg/packedjson import JsonNode, `$`
+else:
+  from std/json import JsonNode, `$`
+
 export HttpCode, Response
 
 let
@@ -143,8 +148,9 @@ proc getDeferredRedirect*(res: Response): string =
   res.deferRedirect
 
 proc redirect*(res: Response, target: string, code = Http303) =
-  ## Setup a HttpRedirect with a default 303 `HttpCode`
-  getRequest(res).send(code, "", HeaderHttpRedirect % [target])
+  ## Setup a HttpRedirect with a default 303 `HttpCode
+  res.addHeader("Location", target)
+  getRequest(res).send(code, "", res.getHeaders())
 
 proc redirect301*(res: Response, target:string) =
   ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
@@ -163,6 +169,10 @@ template abort*(httpCode: HttpCode = Http403) =
   getRequest(res).send(httpCode, "You don't have authorization to view this page", "text/html")
   return # block code execution after `abort`
 
+template abort*(target: string, httpCode = Http303) =
+  ## Abort the current exection and return a Http 303 rediret
+  res.redirect(target, httpCode)
+  return # block code exection
 
 #
 # UserSession by Response

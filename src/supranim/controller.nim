@@ -16,6 +16,13 @@ from ./core/private/server import Request, requestBody,
                 getParams, hasParams, path, getRequestQuery,
                 HttpResponse
 
+# when requires "packedjson":
+#   import pkg/packedjson
+#   export `%*`
+# else:
+import std/json
+export `%*`
+
 when requires "kashae":
   import kashae
   export kashae
@@ -95,6 +102,8 @@ from ./core/private/server import Response, response, send404, send500,
               redirect, redirects, abort, newCookie, getDeferredRedirect,
               setSessionId, addCookieHeader
 
+export addCookieHeader
+
 when defined webapp:
   ## Export methods for `webapp` projects
   from ./core/private/server import view, css, js
@@ -104,11 +113,14 @@ when defined webapp:
     template render*(view: string, layout = "base", data: untyped): untyped =
       res.response(Tim.render(view, layout, data))
 
+    template render*(view: string, layout = "base", data: JsonNode): untyped =
+      res.response(Tim.render(view, layout, data, %*{"isPage": "/" & req.getCurrentPath()}))
+
     template render*(view: string, layout = "base"): untyped =
       res.response(Tim.render(view, layout))
 
 export Response, response, send404, send500,
-    addCacheControl, json, json404, json500, redirect,
+    addCacheControl, server.json, json404, json500, redirect,
     redirects, abort, newCookie, getDeferredRedirect
 
 proc send*(res: var Response, body: string, code = HttpCode(200), contentType = "text/html"): HttpResponse =

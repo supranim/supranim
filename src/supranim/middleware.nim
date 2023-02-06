@@ -6,9 +6,9 @@
 #          https://supranim.com   |    https://github.com/supranim
 import std/macros
 
-from ./core/http/server import newDeferredRedirect, getDeferredRedirect
+from ./core/private/server import newDeferredRedirect, getDeferredRedirect
 from ./controller import redirects, abort
-from ./core/http/router import Middleware, Response
+from ./core/private/router import Middleware, Response
 
 export abort, redirects, newDeferredRedirect, getDeferredRedirect
 export Middleware, Response

@@ -154,7 +154,7 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
     )
   )
   let appKey = doc.get("app.key")
-  if appKey != nil:
+  if not appKey.isNil():
     try:
       discard uuid4(appKey.getStr)
     except UUIDError:

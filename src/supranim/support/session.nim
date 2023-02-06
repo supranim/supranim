@@ -4,13 +4,15 @@
 # (c) 2022 Supranim is released under MIT License
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
-import pkginfo
+import pkg/[pkginfo, nimcrypto]
 when requires "emitter":
   import emitter
+
 import ./uuid, ./cookie
-import std/[tables, times, options]
+import std/[tables, times, options, httpcore]
 
 from ./str import unquote
+from ../core/private/server import Request, getHeaders, getHeader, getIp
 
 export times, uuid, cookie
 
@@ -18,17 +20,22 @@ type
   UserSession* = object
     id: Uuid
       ## ID representing the current UserSession
+    id256: string
+    reqHeaders: Option[HttpHeaders]
     backend, client: CookiesTable
       ## Table representing all Cookies for both backend and clientside.
       ## Note that `client` table gets parsed data from client side
       ## and gets cleaned after each Response.
     created: DateTime
       ## The creation time for current UserSession
-  
+    lastAccess: DateTime
+      ## Store last time access in order to extend
+      ## the expiration time.
+
   ID* = string
     ## The stringified `UUID`
 
-  Sessions = Table[ID, UserSession]
+  Sessions = TableRef[ID, UserSession]
     ## A table containing all UserSession instances
 
   SessionManager = ref object
@@ -37,10 +44,10 @@ type
 
   SessionDefect* = object of Defect
 
-when compileOption("threads"):
-  var Session* {.threadvar.}: SessionManager
-else:
-  var Session*: SessionManager
+# when compileOption("threads"):
+#   var Session* {.threadvar.}: SessionManager
+# else:
+var Session*: SessionManager
 
 #
 # UserSession API
@@ -78,19 +85,30 @@ proc getUuid*(session: UserSession): Uuid =
   ## Use `$` in order to stringify the ID.
   result = session.id
 
-proc initUserSession(newUuid: Uuid): UserSession =
-  result = UserSession(id: newUuid, created: now())
+proc getHashed(id: Uuid): string =
+  result = $keccak_256.digest($id)
+
+proc getHashed(key: string): string =
+  result = $keccak_256.digest(key)
+
+proc initUserSession(newUuid: Uuid, req: Request): UserSession =
+  result = UserSession(
+    id: newUuid,
+    id256: getHashed newUuid,
+    reqHeaders: req.getHeaders(),
+    created: now()
+  )
   result.backend = newTable[string, ref Cookie]()
-  result.backend["ssid"] = newCookie("ssid", $result.id, 30.minutes)
+  result.backend["ssid"] = newCookie("ssid", getHashed result.id, 30.minutes)
 
 #
 # SessionManager API
 # 
-proc init*[S: SessionManager](m: var S, expiration = initDuration(minutes = 30)) =
+proc init*(m: var SessionManager, expiration = initDuration(minutes = 30)) =
   ## Initialize a singleton of `SessionManager` as `Session`.
   if Session != nil:
     raise newException(SessionDefect, "Session Manager has already been initialized")
-  Session = SessionManager(expiration: expiration)
+  Session = SessionManager(expiration: expiration, sessions: newTable[ID, UserSession]())
 
 proc isValid*(manager: var SessionManager, id: string): bool =
   ## Validates a session by `UUID` and creation time.
@@ -102,23 +120,28 @@ proc flush*(manager: var SessionManager) =
   ##
   ## Do not call this proc directly!
   ##
-  ## The process of flushing expired sessions is handled
-  ## by Scheduler module in a separate thread.
+  ## Flushing expired sessions is handled
+  ## by Scheduler module from a separate thread.
   if manager == nil: return
   var expired: seq[UserSession]
   for id, userSession in manager.sessions.pairs():
     if userSession.hasExpired():
       expired.add userSession
-  echo expired.len
 
-proc newUserSession*(manager: var SessionManager): UserSession =
+proc newUserSession*(manager: var SessionManager, req: Request): UserSession =
   ## Create a new UserSession instance via `SessionManager` singleton
   var newUuid: Uuid = uuid4()
-  while true: # is this necessary?
+  while true:
     if manager.sessions.hasKey($newUuid):
        newUuid = uuid4()
     else: break
-  result = initUserSession(newUuid)
+  # echo req.getHeaders().get()
+  # echo req.getHeader("user-agent")
+  # echo req.getHeader("sec-ch-ua-platform")
+  # echo req.getHeader("sec-ch-ua")
+  # echo req.getHeader("cookie")
+  # echo req.getIp()
+  result = initUserSession(newUuid, req)
   manager.sessions[$result.id] = result
 
 proc getCurrentSessionByUuid*(manager: var SessionManager, id: Uuid): UserSession =

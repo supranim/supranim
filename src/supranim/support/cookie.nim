@@ -24,7 +24,7 @@ type
 proc kv(k, v: string): string = result = k & "=" & v & ";"
 
 proc newCookie*(name, value: string, expires: TimeInterval, maxAge = none(int), domain = "",
-        path = "", secure = false, httpOnly = true, sameSite = Lax): ref Cookie =
+        path = "/", secure = false, httpOnly = true, sameSite = Lax): ref Cookie =
   ## Create a new `Cookie` object and return as a ref object.
   let expirationDate = now() + expires
   new result

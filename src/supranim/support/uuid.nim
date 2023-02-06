@@ -23,9 +23,16 @@ type
 
   UUIDError* = object of CatchableError
 
-proc hexify(bytes: openArray[uint8]): string =
+proc hexify*(bytes: openArray[uint8]): string =
   for byte in bytes:
-    result = result & fmt"{byte:02x}"
+    result.add fmt"{byte:02x}"
+
+proc hexify*(uuid: Uuid): string =
+  for byte in uuid.bytes:
+    result.add fmt"{byte:02x}"
+
+proc getUuidBytes*(uuid: Uuid): array[16, uint8] =
+  result = uuid.bytes
 
 proc toStr(uuid: Uuid): string =
   result = hexify(uuid.bytes[0..3]) & "-" &

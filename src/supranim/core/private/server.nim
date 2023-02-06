@@ -8,17 +8,9 @@
 # (c) 2022 Supranim is released under MIT License
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
-
-import std/[selectors, net, nativesockets, os, httpcore, asyncdispatch,
-      strutils, parseutils, options, logging, times, tables, uri]
-
-import ../../support/session
-import ../../support/uuid
-
 from ../application import Application, getThreads, getAddress, getPort
 from std/strutils import indent, join
 from std/sugar import capture
-from std/json import JsonNode, `$`
 from std/deques import len
 
 when defined(windows):
@@ -27,9 +19,6 @@ when defined(windows):
   import std/heapqueue
 else:
   import std/posix
-
-export httpcore except parseHeader
-export asyncdispatch, options, uri
 
 include ./metaserver
 

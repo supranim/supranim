@@ -6,45 +6,46 @@
 #          https://supranim.com   |    https://github.com/supranim
 
 from std/os import isHidden
-from std/strutils import strip, split, join, replace
+from std/strutils import strip, split, join, contains, replace
 
 when defined windows:
-    from std/os import walkDirRec
+  from std/os import walkDirRec
 else:
-    import std/osproc
+  import std/osproc
 
 type 
-    SearchType* = enum
-        SearchFiles, SearchDirectories
+  SearchType* = enum
+    SearchFiles, SearchDirectories
 
 when not defined windows:
-    proc cmd*(bin: string, inputArgs: openarray[string]): any {.discardable.} =
-        ## Short hand for executing shell commands via execProcess
-        execProcess(bin, args=inputArgs, options={poStdErrToStdOut, poUsePath})
+  proc cmd*(bin: string, inputArgs: openarray[string]): any {.discardable.} =
+    ## Short hand for executing shell commands via execProcess
+    execProcess(bin, args=inputArgs, options={poStdErrToStdOut, poUsePath})
 
-    proc staticCmd*(bin: string, inputArgs: openarray[string]): any {.discardable, compileTime.} =
-        staticExec(bin & " " & join(inputArgs, " "))
+  proc staticCmd*(bin: string, inputArgs: openarray[string]): any {.discardable, compileTime.} =
+    staticExec(bin & " " & join(inputArgs, " "))
 
-    proc finder*(searchType: SearchType, path: string, ext = ""): seq[string] =
-        var files = cmd("find", [path, "-type", "f", "-print"]).strip()
-        if files.len == 0: # "Unable to find any files at given location"
-            result = @[]
-        else:
-            for file in files.split("\n"):
-                if file.isHidden: continue
-                result.add file
-    
-    proc staticFinder*(searchType: SearchType, path: string, ext = "", showRelativePath = false): seq[string] {.compileTime.} =
-        var files = staticCmd("find", [path, "-type", "f", "-print"]).strip()
-        if files.len == 0: # "Unable to find any files at given location"
-            result = @[]
-        else:
-            for file in files.split("\n"):
-                if file.isHidden: continue
-                if showRelativePath:
-                    result.add file.replace(path, "")
-                else:
-                    result.add file
+  proc finder*(searchType: SearchType, path: string, ext = ""): seq[string] =
+    var files = cmd("find", [path, "-type", "f", "-print"]).strip()
+    if files.len == 0: # "Unable to find any files at given location"
+      result = @[]
+    else:
+      for file in files.split("\n"):
+        if file.isHidden: continue
+        result.add file
+  
+  proc staticFinder*(searchType: SearchType, path: string, ext = "", showRelativePath = false): seq[string] {.compileTime.} =
+    var files = staticCmd("find", [path, "-type", "f", "-print"]).strip()
+    if files.len == 0: # "Unable to find any files at given location"
+      return
+    let filesArr = files.split("\n")  
+    if filesArr[0].contains("find:"): return
+    for file in filesArr:
+      if file.isHidden: continue
+      if showRelativePath:
+        result.add file.replace(path, "")
+      else:
+        result.add file
 # else:
 #     proc finder*(searchType: SearchType, path: string, ext = ""): Future[seq[string]] {.async.} =
 #         var retFuture = newFuture[seq[string]]("finder")

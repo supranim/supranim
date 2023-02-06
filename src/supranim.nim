@@ -140,28 +140,29 @@ proc onRequest(app: Application, req: var Request, res: var Response): Future[ v
         let responseBody: HttpResponse = res.response("Not Implemented", HttpCode 501)
         req.sendResponse(res, responseBody)
 
-when defined enableSup:
-  # Enables extra functionalities based on ZeroMQ Wrapper
-  # This will allow SUP CLI to communicate with your Supranim apps
-  import pkg/zmq
-  var supThread: Thread[ptr Application]
-  proc newZeromq(app: ptr Application) {.thread.} =
-    var z = zmq.listen("tcp://" & app.getSupAddress & ":" & app.getSupPort(true), REP)
-    while true:
-      var req = z.receive()
-      if req == "sup.down":
-        if app[].state:
-          app[].state = false
-          z.send "ok"
-        else:
-          z.send "notok"
-      elif req == "sup.up":
-        if not app[].state:
-          app[].state = true
-          z.send "ok"
-        else:
-          z.send "notok"
-    z.close()
+when requires "zmq":
+  when defined enableSup:
+    # Enables extra functionalities based on ZeroMQ Wrapper
+    # This will allow SUP CLI to communicate with your Supranim apps
+    import pkg/zmq
+    var supThread: Thread[ptr Application]
+    proc newZeromq(app: ptr Application) {.thread.} =
+      var z = zmq.listen("tcp://" & app.getSupAddress & ":" & app.getSupPort(true), REP)
+      while true:
+        var req = z.receive()
+        if req == "sup.down":
+          if app[].state:
+            app[].state = false
+            z.send "ok"
+          else:
+            z.send "notok"
+        elif req == "sup.up":
+          if not app[].state:
+            app[].state = true
+            z.send "ok"
+          else:
+            z.send "notok"
+      z.close()
   
 template start*(app: Application) =
   printBootStatus()
