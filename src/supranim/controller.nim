@@ -15,11 +15,9 @@ from ./core/private/server import Request, requestBody,
                 path, getCurrentPath, getVerb, HttpCode,
                 getParams, hasParams, path, getRequestQuery,
                 HttpResponse
+from ./application import AppDirectory, path
+export AppDirectory, path
 
-# when requires "packedjson":
-#   import pkg/packedjson
-#   export `%*`
-# else:
 import std/json
 export `%*`
 
