@@ -1,5 +1,5 @@
 import pkg/[pkginfo, nyml]
-import std/[macros, os, tables, strutils, cpuinfo, compilesettings]
+import std/[macros, os, tables, hashes, strutils, cpuinfo, compilesettings]
 import supranim/[utils, finder, support/uuid]
 
 when defined webapp:
@@ -27,6 +27,9 @@ type
     EventSchedules      = "events/schedules"
     I18n                = "i18n"
     Middlewares         = "middlewares"
+    Storage             = "../storage"
+    StorageLMDB         = "../storage/lmdb"
+
 
   FacadeId = distinct string
   Facade* = ref object
@@ -49,7 +52,8 @@ type
     address, name: string
     key: Uuid
     threads: int
-    assets: tuple[source, public: string]
+    when defined webapp:
+      assets: tuple[source, public: string]
     views: string
     useLAN: bool
     # database: DBConfig
@@ -104,11 +108,12 @@ proc getAddress*(config: var Document): string {.compileTime.} =
 proc getAddress*(app: Application): string =
   result = app.config.address
 
-proc getPublicPathAssets*(config: var Document): string {.compileTime.} =
-  result = normalizedPath(config.get("app.assets.public").getStr)
+when defined webapp:
+  proc getPublicPathAssets*(config: var Document): string {.compileTime.} =
+    result = normalizedPath(config.get("app.assets.public").getStr)
 
-proc getSourcePathAssets*(config: var Document): string {.compileTime.} =
-  result = normalizedPath(dirProjectPath / config.get("app.assets.source").getStr)
+  proc getSourcePathAssets*(config: var Document): string {.compileTime.} =
+    result = normalizedPath(dirProjectPath / config.get("app.assets.source").getStr)
 
 proc getAppDir*(appDir: AppDirectory, suffix: varargs[string] = ""): string {.compileTime.} =
   result = getProjectPath() & "/" & $appDir
@@ -138,7 +143,10 @@ macro path*(appDir: AppDirectory, append: static string = ""): untyped =
   result.add quote do:
     `getPath`
 
-proc newConfig*(stmts: NimNode) {.compileTime.} =
+proc hash(n: NimNode): Hash =
+  hash($n)
+
+proc newConfig*(stmts: NimNode, configData: JsonNode) {.compileTime.} =
   ## Create a new Configuration instance at compile time.
   if not dirExists(dirCachePath):
     discard staticExec("mkdir " & dirCachePath) # Create `.cache` directory
@@ -146,7 +154,7 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
     writeFile(fileEnvPath, ymlConfigSample)
 
   let configContents = staticRead(fileEnvPath)
-  doc = yaml(configContents).toJson()
+  doc = yaml(configContents, data = configData).toJson()
   stmts.add(
     newAssignment(
       ident("Configs"),
@@ -176,13 +184,9 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
       localIp = staticExec("hostname | cut -d' ' -f1")
     when defined linux:
       localIp = staticExec("hostname -I | cut -d' ' -f1")
-    echo localIp
+    # echo localIp
     appAssignments[1][1] = newLit strip(localIp)
 
-  var appAssetsPaths = [
-    ("source", newLit doc.get("app.assets.source").getStr),
-    ("source", newLit doc.get("app.assets.public").getStr),
-  ]
   let configsAppField = ident "Configs" 
   for assign in appAssignments:
     stmts.add(
@@ -194,19 +198,24 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
         assign[1]
       )
     )
-  for assign in appAssetsPaths:
-    stmts.add(
-      newAssignment(
-        newDotExpr(
+  when defined webapp:
+    var appAssetsPaths = [
+      ("source", newLit doc.get("app.assets.source").getStr),
+      ("source", newLit doc.get("app.assets.public").getStr),
+    ]
+    for assign in appAssetsPaths:
+      stmts.add(
+        newAssignment(
           newDotExpr(
-            configsAppField,
-            ident "assets"
+            newDotExpr(
+              configsAppField,
+              ident "assets"
+            ),
+            ident assign[0]
           ),
-          ident assign[0]
-        ),
-        assign[1]
+          assign[1]
+        )
       )
-    )
 
   # SUP Config initializer
   when defined enableSup:
@@ -243,7 +252,7 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
     initFrameworkFacades.add(
       newCommentStmtNode("Initialize facades\n" & "Auto-generated at compile-time ($1@$2)" % [CompileDate, CompileTime])
     )
-    let services = yaml(staticRead(facadeFile)).toJson
+    let services = yaml(staticRead(facadeFile), data = configData).toJson
     proc getInitializer(initFacade: var NimNode, pName: string, p: JsonNode) =
       var initFn: NimNode
       if p.hasKey("initializer"):
@@ -252,9 +261,9 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
         initFn = ident("init")
       initFacade.add newDotExpr(ident pName, initFn)
       if p.hasKey("ident"):
-        initFacade.add ident p["ident"].getStr
+        initFacade.add(ident(p["ident"].getStr))
       else:
-        initFacade.add ident pName.capitalizeAscii
+        initFacade.add(ident(pName.capitalizeAscii))
 
     for service in services.get():
       for pName, p in service.pairs(): 
@@ -287,7 +296,15 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
                   lit = newLit(value.getBool)
                 of JFloat:
                   lit = newLit(value.getFloat)
-                else: discard
+                of JArray, JObject:
+                  var jstr = ""
+                  toUgly(jstr, value)
+                  lit = newCall(
+                    ident "parseJSON",
+                    newLit(jstr)
+                  )
+                else:
+                  lit = newNilLit()
               initFacade.add(nnkExprEqExpr.newTree(ident(arg), lit))
           initFacades.add(initFacade)
         else:
@@ -316,10 +333,10 @@ proc newConfig*(stmts: NimNode) {.compileTime.} =
     stmts.add initFrameworkFacades
     stmts.add initFacades
 
-macro init*(app: Application, autoIncludeRoutes: static bool = true) =
+macro init*(app: Application, autoIncludeRoutes: static bool = true, configData: static JsonNode = nil) =
   ## Supranim application initializer.
   result = newStmtList()
-  newConfig(result)
+  newConfig(result, configData)
   result.add quote do:
     `app`.config = Configs
   when defined webapp:
@@ -351,7 +368,7 @@ macro printBootStatus*() =
   let YES = "yes"
   result.add quote do:
     echo "----------------- ⚡️ -----------------"
-    echo("👌 Up & Running on http://$1:$2" % [App.getAddress, $(App.getPort)])
+    echo("👌 Up & Running http://$1:$2" % [App.getAddress, $(App.getPort)])
 
   when compileOption("opt", "size"):
     compileOpts.add("Size Optimization")
