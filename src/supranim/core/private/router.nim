@@ -5,23 +5,14 @@
 #          George Lemon | Made by Humans from OpenPeep
 #          https://supranim.com   |    https://github.com/supranim
 
-import std/[tables, macros, with, uri]
-
-from std/times import DateTime
-from std/options import Option
-from std/sequtils import toSeq
-from std/enumutils import symbolName
-
-from std/strutils import `%`, split, isAlphaNumeric, isAlphaAscii, isDigit,
-            startsWith, toUpperAscii, contains
-
+import std/[tables, macros, with, uri, strutils, times, options, sequtils, enumutils]
 from ./server import HttpMethod, Request, Response, RoutePattern,
                     RoutePatternTuple, RoutePatternRequest, HttpCode,
                     HttpResponse, shouldRedirect
 
 when not defined release:
   # Register a dev-only route for hot code reloading support.
-  # See method `initLiveReload` at the bottom of this file
+  # See proc `initLiveReload` at the bottom of this file
   import jsony
   import std/[times, json]
   from ./server import json
@@ -55,26 +46,22 @@ type
   RouteStatus* = enum
     NotFound, Found, BlockedByAbort, BlockedByRedirect
 
-  Route* = object
-    ## Route object used to manage application routes
+  Route* = ref object
     path: string
-      ## Determine if current Route instance contains any Pattern
     verb: HttpMethod
-      ## Holds the HttpMethod, either HttpGet, HttPost and so on
-    case routeType: RouteType
-      ## Each Route object has a routeType which can be either
-      ## StaticRouteType or DynamicRouteType.
-      of DynamicRouteType:
-        patterns: seq[RoutePatternTuple]
-          ## Holds a sequence of RoutePatternTuple for entire path,
-          ## in order (from left to right)
-        params: seq[RoutePatternTuple]
-          ## Holds a seq of RoutePatternTuple for dynamic patterns only
-          ## (in order, from left to right).
-          ## Params can be later used in controller based procedure
-          ## to retrieve the pattern value from request
-      else: discard
+    case routeType: RouteType 
+    of DynamicRouteType:
+      patterns: seq[RoutePatternTuple]
+        ## Holds a sequence of RoutePatternTuple for entire path,
+        ## in order (from left to right)
+      params: seq[RoutePatternTuple]
+        ## Holds a seq of RoutePatternTuple for dynamic patterns only
+        ## (in order, from left to right).
+        ## Params can be later used in controller based procedure
+        ## to retrieve the pattern value from request
+    else: discard
     callback: Callable
+    expires: Option[DateTime]
     case hasMiddleware: bool
       ## Determine if current Route object has one or
       ## more middleware attached to it.
@@ -88,10 +75,10 @@ type
     status: RouteStatus,
     key: string,
     params: seq[RoutePatternRequest],
-    route: ref Route
+    route: Route
   ]
 
-  VerbCollection* = TableRef[string, ref Route]
+  VerbCollection* = TableRef[string, Route]
     ## ``VerbCollection``, is a table that contains Route Objects stored by their path
     ## Note that, each ``HttpMethod`` has its own collection.
     ## Also, based on their ``routeType``, route objects can be
@@ -112,7 +99,7 @@ type
     ## Catchable Router Exception
 
 proc setField[T: VerbCollection](k: string, val: var T) =
-  val = newTable[string, ref Route]()
+  val = newTable[string, Route]()
 
 template initTables(router: object): untyped =
   block fieldFound:
@@ -131,7 +118,7 @@ var ErrorPages*: ErrorPagesTable
 Router = HttpRouter()
 Router.initCollectionTables()   # https://forum.nim-lang.org/t/5631#34992
 
-proc isDynamic*[R: Route](route: ref R): bool =
+proc isDynamic*(route: Route): bool =
   ## Determine if current routeType of route object instance is type of ``DynamicRouteType``
   result = route.routeType == DynamicRouteType
 
@@ -158,7 +145,7 @@ macro getCollection(router: object, field: string, hasParams: bool): untyped =
     )
   )
 
-method getCollectionByVerb(router: var HttpRouter, verb: HttpMethod, hasParams = false): VerbCollection  =
+proc getCollectionByVerb(router: var HttpRouter, verb: HttpMethod, hasParams = false): VerbCollection  =
   ## Get `VerbCollection`, `Table[string, Route]` based on given verb
   result = case verb:
     of HttpGet:     router.getCollection("httpGet", hasParams)
@@ -171,9 +158,15 @@ method getCollectionByVerb(router: var HttpRouter, verb: HttpMethod, hasParams =
     of HttpTrace:   router.getCollection("httpTrace", hasParams)
     of HttpOptions: router.getCollection("httpOptions", hasParams)
 
-method register(router: var HttpRouter, verb: HttpMethod, route: ref Route) =
+proc exists*(router: var HttpRouter, verb: HttpMethod, path: string): bool =
+  ## Determine if requested route exists for given `HttpMethod`
+  let collection = router.getCollectionByVerb(verb)
+  result = collection.hasKey(path)
+
+proc register(router: var HttpRouter, verb: HttpMethod, route: Route) =
   ## Register a new route by given Verb and Route object
-  router.getCollectionByVerb(verb, route.routeType == DynamicRouteType)[route.path] = route
+  if not Router.exists(verb, route.path): # prevent overwriting an existing route
+    router.getCollectionByVerb(verb, route.routeType == DynamicRouteType)[route.path] = route
 
 proc getPatternsByStr(path: string): seq[RoutePatternRequest] =
   ## Create a sequence of RoutePattern for requested path.
@@ -252,7 +245,7 @@ proc tokenize(path: string): tuple[routeType: RouteType, patterns: seq[RoutePatt
   if isDynamic:
     result.routeType = DynamicRouteType
 
-proc parseRoute(path: string, verb: HttpMethod, callback: Callable): ref Route =
+proc parseRoute(path: string, verb: HttpMethod, callback: Callable): Route =
   ## Parse route by path string, verb, callback and
   ## return a Route object instance for registration.
   ##
@@ -264,7 +257,7 @@ proc parseRoute(path: string, verb: HttpMethod, callback: Callable): ref Route =
   ## For making an optional route pattern you must add a question mark
   ## inside the pattern. For example ``{?slug}``
   let routePattern = tokenize(path)
-  result = new Route
+  result = Route()
   if routePattern.routeType == DynamicRouteType:
     # determine if routeType is DynamicRouteType, which
     # in this case route object should contain dymamic patterns.
@@ -306,13 +299,17 @@ proc getNameByPath(route: string): string {.compileTime.} =
   # where a route like `/users/{id}/edit` will look
   # for a controller named `getUsersByIdEdit`
   if route == "/": return "Homepage"
-  var paths =
+  var path =
     if route[0] == '/':
       split(route[1 .. ^1], {'/', '-'})
     else: split(route, {'/', '-'})
-  for path in paths:
-    result &= toUpperAscii(path[0])
-    result &= path[1 .. ^1]
+  for p in path:
+    if p[0] != '{':
+      result &= toUpperAscii(p[0])
+      result &= p[1 .. ^1]
+    else:
+      result &= toUpperAscii(p[1])
+      result &= p[2 .. ^2]
 
 proc initControllerName(methodType: HttpMethod, path: string): string {.compileTime.} =
   case methodType:
@@ -327,10 +324,17 @@ proc initControllerName(methodType: HttpMethod, path: string): string {.compileT
   of HttpOptions: result = $optionsController
   result = result % [getNameByPath(path)]
 
-proc exists*[R: HttpRouter](router: var R, verb: HttpMethod, path: string): bool =
-  ## Determine if requested route exists for given `HttpMethod`
-  let collection = router.getCollectionByVerb(verb)
-  result = collection.hasKey(path)
+template runMiddleware(result: RuntimeRouteStatus) =
+  if result.route.hasMiddleware:
+    for middlewareCallback in result.route.middlewares:
+      let status = middlewareCallback(res)
+      if status == false:
+        if res.shouldRedirect():
+          result.status = BlockedByRedirect
+        else:
+          result.status = BlockedByAbort
+        return
+  result.status = Found
 
 proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
           req: Request, res: var Response): RuntimeRouteStatus =
@@ -339,16 +343,7 @@ proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
   var requestPath = requestUri.path
   try:
     result.route = staticRoutes[requestPath]
-    if result.route.hasMiddleware:
-      for middlewareCallback in result.route.middlewares:
-        let status = middlewareCallback(res)
-        if status == false:
-          if res.shouldRedirect():
-            result.status = BlockedByRedirect
-          else:
-            result.status = BlockedByAbort
-          return
-    result.status = Found
+    result.runMiddleware()
   except ValueError:
     let dynamicRoutes = router.getCollectionByVerb(verb, true)
     var reqPattern = getPatternsByStr(requestPath)
@@ -375,9 +370,9 @@ proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
             break
           inc i
       if matchRoutePattern:
-        result.status = Found
-        result.key = route.path
         result.route = route
+        result.key = route.path
+        result.runMiddleware()
         for reqPatternKey in reqPatternKeys:
           # delete all non dynamic pattern by index key.
           # in this way `reqPattern` will contain only dynamic patterns that
@@ -389,21 +384,33 @@ proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
         result.status = NotFound
         break
 
-proc runCallable*[R: Route](route: ref R, req: var Request, res: var Response): HttpResponse =
+proc runCallable*(route: Route, req: var Request, res: var Response): HttpResponse =
   ## Run callable from route controller
   route.callback(req, res)
 
-proc expire*[R: Route](route: var R, expiration: Option[DateTime]) =
-  ## Set a time for temporary routes that can expire.
-  ## TODO
-  discard
+proc expire*(route: Route, expiration: DateTime) =
+  ## Set an expiration DateTime for given `Route`
+  route.expires = some(expiration)
 
-proc getRouteInstance*[R: HttpRouter](router: var R, route: ref Route): ref Route =
+proc expire*(route: Route, expiration: TimeInterval) =
+  ## Set an expiration time for given `Route`
+  route.expires = some(now() + expiration)
+
+proc expired*(route: Route): bool =
+  ## Check if given `Route` has expired
+  if route.expires.isSome():
+    result = now() >= route.expires.get()
+
+proc expiring*(route: Route): bool =
+  ## Check if given `Route` has an expiration time
+  result = route.expires.isSome()
+
+proc getRouteInstance*[R: HttpRouter](router: var R, route: Route): Route =
   ## Return the Route object instance based on verb
   let collection = router.getCollectionByVerb(route.verb, route.routeType == DynamicRouteType)
   result = collection[route.path]
 
-proc get*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc get*[R: HttpRouter](router: var R, path: string, callback: Callable): Route {.discardable.} = 
   ## Register a new route for `HttpGet` method
   result = parseRoute(path, HttpGet, callback)
   router.register(HttpGet, result)
@@ -417,7 +424,7 @@ macro get*[R: HttpRouter](router: var typedesc[R], path: static string): typed =
   result.add quote do:
     Router.get(`path`, `controllerCallback`)
 
-proc post*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc post*[R: HttpRouter](router: var R, path: string, callback: Callable): Route {.discardable.} = 
   ## Register a new route for `HttpPost` method
   result = parseRoute(path, HttpPost, callback)
   router.register(HttpPost, result)
@@ -431,7 +438,7 @@ macro post*[R: HttpRouter](router: var typedesc[R], path: static string) =
   result.add quote do:
     Router.post(`path`, `controllerCallback`)
 
-proc put*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc put*[R: HttpRouter](router: var R, path: string, callback: Callable): Route {.discardable.} = 
   ## Register a new route for `HttpPut` method
   result = parseRoute(path, HttpPut, callback)
   router.register(HttpPut, result)
@@ -445,7 +452,7 @@ macro put*[R: HttpRouter](router: var typedesc[R], path: static string) =
   result.add quote do:
     Router.put(`path`, `controllerCallback`)
 
-proc head*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc head*[R: HttpRouter](router: var R, path: string, callback: Callable): Route {.discardable.} = 
   ## Register a new route for `HttpHead` method
   result = parseRoute(path, HttpHead, callback)
   router.register(HttpHead, result)
@@ -458,7 +465,7 @@ macro head*[R: HttpRouter](router: var typedesc[R], path: static string) =
   result.add quote do:
     Router.head(`path`, `controllerCallback`)
 
-proc connect*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc connect*[R: HttpRouter](router: var R, path: string, callback: Callable): Route {.discardable.} = 
   ## Register a new route for `HttpConnect` method
   result = parseRoute(path, HttpConnect, callback)
   router.register(HttpConnect, result)
@@ -471,7 +478,7 @@ macro connect*[R: HttpRouter](router: var typedesc[R], path: static string) =
   result.add quote do:
     Router.connect(`path`, `controllerCallback`)
 
-proc delete*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc delete*[R: HttpRouter](router: var R, path: string, callback: Callable): Route {.discardable.} = 
   ## Register a new route for `HttpDelete` method
   result = parseRoute(path, HttpDelete, callback)
   router.register(HttpDelete, result)
@@ -484,7 +491,7 @@ macro delete*[R: HttpRouter](router: var typedesc[R], path: static string) =
   result.add quote do:
     Router.delete(`path`, `controllerCallback`)
 
-proc patch*[R: HttpRouter](router: var R, path: string, callback: Callable): ref Route {.discardable.} = 
+proc patch*[R: HttpRouter](router: var R, path: string, callback: Callable): Route {.discardable.} = 
   ## Register a new route for `HttpPatch` method
   result = parseRoute(path, HttpPatch, callback)
   router.register(HttpPatch, result)
@@ -497,7 +504,7 @@ macro patch*[R: HttpRouter](router: var typedesc[R], path: static string) =
   result.add quote do:
     Router.patch(`path`, `controllerCallback`)
 
-proc unique*[R: HttpRouter](router: var R, verb: HttpMethod, callback: Callable): ref Route {.discardable.} =
+proc unique*[R: HttpRouter](router: var R, verb: HttpMethod, callback: Callable): Route {.discardable.} =
   ## Generate a unique route using provided verb and callback.
   ## Helpful for generating unique temporary URLs without
   ## dealing with database queries.
@@ -536,26 +543,27 @@ proc getErrorPage*(httpCode: HttpCode, default: string): string =
     result = ErrorPages[httpCode.int]()
   else: result = default
 
-proc middleware*[R: Route](route: ref R, middlewares: varargs[Middleware]) =
-  ## Attach one or more middleware handlers to current route.
-  ## Note that Middlewares are parsed in the given order.
+proc middleware*(route: Route, middlewares: varargs[Middleware]): Route {.discardable.} =
+  ## Attach one or more middleware to given `Route`
   runnableExamples:
     Router.get("/profile").middleware(middlewares.auth, middlewares.membership)
+  assert route.hasMiddleware == false # cannot be called more than once per `Route`
   route.hasMiddleware = true
   route.middlewares = toSeq(middlewares)
+  result = route
 
 when not defined release:
   type
     LiveReload = object
       state: int64
   var liveReload = LiveReload()
-  method initLiveReload*[R: HttpRouter](router: var R) {.base.} =
+  proc initLiveReload*[R: HttpRouter](router: var R) =
     ## Initialize API endpoint for reloading current screen
     let reloadCallback = proc(req: Request, res: var Response): HttpResponse =
       json(res, liveReload)
     Router.get("/dev/live", reloadCallback)
 
-  method refresh*[R: HttpRouter](router: var R) {.base.} =
-    ## Internal method for refreshing current `HttpGet` screens.
+  proc refresh*[R: HttpRouter](router: var R) =
+    ## Internal proc for refreshing current `HttpGet` screens.
     liveReload.state = now().toTime.toUnix
   Router.initLiveReload()
