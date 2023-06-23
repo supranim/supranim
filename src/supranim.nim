@@ -5,7 +5,7 @@
 #          Made by Humans from OpenPeep
 #          https://supranim.com | https://github.com/supranim
 
-import std/[asyncdispatch, options, times]
+import std/[asyncdispatch, options, times, json]
 import pkg/[pkginfo]
 
 import supranim/core/application
@@ -15,9 +15,10 @@ import supranim/controller
 when requires "emitter":
   import emitter
 
+export json
 export application, App, Port
 export HttpCode, Http200, Http301, Http302,
-    Http403, Http404, Http500, Http503
+        Http403, Http404, Http500, Http503
 
 export HttpMethod, Request, Response
 
@@ -28,6 +29,8 @@ when defined webapp:
     from std/strutils import startsWith, endsWith
 
     template serveStaticAssets() =
+      # todo handle route static assets via Router
+      isStaticFile = true
       let assetsStatus: HttpCode = waitFor Assets.hasFile(reqRoute)
       if assetsStatus == Http200:
         if endsWith(reqRoute, ".css"):
@@ -68,6 +71,12 @@ when defined webapp:
           Event.emit("system.http.assets.404")
         let responseBody = res.send404 getErrorPage(Http404, "404 | Not found")
         req.sendResponse(res, responseBody)
+        isStaticFile = false
+
+template handleTrailingSlash() =
+  if reqRoute != "/" and reqRoute[^1] == '/':
+    reqRoute = reqRoute[0 .. ^2]
+    fixTrailingSlash = true
 
 template ensureServiceAvailability() =
   if app.state == false:
@@ -83,19 +92,10 @@ proc onRequest(app: Application, req: var Request, res: var Response): Future[ v
     ensureServiceAvailability()
     var fixTrailingSlash: bool
     var reqRoute = req.getRequestPath()
+    when defined webapp:
+      when not defined release:
+        var isStaticFile: bool # dev mode only
     let verb = req.httpMethod.get()
-    if verb == HttpGet:
-      when defined webapp:
-        when not defined release:
-          if startsWith(reqRoute, Assets.getPublicPath()):
-            # TODO Implement a base middleware to serve static assets
-            serveStaticAssets()
-            return
-      if reqRoute != "/" and reqRoute[^1] == '/':
-        # TODO implement a base middleware to
-        # handle redirects for trailing slashes on GET requests
-        reqRoute = reqRoute[0 .. ^2]
-        fixTrailingSlash = true
     let runtime: RuntimeRouteStatus = Router.runtimeExists(verb, reqRoute, req, res)
     case runtime.status:
     of Found:
@@ -125,7 +125,13 @@ proc onRequest(app: Application, req: var Request, res: var Response): Future[ v
       let responseBody: HttpResponse = res.response("", HttpCode 403)
       req.sendResponse(res, responseBody)
     of NotFound:
-      if verb == HttpGet:
+      case verb
+      of HttpGet:
+        when defined webapp:
+          when not defined release:
+            serveStaticAssets()
+            if isStaticFile: return
+        # handleTrailingSlash()
         when requires "emitter":
           Event.emit("system.http.404")
         when defined webapp:
