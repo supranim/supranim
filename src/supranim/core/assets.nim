@@ -47,12 +47,12 @@ proc getSourcePath*(assets: AssetsHandler): string =
   ## Retrieve the source path for assets
   result = assets.source
 
-proc hasFile*(assets: AssetsHandler, filePath: string): Future[HttpCode] {.async.} =
+proc hasFile*(assets: AssetsHandler, fileName: string): Future[HttpCode] {.async.} =
   ## Determine if requested file exists
-  if assets.files.hasKey(filePath):
+  if assets.files.hasKey(fileName):
     result = HttpCode(200)
-    if fileExists(assets.files[filePath].path):
-      var fp = getFilePermissions(assets.files[filePath].path)
+    if fileExists(assets.files[fileName].path):
+      var fp = getFilePermissions(assets.files[fileName].path)
       if not fp.contains(fpOthersRead):
         return HttpCode(403)
   else:
@@ -68,7 +68,6 @@ proc addFile*(assets: var AssetsHandler, fileName, filePath: string) =
       fileType: matchFile(normalizedFilePath).mime.value
     )
 
-
 proc init*(assets: var AssetsHandler, source, public: string) =
   ## Initialize a new Assets object collection
   assets.files = newTable[string, File]()
@@ -83,7 +82,7 @@ proc init*(assets: var AssetsHandler, source, public: string) =
       var head = f.dir.replace(assets.source, "")
       when defined windows:
         head = head.replace("\\", "/")
-      assets.addFile(public & head & "/" & f.name & f.ext, file)
+      assets.addFile(public & head / f.name & f.ext, file)
 
 proc getFile*(assets: AssetsHandler, fileName: string): tuple[src, fileType: string] =
   ## Retrieve the contents of requested file
