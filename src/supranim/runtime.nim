@@ -3,11 +3,11 @@ from std/os import `/`, dirExists
 import std/macros
 
 macro initRuntime() =
-    result = newStmtList()
-    result.add(
-        nnkIncludeStmt.newTree(
-            ident(dirCachePath / "runtime.nim")
-        )
+  result = newStmtList()
+  result.add(
+    nnkIncludeStmt.newTree(
+      ident(dirCachePath / "runtime.nim")
     )
+  )
 
 initRuntime()
