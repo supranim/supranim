@@ -61,7 +61,6 @@ type
         ## to retrieve the pattern value from request
     else: discard
     callback: Callable
-    expires: Option[DateTime]
     case hasMiddleware: bool
       ## Determine if current Route object has one or
       ## more middleware attached to it.
@@ -336,8 +335,20 @@ template runMiddleware(result: RuntimeRouteStatus) =
         return
   result.status = Found
 
+proc tryMatchRoute(reqRoutePattern: seq[RoutePatternRequest], route: Route): bool =
+  var i = 0
+  while reqRoutePattern.len > i:
+    if reqRoutePattern[i].pattern == route.patterns[i].pattern:
+      if not route.patterns[i].dynamic:
+        if reqRoutePattern[i].str != route.patterns[i].str: 
+          return
+      else: discard # todo collect dynamic from route
+    else: return
+    inc i
+  result = true
+
 proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
-          req: Request, res: var Response): RuntimeRouteStatus =
+                    req: Request, res: var Response): RuntimeRouteStatus =
   let staticRoutes = router.getCollectionByVerb(verb)
   var requestUri: Uri = parseUri(path)
   var requestPath = requestUri.path
@@ -346,64 +357,34 @@ proc runtimeExists*(router: var HttpRouter, verb: HttpMethod, path: string,
     result.runMiddleware()
   except ValueError:
     let dynamicRoutes = router.getCollectionByVerb(verb, true)
-    var reqPattern = getPatternsByStr(requestPath)
-    var matchRoutePattern: bool
-    var reqPatternKeys: seq[int]
-    for key, route in dynamicRoutes.pairs():
-      let routePatternsLen = route.patterns.len
-      let reqPatternsLen = reqPattern.len
+    var
+      reqRoutePattern = getPatternsByStr(requestPath)
+      reqPatternKeys: seq[int]
+      matchRoutePattern: bool
+    for key, route in dynamicRoutes:
+      let len = route.patterns.len
+      let reqLen = reqRoutePattern.len
       # TODO handle optional patterns
-      if routePatternsLen != reqPatternsLen:
-        continue
-      else: 
-        var i = 0
-        while true:
-          if i == routePatternsLen: break
-          if reqPattern[i].pattern == route.patterns[i].pattern:
-            matchRoutePattern = true
-            if not route.patterns[i].dynamic:               # store all non dynamic route patterns.
-              reqPatternKeys.add(i)
-            else:
-              reqPattern[i].str = reqPattern[i].str
-          else:
-            matchRoutePattern = false
-            break
-          inc i
-      if matchRoutePattern:
-        result.route = route
-        result.key = route.path
-        result.runMiddleware()
-        for reqPatternKey in reqPatternKeys:
-          # delete all non dynamic pattern by index key.
-          # in this way `reqPattern` will contain only dynamic patterns that
-          # need to be exposed in controlled-based procedure to retrieve values.
-          reqPattern.del(reqPatternKey)
-        result.params = reqPattern
-        break
+      if len != reqLen:
+        continue # skip to next route
       else:
-        result.status = NotFound
-        break
+        if tryMatchRoute(reqRoutePattern, route):
+          result.route = route
+          result.key = route.path
+          result.runMiddleware()
+          for reqPatternKey in reqPatternKeys:
+            # delete all non dynamic pattern by index key.
+            # in this way `reqPattern` will contain only dynamic patterns that
+            # need to be exposed in controlled-based procedure to retrieve values.
+            reqRoutePattern.del(reqPatternKey)
+          result.params = reqRoutePattern
+          result.status = Found
+          return
+    result.status = NotFound
 
 proc runCallable*(route: Route, req: var Request, res: var Response): HttpResponse =
   ## Run callable from route controller
   route.callback(req, res)
-
-proc expire*(route: Route, expiration: DateTime) =
-  ## Set an expiration DateTime for given `Route`
-  route.expires = some(expiration)
-
-proc expire*(route: Route, expiration: TimeInterval) =
-  ## Set an expiration time for given `Route`
-  route.expires = some(now() + expiration)
-
-proc expired*(route: Route): bool =
-  ## Check if given `Route` has expired
-  if route.expires.isSome():
-    result = now() >= route.expires.get()
-
-proc expiring*(route: Route): bool =
-  ## Check if given `Route` has an expiration time
-  result = route.expires.isSome()
 
 proc getRouteInstance*[R: HttpRouter](router: var R, route: Route): Route =
   ## Return the Route object instance based on verb
@@ -503,20 +484,6 @@ macro patch*[R: HttpRouter](router: var typedesc[R], path: static string) =
   result = newStmtList()
   result.add quote do:
     Router.patch(`path`, `controllerCallback`)
-
-proc unique*[R: HttpRouter](router: var R, verb: HttpMethod, callback: Callable): Route {.discardable.} =
-  ## Generate a unique route using provided verb and callback.
-  ## Helpful for generating unique temporary URLs without
-  ## dealing with database queries.
-  discard
-
-# proc assets*[R: HttpRouter](router: var R, source, public: string) =
-#     ## If enabled via ``.env.yml``. Your Supranim application can
-#     ## serve static assets like .css, .js, .jpg, .png and so on
-#     ## Note that his procedure is recommended for serving public assets.
-#     var handler = Assets.init(public, source)
-#     for file in handler.discoverFiles():
-#         handler.addFile(output: public & "/" & file.getPath())
 
 proc group*[R: HttpRouter](router: var R, basePath: string, routes: varargs[GroupRouteTuple]): HttpRouter {.discardable.} =
   ## Add grouped routes under same base endpoint.
