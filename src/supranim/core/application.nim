@@ -333,7 +333,8 @@ proc newConfig*(stmts: NimNode, configData: JsonNode) {.compileTime.} =
     stmts.add initFrameworkFacades
     stmts.add initFacades
 
-macro init*(app: Application, autoIncludeRoutes: static bool = true, configData: static JsonNode = nil) =
+macro init*(app: Application, autoIncludeRoutes: static bool = true,
+            configData: static JsonNode = nil) =
   ## Supranim application initializer.
   result = newStmtList()
   newConfig(result, configData)
