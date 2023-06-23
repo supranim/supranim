@@ -6,9 +6,8 @@
 #          https://supranim.com | https://github.com/supranim
 
 import pkg/[pkginfo, jsony]
-import std/[options, sequtils]
+import std/[options, sequtils, critbits, uri]
 
-from std/uri import decodeQuery
 from ./support/str import unquote
 from ./core/private/server import Request, requestBody,
                 hasHeaders, hasHeader, getHeaders, getHeader,
@@ -25,7 +24,7 @@ when requires "kashae":
   import kashae
   export kashae
 
-export jsony
+export jsony, critbits
 export Request, HttpResponse, hasHeaders, hasHeader, getHeaders, 
      getHeader, path, getCurrentPath, HttpCode,
      getParams, hasParams, path
@@ -42,9 +41,11 @@ proc getFields*(req: Request): seq[(string, string)] =
   ## Decodes the query string from current `Request`
   result = toSeq(req.getBody().decodeQuery)
 
-proc getQuery*(req: Request): seq[(string, string)] =
+proc getQuery*(req: Request): CritBitTree[string] =
   ## Decodes the query string from current `Request` of `HttpGet`
-  result = toSeq(decodeQuery(req.getRequestQuery))
+  for q in decodeQuery(req.getRequestQuery):
+    result[q.key] = q.value
+  # result = toSeq(decodeQuery(req.getRequestQuery))
 
 when defined webapp:
   ## Controller methods available for `webapp` projects *(gui apps)
