@@ -55,11 +55,11 @@ proc normalizeUuidStr(candidateStr: string): string =
       "expected 8-4-4-4-12 or 32 characters format")
   result = uuidStr
 
-proc variant*(self: Uuid): UuidVariant =
+proc variant*(u: Uuid): UuidVariant =
   ## Determine the variant of the UUID.
   ## Most in the wild are RFC-4122.
   # borrowed tricks from CPython's uuid library
-  let invByte = not self.bytes[8]
+  let invByte = not u.bytes[8]
   if (invByte and 0x80) == 0x80:
     return UuidVariant.ApolloNcs
   elif (invByte and 0x40) == 0x40:
@@ -68,10 +68,10 @@ proc variant*(self: Uuid): UuidVariant =
     return UuidVariant.ReservedMicrosoft
   return UuidVariant.ReservedFuture
 
-proc version*(self: Uuid): int =
+proc version*(u: Uuid): int =
   ## Determine the version of an RFC-4122 UUID.
-  if self.variant == UuidVariant.Rfc4122:
-    result = int((self.bytes[6] and 0xF0) shr 4)
+  if u.variant == UuidVariant.Rfc4122:
+    result = int((u.bytes[6] and 0xF0) shr 4)
 
 proc uuid4*(uuidStr: string): Uuid =
   ## Parse a UUID from a string (with or without hyphens, any casing).

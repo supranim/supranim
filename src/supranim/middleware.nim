@@ -1,14 +1,44 @@
-# Supranim is a simple MVC-style web framework for building
-# fast web applications, REST API microservices and other cool things.
+# Supranim is a simple MVC web framework
+# for building web apps & microservices in Nim.
 #
-# (c) 2021 Supranim is released under MIT License
-#          George Lemon | Made by Humans from OpenPeep
-#          https://supranim.com   |    https://github.com/supranim
-import std/macros
+# (c) 2024 MIT License | Made by Humans from OpenPeeps
+# https://supranim.com | https://github.com/supranim
 
-from ./core/private/server import newDeferredRedirect, getDeferredRedirect
-from ./controller import redirects, abort
-from ./core/private/router import Middleware, Response
+import std/[options, macros]
+export options
 
-export abort, redirects, newDeferredRedirect, getDeferredRedirect
-export Middleware, Response
+from std/httpcore import HttpCode,
+    Http200, Http301, Http403, Http404,
+    Http500, Http501
+
+export HttpCode, Http200, Http301,
+    Http403, Http404, Http500, Http501
+
+import ./core/[request, response]
+export request, response
+
+from ./core/router import next, fail, abort
+export next, fail, abort
+
+from ./controller import getClientId, getClientCookie
+export getClientId, getClientCookie
+
+macro newMiddleware*(name, body: untyped) =
+  ## Macro for creating a new middleware proc
+  result = newStmtList()
+  add result, newProc(
+    name = nnkPostfix.newTree(ident("*"), name),
+    params = [
+      ident "HttpCode",
+      newIdentDefs(ident "req", ident "Request"),
+      newIdentDefs(ident "res", nnkVarTy.newTree(ident "Response"))
+    ],
+    body = body
+  )
+
+#
+# Response High-level API
+#
+# proc setCookie*(res: var Response, cookie: ref Cookie) =
+#   ## Add a new `Cookie` to `Response` instance.
+#   res.addHeader("set-cookie", $(cookie))

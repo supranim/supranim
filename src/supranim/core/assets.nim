@@ -1,23 +1,18 @@
-# Supranim is a simple Hyper Server and Web Framework developed
-# for building safe & fast in-house applications.
+# Supranim is a simple MVC web framework
+# for building web apps & microservices in Nim.
 #
-# (c) 2021 Supranim is released under MIT License
-#          by George Lemon <georgelemon@protonmail.com>
-#          
-#          Website https://supranim.com
-#          Github Repository: https://github.com/supranim
+# (c) 2024 MIT License | Made by Humans from OpenPeeps
+# https://supranim.com | https://github.com/supranim
 
-import pkg/[filetype, pkginfo]
+import pkg/[filetype, find]
 import std/[tables, asyncdispatch]
-import ../utils
-
-when requires "watchout":
-  import pkg/watchout
 
 from std/httpcore import HttpCode
 from std/strutils import strip, split, contains, replace
 from std/os import FilePermission, fileExists, splitFile, 
           getFilePermissions, normalizedPath, `/`
+
+# import std/fileExists
 
 type
   File = ref object
@@ -29,11 +24,10 @@ type
     public: string
     files: TableRef[string, File]
 
-# when compileOption("threads"):
-#   var Assets* {.threadvar.}: AssetsHandler
-# else:
-var Assets* = AssetsHandler()
-Assets.files = newTable[string, File]()
+when compileOption("threads"):
+  var Assets* {.threadvar.}: AssetsHandler
+else:
+  var Assets* = AssetsHandler()
 
 proc exists*(assets: AssetsHandler): bool =
   if Assets.files != nil:
@@ -72,17 +66,23 @@ proc init*(assets: var AssetsHandler, source, public: string) =
   ## Initialize a new Assets object collection
   assets.files = newTable[string, File]()
   assets.source = source
-  assets.public = if public[0] == '/': public else: '/' & public
+  assets.public =
+    if public[0] == '/':
+      public
+    else:
+      "/" & public
+  if assets.public[^1] != '/':
+    add assets.public, "/"
   let files = finder(findArgs = @["-type", "f", "-print"], path = source)
   if files.len != 0:
     for file in files:
       let f = splitFile(file)
       if f.ext in [".sass", ".scss"]:
-        continue
+        continue # add this to supranim.config.yml
       var head = f.dir.replace(assets.source, "")
       when defined windows:
         head = head.replace("\\", "/")
-      assets.addFile(public & head / f.name & f.ext, file)
+      assets.addFile(normalizedPath(assets.public & head / f.name & f.ext), file)
 
 proc getFile*(assets: AssetsHandler, fileName: string): tuple[src, fileType: string] =
   ## Retrieve the contents of requested file

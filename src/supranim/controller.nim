@@ -1,126 +1,92 @@
-# Supranim is a simple MVC-style web framework for building
-# fast web applications, REST API microservices and other cool things.
+# Supranim is a simple MVC web framework
+# for building web apps & microservices in Nim.
 #
-# (c) 2022 Supranim is released under MIT License
-#          Made by Humans from OpenPeep
-#          https://supranim.com | https://github.com/supranim
+# (c) 2024 MIT License | Made by Humans from OpenPeeps
+# https://supranim.com | https://github.com/supranim
 
-import pkg/[pkginfo, jsony]
-import std/[options, sequtils, critbits, uri]
+import std/[macros, asyncdispatch, strutils,
+  tables, httpcore, uri, sequtils, options]
 
-from ./support/str import unquote
-from ./core/private/server import Request, requestBody,
-                hasHeaders, hasHeader, getHeaders, getHeader,
-                path, getCurrentPath, getVerb, HttpCode,
-                getParams, hasParams, path, getRequestQuery,
-                HttpResponse
-from ./application import AppDirectory, path
-export AppDirectory, path
+import ./core/[request, response, docs]
+import ./support/cookie
 
-import std/json
-export `%*`
-
-when requires "kashae":
-  import kashae
-  export kashae
-
-export jsony, critbits
-export Request, HttpResponse, hasHeaders, hasHeader, getHeaders, 
-     getHeader, path, getCurrentPath, HttpCode,
-     getParams, hasParams, path
+export request, response
+export asyncdispatch, options
 
 #
-# Request - Higher-level
+# Request - High-level API
 #
-
 proc getBody*(req: Request): string =
-  ## Retrieve the body of given `Request`
-  result = req.requestBody.get()
+  ## Retrieves `Request` body
+  result = req.root.body().get()
 
 proc getFields*(req: Request): seq[(string, string)] =
-  ## Decodes the query string from current `Request`
-  result = toSeq(req.getBody().decodeQuery)
+  ## Decodes `Request` body
+  result = toSeq(req.root.body.get().decodeQuery)
 
-proc getQuery*(req: Request): CritBitTree[string] =
-  ## Decodes the query string from current `Request` of `HttpGet`
-  for q in decodeQuery(req.getRequestQuery):
-    result[q.key] = q.value
-  # result = toSeq(decodeQuery(req.getRequestQuery))
+proc hasCookies*(req: Request): bool =
+  ## Check if `Request` contains Cookies header
+  result = req.getHeaders.get().hasKey("cookie")
 
-when defined webapp:
-  ## Controller methods available for `webapp` projects *(gui apps)
-  proc isPage*(req: Request, key: string): bool =
-    ## Determine if current page is as expected
-    result = req.getCurrentPath() == key
+proc getCookies*(req: Request): string =
+  ## Returns Cookies header from `Request`
+  result = req.getHeaders.get()["cookie"]
 
-  proc getAgent*(req: Request): string =
-    ## Retrieves the user agent from request header
-    result = req.getHeader("user-agent")
+proc getClientId*(req: Request): Option[string] =
+  ## Returns the client-side `ssid` from `Request`
+  if req.hasCookies:
+    var clientCookies: CookiesTable = req.getCookies().parseCookies
+    if clientCookies.hasKey("ssid"):
+      let ssidCookie = clientCookies["ssid"]
+      return some(ssidCookie.getValue())
 
-  proc getPlatform*(req: Request): string =
-    ## Return the platform name, It can be one of the following common platform values:
-    ## ``Android``, ``Chrome OS``, ``iOS``, ``Linux``, ``macOS``, ``Windows``, or ``Unknown``.
-    # https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform
-    result = unquote(req.getHeader("sec-ch-ua-platform"))
-
-  proc isMacOS*(req: Request): bool =
-    ## Determine if current request is made from ``macOS`` platform
-    result = req.getPlatform() == "macOS"
-
-  proc isLinux*(req: Request): bool =
-    ## Determine if current request is made from ``Linux`` platform
-    result = req.getPlatform() == "Linux"
-
-  proc isWindows*(req: Request): bool =
-    ## Determine if current request is made from ``Window`` platform
-    result = req.getPlatform() == "Windows"
-
-  proc isChromeOS*(req: Request): bool =
-    ## Determine if current request is made from ``Chrome OS`` platform
-    result = req.getPlatform() == "Chrome OS"
-
-  proc isIOS*(req: Request): bool =
-    ## Determine if current request is made from ``iOS`` platform
-    result = req.getPlatform() == "iOS"
-
-  proc isAndroid*(req: Request): bool =
-    ## Determine if current request is made from ``Android`` platform
-    result = req.getPlatform() == "Android"
-
-  proc isMobile*(req: Request): bool =
-    ## Determine if current request is made from a mobile device
-    ## https://wicg.github.io/ua-client-hints/#sec-ch-ua-mobile
-    result = req.getPlatform() in ["Android", "iOS"] and
-         req.getHeader("sec-ch-ua-mobile") == "true"
+proc getClientCookie*(req: Request): ref Cookie =
+  ## Returns the client-side `ssid` Cookie from `Request`
+  if req.hasCookies:
+    var clientCookies: CookiesTable = req.getCookies().parseCookies
+    if clientCookies.hasKey("ssid"):
+      return clientCookies["ssid"]
 
 #
-# Response - Higher-level
-#
-from ./core/private/server import Response, response, send404, send500,
-              addCacheControl, json, json404, json500,
-              redirect, redirects, abort, newCookie, getDeferredRedirect,
-              setSessionId, addCookieHeader
+# Controller Compile utils
+macro newController*(name, body: untyped) =
+  expectKind name, nnkIdent
+  case body[0].kind
+  of nnkCommentStmt:
+    ctrlDescription[name.strVal] = body[0]
+  else: discard
+  result =
+    newProc(
+      name = nnkPostfix.newTree(ident("*"), name),
+      params = [
+        ident("Response"),
+        newIdentDefs(
+          ident("req"),
+          ident("Request"),
+          newEmptyNode()
+        ),
+        newIdentDefs(
+          ident("res"),
+          nnkVarTy.newTree(ident("Response")),
+          newEmptyNode()
+        )
+      ],
+      body =
+        nnkPragmaBlock.newTree(
+          nnkPragma.newTree(ident("gcsafe")),
+          body
+        )
+    )
 
-export addCookieHeader
+template ctrl*(name, body: untyped) =
+  newController(name, body)
 
-when defined webapp:
-  ## Export methods for `webapp` projects
-  from ./core/private/server import view, css, js
-  export view, css, js
-
-  when requires "tim":
-    template render*(view: string, layout = "base", data: untyped): untyped =
-      res.response(Tim.render(view, layout, data))
-
-    template render*(view: string, layout = "base", data: JsonNode): untyped =
-      res.response(Tim.render(view, layout, data, %*{"isPage": "/" & req.getCurrentPath()}))
-
-    template render*(view: string, layout = "base"): untyped =
-      res.response(Tim.render(view, layout))
-
-export Response, response, send404, send500,
-    addCacheControl, server.json, json404, json500, redirect,
-    redirects, abort, newCookie, getDeferredRedirect
-
-proc send*(res: var Response, body: string, code = HttpCode(200), contentType = "text/html"): HttpResponse =
-  response(res, body, code, contentType)
+template isAuth*(): bool =
+  (
+    let ssid = req.getClientId
+    if not ssid.isNone:
+      let status = session.cmd(sessionCheck, [ssid.get()])
+      status.isSome()
+    else:
+      false
+  )
