@@ -1,13 +1,13 @@
 # Package
 
-version       = "0.1.0"
+version       = "0.1.3"
 author        = "George Lemon"
 description   = "A super simple hyper framework written in Nim"
 license       = "MIT"
 srcDir        = "src"
-bin           = @["supra"]
-binDir        = "bin"
-installExt    = @["nim"]
+# bin           = @["supra"]
+# binDir        = "bin"
+# installExt    = @["nim"]
 
 # Dependencies
 requires "nim >= 2.0.0"
