@@ -7,11 +7,17 @@
 import std/[macros, asyncdispatch, strutils,
   tables, httpcore, uri, sequtils, options]
 
-import ./core/[request, response, docs]
+import ./core/[request, response, router, docs]
 import ./support/cookie
+
+import ./application except init, initSystemServices, configs
+export application
 
 export request, response
 export asyncdispatch, options
+
+import pkg/libsodium/[sodium, sodium_sizes]
+let keypair* = crypto_box_keypair()
 
 #
 # Request - High-level API
@@ -23,6 +29,10 @@ proc getBody*(req: Request): string =
 proc getFields*(req: Request): seq[(string, string)] =
   ## Decodes `Request` body
   result = toSeq(req.root.body.get().decodeQuery)
+
+proc getFieldsTable*(req: Request): Table[string, string] =
+  for x in req.root.body.get().decodeQuery:
+    result[x[0]] = x[1]
 
 proc hasCookies*(req: Request): bool =
   ## Check if `Request` contains Cookies header
@@ -69,7 +79,12 @@ macro newController*(name, body: untyped) =
           ident("res"),
           nnkVarTy.newTree(ident("Response")),
           newEmptyNode()
-        )
+        ),
+        newIdentDefs(
+          ident("app"),
+          ident("Application"),
+          newEmptyNode()
+        ),
       ],
       body =
         nnkPragmaBlock.newTree(
@@ -80,6 +95,15 @@ macro newController*(name, body: untyped) =
 
 template ctrl*(name, body: untyped) =
   newController(name, body)
+
+macro go*(id: untyped) =
+  if queuedRoutes.hasKey(id.strVal):
+    let routeRegistrar = queuedRoutes[id.strVal]
+    let methodType = routeRegistrar[3]
+    if methodType.eqIdent("HttpGet"):
+      result = newStmtList()
+      add result, newCall(ident("redirect"), routeRegistrar[2])
+    else: discard # todo compile-time error
 
 template isAuth*(): bool =
   (

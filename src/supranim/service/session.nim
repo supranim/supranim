@@ -5,7 +5,7 @@
 # https://supranim.com | https://github.com/supranim
 
 import std/options
-import supranim/support/[cookie, nanoid]
+import pkg/supranim/support/[cookie, nanoid]
 
 import ../service
 export options, ZSendRecvOptions
@@ -32,8 +32,8 @@ handlers:
   sessionNew do:
     ## Creates a new `UserSession`
     let uss = newUserSession("", "123")
-    let sid = uss.client["ssid"].getValue
-    Session.sessions[sid] = uss
+    let id = uss.client["ssid"].getValue
+    Session.sessions[id] = uss
     server.sendAll($uss.client["ssid"])
 
   sessionCheck do:
@@ -52,39 +52,39 @@ handlers:
 
   sessionData do:
     ## Set JSON data for a specific `UserSession`
-    let sid = recv[1]
+    let id = recv[1]
     if Session.sessions.hasKey(recv[1]):
-      Session.sessions[sid].data = jsony.fromJson(recv[2], JsonNode)
+      Session.sessions[id].data = jsony.fromJson(recv[2], JsonNode)
       server.send("")
     else:
       server.send("")
 
   sessionDelete do:
     ## Delete a `UserSession` session
-    let sid = recv[1]
-    if Session.sessions.hasKey(sid):
-      let clientCookie: ref Cookie = Session.sessions[sid].client["ssid"]
+    let id = recv[1]
+    if Session.sessions.hasKey(id):
+      let clientCookie: ref Cookie = Session.sessions[id].client["ssid"]
       clientCookie.expires()
       server.send($clientCookie)
-      Session.sessions.del(sid)
+      Session.sessions.del(id)
       freemem(clientCookie)
     else:
       server.send("")
 
   sessionFlashBag do:
     ## Set a new flash bag message to `UserSession`
-    let sid = recv[1]
-    if Session.sessions.hasKey(sid):
-      Session.sessions[sid].notifications[recv[3]] = recv[2]
+    let id = recv[1]
+    if Session.sessions.hasKey(id):
+      Session.sessions[id].notifications[recv[3]] = recv[2]
       server.send("")
 
   sessionFlashBagGet do:
     ## Get a flash bag message from `UserSession`
-    let sid = recv[1]
-    if Session.sessions.hasKey(sid):
-      if Session.sessions[sid].notifications.hasKey(recv[2]):
-        server.send(Session.sessions[sid].notifications[recv[2]])
-        Session.sessions[sid].notifications.del(recv[2])
+    let id = recv[1]
+    if Session.sessions.hasKey(id):
+      if Session.sessions[id].notifications.hasKey(recv[2]):
+        server.send(Session.sessions[id].notifications[recv[2]])
+        Session.sessions[id].notifications.del(recv[2]) # delete the message
       else: server.send("")
     else: server.send("")
 
@@ -117,8 +117,8 @@ backend:
       # device: Device
       hasExpired: bool
         # Marks `UserSession` as expired before deleting it.
-        # When a session expires it can still be accessible for
-        # the next 4 hours.
+        # Expired sessions are cleared by the SessionCleaner
+        # in a separate process
       data: JsonNode
 
     Sessions = TableRef[string, UserSession]
@@ -145,13 +145,12 @@ backend:
       created: creationTime,
       lastAccess: creationTime,
     )
-    result.backend["ssid"] = newCookie("ssid", $sessval, creationTime + 5.minutes)
-    result.client["ssid"] = newCookie("ssid", result.id, creationTime + 5.minutes)
+    result.backend["ssid"] = newCookie("ssid", $sessval, creationTime + 60.minutes)
+    result.client["ssid"] = newCookie("ssid", result.id, creationTime + 60.minutes)
 
 frontend:
   # Service Provider API for the main application
   import std/json
-
   from std/strutils import unescape
   from ../core/request import Request, getPlatform, getIp
   from ../core/response import Response, addHeader
@@ -199,9 +198,9 @@ frontend:
     ## Destroys the current `UserSession`.
     ## Can be used inside a `controller`/`middleware` context
     block:
-      let sid = req.getClientID
-      if likely(sid.isSome):
-        let someCookie = session.cmd(sessionDelete, sid.get())
+      let id = req.getClientID
+      if likely(id.isSome):
+        let someCookie = session.cmd(sessionDelete, id.get())
         if likely(someCookie.isSome):
           res.addHeader("set-cookie", someCookie.get()[0])
 
@@ -209,13 +208,13 @@ frontend:
     ## A template for creating a new
     ## session-based flash bag message.
     block:
-      let sid = req.getClientID()
-      if likely(sid.isSome):
-        session.cmd(sessionFlashBag, [sid.get(), msg, req.getUriPath()])
+      let id = req.getClientID()
+      if likely(id.isSome):
+        session.cmd(sessionFlashBag, [id.get(), msg, req.getUriPath()])
 
   proc getNotify*(req: Request): Option[seq[string]] =
     ## Returns a seq[string] containing flash bag
     ## messages set from the previous request
-    let sid = req.getClientID()
-    if likely(sid.isSome):
-      result = session.cmd(sessionFlashBagGet, [sid.get(), req.getUriPath()])
+    let id = req.getClientID()
+    if likely(id.isSome):
+      result = session.cmd(sessionFlashBagGet, [id.get(), req.getUriPath()])

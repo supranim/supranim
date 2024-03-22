@@ -26,7 +26,6 @@ proc newCookie*(name, value: string, expirationDate: DateTime,
       maxAge = none(int), domain = "", path = "/", secure,
       httpOnly = true, sameSite = Lax): ref Cookie =
   ## Create a new `Cookie` object and return as a ref object.
-  # todo option to set priority attribute?
   new result
   result.name = name
   result.value = value

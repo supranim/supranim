@@ -212,7 +212,6 @@ macro backend*(x: untyped) =
     getAst(initInProcServer(sockaddr, sockMode[1],
       cmdCaseStmt, serviceEnumName)).copyChildrenTo(mainBodyStmt)
     add result, mainBodyStmt
-    # echo result.repr
   else: discard 
 
 macro frontend*(x: untyped) =

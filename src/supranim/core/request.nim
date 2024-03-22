@@ -4,7 +4,8 @@
 # (c) 2024 MIT License | Made by Humans from OpenPeeps
 # https://supranim.com | https://github.com/supranim
 
-import std/[options, httpcore, strutils, uri]
+import std/[options, httpcore, strutils,
+    sequtils, uri, tables]
 
 from ./http import Request, ip, body, send, forget, headers
 export ip, body, send, forget, headers
@@ -40,9 +41,12 @@ proc getUriPath*(req: Request): string =
 
 proc getQuery*(req: Request): string =
   ## Returns `Uri` query from `Request`.
-  ## Use `decodeQuery` iterator from `std/uri`,
-  ## or convert avilable http queries using `toSeq`
+  ## use `getUriQuery` to get a decoded query
   result = req.uri.query
+
+proc getUriQuery*(req: Request): Table[string, string] =
+  for q in req.uri.query.decodeQuery:
+    result[q[0]] = q[1]
 
 proc hasHeaders*(req: Request): bool =
   ## Check if `Request` has any `HttpHeaders`

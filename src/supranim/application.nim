@@ -4,20 +4,15 @@
 # (c) 2024 MIT License | Made by Humans from OpenPeeps
 # https://supranim.com | https://github.com/supranim
 
-import std/[macros, os, tables, strutils,
-  cpuinfo, json, jsonutils, envvars, typeinfo]
+import std/[macros, os, tables, strutils, cpuinfo,
+          json, jsonutils, envvars, typeinfo, macrocache]
 
 import pkg/dotenv
 import support/[uuid]
 
 from std/net import `$`, Port
-import ./core/router
 
-export json, jsonutils, router, options
-
-static:
-  when defined windows:
-    error("Unsupported target. Supranim is a UNIX web framework")
+export json, jsonutils
 
 type
   Config* = TableRef[string, Any]
@@ -46,14 +41,17 @@ const
   databasePath* = basepath / "database"
   storagePath* = basepath / "storage"
 
+#
+# Application Crypto
+#
+import pkg/libsodium/[sodium, sodium_sizes]
+export bin2hex, hex2bin
+
 proc info*(str: string, indentSize = 0) =
   echo indent(str, indentSize)
 #
 # Config API
 #
-dumpAstGen:
-  block:
-    echo ""
 macro configs*(fields: untyped) =
   ## Parse & collect all configuration files 
   let
@@ -112,7 +110,7 @@ macro configs*(fields: untyped) =
       blockStmt
     )
   )
-  echo result.repr
+  # echo result.repr
 
 proc config*(app: Application, confname, key: string): Any =
   if likely(app.configs.hasKey(confname)):
@@ -151,6 +149,32 @@ macro singletons*(x: untyped): untyped =
 #
 # Application API
 #
+
+template initSystemServices*() =
+  macro initSystem() =
+    result = newStmtList()
+    var registerRoutes = newStmtList()
+    for k, ctrl in queuedRoutes:
+      add registerRoutes, ctrl
+    add result,
+      newProc(
+        nnkPostfix.newTree(
+          ident("*"),
+          ident("initRouter")
+        ),
+        body = nnkStmtList.newTree(
+          newAssignment(
+            ident "Router",
+            newCall(ident "newRouter")
+          ),
+          registerRoutes
+        ),
+        pragmas = nnkPragma.newTree(
+          ident "thread"
+        )
+      )
+  initSystem()
+
 macro init*(x) =
   ## Initializes the Application
   expectKind(x, nnkLetSection)
@@ -174,8 +198,8 @@ macro init*(x) =
   add result,
     nnkImportStmt.newTree(
       nnkInfix.newTree(
-        newIdentNode("/"),
-        newIdentNode("std"),
+        ident("/"),
+        ident("std"),
         nnkBracket.newTree(
           ident("tables"),
           ident("envvars"),
@@ -192,11 +216,6 @@ macro init*(x) =
       let confname = filePath.splitFile.name
       info "- " & confname, 2
       add result, nnkIncludeStmt.newTree(newLit(filePath))
-      # add runtimeConfigImports,
-        # nnkImportStmt.newTree(newLit(runtimeConfigPath / configName & ".nim"))
-      # echo genConfigName(configName)
-      # add runtimeConfigExports,
-        # ident(configName)
 
   # var runtimeConfig = newStmtList()
   # runtimeConfig.add(runtimeConfigImports)
@@ -218,16 +237,35 @@ macro init*(x) =
   # auto include `routes.nim` file
   add result, quote do:
     import ./core/[request, response]
+    import std/[httpcore, macros, macrocache]
+
+  # auto discover /middleware/*.nim
+  # nim files prefixed with `!` will be ignored
+  for fMiddleware in walkDirRec(basePath / "middleware"):
+    if fMiddleware.endsWith(".nim"):
+      if not fMiddleware.splitFile.name.startsWith("!"):
+        add result, nnkImportStmt.newTree(newLit(fMiddleware))
+
   add result, nnkIncludeStmt.newTree(newLit(basePath / "routes.nim"))
 
-  # add result, quote do:
-  #   import supranim/core/docs
-  #   static:
-  #     genApiDoc()
+  # auto discover /controller/*.nim
+  # nim files prefixed with `!` will be ignored
+  for fController in walkDirRec(basePath / "controller"):
+    if fController.endsWith(".nim"):
+      if not fController.splitFile.name.startsWith("!"):
+        add result, nnkImportStmt.newTree(newLit(fController))
 
-proc initServices*(app: Application) =
-  # echo app.config("tim", "source").getString
-  discard
+  add result, quote do:
+    initSystemServices()
+
+template services*(s) {.inject.} =
+  macro initServices(x) =
+    result = newStmtList()
+    var blockStmt = newNimNode(nnkBlockStmt)
+    add blockStmt, newEmptyNode()
+    add blockStmt, x
+    add result, blockStmt
+  initServices(s)
 
 proc initDeveloperTools*() =
   discard
@@ -245,7 +283,3 @@ proc getUuid*(app: Application): Uuid =
 
 proc getAddress*(app: Application): string =
   result = app.address
-
-# proc getRouter*(app: Application): Router =
-#   ## Returns `Router` instance of `app` Application
-#   result = app.router
