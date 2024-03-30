@@ -20,6 +20,7 @@ requires "ioselectors"
 requires "supersnappy"
 requires "libsodium"
 requires "jsony"
+requires "enimsql"
 
 # Supranim packages
 requires "emitter"

@@ -255,6 +255,15 @@ macro init*(x) =
       if not fController.splitFile.name.startsWith("!"):
         add result, nnkImportStmt.newTree(newLit(fController))
 
+  # auto discover /database/models/*.nim
+  # nim files prefixed with `!` will be ignored
+  for fModel in walkDirRec(basePath / "database" / "models"):
+    let f = fModel.splitFile
+    if f.ext == ".nim":
+      if not f.name.startsWith("!"):
+        add result, nnkImportStmt.newTree(newLit(fModel))
+
+
   add result, quote do:
     initSystemServices()
 

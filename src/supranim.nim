@@ -6,7 +6,7 @@
 
 import std/[options, asyncdispatch, asynchttpserver,
             httpcore, osproc, os, strutils, sequtils,
-            posix_utils, uri, macrocache]
+            posix_utils, uri, macros, macrocache]
 
 import ./supranim/application
 import ./supranim/service/[dev, events]
@@ -15,8 +15,6 @@ import ./supranim/core/[http, router, utils, docs]
 from std/net import Port, `$`
 
 export application, resp, router
-
-import std/macros
 
 macro runBaseMiddlewares*(req, res) =
   result = newStmtList()
