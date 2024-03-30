@@ -10,7 +10,7 @@ import std/[options, asyncdispatch, asynchttpserver,
 
 import ./supranim/application
 import ./supranim/service/[dev, events]
-import ./supranim/core/[http, router, utils, docs]
+import ./supranim/core/[http, router, utils]
 
 from std/net import Port, `$`
 
