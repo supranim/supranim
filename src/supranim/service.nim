@@ -6,7 +6,7 @@
 
 import pkg/zmq
 
-import std/[os, macros, macrocache, tables, options,
+import std/[os, macros, tables, options,
     sequtils, json, strutils, enumutils]
 import pkg/libsodium/[sodium, sodium_sizes]
 

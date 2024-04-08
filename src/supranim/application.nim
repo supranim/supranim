@@ -212,10 +212,12 @@ macro init*(x) =
     dotenv.load(normalizedPath(`basePath` / ".."), ".env")
   for filePath in walkDirRec(configPath):
     # read compile-time /config/*.nims
-    if filePath.endsWith(".nims"):
-      let confname = filePath.splitFile.name
-      info "- " & confname, 2
+    let f = filePath.splitFile
+    if f.ext == ".nims":
+      info "- " & f.name, 2
       add result, nnkIncludeStmt.newTree(newLit(filePath))
+    else:
+      error("Invalid file extension for `" &  f.name & "` config. Expected a `.nims`")
 
   # var runtimeConfig = newStmtList()
   # runtimeConfig.add(runtimeConfigImports)

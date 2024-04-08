@@ -4,10 +4,10 @@
 # (c) 2024 MIT License | Made by Humans from OpenPeeps
 # https://supranim.com | https://github.com/supranim
 
-import std/[macros, asyncdispatch, strutils,
+import std/[macros, macrocache, asyncdispatch, strutils,
   tables, httpcore, uri, sequtils, options]
 
-import ./core/[request, response, router, docs]
+import ./core/[request, response, router]
 import ./support/cookie
 
 import ./application except init, initSystemServices, configs
@@ -61,10 +61,10 @@ proc getClientCookie*(req: Request): ref Cookie =
 # Controller Compile utils
 macro newController*(name, body: untyped) =
   expectKind name, nnkIdent
-  case body[0].kind
-  of nnkCommentStmt:
-    ctrlDescription[name.strVal] = body[0]
-  else: discard
+  # case body[0].kind
+  # of nnkCommentStmt:
+    # ctrlDescription[name.strVal] = body[0]
+  # else: discard
   result =
     newProc(
       name = nnkPostfix.newTree(ident("*"), name),

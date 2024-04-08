@@ -5,6 +5,8 @@
 # https://supranim.com | https://github.com/supranim
 
 import std/[httpcore, strutils, htmlgen, json]
+import pkg/jsony
+
 import ../support/uuid
 
 from ./request import Request, send
@@ -111,3 +113,8 @@ template response*(code: HttpCode, body: string,
   res.addHeader("Content-Type", $contentType)
   res.setBody(body)
   return res
+
+template json*(body: typed, code: HttpCode = Http200): untyped =
+  res.setCode(code)
+  res.addHeader("Content-Type", $contentTypeJson)
+  res.setBody(jsony.toJson(body))
