@@ -584,7 +584,12 @@ proc registerGroupRoute(basepath: string, x: NimNode): (NimNode, NimNode) =
   if x[0].strVal in httpMethods:
     expectKind(x[1], nnkStrLit)
     let path =
-      if x[1].strVal == "/": slash(basepath)
+      if x[1].strVal == "/" and basepath == "/": "/"
+      elif x[1].strVal.startsWith("/") and basepath == "/":
+        x[1].strVal
+      elif x[1].strVal.startsWith("/") == false and basepath == "/":
+        "/" & x[1].strVal
+      elif x[1].strVal == "/": slash(basepath)
       else: slash(basepath) & slash(x[1].strVal)
     result[0] = methodIdent
     result[1] = newLit(path)
