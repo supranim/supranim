@@ -20,6 +20,7 @@ requires "ioselectors"
 requires "supersnappy"
 requires "libsodium"
 requires "jsony"
+requires "nyml#head"
 requires "enimsql"
 
 # Supranim packages

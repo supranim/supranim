@@ -57,9 +57,7 @@ template run*(app: Application) =
       let runtimeCheck = Router.checkExists(path, req.root.httpMethod.get())
       case runtimeCheck.exists
       of true:
-        # if fixTrailSlash:
-        #   res.addHeader("Location", reqPath)
-        #   req.root.resp(code = HttpCode(301), "", res.getHeaders())
+        req.patterns = runtimeCheck.patterns
         let middlewareStatus: HttpCode = runtimeCheck.route.resolveMiddleware(req, res)
         case middlewareStatus
         of Http200:
@@ -86,6 +84,10 @@ template run*(app: Application) =
                     "Content-Type: text/css; charset=utf-8"
                   of ".svg":
                     "Content-Type: image/svg+xml"
+                  of ".woff":
+                    "Content-Type: application/font-woff"
+                  of ".woff2":
+                    "Content-Type: application/font-woff2"
                   else:
                     # filetype.match(contents).mime.value
                     ""

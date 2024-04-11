@@ -7,7 +7,7 @@
 import std/[macros, os, tables, strutils, cpuinfo,
           json, jsonutils, envvars, typeinfo, macrocache]
 
-import pkg/dotenv
+import pkg/nyml
 import support/[uuid]
 
 from std/net import `$`, Port
@@ -31,7 +31,8 @@ type
   AppConfigDefect* = object of CatchableError
 
 const
-  basePath* = getProjectPath()
+  supranimBasePath {.strdefine.} = getProjectPath()
+  basePath* = supranimBasePath
   binPath* = normalizedPath(basePath.parentDir / "bin")
   cachePath* = normalizedPath(basepath.parentDir / ".cache")
   runtimeConfigPath* = cachePath / "runtime" / "config"
@@ -39,6 +40,8 @@ const
   controllerPath* = basepath / "controller"
   middlewarePath* = basepath / "middleware"
   databasePath* = basepath / "database"
+  modelPath* = databasePath / "models"
+  migrationPath* = databasePath / "migrations"
   storagePath* = basepath / "storage"
 
 #
@@ -131,20 +134,20 @@ macro singletons*(x: untyped): untyped =
     )
   )
   y.add(x)
-  writeFile(cachePath / "runtime.nim", y.repr)
-  # autoload /{project}./cache/runtime.nim
-  result = newStmtList()
-  result.add(
-    nnkImportStmt.newTree(
-      nnkInfix.newTree(
-        ident("/"),
-        ident("supranim"),
-        nnkBracket.newTree(
-          ident("runtime"),
-        )
-      ),
-    )
-  )
+  # writeFile(cachePath / "runtime.nim", y.repr)
+  # # autoload /{project}./cache/runtime.nim
+  # result = newStmtList()
+  # result.add(
+  #   nnkImportStmt.newTree(
+  #     nnkInfix.newTree(
+  #       ident("/"),
+  #       ident("supranim"),
+  #       nnkBracket.newTree(
+  #         ident("runtime"),
+  #       )
+  #     ),
+  #   )
+  # )
 
 #
 # Application API
@@ -184,11 +187,11 @@ macro init*(x) =
   add result, x
   add result, quote do:
     app.configs = Configs()
-  if not dirExists(cachePath):
+  # if not dirExists(cachePath):
     # creates `.cache` directory inside working project path.
     # here we'll store generated nim files that can be
     # called via `supranim/runtime` or `supranim/facade`
-    createDir(cachePath)
+    # createDir(cachePath)
   # if not dirExists(runtimeConfigPath):
     # createDir(runtimeConfigPath)
 
@@ -264,7 +267,6 @@ macro init*(x) =
     if f.ext == ".nim":
       if not f.name.startsWith("!"):
         add result, nnkImportStmt.newTree(newLit(fModel))
-
 
   add result, quote do:
     initSystemServices()

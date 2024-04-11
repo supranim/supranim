@@ -6,7 +6,7 @@
 
 import std/[asyncdispatch, httpcore, critbits,
       strutils, sequtils, macros, macrocache,
-      enumutils]
+      enumutils, tables]
 import ./request, ./response
 
 from ../application import Application
@@ -21,8 +21,10 @@ type
     routeStatusBlockedByAbort
     routeStatusBlockedByRedirect
 
-  Callable* = proc(req: Request, res: var Response, app: Application): Response {.nimcall, gcsafe.}
-  Middleware* = proc(req: Request, res: var Response): HttpCode {.nimcall, gcsafe.}
+  Callable* = proc(req: Request, res: var Response,
+      app: Application): Response {.nimcall, gcsafe.}
+  Middleware* = proc(req: Request,
+      res: var Response): HttpCode {.nimcall, gcsafe.}
   
   RoutePattern* = enum
     textPattern
@@ -155,8 +157,16 @@ proc toStr(p: RoutePattern, isOptional: bool): string =
   result = "{" & $p
   add result, if isOptional: "?}" else: "}"
 
+# proc getPatterns*(route: Route): Table[string, string] =
+#   for pat in route.routePatterns:
+#     case pat.pattern
+#     of slugPattern, idPattern:
+#       result[pat.path] = pat.value
+#     else: discard # todo
+
 proc checkExists*(router: var RouterInstance,
-    path: string, httpMethod: HttpMethod): tuple[exists: bool, route: Route] =
+    path: string, httpMethod: HttpMethod
+  ): tuple[exists: bool, route: Route, patterns: Table[string, string]] =
   case httpMethod
   of HttpGet:
     if router.httpGet.hasKey(path):
@@ -166,6 +176,7 @@ proc checkExists*(router: var RouterInstance,
       for k in router.httpGet.keysWithPrefix("/" & p[0]):
         let r: Route = router.httpGet[k]
         var pKey: seq[string]
+        var pKeyVal: seq[(string, string)]
         case r.routeType
         of rtDynamic:
           for i in 0..r.routePatterns.high:
@@ -178,6 +189,7 @@ proc checkExists*(router: var RouterInstance,
               try:
                 discard p[i]
                 add pKey, slugPattern.toStr(r.routePatterns[i].optional)
+                add pKeyVal, (r.routePatterns[i].path, p[i])
               except Defect:
                 if r.routePatterns[i].optional:
                   add pKey, toStr(r.routePatterns[i].pattern, r.routePatterns[i].optional)
@@ -186,11 +198,15 @@ proc checkExists*(router: var RouterInstance,
               try:
                 let x = p[i]
                 add pKey, idPattern.toStr(r.routePatterns[i].optional)
+                add pKeyVal, (r.routePatterns[i].path, p[i])
               except Defect:
                 if r.routePatterns[i].optional:
                   add pKey, toStr(r.routePatterns[i].pattern, r.routePatterns[i].optional)
                 else: return
             else: discard
+          if pKeyVal.len != 0:
+            for x in pKeyVal:
+              result.patterns[x[0]] = x[1]
           result.route = router.httpGet["/" & pKey.join("/")]
         else: discard
   of HttpPost:

@@ -12,7 +12,6 @@ export options, ZSendRecvOptions
 provider Devtool, ServiceType.RouterDealer:
   # Initializes Devtool Service Provider
   port = 55002
-  address = "127.0.0.1"
   commands = [
     devtoolCheckSocket
   ]

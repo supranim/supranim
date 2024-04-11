@@ -15,7 +15,7 @@ import ./core/utils
 
 from std/net import Port, parseIpAddress, `$`
 
-export zmq
+export zmq, options
 export sodium, sodium_sizes, enumutils, utils
 
 type
@@ -43,7 +43,7 @@ var
   serviceCommands {.compileTime.}: Table[string, NimNode]
   serviceHandles {.compileTime.}: Table[string, NimNode]
 
-proc parseFieldsRouterDealer(fields: NimNode): tuple[address, port: string] {.compileTime.} =
+proc parseFieldsRouterDealer(fields: NimNode): string {.compileTime.} =
   for field in fields:
     let
       fname = field[0]
@@ -53,10 +53,7 @@ proc parseFieldsRouterDealer(fields: NimNode): tuple[address, port: string] {.co
       fname.expectKind nnkIdent
       if fname.eqIdent "port":
         fvalue.expectKind nnkIntLit
-        result.port = $(Port(fvalue.intVal))
-      elif fname.eqIdent "address":
-        fvalue.expectKind nnkStrLit
-        result.address = $(parseIpAddress(fvalue.strVal))
+        result = $(Port(fvalue.intVal))
       elif fname.eqIdent "deps":
         fvalue.expectKind nnkBracket
         for dep in fvalue:
@@ -110,8 +107,8 @@ macro provider*(serviceName: untyped, servicetype: static ServiceType, settings:
   appServiceType = servicetype
   case servicetype
   of RouterDealer:
-    let (address, port) = settings.parseFieldsRouterDealer()
-    sockaddr = "tcp://" & address & ":" & port
+    let port = settings.parseFieldsRouterDealer()
+    sockaddr = "tcp://127.0.0.1:" & port
   of InProcess:
     settings.parseFieldsInProcess()
     sockaddr = "inproc:/" & getProjectPath() / ".." / ".." / ".cache" / normalize(serviceName.strVal)

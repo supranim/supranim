@@ -10,13 +10,12 @@ import pkg/supranim/support/[cookie, nanoid]
 import ../service
 export options, ZSendRecvOptions
 
-provider Session, ServiceType.RouterDealer:
+provider Session, RouterDealer:
   # Initializes a new Service Provider based
   # on ZeroMQ's protocol REQUEST/REPLY.
   # which is kinda slow, maybe we should switch
   # to ROUTER/DEALER instead?
   port = 55001
-  address = "127.0.0.1"
   deps = [SessionManager]
   commands = [
     sessionNew,
@@ -89,12 +88,7 @@ handlers:
     else: server.send("")
 
 backend:
-  # Standalone API that is automatically wrapped in a
-  # `when isMainModule` statement.
-  #
-  # Here you can develop the backend logic of your
-  # Service provider, import 3rd-party packages and
-  # modules, and so on.
+  # Standalone Session service
   import std/[times, json, strutils, tables]
   import pkg/jsony
 

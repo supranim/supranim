@@ -1,13 +1,23 @@
-from supranim/core/application import dirCachePath
-from std/os import `/`, dirExists
-import std/macros
+# Supranim is a simple MVC web framework
+# for building web apps & microservices in Nim.
+#
+# (c) 2024 MIT License | Made by Humans from OpenPeeps
+# https://supranim.com | https://github.com/supranim
+
+from ./application import cachePath
+
+import std/[macros, os]
+import pkg/[flatty, supersnappy]
+
 
 macro initRuntime() =
   result = newStmtList()
-  result.add(
-    nnkIncludeStmt.newTree(
-      ident(dirCachePath / "runtime.nim")
+  add result,
+    nnkImportStmt.newTree(
+      ident(cachePath / "runtime.nim")
+    ),
+    nnkExportStmt.newTree(
+      ident("runtime")
     )
-  )
 
-initRuntime()
+# initRuntime()

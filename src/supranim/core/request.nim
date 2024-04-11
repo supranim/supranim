@@ -19,6 +19,7 @@ type
     root*: RootRequest
     reqHeaders: Option[HttpHeaders]
     methodType: Option[HttpMethod]
+    patterns*: Table[string, string]
     uri: Uri
 
 proc newRequest*(root: http.Request, uri: Uri): Request =
