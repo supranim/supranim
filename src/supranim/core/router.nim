@@ -90,8 +90,10 @@ proc newRoute(path: string, httpMethod: HttpMethod,
   Route(path: path, httpMethod: httpMethod, callback: callback,
     hasMiddleware: true, middlewares: middlewares)
 
-proc newDynamicRoute(path: string, httpMethod: HttpMethod,
-    callback: Callable, middlewares: seq[Middleware], patterns: seq[RoutePatternTuple]): Route =
+proc newRoute(path: string, httpMethod: HttpMethod,
+    callback: Callable, middlewares: seq[Middleware],
+    patterns: seq[RoutePatternTuple]
+  ): Route =
   # Create a new `Route`
   if middlewares.len == 0:
     return Route(path: path, routeType: rtDynamic,
@@ -100,12 +102,15 @@ proc newDynamicRoute(path: string, httpMethod: HttpMethod,
         httpMethod: httpMethod, callback: callback,
         hasMiddleware: true, middlewares: middlewares, routePatterns: patterns)
 
-proc route*(router: var RouterInstance, path: string, httpMethod: HttpMethod,
-    callback: Callable, patterns: seq[RoutePatternTuple], middlewares: seq[Middleware] = @[]) =
+proc route*(router: var RouterInstance, path: string,
+    httpMethod: HttpMethod, callback: Callable,
+    patterns: seq[RoutePatternTuple],
+    middlewares: seq[Middleware] = @[]
+  ) =
   ## Register a new `Route`
   let routeObject =
     if patterns.len > 0:
-      newDynamicRoute(path, httpMethod, callback, middlewares, patterns)
+      newRoute(path, httpMethod, callback, middlewares, patterns)
     else:
       newRoute(path, httpMethod, callback, middlewares)
   case httpMethod
@@ -187,9 +192,9 @@ proc checkExists*(router: var RouterInstance,
               add pKey, p[i]
             of slugPattern:
               try:
-                discard p[i]
+                let x = p[i]
                 add pKey, slugPattern.toStr(r.routePatterns[i].optional)
-                add pKeyVal, (r.routePatterns[i].path, p[i])
+                add pKeyVal, (r.routePatterns[i].path, x)
               except Defect:
                 if r.routePatterns[i].optional:
                   add pKey, toStr(r.routePatterns[i].pattern, r.routePatterns[i].optional)
@@ -209,6 +214,8 @@ proc checkExists*(router: var RouterInstance,
               result.patterns[x[0]] = x[1]
           result.route = router.httpGet["/" & pKey.join("/")]
         else: discard
+        if result.route != nil:
+          break # found it, break the loop
   of HttpPost:
     if router.httpPost.hasKey(path):
       result.route = router.httpPost[path]
@@ -286,49 +293,62 @@ proc getNameByPath(route: string): string {.compileTime.} =
   ]#
   if route == "/":
     return "Homepage"
-  var path =
-    if route[0] == '/':
-      split(route[1 .. ^1], {'/', '-'})
-    else: split(route, {'/', '-'})
-  for p in path.mitems:
-    if p[0] != '{':
-      result &= toUpperAscii(p[0])
-      result &= p[1 .. ^1]
-    else:
-      p = p.replace("?", "")
-      result &= toUpperAscii(p[1])
-      result &= p[2 .. ^2]
+  # var path =
+  #   if route[0] == '/':
+  #     split(route[1 .. ^1], {'/', '-'})
+  #   else: split(route, {'/', '-'})
+  var i = 0
+  while i <= route.high:
+    case route[i]
+    of 'a'..'z':
+      add result, route[i]
+      inc i
+    of '.':
+      inc i
+    of '{', '/', '-', '_':
+      inc i
+      while route[i] notin 'a'..'z':
+        inc i
+      add result, toUpperAscii(route[i])
+      inc i
+    of '}':
+      inc i
+    else: discard
 
 proc genCtrl(httpMethod: HttpMethod,
-    path: string): (string, NimNode) {.compileTime.} =
+    path: string): (string, NimNode, bool) {.compileTime.} =
   ## Generate a Controller name by `path`
+  var isdynam: bool
   if path.len > 1:
     var i = 0
-    let len = path.high
+    let len = path.len
     var t: RoutePatternTuple
     result[1] = newNimNode(nnkBracket)
-    while i <= len:
+    while i < len:
       case path[i]
       of '/':
-        if i == 0:
-          discard
+        if i == 0: discard # root slash
         else:
           t.pattern = textPattern
-          add result[1], nnkTupleConstr.newTree(
-            newLit(t.path),
-            ident(t.pattern.symbolName),
-            newLit(t.optional)
-          )
-          setLen(t.path, 0)
+          if t.path.len != 0:
+            add result[1], nnkTupleConstr.newTree(
+              newLit(t.path),
+              ident(t.pattern.symbolName),
+              newLit(t.optional)
+            )
+            setLen(t.path, 0)
+        inc i
       of '{':
         inc i
         var p: string
-        while i <= len:
+        while i < len:
           case path[i]
           of 'a'..'z':
             add p, path[i]
+            inc i
           of '?':
             t.optional = true
+            inc i
           of '}':
             try:
               let x = parseEnum[RoutePattern](p)
@@ -339,24 +359,32 @@ proc genCtrl(httpMethod: HttpMethod,
                 ident(t.pattern.symbolName),
                 newLit(t.optional)
               )
+              setLen(t.path, 0)
             except ValueError:
-              raise newException(RouterError, "Invalid route pattern `$1`" % [p])            
+              raise newException(RouterError, "Invalid route pattern `$1`" % [p])
+            inc i
           else: break
-          inc i
+        isdynam = true
+      of '.':
+        inc i
       of 'a'..'z', '0'..'9':
         add t.path, path[i]
+        inc i
       of '-', '_', '+':
         add t.path, path[i]
+        inc i
       else: discard
-      if i == len:
+      if i == len and t.path.len != 0:
         add result[1], nnkTupleConstr.newTree(
           newLit(t.path),
           ident(t.pattern.symbolName),
           newLit(t.optional)
         )
-      inc i
+        break
   else:
-    result[1] = newNimNode nnkBracket
+    result[1] = newNimNode(nnkBracket)
+  if not isdynam:
+    result[1] = newNimNode(nnkBracket)
   result[0] = toLowerAscii($httpMethod) & getNameByPath(path)
 
 macro routes*(body: untyped): untyped =
@@ -434,7 +462,6 @@ const public* = newSeq[Middleware](0)
 #   result.add genCallable(callbackBody, ctrl)
 #   result.add quote do:
 #     Router.route(`path`, HttpGet, `ctrl`, `patterns`, `middlewares`)
-#   echo result.repr
 
 macro get*(path: static string, middlewares: seq[Middleware] = @[]) =
   ## Register a new `GET` route using auto-linking controller
