@@ -22,6 +22,7 @@ requires "libsodium"
 requires "jsony"
 requires "nyml#head"
 requires "enimsql"
+requires "msgpack4nim"
 
 # Supranim packages
 requires "emitter"

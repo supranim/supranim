@@ -233,7 +233,7 @@ macro frontend*(x: untyped) =
           freemem(client)
           return some(recv)
 
-      proc cmd*(id: `serviceEnumName`, msgs: openarray[string],
+      proc cmd*(id: `serviceEnumName`, msgs: seq[string],
           data: JsonNode = nil, flags: ZSendRecvOptions = NOFLAGS): Option[seq[string]] {.discardable.} =
         var client = zmq.connect(`sockaddr`, mode = `sockMode`, server.context)
         # client.setsockopt(zmq.RCVTIMEO, 20.cint)
@@ -242,8 +242,8 @@ macro frontend*(x: untyped) =
         defer:
           client.close()
           freemem(client)
-        var x = msgs.toSeq()
-        x.insert($(symbolRank(id)), 0)
+        var x = msgs
+        sequtils.insert(x, [$(symbolRank(id))], 0)
         if data != nil:
           x.add($(data))
         client.sendAll(x)
@@ -268,12 +268,12 @@ macro frontend*(x: untyped) =
         if recv[0].len != 0:
           return some(recv)
 
-      proc cmd*(id: `serviceEnumName`, msgs: openarray[string],
+      proc cmd*(id: `serviceEnumName`, msgs: seq[string],
           data: JsonNode = nil, flags: ZSendRecvOptions = NOFLAGS): Option[seq[string]] {.discardable.} =
         var client = zmq.connect(`sockaddr`, mode = `sockMode`)
         client.setsockopt(RCVTIMEO, 350.cint)
-        var x = msgs.toSeq()
-        x.insert($(symbolRank(id)), 0)
+        var x = msgs
+        sequtils.insert(x, [$(symbolRank(id))], 0)
         if data != nil:
           x.add($(data))
         defer:

@@ -6,13 +6,16 @@
 
 import std/[options, asyncdispatch, asynchttpserver,
             httpcore, osproc, os, strutils, sequtils,
-            posix_utils, uri, macros, macrocache]
+            posix_utils, uri, macros, macrocache, times]
 
 import ./supranim/application
-import ./supranim/service/[dev, events]
+import ./supranim/service/dev
 import ./supranim/core/[http, router, utils]
 
 from std/net import Port, `$`
+
+import pkg/msgpack4nim
+export msgpack4nim
 
 export application, resp, router
 
@@ -47,6 +50,20 @@ template getBaseMiddlewares(req, res) =
   runBaseMiddlewares(req, res)
 
 template run*(app: Application) =
+  for logfpath in ["errors.4xx", "errors.5xx"]:
+    writeFile(logsPath / logfpath, "")
+  event("errors.4xx") do(args: Args):
+    let f = open(logsPath / "errors.4xx", fmAppend)
+    defer: f.close()
+    let err = "[$1] $2 - $3" % [$now(), unpack(args[0], string), unpack(args[1], string)]
+    f.writeLine(err)
+
+  event("errors.5xx") do(args: Args):
+    let f = open(logsPath / "errors.5xx", fmAppend)
+    defer: f.close()
+    let err = "[$1] $2 - $3" % [$now(), unpack(args[0], string), unpack(args[1], string)]
+    f.writeLine(err)
+
   proc onRequest(req: http.Request): Future[void] =
     {.gcsafe.}:
       var req = newRequest(req, parseUri(req.path.get()))
@@ -93,7 +110,7 @@ template run*(app: Application) =
                     ""
                 req.root.resp(code = Http200, contents, mimetype)
         if not isStaticFile:
-          events.emit("errors.404")
+          emit("errors.4xx", @[$Http404, path])
           Router.call4xx(req, res, app)
           req.root.resp(Http404, res.getBody(), res.getHeaders())
       freemem(req)
@@ -109,6 +126,8 @@ template run*(app: Application) =
     app.config("server", "threads").getInt,
     startup
   )
-  echo("Starting ", settings.numThreads, " threads")
-  echo("Running at http://", settings.bindAddr, ":", $(settings.port))
+  event("httpserver_boot") do(args: Args):
+    echo("Starting ", settings.numThreads, " threads")
+    echo("Running at http://", settings.bindAddr, ":", $(settings.port))
+  emit("httpserver_boot")
   http.runServer(onRequest, settings)

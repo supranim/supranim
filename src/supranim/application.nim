@@ -8,6 +8,7 @@ import std/[macros, os, tables, strutils, cpuinfo,
           json, jsonutils, envvars, typeinfo, macrocache]
 
 import pkg/nyml
+import pkg/enimsql/model
 import support/[uuid]
 
 from std/net import `$`, Port
@@ -33,16 +34,19 @@ type
 const
   supranimBasePath {.strdefine.} = getProjectPath()
   basePath* = supranimBasePath
-  binPath* = normalizedPath(basePath.parentDir / "bin")
-  cachePath* = normalizedPath(basepath.parentDir / ".cache")
+  rootPath* = normalizedPath(basepath.parentDir)
+  binPath* = normalizedPath(rootPath / "bin")
+  cachePath* = normalizedPath(rootPath / ".cache")
   runtimeConfigPath* = cachePath / "runtime" / "config"
   configPath* = basepath / "config"
   controllerPath* = basepath / "controller"
   middlewarePath* = basepath / "middleware"
   databasePath* = basepath / "database"
+  servicePath* = basepath / "service"
   modelPath* = databasePath / "models"
   migrationPath* = databasePath / "migrations"
   storagePath* = basepath / "storage"
+  logsPath* = storagePath / "logs"
 
 #
 # Application Crypto
@@ -120,35 +124,6 @@ proc config*(app: Application, confname, key: string): Any =
     if likely(app.configs[confname].hasKey(key)):
       return app.configs[confname][key]
 
-macro singletons*(x: untyped): untyped =
-  var y = newStmtList()
-  y.add(
-    nnkImportStmt.newTree(
-      nnkInfix.newTree(
-        ident("/"),
-        ident("supranim"),
-        nnkBracket.newTree(
-          ident("application")
-        )
-      )
-    )
-  )
-  y.add(x)
-  # writeFile(cachePath / "runtime.nim", y.repr)
-  # # autoload /{project}./cache/runtime.nim
-  # result = newStmtList()
-  # result.add(
-  #   nnkImportStmt.newTree(
-  #     nnkInfix.newTree(
-  #       ident("/"),
-  #       ident("supranim"),
-  #       nnkBracket.newTree(
-  #         ident("runtime"),
-  #       )
-  #     ),
-  #   )
-  # )
-
 #
 # Application API
 #
@@ -178,6 +153,29 @@ template initSystemServices*() =
       )
   initSystem()
 
+macro loadEnvStatic* =
+  let
+    envContents = staticRead(rootPath / ".env.yml")
+    ymlEnv = yaml(envContents).toJson
+  when not defined release:
+    let
+      dbUser = ymlEnv.get("database.local.user").getStr
+      dbName = ymlEnv.get("database.local.name").getStr
+      dbPassword = ymlEnv.get("database.local.password").getStr
+      dbPort = ymlEnv.get("database.local.port").getStr
+  else:
+    let
+      dbUser = ymlEnv.get("database.prod.user").getStr
+      dbName = ymlEnv.get("database.prod.name").getStr
+      dbPassword = ymlEnv.get("database.prod.password").getStr
+      dbPort = ymlEnv.get("database.prod.port").getStr
+  result = newStmtList()
+  add result, quote do:
+    putEnv("database.user", `dbUser`)
+    putEnv("database.name", `dbName`)
+    putEnv("database.password", `dbPassword`)
+    putEnv("database.port", `dbPort`)
+
 macro init*(x) =
   ## Initializes the Application
   expectKind(x, nnkLetSection)
@@ -185,13 +183,16 @@ macro init*(x) =
   result = newStmtList()
   x[0][2] = newCall(ident "Application")
   add result, x
+  # read `.env.yml` config file
+  loadEnvStatic()
   add result, quote do:
     app.configs = Configs()
-  # if not dirExists(cachePath):
+
+  if not dirExists(cachePath):
     # creates `.cache` directory inside working project path.
     # here we'll store generated nim files that can be
-    # called via `supranim/runtime` or `supranim/facade`
-    # createDir(cachePath)
+    # called via `supranim/runtime`
+    createDir(cachePath)
   # if not dirExists(runtimeConfigPath):
     # createDir(runtimeConfigPath)
 
@@ -201,15 +202,18 @@ macro init*(x) =
   add result,
     nnkImportStmt.newTree(
       nnkInfix.newTree(
-        ident("/"),
-        ident("std"),
+        ident"/",
+        ident"std",
         nnkBracket.newTree(
-          ident("tables"),
-          ident("envvars"),
-          ident("typeinfo")
+          ident"tables",
+          ident"envvars",
+          ident"typeinfo"
         )
       ),
-      ident("dotenv")
+      # nnkInfix.newTree(
+      #   ident"/", ident"pkg", ident"enimsql"
+      # ),
+      ident"dotenv"
     )
   add result, quote do:
     dotenv.load(normalizedPath(`basePath` / ".."), ".env")
@@ -239,6 +243,35 @@ macro init*(x) =
   #   add result, quote do:
   #     writeFile(`configPath`, toFlatty(`configName`))
 
+  # autoload /{project}./cache/runtime.nim
+  var y = newStmtList()
+  var exports = newNimNode(nnkExportStmt)
+  for ipcfile in walkDirRec(servicePath / "ipc"):
+    if ipcfile.endsWith(".nim"):
+      let ipcIdent = ipcfile.splitFile.name
+      add y, nnkImportStmt.newTree(
+        nnkInfix.newTree(
+          ident("as"),
+          newLit(ipcfile),
+          ident(ipcfile.splitFile.name)
+        )
+      )
+      add exports, ident(ipcIdent)
+  add y, exports
+  writeFile(cachePath / "runtime.nim", y.repr)
+  add result,
+    nnkImportStmt.newTree(
+      nnkInfix.newTree(
+        ident"/",
+        ident"supranim",
+        nnkBracket.newTree(
+          ident"runtime",
+        )
+      ),
+    )
+  add result,
+    nnkExportStmt.newTree(ident"runtime")
+
   # auto include `routes.nim` file
   add result, quote do:
     import ./core/[request, response]
@@ -260,13 +293,13 @@ macro init*(x) =
       if not fController.splitFile.name.startsWith("!"):
         add result, nnkImportStmt.newTree(newLit(fController))
 
-  # auto discover /database/models/*.nim
-  # nim files prefixed with `!` will be ignored
-  for fModel in walkDirRec(basePath / "database" / "models"):
-    let f = fModel.splitFile
-    if f.ext == ".nim":
-      if not f.name.startsWith("!"):
-        add result, nnkImportStmt.newTree(newLit(fModel))
+  # # auto discover /database/models/*.nim
+  # # nim files prefixed with `!` will be ignored
+  # for fModel in walkDirRec(basePath / "database" / "models"):
+  #   let f = fModel.splitFile
+  #   if f.ext == ".nim":
+  #     if not f.name.startsWith("!"):
+  #       add result, nnkImportStmt.newTree(newLit(fModel))
 
   add result, quote do:
     initSystemServices()

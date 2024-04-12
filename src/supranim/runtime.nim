@@ -4,11 +4,8 @@
 # (c) 2024 MIT License | Made by Humans from OpenPeeps
 # https://supranim.com | https://github.com/supranim
 
-from ./application import cachePath
-
 import std/[macros, os]
-import pkg/[flatty, supersnappy]
-
+from ./application import cachePath
 
 macro initRuntime() =
   result = newStmtList()
@@ -20,4 +17,4 @@ macro initRuntime() =
       ident("runtime")
     )
 
-# initRuntime()
+initRuntime()

@@ -1,18 +1,20 @@
-import std/[options, typeinfo]
+import std/[options, sequtils, typeinfo]
 import ../service
 import pkg/emitter
 
-export Event, Arg
+export Event, Args
+export typeinfo
 
-provider Events, ServiceType.InProcess:
+provider Events, InProcess:
   commands = [
-    eventEmit
+    emitEvent
   ]
 
 handlers:
-  eventEmit do:
+  emitEvent do:
     if recv.len > 2:
-      Event.emit(recv[1], @[newArg(recv[2])])
+      let args = recv[2..^1].mapIt(newArg(it))
+      Event.emit(recv[1], args)
     else:
       Event.emit(recv[1])
     server.send("")
@@ -22,8 +24,13 @@ backend:
     Event.init()
 
 frontend:
-  template listen*(id: string, handle: emitter.Callback) =
+  template event*(id: string, handle: emitter.Callback) =
+    ## Add a new listener `id` with `handle` callback
     Event.listen(id, handle)
 
-  template emit*(id: string) =
-    let x = eventEmit.cmd([id])
+  template emit*(id: string, args: seq[string] = @[]) =
+    ## Emit an event by `id`
+    block:
+      var argsx = args
+      sequtils.insert(argsx, [id], 0)
+      let x = emitEvent.cmd(argsx)

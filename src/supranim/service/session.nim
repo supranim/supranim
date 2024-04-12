@@ -162,7 +162,7 @@ frontend:
       if req.getPlatform.len > 0:
         unescape(req.getPlatform)
       else: ""
-    let strCookie = cmd(sessionNew, [platform, req.getIp])
+    let strCookie = cmd(sessionNew, @[platform, req.getIp])
     if not strCookie.isNone:
       res.addHeader("set-cookie", strCookie.get()[0])
     else:
@@ -174,7 +174,7 @@ frontend:
     block:
       let clientCookie: ref Cookie = req.getClientCookie()
       if clientCookie != nil:
-        let status = session.cmd(sessionCheck, [clientCookie.getValue, $clientCookie])
+        let status = session.cmd(sessionCheck, @[clientCookie.getValue, $clientCookie])
         if status.isNone or forceRefresh:
           session.cmd(sessionDelete, clientCookie.getValue())         
           try:
@@ -204,11 +204,11 @@ frontend:
     block:
       let id = req.getClientID()
       if likely(id.isSome):
-        session.cmd(sessionFlashBag, [id.get(), msg, req.getUriPath()])
+        session.cmd(sessionFlashBag, @[id.get(), msg, req.getUriPath()])
 
   proc getNotify*(req: Request): Option[seq[string]] =
     ## Returns a seq[string] containing flash bag
     ## messages set from the previous request
     let id = req.getClientID()
     if likely(id.isSome):
-      result = session.cmd(sessionFlashBagGet, [id.get(), req.getUriPath()])
+      result = session.cmd(sessionFlashBagGet, @[id.get(), req.getUriPath()])

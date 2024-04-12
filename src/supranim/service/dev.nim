@@ -58,4 +58,4 @@ backend:
 
 frontend:
   proc checkDevSession*() =
-    let some = cmd(devtoolCheckSocket, ["hello"])
+    let some = cmd(devtoolCheckSocket, @["hello"])

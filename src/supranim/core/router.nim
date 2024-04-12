@@ -293,10 +293,6 @@ proc getNameByPath(route: string): string {.compileTime.} =
   ]#
   if route == "/":
     return "Homepage"
-  # var path =
-  #   if route[0] == '/':
-  #     split(route[1 .. ^1], {'/', '-'})
-  #   else: split(route, {'/', '-'})
   var i = 0
   while i <= route.high:
     case route[i]

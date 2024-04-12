@@ -15,8 +15,9 @@ export HttpCode
 
 type
   ContentType* = enum
-    contentTypeHtml = "text/html"
-    contentTypeJson = "application/json"
+    contentTypeHtml = "text/html; charset=utf-8"
+    contentTypeJson = "application/json; charset=utf-8"
+    contentTypeCalendar = "text/calendar; charset=utf-8"
 
   Response* = object
     id*: Uuid
@@ -104,7 +105,7 @@ template response*(body: string, contentType: ContentType = getDefaultContentTyp
   ## Send a response using `body`
   res.addHeader("Content-Type", $contentType)
   res.setBody(body)
-  return res
+  return
 
 template response*(code: HttpCode, body: string,
     contentType: ContentType = getDefaultContentType()): untyped {.dirty.} =
@@ -112,9 +113,10 @@ template response*(code: HttpCode, body: string,
   res.setCode(code)
   res.addHeader("Content-Type", $contentType)
   res.setBody(body)
-  return res
+  return
 
 template json*(body: typed, code: HttpCode = Http200): untyped =
   res.setCode(code)
   res.addHeader("Content-Type", $contentTypeJson)
   res.setBody(jsony.toJson(body))
+  return
