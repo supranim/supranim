@@ -13,7 +13,7 @@ import support/[uuid]
 
 from std/net import `$`, Port
 
-export json, jsonutils
+export json
 
 type
   Config* = TableRef[string, Any]
