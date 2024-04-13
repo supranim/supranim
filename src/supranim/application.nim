@@ -213,10 +213,10 @@ macro init*(x) =
       # nnkInfix.newTree(
       #   ident"/", ident"pkg", ident"enimsql"
       # ),
-      ident"dotenv"
+      # ident"dotenv"
     )
-  add result, quote do:
-    dotenv.load(normalizedPath(`basePath` / ".."), ".env")
+  # add result, quote do:
+  #   dotenv.load(normalizedPath(`basePath` / ".."), ".env")
   for filePath in walkDirRec(configPath):
     # read compile-time /config/*.nims
     let f = filePath.splitFile
