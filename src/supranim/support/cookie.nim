@@ -4,8 +4,8 @@
 # (c) 2024 MIT License | Made by Humans from OpenPeeps
 # https://supranim.com | https://github.com/supranim
 
-import std/[cookies, tables, options, strutils, times]
-from std/strutils import indent, split
+import std/[cookies, tables, options,
+  strutils, times, sequtils]
 
 type
   Cookie* = object
@@ -53,7 +53,7 @@ proc parseCookies*(cookies: string): CookiesTable =
   if cookies.len == 0: return
   new result
   for cookie in cookies.split(";"):
-    var kv = cookie.split("=")
+    var kv = cookie.split("=").mapIt(it.strip)
     result[kv[0]] = newCookie(kv[0], kv[1], now() + 1.hours)
 
 proc `$`*(cookie: ref Cookie): string =
