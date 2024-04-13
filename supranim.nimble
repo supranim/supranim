@@ -21,7 +21,7 @@ requires "supersnappy"
 requires "libsodium"
 requires "jsony"
 requires "nyml#head"
-requires "enimsql"
+requires "https://github.com/supranim/enimsql"
 requires "msgpack4nim"
 
 # Supranim packages
