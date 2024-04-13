@@ -187,9 +187,12 @@ proc checkExists*(router: var RouterInstance,
           for i in 0..r.routePatterns.high:
             case r.routePatterns[i].pattern
             of textPattern:
-              if p[i] != r.routePatterns[i].path and 
-                r.routePatterns[i].optional == false: return
-              add pKey, p[i]
+              try:
+                if p[i] != r.routePatterns[i].path and 
+                  r.routePatterns[i].optional == false: return
+                add pKey, p[i]
+              except Defect:
+                return
             of slugPattern:
               try:
                 let x = p[i]
