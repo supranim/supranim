@@ -5,9 +5,9 @@ author        = "George Lemon"
 description   = "A fast web framework for Nim development"
 license       = "MIT"
 srcDir        = "src"
-# bin           = @["supra"]
-# binDir        = "bin"
-# installExt    = @["nim"]
+bin           = @["supranim"]
+binDir        = "bin"
+installExt    = @["nim"]
 
 # Core dependencies
 requires "nim >= 2.0.0"
@@ -21,6 +21,7 @@ requires "libsodium"
 requires "jsony"
 requires "nyml#head"
 requires "https://github.com/supranim/enimsql"
+# requires "enimsql"
 requires "msgpack4nim"
 
 # Supranim packages
@@ -28,7 +29,7 @@ requires "emitter"
 requires "find"
 
 # CLI dependencies
-requires "kapsis"
+requires "kapsis#head"
 
 task cli, "Build Supranim's CLI":
   exec "nimble build"
