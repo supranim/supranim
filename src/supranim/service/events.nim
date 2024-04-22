@@ -5,25 +5,24 @@ import pkg/emitter
 export Event, Args
 export typeinfo
 
-provider Events, InProcess:
+newService Events[Inproc]:
   commands = [
     emitEvent
   ]
+  
+  before:
+    if Event == nil:
+      Event.init()
 
-handlers:
-  emitEvent do:
-    if recv.len > 2:
-      let args = recv[2..^1].mapIt(newArg(it))
-      Event.emit(recv[1], args)
-    else:
-      Event.emit(recv[1])
-    server.send("")
+proc emitEvent(eventid: string) {.command.} =
+    # if recv.len > 2:
+    #   let args = recv[2..^1].mapIt(newArg(it))
+    #   Event.emit(recv[1], args)
+    # else:
+    Event.emit(eventid)
 
-backend:
-  if Event == nil:
-    Event.init()
 
-frontend:
+runService do:
   template event*(id: string, handle: emitter.Callback) =
     ## Add a new listener `id` with `handle` callback
     Event.listen(id, handle)
@@ -33,4 +32,4 @@ frontend:
     block:
       var argsx = args
       sequtils.insert(argsx, [id], 0)
-      let x = emitEvent.cmd(argsx)
+      let x = execEmitEvent(argsx)
