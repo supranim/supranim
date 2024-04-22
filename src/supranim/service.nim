@@ -4,317 +4,711 @@
 # (c) 2024 MIT License | Made by Humans from OpenPeeps
 # https://supranim.com | https://github.com/supranim
 
-import pkg/zmq
+# Import global modules
+import std/[os, strutils, tables, macros,
+  macrocache, options, times, sequtils,
+  enumutils, json]
 
-import std/[os, macros, tables, options,
-    sequtils, json, strutils, enumutils]
-import pkg/libsodium/[sodium, sodium_sizes]
-
-import ./support/nanoid
+import pkg/[zmq, jsony]
 import ./core/utils
 
-from std/net import Port, parseIpAddress, `$`
+from supranim/application import cachePath
 
-export zmq, options
-export sodium, sodium_sizes, enumutils, utils
+export zmq, macros, macrocache, enumutils,
+  options, json, jsony, freemem
 
-type
+type 
   ServiceProviderErrorMessages* = enum
+    spConflictPort = "A service called `$1` already exists for given port `$2`"
+    spInvalidConfig = "Invalid configuration for `$1` ServiceProvider"
+    spDuplicateCommand = "Duplicate command `$1`"
     staticSettingsUnknownField = "Unrecognized field `$1` for a Service Provider of type `$1`"
-  
-  ServiceType* = enum
-    ## Decide type of the current Service Provider.
-    serviceTypeUntyped
-      ## This is the default (invalid) Service Type
-    RouterDealer
-    InProcess
-    Singleton
-      ## Integrate Supranim/Nimble packages into your application as
-      ## a global Singleton. Optionally, enable thread-safe singletons
-      ## using `threadsafe = true`
-    serviceTypePackage
-      ## Integrate any Nimble package into your Supranim application
-    serviceTypeLibrary
-      ## Integrates Shared Libraries
 
-  ServiceProviderError* = object of CatchableError
+  ServiceType* = enum
+    RouterDealer = "RouterDealer",
+    Inproc = "Inproc"
+
+  ServiceProvider* = ref object of RootObj
+    spType*: ServiceType
+    spName*, spPort*, spPath*, spDescription*: string
+    spAddress*: string
+    spCommands*: seq[string]
+    spPrivate: bool
+    spPrivateKey: string
+
+  ServiceId = string
+  ServicePort = string
+
+  ServiceManagerInstance* = ref object
+    ports: OrderedTableRef[ServicePort, ServiceId]
+    services: OrderedTableRef[ServiceId, ServiceProvider]
+    # updateAt: DateTime
 
 var
-  serviceCommands {.compileTime.}: Table[string, NimNode]
-  serviceHandles {.compileTime.}: Table[string, NimNode]
+  ServiceManager {.compileTime.}: ServiceManagerInstance
+  identZmqServer {.compileTime.}: NimNode
+  service {.compileTime.}: ServiceProvider
 
-proc parseFieldsRouterDealer(fields: NimNode): string {.compileTime.} =
-  for field in fields:
-    let
-      fname = field[0]
-      fvalue = field[1]
-    case field.kind
-    of nnkAsgn:
-      fname.expectKind nnkIdent
-      if fname.eqIdent "port":
-        fvalue.expectKind nnkIntLit
-        result = $(Port(fvalue.intVal))
-      elif fname.eqIdent "deps":
-        fvalue.expectKind nnkBracket
-        for dep in fvalue:
-          dep.expectKind nnkIdent
-      elif fname.eqIdent "commands":
-        for cmd in fvalue:
-          serviceCommands[cmd.strVal] = cmd
-      else:
-        raise newException(ServiceProviderError, $(staticSettingsUnknownField) % [fname.strVal, ""])
-    else: discard
+const
+  ServicesIndex = CacheTable"ServicesIndex"
+  cachePathServiceManager = cachePath / "servicemanager.json"
+var
+  registeredCommands {.compileTime.}: OrderedTable[string, NimNode]
+  registeredCommandsParams {.compileTime.}: OrderedTable[string, NimNode]
+  baseServiceNode {.compileTime.}: OrderedTable[string, NimNode]
+  autorunnable {.compileTime.}: OrderedTable[string, NimNode]
 
-proc parseFieldsInProcess(fields: NimNode) {.compileTime.} =
-  for field in fields:
-    case field.kind
-    of nnkAsgn:
-      if field[0].eqIdent "commands":
-        field[1].expectKind(nnkBracket)
-        for cmd in field[1]:
-          serviceCommands[cmd.strVal] = cmd
-    else: discard
+#
+# pkg/jsony hooks
+#
+proc dumpHook*(s: var string, v: DateTime) =
+  add s, '"'
+  add s, v.format("yyyy-MM-dd'T'HH:mm:ss:zzz")
+  add s, '"'
 
+proc parseHook*(s: string, i: var int, v: var DateTime) =
+  var str: string
+  parseHook(s, i, str)
+  v = parse(str, "yyyy-MM-dd'T'HH:mm:ss:zzz")
 
-macro handlers*(x: untyped) =
-  ## Define handlers for reach registered command
-  x.expectKind nnkStmtList
-  result = newStmtList()
-  for handle in x:
-    expectKind(handle, nnkCall)
-    expectKind(handle[1], nnkStmtList)
-    let id = handle[0] # command id
-    serviceHandles[id.strVal] =
-      nnkOfBranch.newTree(id, handle[1])
+#
+# Service Manager
+#
+proc checkCommand(x: NimNode) {.compileTime.} =
+  if unlikely(registeredCommands.hasKey(x.strVal)):
+    error($spDuplicateCommand % x.strVal, x)
 
-var serviceEnumName {.compileTime.}: NimNode
-var sockaddr {.compileTime.}: string
-var appServiceType {.compileTime.}: ServiceType
+proc initServiceManager() {.compileTime.} =
+  if fileExists(cachePathServiceManager):
+    # initialize ServiceManagerInstance from .cache path
+    ServiceManager = jsony.fromJson(
+        staticRead(cachePathServiceManager),
+        ServiceManagerInstance
+      )
+  else:
+    ServiceManager = new(ServiceManagerInstance)
+    new(ServiceManager.ports)
+    new(ServiceManager.services)
 
-proc getZSocketType: (NimNode, NimNode) {.compileTime.} =
-  case appServiceType
+proc cacheServiceManager {.compileTime.} =
+  # ServiceManager.updateAt = now()
+  writeFile(cachePathServiceManager, jsony.toJson(ServiceManager))
+
+proc checkPort*(man: ServiceManagerInstance, x: int): bool {.compileTime.} =
+  # Check if a ServiceProvider exists at given Port
+  man.ports.hasKey($x)
+
+proc getService*(man: ServiceManagerInstance, x: string): ServiceProvider =
+  # Get a service by port
+  man.services[x]
+
+proc getZSocketType(st: ServiceType): (NimNode, NimNode) {.compileTime.} =
+  case st
   of RouterDealer:
     result = (ident "DEALER", ident "ROUTER")
-  of InProcess:
+  of Inproc:
     result = (ident "PAIR", ident "PAIR")
   else: discard
 
-macro provider*(serviceName: untyped, servicetype: static ServiceType, settings: untyped) =
-  ## Create a new Service Provider
-  result = newStmtList()
-  expectKind serviceName, nnkIdent
-  expectKind settings, nnkStmtList
-  appServiceType = servicetype
-  case servicetype
-  of RouterDealer:
-    let port = settings.parseFieldsRouterDealer()
-    sockaddr = "tcp://127.0.0.1:" & port
-  of InProcess:
-    settings.parseFieldsInProcess()
-    sockaddr = "inproc:/" & getProjectPath() / ".." / ".." / ".cache" / normalize(serviceName.strVal)
-    # sockaddr = "inproc:/" & getTempDir() / normalize(serviceName.strVal)
-  else: discard
-  # Create an enum of commands available on both,
-  # back-end and client-side
-  var cmdEnumFields =
-    newNimNode(nnkEnumTy).add(newEmptyNode())
-  serviceEnumName = ident serviceName.strVal & "Commands"
-  for k, cmd in serviceCommands: 
-    cmdEnumFields.add(cmd)
-  add result,
-    nnkTypeSection.newTree(
-      nnkTypeDef.newTree(
-        nnkPostfix.newTree(
-          ident "*", serviceEnumName
+proc backendHandleModifier*(handle: NimNode, x: string): NimNode =
+  expectKind(handle[4], nnkPragma)
+  case handle[4].strVal
+  of "command":
+    result = handle[2]
+  of "commandTask":
+    discard
+
+template newService*(serviceId, serviceConfig) =
+  ## Generate a new Supranim Service Provider
+  macro initService(id, conf): untyped =
+    clear(baseServiceNode)
+    clear(autorunnable)
+    clear(registeredCommandsParams)
+    clear(registeredCommands)
+    let info: (string, int, int) = instantiationInfo(fullPaths = true)
+    id.expectKind(nnkBracketExpr)
+    initServiceManager()
+    service = ServiceProvider()
+    service.spName = id[0].strVal
+    service.spType = parseEnum[ServiceType](id[1].strVal)
+    service.spPath = info[0]
+    for x in conf:
+      case x.kind
+      of nnkAsgn:
+        let k = x[0]
+        let v = x[1]
+        if k.eqIdent "port":
+          if unlikely(ServiceManager.checkPort(v.intVal)):
+            # check if a service exists for given port
+            let xsrv = ServiceManager.getService(id[0].strVal)
+            if unlikely(xsrv.spName != service.spName and xsrv.spPath != service.spPath):
+              error($(spConflictPort) % [xsrv.spName, xsrv.spPort], id[0])
+          service.spPort = $v.intVal
+        elif k.eqIdent "private":
+          service.spPrivate = true
+          service.spPrivateKey = staticExec("openssl rand -hex 12").strip
+        elif k.eqIdent "description":
+          service.spDescription = v.strVal
+        elif k.eqIdent "commands":
+          for cmd in v:
+            add service.spCommands, cmd.strVal
+      of nnkCommentStmt: discard # ignore comments
+      of nnkCall:
+        if x[0].eqIdent "before":
+          baseServiceNode["before"] = x[1]
+      else:
+        error($(spInvalidConfig) % [id[0].strVal])
+    # reserves given port for the current service
+    ServiceManager.ports[service.spPort] = service.spName
+    ServiceManager.services[service.spName] = service
+    var
+      serviceEnumName = ident(id[0].strVal & "Commands")
+      serviceEnumFields = nnkEnumTy.newTree(newEmptyNode())
+      caseBranches = newNimNode(nnkCaseStmt).add(ident"id")
+      bNode = newStmtList()
+      bNodeWrappers = newStmtList()
+    for x in service.spCommands:
+      var xField = ident(x)
+      add serviceEnumFields, xField
+      # add bNodeWrappers, registeredCommands[x]
+      # add caseBranches, nnkOfBranch.newTree(
+        # xField,
+        # newCall(
+        #   registeredCommands[x][0],
+        #   ident"server"
+        # )
+      # )
+    # backend node
+    baseServiceNode["imports"] = newStmtList()
+    add baseServiceNode["imports"],
+      nnkImportStmt.newTree(
+        nnkInfix.newTree(
+          ident"/",
+          ident"std",
+          nnkBracket.newTree(
+            ident"os",
+            ident"asyncdispatch",
+            ident"strutils",
+          )
+        )
+      )
+    add baseServiceNode["imports"],
+      nnkImportStmt.newTree(
+        nnkInfix.newTree(
+          ident"/",
+          ident"pkg",
+          nnkBracket.newTree(
+            ident"jsony",
+            nnkInfix.newTree(
+              ident"/",
+              ident"kapsis",
+              ident"cli"
+            )
+          )
+        )
+      )
+    baseServiceNode["enumCommands"] = newStmtList()
+    add baseServiceNode["enumCommands"],
+      nnkTypeSection.newTree(
+        nnkTypeDef.newTree(
+          nnkPostfix.newTree(ident"*", serviceEnumName),
+          newEmptyNode(),
+          serviceEnumFields
+        )
+      )
+    # add bNode, bNodeWrappers
+    if service.spPrivate:
+      add bNode, newConstStmt(ident"privateKey", newLit service.spPrivateKey)
+    case service.spType:
+    of RouterDealer:
+      # handle ZMQ Router/Dealer pattern
+      #   var server = listen("tcp://127.0.0.1:" & port, mode)
+      #   while true:
+      #     let sockid = receive(server)
+      #     if len(sockid) > 0:
+      #       let recv = receiveAll(server)
+      #       let id = `serviceEnum`(parseInt(recv[0]))
+      #       send(server, sockid, SNDMORE)
+      #       caseBranches
+      identZmqServer = genSym(nskProc, "initZmqServer")
+      service.spAddress = "tcp://127.0.0.1:" & service.spPort
+      baseServiceNode[identZmqServer.strVal] =
+        newProc(
+          identZmqServer,
+          body = nnkStmtList.newTree(
+            newVarStmt(
+              ident"server",
+              newCall(
+                ident"listen",
+                newLit(service.spAddress),
+                getZSocketType(service.spType)[1]
+              )
+            ),
+            nnkWhileStmt.newTree(
+              ident"true",
+              nnkStmtList.newTree(
+                newLetStmt(
+                  ident"sockid",
+                  newCall(ident"receive", ident"server")
+                ),
+                newIfStmt(
+                  (
+                    nnkInfix.newTree(
+                      ident">",
+                      newCall(ident"len", ident"sockid"),
+                      newLit(0)
+                    ),
+                    nnkStmtList.newTree(
+                      newLetStmt(ident"recv",
+                        newCall(ident"receiveAll", ident"server")
+                      ),
+                      newLetStmt(
+                        ident"id",
+                        newCall(
+                          serviceEnumName,
+                          newCall(
+                            ident"parseInt",
+                            nnkBracketExpr.newTree(ident"recv", newLit(0))
+                          )
+                        )
+                      ),
+                      newCall(ident"send", ident"server", ident"sockid", ident"SNDMORE"),
+                      caseBranches
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+    of Inproc:
+      # handle ZMQ `inproc` pattern
+      identZmqServer = genSym(nskProc, "initZmqServer")
+      service.spAddress = "inproc:/" & getProjectPath() / ".." / ".." / ".cache" / normalize(service.spName)
+      baseServiceNode[identZmqServer.strVal] = nnkStmtList.newTree(
+        newVarStmt(
+          ident"server",
+          newCall(
+            ident"listen",
+            newLit(service.spAddress),
+            getZSocketType(service.spType)[1]
+          )
         ),
-        newEmptyNode(),
-        cmdEnumFields
+        newCall(
+          ident"setsockopt",
+          ident"server",
+          newDotExpr(ident"zmq", ident"SNDHWM"),
+          newDotExpr(newLit(200000), ident"cint")
+        ),
+        newCall(
+          ident"setsockopt",
+          ident"server",
+          newDotExpr(ident"zmq", ident"RCVHWM"),
+          newDotExpr(newLit(200000), ident"cint")
+        ),
+      )
+      add baseServiceNode[identZmqServer.strVal],
+        newProc(
+          identZmqServer,
+          pragmas = nnkPragma.newTree(ident"thread"),
+          body = nnkStmtList.newTree(
+            nnkPragmaBlock.newTree(
+              nnkPragma.newTree(ident"gcsafe"),
+              nnkWhileStmt.newTree(
+                ident"true",
+                nnkStmtList.newTree(
+                  newLetStmt(ident"recv",
+                    newCall(ident"receiveAll", ident"server")
+                  ),
+                  newIfStmt(
+                    (
+                      nnkInfix.newTree(
+                        ident">",
+                        newCall(ident"len", ident"recv"),
+                        newLit(0)
+                      ),
+                      nnkStmtList.newTree(
+                        newLetStmt(
+                          ident"id",
+                          newCall(
+                            serviceEnumName,
+                            newCall(
+                              ident"parseInt",
+                              nnkBracketExpr.newTree(ident"recv", newLit(0))
+                            )
+                          )
+                        ),
+                        caseBranches
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      baseServiceNode["publicInitializer"] = newStmtList()
+      add baseServiceNode["publicInitializer"],
+        # newProc(
+        #   nnkPostfix.newTree(
+        #     ident"*",
+        #     ident("initProcess"),
+        #   ),
+          # body = nnkStmtList.newTree(
+        nnkVarSection.newTree(
+          nnkIdentDefs.newTree(
+            ident"ipcthr",
+            nnkBracketExpr.newTree(
+              ident"Thread",
+              ident"void",
+            ),
+            newEmptyNode()
+          )
+        )
+      add baseServiceNode["publicInitializer"],
+        newCall(ident"createThread", ident"ipcthr", identZmqServer)
+          # )
+        # )
+    cacheServiceManager()
+  initService(serviceId, serviceConfig)
+
+template checkIsAutorunnable {.dirty.} =
+  if isAutoRunnable:
+    autorunnable[initialName.strVal] = newNilLit()
+
+template checkEnableAutoRunnable {.dirty.} =
+  for prgm in x[4]:
+    if prgm.eqIdent("autorunOnce"):
+      isAutoRunnable = true
+
+proc safeWrap(x: NimNode, id: string): NimNode =
+  # Wraps `x` NimNode inside a `try` `except`
+  # block that prevents the app from going down
+  # in case something goes wrong.
+  result = nnkTryStmt.newTree(
+    x,
+    nnkExceptBranch.newTree(
+      nnkInfix.newTree(
+        ident"as",
+        ident"CatchableError",
+        ident"e",
+      ),
+      nnkStmtList.newTree(
+        newCall(
+          ident"displayError",
+          newCall(
+            ident"format",
+            newLit"Command error `$1`: $2",
+            newLit id,
+            newDotExpr(ident"e", ident"msg")
+          )
+        )
       )
     )
+  )
 
-macro backend*(x: untyped) = 
-  # Back-end API
-  # Create the main `case` block statements
-  # that routes the command handlers
+var defaultZConnection {.compileTime.} = newNilLit()
+proc commandCallWithArgs(k: string, defaultZCon = false): NimNode =
+  var i = 1
+  result = newCall(registeredCommands[k][0])
+  for param in registeredCommandsParams[k]:
+    if param.kind == nnkIdentDefs:
+      if param.len == 3:
+        if param[1].eqIdent "JsonNode":
+          add result, newCall(            
+            newDotExpr(
+              ident"jsony",
+              ident"fromJson",
+            ),
+            nnkBracketExpr.newTree(ident"recv", newLit(i))
+          )
+        else:
+          add result, nnkBracketExpr.newTree(
+            ident"recv", newLit(i)
+          )
+        inc i
+      else:
+        for p in param[0..^3]:
+          if param[^2].eqIdent "JsonNode":
+            add result, newCall(            
+              newDotExpr(
+                ident"jsony",
+                ident"fromJson",
+              ),
+              nnkBracketExpr.newTree(ident"recv", newLit(i))
+            )
+          else:
+            add result, nnkBracketExpr.newTree(ident"recv", newLit(i))
+          inc i
+  if not defaultZCon:
+    if service.spType == Inproc:
+      add result, newDotExpr(ident"server", ident"context")
+    add result, ident("server")
+
+macro command*(x): untyped =
+  ## Register a new ZeroMQ command
+  let initialName = x[0]
+  checkCommand initialName
+  var isAutoRunnable: bool
+  var cmdProcName = genSym(nskProc, x[0].strVal)
+  checkEnableAutoRunnable()
+  x[0] = cmdProcName
+  registeredCommandsParams[initialName.strVal] = x[3].copy()
+  if service.spType == Inproc:
+    add x[3], nnkIdentDefs.newTree(ident"context", ident"ZContext", newNilLit())
+  add x[3], nnkIdentDefs.newTree(ident"server", ident"ZConnection", defaultZConnection)
+  registeredCommands[initialName.strVal] = x
+
+macro asyncTask*(interval: TimeInterval, x: untyped) =
+  let initialName = x[0]
+  checkCommand initialName
   var
-    mainBodyStmt = newStmtList()
-    cmdCaseStmt = newStmtList()
-    caseBranches = nnkCaseStmt.newTree()
-  add mainbodyStmt, quote do:
-    import std/strutils
-  add caseBranches, ident("id")
-  for k, handle in serviceHandles:
-    add caseBranches, handle
-  clear(serviceHandles)
-  clear(serviceCommands)
-  add cmdCaseStmt, caseBranches
-  var sockMode = getZSocketType()
-  add mainBodyStmt, x
-
-  template zmqServerBody(sockaddr: string, sockMode: (NimNode, NimNode),
-      cmdCaseStmt: NimNode, serviceEnum) {.dirty.} =
-    var server = listen(sockaddr, sockMode[1])
-    while true:
-      let sockid = server.receive()
-      if len(sockid) > 0:
-        let recv = server.receiveAll()
-        let id = serviceEnum(parseInt(recv[0]))
-        server.send(sockid, SNDMORE)
-        cmdCaseStmt
-      freemem(sockid)
-
-  case appServiceType
-  of RouterDealer:
-    add mainBodyStmt,
-      newProc(
-        ident "initZeroServer",
-        body = getAst(
-          zmqServerBody(sockaddr, sockMode,
-            cmdCaseStmt, serviceEnumName)
-        )
-      )
-    add mainBodyStmt, newCall(ident "initZeroServer")
-    # Expose code as a standalone application
-    # using `isMainModule` compile-time flag 
-    result = newStmtList().add(
-      nnkWhenStmt.newTree(
-        nnkElifBranch.newTree(
-          ident("isMainModule"),
-          mainBodyStmt
-        )
-      )
-    )
-  of InProcess:
-    # Expose code in a separate thread
-    # using ZMQ's inproc protocol
-    # initServerProc[0] = nnkPostfix.newTree(
-    #   ident "*", ident("runProcess")
-    # )
-    result = newStmtList()
-    template initInProcServer(sockaddr: string,
-      sockMode: NimNode, cmdCaseStmt: NimNode, serviceEnum) {.dirty.} =
-      block:
-        var server = listen(sockaddr, sockMode)
-        server.setsockopt(zmq.SNDHWM, 200000.cint)
-        server.setsockopt(zmq.RCVHWM, 200000.cint)
-        proc runProcess*() {.thread.} =
-          {.gcsafe.}:
-            while true:
-              let recv = server.receiveAll()
-              if len(recv) > 0:
-                let id = serviceEnum(parseInt(recv[0]))
-                cmdCaseStmt
-        var thr: Thread[void]
-        createThread(thr, runProcess)
-    getAst(initInProcServer(sockaddr, sockMode[1],
-      cmdCaseStmt, serviceEnumName)).copyChildrenTo(mainBodyStmt)
-    add result, mainBodyStmt
-  else: discard 
-
-macro frontend*(x: untyped) =
-  # Front-end API
-  var appBodyStmt = newStmtList()
-  var sockMode = getZSocketType()[0]
-  if sockMode.eqIdent("PAIR"):
-    add appBodyStmt, quote do:
-      proc cmd*(id: `serviceEnumName`, msg: string): Option[seq[string]] {.discardable.} =
-        ## Create a new client and connect with the backend Service via `tcp`
-        ## Once done, the client is automatically closed and freed. 
-        var client = zmq.connect(`sockaddr`, mode = `sockMode`, server.context)
-        client.setsockopt(RCVTIMEO, 10.cint)
-        client.sendAll($(symbolRank(id)), msg)
-        let recv = client.receiveAll()
-        if recv.len == 0:
-          client.close()
-          freemem(client)
-          return
-        if recv[0].len != 0:
-          client.close()
-          freemem(client)
-          return some(recv)
-
-      proc cmd*(id: `serviceEnumName`, msgs: seq[string],
-          data: JsonNode = nil, flags: ZSendRecvOptions = NOFLAGS): Option[seq[string]] {.discardable.} =
-        var client = zmq.connect(`sockaddr`, mode = `sockMode`, server.context)
-        # client.setsockopt(zmq.RCVTIMEO, 20.cint)
-        # client.setsockopt(zmq.SNDHWM, 200000.cint)
-        # client.setsockopt(zmq.RCVHWM, 200000.cint)
-        defer:
-          client.close()
-          freemem(client)
-        var x = msgs
-        sequtils.insert(x, [$(symbolRank(id))], 0)
-        if data != nil:
-          x.add($(data))
-        client.sendAll(x)
-        let recv = client.receiveAll(flags)
-        if recv.len == 0:
-          return
-        if recv[0].len != 0:
-          return some(recv)
-  else:
-    add appBodyStmt, quote do:
-      proc cmd*(id: `serviceEnumName`, msg: string): Option[seq[string]] {.discardable.} =
-        ## Create a new client and connect with the backend Service via `tcp`
-        ## Once done, the client is automatically closed and freed. 
-        var client = zmq.connect(`sockaddr`, mode = `sockMode`)
-        client.setsockopt(RCVTIMEO, 350.cint)
-        defer:
-          client.close()
-          freemem(client)
-        client.sendAll($(symbolRank(id)), msg)
-        let recv = client.receiveAll()
-        if recv.len == 0: return
-        if recv[0].len != 0:
-          return some(recv)
-
-      proc cmd*(id: `serviceEnumName`, msgs: seq[string],
-          data: JsonNode = nil, flags: ZSendRecvOptions = NOFLAGS): Option[seq[string]] {.discardable.} =
-        var client = zmq.connect(`sockaddr`, mode = `sockMode`)
-        client.setsockopt(RCVTIMEO, 350.cint)
-        var x = msgs
-        sequtils.insert(x, [$(symbolRank(id))], 0)
-        if data != nil:
-          x.add($(data))
-        defer:
-          client.close()
-          freemem(client)
-        client.sendAll(x)
-        let recv = client.receiveAll(flags)
-        if recv.len == 0: return
-        if recv[0].len != 0:
-          return some(recv)
-
-      proc cmd*(client: ZConnection, id: `serviceEnumName`): seq[string] {.discardable.} =
-        ## Use an existing `client` to request a command 
-        client.sendAll($(symbolRank(id)))
-        result = client.receiveAll()
-
-      proc cmd*(client: ZConnection, id: `serviceEnumName`, msg: string): seq[string] {.discardable.} =
-        ## Use an existing `client` to request a command
-        ## followed by `msg` data 
-        client.sendAll($(symbolRank(id)), msg)
-        result = client.receiveAll()
-
-      proc newClient*: ZConnection =
-        ## Creates a new `REQ` client connection.
-        ## Don't forget to `close` client connection when done
-        zmq.connect(`sockaddr`, mode = `sockMode`)
-  
-  add appBodyStmt, x
-  if sockaddr.startsWith("inproc://"):
-    result = newStmtList().add(appBodyStmt)
-  else:
-    result = newStmtList().add(
-      nnkWhenStmt.newTree(
-        nnkElifBranch.newTree(
-          nnkPrefix.newTree(
-            ident "not",
-            ident "isMainModule",
+    isAutoRunnable: bool
+    cmdProcName = genSym(nskProc, x[0].strVal)
+    thProcName = genSym(nskProc, x[0].strVal)
+    thrid = genSym(nskVar, x[0].strVal)
+    procStmtBody = newStmtList()
+  checkEnableAutoRunnable()
+  x[4] = newEmptyNode() # reset pragmas
+  var innerProcNode = newProc(
+    name = thProcName,
+    body = nnkStmtList.newTree(
+      newLetStmt(
+        ident"tasks",
+        newCall(ident"newAsyncScheduler")
+      ),
+      nnkPragmaBlock.newTree(
+        nnkPragma.newTree(ident"gcsafe"),
+        nnkStmtList.newTree(
+          newCall(
+            newDotExpr(ident"tasks", ident"every"),
+            interval, # get interval node
+            newLit(x[0].strVal),
+            nnkDo.newTree(
+              newEmptyNode(), newEmptyNode(), newEmptyNode(),
+              nnkFormalParams.newTree(newEmptyNode()),
+              nnkPragma.newTree(ident"async"),
+              newEmptyNode(),
+              x[6] # get task stmt list
+            )
           ),
-          appBodyStmt
+          newCall(
+            ident"waitFor",
+            newCall(
+              ident "start",
+              ident "tasks"
+            )
+          )
         )
       )
+    ),
+    pragmas = nnkPragma.newTree(ident"thread")
+  )
+  add innerProcNode, newCall(ident"start", ident"tasks")
+  add procStmtBody, newCommentStmtNode("Auto-generated wrapper around task-based command `" & initialName.strVal & "`")
+  add procStmtBody, innerProcNode
+  add procStmtBody,
+    nnkVarSection.newTree(
+      nnkIdentDefs.newTree(
+        thrid,
+        nnkBracketExpr.newTree(
+          ident"Thread",
+          ident"void",
+        ),
+        newEmptyNode()
+      )
     )
+  add procStmtBody,
+    newCall(ident"createThread", thrid, thProcName)
+  checkIsAutorunnable()
+  if not isAutoRunnable:
+    add procStmtBody, newCall(ident"send", ident"server", newLit"")
+    defaultZConnection = newEmptyNode()
+  registeredCommandsParams[initialName.strVal] = x[3].copy()
+  if service.spType == Inproc:
+    add x[3], nnkIdentDefs.newTree(ident"context", ident"ZContext", newNilLit())
+  add x[3], nnkIdentDefs.newTree(ident"server", ident"ZConnection", defaultZConnection)
+  x[6] = procStmtBody
+  x[0] = cmdProcName
+  registeredCommands[initialName.strVal] = x
 
-  # echo result.repr
+template executeServiceCommand*(id: untyped, zaddr: string,
+    zmode: ZSocketType, msgs: seq[string] = @[]): untyped =
+  # Execute a command of a standalone Service Provider
+  var client = zmq.connect(zaddr, mode = zmode)
+  client.setsockopt(RCVTIMEO, 200.cint)
+  var x = msgs
+  sequtils.insert(x, @[$(symbolRank(id))], 0)
+  client.sendAll(x)
+  let recv = client.receiveAll()
+  var resp: Option[seq[string]]
+  if recv.len > 0:
+    if recv[0].len > 0:
+      resp = some(recv)
+  client.close()
+  freemem(client)
+  resp
+
+template executeServiceCommand*(id: untyped, zaddr: string,
+    ctx: ZContext, msgs: seq[string] = @[]): untyped =
+  # Execute a command of an `inproc` based Service Provider
+  var client = zmq.connect(zaddr, mode = PAIR, context = ctx)
+  client.setsockopt(RCVTIMEO, 200.cint)
+  var x = msgs
+  sequtils.insert(x, @[$(symbolRank(id))], 0)
+  client.sendAll(x)
+  let recv = client.receiveAll()
+  var resp: Option[seq[string]]
+  if recv.len > 0:
+    if recv[0].len > 0:
+      resp = some(recv)
+  client.close()
+  freemem(client)
+  resp
+
+macro runService*(frontendBranch): untyped =
+  var result,
+    mainModule,
+    modifiedFrontendBranch = newStmtList()
+  let serviceEnumName = service.spName & "Commands"
+  add result, baseServiceNode["enumCommands"]
+  for enumCommand in service.spCommands:
+    # create frontend commands
+    var execCallNode: NimNode
+    if service.spType == RouterDealer:
+      execCallNode =
+        newCall(
+          ident"executeServiceCommand",
+          ident enumCommand,
+          newLit("tcp://127.0.0.1:" & service.spPort),
+          getZSocketType(service.spType)[0]
+        )
+    elif service.spType == Inproc:
+      execCallNode =
+        newCall(
+          ident"executeServiceCommand",
+          ident enumCommand,
+          newLit(service.spAddress),
+          newDotExpr(ident"server", ident"context"),
+        )
+    if registeredCommandsParams.len > 0:
+      var asgnArgs = nnkBracket.newTree()
+      for param in registeredCommandsParams[enumCommand]:
+        if param.kind == nnkIdentDefs:
+          if param.len == 3:
+            if param[1].eqIdent "JsonNode":
+              add asgnArgs, newCall(
+                newDotExpr(
+                  ident"jsony",
+                  ident"toJson",
+                ),
+                param[0]
+              )
+            else:
+              add asgnArgs, param[0]
+          else:
+            for p in param[0..^3]:
+              add asgnArgs, p
+      if asgnArgs.len > 0:
+        add execCallNode, nnkPrefix.newTree(ident"@", asgnArgs)
+    var frontendProcBody =
+      nnkStmtList.newTree(
+        newCommentStmtNode("Execute `" & service.spName & "` command `" & enumCommand & "`"),
+        execCallNode
+      )
+    var frontendProc =
+      newProc(
+        nnkPostfix.newTree(
+          ident"*",
+          ident("exec" & enumCommand.capitalizeAscii)
+        ),
+        params = [
+          nnkBracketExpr.newTree(
+            ident"Option",
+            nnkBracketExpr.newTree(
+              ident"seq",
+              ident"string"
+            )
+          )
+        ],
+        pragmas = nnkPragma.newTree(
+          ident"discardable"
+        ),
+        body = frontendProcBody
+      )
+    if registeredCommandsParams.len > 0:
+      for p in registeredCommandsParams[enumCommand][1..^1]:
+        add frontendProc[3], p
+    add modifiedFrontendBranch, frontendProc
+
+  for k, node in baseServiceNode["imports"]:
+    add mainModule, node
+  if service.spType != Inproc:
+    add mainModule,
+      newCall(
+        ident"displayInfo",
+        newLit("Start `" & service.spName & "` Service Provider")
+      )
+    add mainModule,
+      newCall(
+        ident"display",
+        newLit("Address: tcp://127.0.0.1:" & service.spPort),
+        newLit(6)
+      )
+  for k, node in baseServiceNode["before"]:
+    add mainModule, node
+  for k, node in registeredCommands:
+    add mainModule, node
+    if autorunnable.hasKey(k) and service.spType != Inproc:
+      add mainModule,
+        newCall(
+          ident"displayInfo",
+          newLit("Execute auto-runnable command `" & k & "`")
+        )
+      add mainModule, commandCallWithArgs(k, true)
+  if service.spType == Inproc:
+    for cmd in service.spCommands:
+      add baseServiceNode[identZmqServer.strVal][3][6][0][1][1][1][0][1][1],
+        nnkOfBranch.newTree(
+          ident cmd,
+          safeWrap(commandCallWithArgs(cmd), cmd)
+        )
+    for x in baseServiceNode[identZmqServer.strVal]:
+      add mainModule, x
+    add mainModule, baseServiceNode["publicInitializer"]
+  else:
+    for cmd in service.spCommands:
+      add baseServiceNode[identZmqServer.strVal][6][1][1][1][0][1][3],
+        nnkOfBranch.newTree(
+          ident cmd,
+          safeWrap(commandCallWithArgs(cmd), cmd)
+        )
+    let zmqBaseProc = baseServiceNode[identZmqServer.strVal]
+    add mainModule, zmqBaseProc
+    add mainModule, newCall(zmqBaseProc[0])
+  add modifiedFrontendBranch, frontendBranch
+  if service.spType == RouterDealer:
+    add result,
+      nnkWhenStmt.newTree(
+        nnkElifBranch.newTree(
+          ident"isMainModule",
+          mainModule
+        ),
+        nnkElse.newTree(
+          modifiedFrontendBranch
+        )
+      )
+  else:
+    add result, mainModule
+    add result, modifiedFrontendBranch
+  # debugEcho result.repr
+  result
+
+template send*(x: varargs[string]) {.dirty.} =
+  server.sendAll(x)
+  return # block code execution
+
+template empty* {.dirty.} =
+  server.send("")
+  return # block code execution
+
