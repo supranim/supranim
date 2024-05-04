@@ -45,7 +45,7 @@ proc getQuery*(req: Request): string =
   ## use `getUriQuery` to get a decoded query
   result = req.uri.query
 
-proc getUriQuery*(req: Request): Table[string, string] =
+proc getQueryTable*(req: Request): Table[string, string] =
   for q in req.uri.query.decodeQuery:
     result[q[0]] = q[1]
 

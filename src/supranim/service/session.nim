@@ -21,7 +21,8 @@ newService Session[RouterDealer]:
   description = "Default Supranim Session Manager"
   commands = [
     newSession, checkSession, deleteSession,
-    setNotification, getNotification, dataSession
+    setNotification, getNotification,
+    setData, mergeData, getData
   ]
 
   before:
@@ -143,11 +144,24 @@ proc getNotification(clientId, key: string) {.command.} =
       return
   empty()
 
-proc dataSession(clientId: string, data: JsonNode) {.command.} =
-    ## Set JSON data for a specific `UserSession`
-    if Session.sessions.hasKey(clientId):
-      Session.sessions[clientId].data = data
-    empty()
+proc setData(clientId: string, data: JsonNode) {.command.} =
+  ## Set JSON data for a specific `UserSession`
+  if Session.sessions.hasKey(clientId):
+    Session.sessions[clientId].data = data
+  empty()
+
+proc mergeData(clientId, key: string, data: JsonNode) {.command.} =
+  ## Merge a new JSON `data` to a specific `UserSession`
+  ## **Important** This proc can overwrite existing data from `key`
+  ## in case `key` exists.
+  if Session.sessions.hasKey(clientId):
+    Session.sessions[clientId].data[key] = data
+  empty()
+
+proc getData(clientId: string) {.command.} =
+  ## Get JSON data of the current `UserSession`
+  if Session.sessions.hasKey(clientId):
+    send(toJson(Session.sessions[clientId].data))
 
 runService do:
   # Service Provider API for the main application
@@ -214,6 +228,18 @@ runService do:
       let id = req.getClientID()
       if likely(id.isSome):
         execSetNotification(id.get, req.getUriPath, msg)
+
+  template getSessionData*: untyped =
+    ## Get JSON data from the current `UserSession`
+    ## Can be used inside a `controller`/`middleware` context
+    block:
+      let id = req.getClientId()
+      var data: JsonNode
+      if likely(id.isSome):
+        let x = session.execGetData(id.get)
+        if x.isSome:
+          data = jsony.fromJson(x.get()[0])
+      data
 
   proc getNotify*(req: Request): Option[seq[string]] =
     ## Returns a seq[string] containing flash bag

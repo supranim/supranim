@@ -449,6 +449,11 @@ proc checkRoute(httpMethod: HttpMethod, path: string) {.compileTime.} =
 # meanwhile
 const public* = newSeq[Middleware](0)
 
+macro `&&`*(x, y: untyped) =
+  result = newStmtList()
+  add result, nnkCommand.newTree(x, y[1])
+  add result, y
+
 # GET
 # macro get*(path: static string, middlewares: static seq[Middleware], callbackBody: untyped) =
 #   ## Register a new `GET` route using `callbackBody`  
@@ -621,24 +626,10 @@ macro connect*(path: static string, middlewares: seq[Middleware] = @[]) =
     middlewares
   )
 
-proc registerGroupRoute(basepath: string, x: NimNode): (NimNode, NimNode) =
-  let methodIdent = x[0]
-  if x[0].strVal in httpMethods:
-    expectKind(x[1], nnkStrLit)
-    let path =
-      if x[1].strVal == "/" and basepath == "/": "/"
-      elif x[1].strVal.startsWith("/") and basepath == "/":
-        x[1].strVal
-      elif x[1].strVal.startsWith("/") == false and basepath == "/":
-        "/" & x[1].strVal
-      elif x[1].strVal == "/": slash(basepath)
-      else: slash(basepath) & slash(x[1].strVal)
-    result[0] = methodIdent
-    result[1] = newLit(path)
-  else:
-    raise newException(RouterError, "Invalid Http handler")
+# fwd
+proc registerGroupRoute(basepath: string, x: NimNode): (NimNode, NimNode)
 
-macro group*(basepath: static string, x: untyped) =
+macro group*(basepath: string, x: untyped) =
   ##[
     Register a group of routes. Optionally, wrap the routes in a `pragma`
     block adding one or more middlewares
@@ -656,7 +647,7 @@ macro group*(basepath: static string, x: untyped) =
   for y in x:
     case y.kind
     of nnkCommand, nnkCall:
-      let (methodNode, pathNode) = registerGroupRoute(basepath, y)
+      let (methodNode, pathNode) = registerGroupRoute(basepath.strVal, y)
       add result, newCall(methodNode, pathNode, middlewares)
     of nnkPragmaBlock:
       # The allowed pragma block `{.middleware: [some, auth, handles].}`
@@ -671,8 +662,25 @@ macro group*(basepath: static string, x: untyped) =
           add middlewares
         else: discard # todo error
         for r in y[1]:
-          let (methodNode, pathNode) = registerGroupRoute(basepath, r)
+          let (methodNode, pathNode) = registerGroupRoute(basepath.strVal, r)
           add result, newCall(methodNode, pathNode, middlewares)
       else:
         raise newException(RouterError, "Invalid pragma. Use `middleware` pragma to group routes")
     else: raise newException(RouterError, "Expecting one of " & $allowed)
+
+proc registerGroupRoute(basepath: string, x: NimNode): (NimNode, NimNode) =
+  let methodIdent = x[0]
+  if x[0].strVal in httpMethods:
+    expectKind(x[1], nnkStrLit)
+    let path =
+      if x[1].strVal == "/" and basepath == "/": "/"
+      elif x[1].strVal.startsWith("/") and basepath == "/":
+        x[1].strVal
+      elif x[1].strVal.startsWith("/") == false and basepath == "/":
+        "/" & x[1].strVal
+      elif x[1].strVal == "/": slash(basepath)
+      else: slash(basepath) & slash(x[1].strVal)
+    result[0] = methodIdent
+    result[1] = newLit(path)
+  else:
+    raise newException(RouterError, "Invalid Http handler")

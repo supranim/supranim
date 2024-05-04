@@ -4,6 +4,10 @@
 # (c) 2024 MIT License | Made by Humans from OpenPeeps
 # https://supranim.com | https://github.com/supranim
 
+#   Written by Anirudh Oppiliappan.
+#   Released under the MIT license
+#   https://github.com/icyphox/nanoid.nim
+
 import std/[math, lenientops, sysrand]
 
 const

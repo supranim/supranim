@@ -109,7 +109,7 @@ template isAuth*(): bool =
   (
     let ssid = req.getClientId
     if not ssid.isNone:
-      let status = session.cmd(sessionCheck, @[ssid.get()])
+      let status = execCheckSession(ssid.get, req.getIp, req.getPlatform)
       status.isSome()
     else:
       false

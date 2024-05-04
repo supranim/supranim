@@ -193,8 +193,6 @@ macro init*(x) =
     # here we'll store generated nim files that can be
     # called via `supranim/runtime`
     createDir(cachePath)
-  # if not dirExists(runtimeConfigPath):
-    # createDir(runtimeConfigPath)
 
   var runtimeConfigImports = newStmtList()
   var runtimeConfigExports = newNimNode(nnkExportStmt)
@@ -209,11 +207,7 @@ macro init*(x) =
           ident"envvars",
           ident"typeinfo"
         )
-      ),
-      # nnkInfix.newTree(
-      #   ident"/", ident"pkg", ident"enimsql"
-      # ),
-      # ident"dotenv"
+      )
     )
   # add result, quote do:
   #   dotenv.load(normalizedPath(`basePath` / ".."), ".env")
@@ -223,8 +217,6 @@ macro init*(x) =
     if f.ext == ".nims":
       info "- " & f.name, 2
       add result, nnkIncludeStmt.newTree(newLit(filePath))
-    else:
-      error("Invalid file extension for `" &  f.name & "` config. Expected a `.nims`")
 
   # var runtimeConfig = newStmtList()
   # runtimeConfig.add(runtimeConfigImports)
@@ -247,18 +239,19 @@ macro init*(x) =
   var y = newStmtList()
   var exports = newNimNode(nnkExportStmt)
   for ipcfile in walkDirRec(servicePath / "ipc"):
-    if ipcfile.endsWith(".nim"):
-      let ipcIdent = ipcfile.splitFile.name
+    let ipcfname = ipcfile.splitFile.name
+    if ipcfname.startsWith("!") == false and ipcfile.endsWith(".nim"):
       add y, nnkImportStmt.newTree(
         nnkInfix.newTree(
-          ident("as"),
-          newLit(ipcfile),
-          ident(ipcfile.splitFile.name)
+          ident"as",
+          newLit ipcfile,
+          ident ipcfname
         )
       )
-      add exports, ident(ipcIdent)
-  add y, exports
-  writeFile(cachePath / "runtime.nim", y.repr)
+      add exports, ident ipcfname
+  if exports.len > 0:
+    add y, exports
+    writeFile(cachePath / "runtime.nim", y.repr)
   add result,
     nnkImportStmt.newTree(
       nnkInfix.newTree(
@@ -293,13 +286,14 @@ macro init*(x) =
       if not fController.splitFile.name.startsWith("!"):
         add result, nnkImportStmt.newTree(newLit(fController))
 
-  # # auto discover /database/models/*.nim
-  # # nim files prefixed with `!` will be ignored
-  # for fModel in walkDirRec(basePath / "database" / "models"):
-  #   let f = fModel.splitFile
-  #   if f.ext == ".nim":
-  #     if not f.name.startsWith("!"):
-  #       add result, nnkImportStmt.newTree(newLit(fModel))
+  # auto discover /database/models/*.nim
+  # nim files prefixed with `!` will be ignored
+  for fModel in walkDirRec(basePath / "database" / "models"):
+    let f = fModel.splitFile
+    if f.ext == ".nim":
+      if not f.name.startsWith("!"):
+        echo fModel
+        # add result, nnkImportStmt.newTree(newLit(fModel))
 
   add result, quote do:
     initSystemServices()
