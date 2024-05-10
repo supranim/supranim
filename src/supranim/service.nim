@@ -86,6 +86,9 @@ proc initServiceManager() {.compileTime.} =
         ServiceManagerInstance
       )
   else:
+    if not dirExists(cachePath):
+      # creates `.cache` directory for the current project
+      createDir(cachePath)
     ServiceManager = new(ServiceManagerInstance)
     new(ServiceManager.ports)
     new(ServiceManager.services)
