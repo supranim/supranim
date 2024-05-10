@@ -13,12 +13,9 @@ import support/[uuid]
 
 from std/net import `$`, Port
 
-export json
+export json, nyml
 
 type
-  Config* = TableRef[string, Any]
-  Configs* = TableRef[string, Config]
-
   Application* = ref object
     key: Uuid
     port: Port
@@ -27,7 +24,7 @@ type
     when defined webapp:
       assets: tuple[source, public: string]
     basepath: string
-    configs*: TableRef[string, Config]
+    configs*: OrderedTableRef[string, nyml.Document]
 
   AppConfigDefect* = object of CatchableError
 
@@ -59,75 +56,20 @@ proc info*(str: string, indentSize = 0) =
 #
 # Config API
 #
-macro configs*(fields: untyped) =
-  ## Parse & collect all configuration files 
-  let
-    abspath = fields.lineinfoObj.filename
-    path = abspath.splitFile
-    confname = path.name
-    conf = genSym(nskLet, confname)
-  var blockStmt = newStmtList()
-  expectKind(fields, nnkTableConstr)
-  add blockStmt,
-    nnkLetSection.newTree(
-      newIdentDefs(
-        conf,
-        newEmptyNode(),
-        newCall(ident("Config"))
-      ),
-    )
-  for field in fields:
-    expectKind(field, nnkExprColonExpr)
-    let allowedFieldTypes = {nnkIdent, nnkStrLit, nnkAccQuoted}
-    if field[0].kind notin allowedFieldTypes:
-      error("Invalid field key. Expect one of " & $allowedFieldTypes)
-    # echo field[1].kind
-    # expectKind(field[1], nnkCommand)
-    var configValue: NimNode
-    let key = field[0].strVal
-    let val = field[1]
-    let x = genSym(nskVar, "x")
-    case field[1].kind
-    of nnkStrLit, nnkIntLit, nnkFloatLit, nnkCall:
-      add blockStmt,
-        nnkVarSection.newTree(
-          newIdentDefs(x, newEmptyNode(), field[1])
-        ), 
-        quote do:
-          `conf`[`key`] = toAny(`x`)
-    of nnkIdent:
-      if val.eqIdent("true") or val.eqIdent("false"):
-        # don't know how to determine if is a bool value!
-        add blockStmt,
-          nnkVarSection.newTree(
-            newIdentDefs(x, newEmptyNode(), newLit(val.strVal == "true"))
-          ), 
-          quote do:
-            `conf`[`key`] = toAny(`x`)
-    else: discard
-  # expose configuration at compile-time using macrocache table
-  # staticConfig[confname] = conf
-  add blockStmt, quote do:
-    # expose configuration files at runtime
-    # via `app.config("filename", "key")`
-    app.configs[`confname`] = `conf`
-  result = newStmtList().add(
-    nnkBlockStmt.newTree(
-      newEmptyNode(),
-      blockStmt
-    )
-  )
-  # echo result.repr
+proc loadConfig*(app: Application) =
+  for ypath in walkPattern(configPath / "*.yml"):
+    app.configs[ypath.splitFile.name] = yaml(ypath.readFile).toJson
 
-proc config*(app: Application, confname, key: string): Any =
-  if likely(app.configs.hasKey(confname)):
-    if likely(app.configs[confname].hasKey(key)):
-      return app.configs[confname][key]
+proc config*(app: Application, key: string): JsonNode =
+  let x = key.split(".")
+  let id = x[0]
+  let keys = x[1..^1]
+  if likely(app.configs.hasKey(id)):
+    return app.configs[id].get(keys.join("."))
 
 #
 # Application API
 #
-
 template initSystemServices*() =
   macro initSystem() =
     result = newStmtList()
@@ -183,20 +125,19 @@ macro init*(x) =
   result = newStmtList()
   x[0][2] = newCall(ident "Application")
   add result, x
+  echo dirExists(cachePath)
   # read `.env.yml` config file
   loadEnvStatic()
   add result, quote do:
-    app.configs = Configs()
-
+    block:
+      app.configs = newOrderedTable[string, Document]()
+      app.loadConfig()
   if not dirExists(cachePath):
     # creates `.cache` directory inside working project path.
     # here we'll store generated nim files that can be
     # called via `supranim/runtime`
     createDir(cachePath)
 
-  var runtimeConfigImports = newStmtList()
-  var runtimeConfigExports = newNimNode(nnkExportStmt)
-  info "Parse Configuration files:", 2
   add result,
     nnkImportStmt.newTree(
       nnkInfix.newTree(
@@ -209,31 +150,6 @@ macro init*(x) =
         )
       )
     )
-  # add result, quote do:
-  #   dotenv.load(normalizedPath(`basePath` / ".."), ".env")
-  for filePath in walkDirRec(configPath):
-    # read compile-time /config/*.nims
-    let f = filePath.splitFile
-    if f.ext == ".nims":
-      info "- " & f.name, 2
-      add result, nnkIncludeStmt.newTree(newLit(filePath))
-
-  # var runtimeConfig = newStmtList()
-  # runtimeConfig.add(runtimeConfigImports)
-  # runtimeConfig.add(runtimeConfigExports)
-  # add result, nnkImportStmt.newTree(
-  #   nnkInfix.newTree(
-  #     ident("/"),
-  #     ident("supranim"),
-  #     ident("runtime")
-  #   )
-  # )
-  # for conf in runtimeConfig[0]:
-  #   let fname = conf[0].strVal.splitFile
-  #   let configName = genConfigName(fname.name)
-  #   let configPath = runtimeConfigPath / fname.name
-  #   add result, quote do:
-  #     writeFile(`configPath`, toFlatty(`configName`))
 
   # autoload /{project}./cache/runtime.nim
   var y = newStmtList()
