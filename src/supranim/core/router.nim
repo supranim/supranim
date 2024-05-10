@@ -55,11 +55,13 @@ type
       middlewares: seq[Middleware]
       aborted: bool
     else: discard
+    isAbstract: bool
 
   RouterInstance = object
     httpGet, httpPost, httpPut, httpHead, httpConnect,
       httpDelete, httpPatch, httpTrace, httpOptions,
       httpErrors: CritBitTree[Route]
+    abstractRoutes: CritBitTree[Route]
 
   RouterError* = object of CatchableError
 
@@ -105,7 +107,8 @@ proc newRoute(path: string, httpMethod: HttpMethod,
 proc route*(router: var RouterInstance, path: string,
     httpMethod: HttpMethod, callback: Callable,
     patterns: seq[RoutePatternTuple],
-    middlewares: seq[Middleware] = @[]
+    middlewares: seq[Middleware] = @[],
+    isAbstract = false
   ) =
   ## Register a new `Route`
   let routeObject =
@@ -113,34 +116,38 @@ proc route*(router: var RouterInstance, path: string,
       newRoute(path, httpMethod, callback, middlewares, patterns)
     else:
       newRoute(path, httpMethod, callback, middlewares)
-  case httpMethod
-  of HttpGet:
-    if not router.httpGet.hasKey(path):
-      router.httpGet[path] = routeObject
-  of HttpPost:
-    if not router.httpPost.hasKey(path):
-      router.httpPost[path] = routeObject
-  of HttpPut:
-    if not router.httpPut.hasKey(path):
-      router.httpPut[path] = routeObject
-  of HttpPatch:
-    if not router.httpPatch.hasKey(path):
-      router.httpPatch[path] = routeObject
-  of HttpHead:
-    if not router.httpPatch.hasKey(path):
-      router.httpPatch[path] = routeObject
-  of HttpDelete:
-    if not router.httpDelete.hasKey(path):
-      router.httpDelete[path] = routeObject
-  of HttpTrace:
-    if not router.httpTrace.hasKey(path):
-      router.httpTrace[path] = routeObject
-  of HttpOptions:
-    if not router.httpOptions.hasKey(path):
-      router.httpOptions[path] = routeObject
-  of HttpConnect:
-    if not router.httpConnect.hasKey(path):
-      router.httpConnect[path] = routeObject
+  routeObject.isAbstract = isAbstract
+  if isAbstract:
+    router.abstractRoutes[symbolName(httpMethod).toLowerAscii & path] = routeObject
+  else:
+    case httpMethod
+    of HttpGet:
+      if not router.httpGet.hasKey(path):
+        router.httpGet[path] = routeObject
+    of HttpPost:
+      if not router.httpPost.hasKey(path):
+        router.httpPost[path] = routeObject
+    of HttpPut:
+      if not router.httpPut.hasKey(path):
+        router.httpPut[path] = routeObject
+    of HttpPatch:
+      if not router.httpPatch.hasKey(path):
+        router.httpPatch[path] = routeObject
+    of HttpHead:
+      if not router.httpPatch.hasKey(path):
+        router.httpPatch[path] = routeObject
+    of HttpDelete:
+      if not router.httpDelete.hasKey(path):
+        router.httpDelete[path] = routeObject
+    of HttpTrace:
+      if not router.httpTrace.hasKey(path):
+        router.httpTrace[path] = routeObject
+    of HttpOptions:
+      if not router.httpOptions.hasKey(path):
+        router.httpOptions[path] = routeObject
+    of HttpConnect:
+      if not router.httpConnect.hasKey(path):
+        router.httpConnect[path] = routeObject
 
 proc errorHandler*(router: var RouterInstance,
     code: HttpCode, callback: Callable) =
@@ -169,17 +176,17 @@ proc toStr(p: RoutePattern, isOptional: bool): string =
 #       result[pat.path] = pat.value
 #     else: discard # todo
 
-proc checkExists*(router: var RouterInstance,
-    path: string, httpMethod: HttpMethod
-  ): tuple[exists: bool, route: Route, patterns: Table[string, string]] =
-  case httpMethod
-  of HttpGet:
-    if router.httpGet.hasKey(path):
-      result.route = router.httpGet[path]
+macro checkRouteExists(httpMethod: static string, exclude: untyped) =
+  result = newStmtList()
+  let verb = ident(httpMethod)
+  let prefix = toLowerAscii(httpMethod)
+  add result, quote do:
+    if router.`verb`.hasKey(path):
+      result.route = router.`verb`[path]
     else:
       let p = path[1..^1].split("/")
-      for k in router.httpGet.keysWithPrefix("/" & p[0]):
-        let r: Route = router.httpGet[k]
+      for k in router.`verb`.keysWithPrefix("/" & p[0]):
+        let r: Route = router.`verb`[k]
         var pKey: seq[string]
         var pKeyVal: seq[(string, string)]
         case r.routeType
@@ -189,10 +196,10 @@ proc checkExists*(router: var RouterInstance,
             of textPattern:
               try:
                 if p[i] != r.routePatterns[i].path and 
-                  r.routePatterns[i].optional == false: return
+                  r.routePatterns[i].optional == false: break
                 add pKey, p[i]
               except Defect:
-                return
+                break
             of slugPattern:
               try:
                 let x = p[i]
@@ -201,7 +208,7 @@ proc checkExists*(router: var RouterInstance,
               except Defect:
                 if r.routePatterns[i].optional:
                   add pKey, toStr(r.routePatterns[i].pattern, r.routePatterns[i].optional)
-                else: return
+                else: break
             of idPattern:
               try:
                 let x = p[i]
@@ -210,39 +217,43 @@ proc checkExists*(router: var RouterInstance,
               except Defect:
                 if r.routePatterns[i].optional:
                   add pKey, toStr(r.routePatterns[i].pattern, r.routePatterns[i].optional)
-                else: return
+                else: break
             else: discard
           if pKeyVal.len != 0:
             for x in pKeyVal:
               result.patterns[x[0]] = x[1]
-          result.route = router.httpGet["/" & pKey.join("/")]
+          result.route = router.`verb`["/" & pKey.join("/")]
         else: discard
         if result.route != nil:
           break # found it, break the loop
-  of HttpPost:
-    if router.httpPost.hasKey(path):
-      result.route = router.httpPost[path]
-  of HttpPut:
-    if router.httpPut.hasKey(path):
-      result.route = router.httpPut[path]
-  of HttpPatch:
-    if router.httpPatch.hasKey(path):
-      result.route = router.httpPatch[path]
-  of HttpHead:
-    if router.httpPatch.hasKey(path):
-      result.route = router.httpPatch[path]
-  of HttpDelete:
-    if router.httpDelete.hasKey(path):
-      result.route = router.httpDelete[path]
-  of HttpTrace:
-    if router.httpTrace.hasKey(path):
-      result.route = router.httpTrace[path]
-  of HttpOptions:
-    if router.httpOptions.hasKey(path):
-      result.route = router.httpOptions[path]
-  of HttpConnect:
-    if router.httpConnect.hasKey(path):
-      result.route = router.httpConnect[path]
+      if result.route == nil:
+        for expath in exclude:
+          if path.startsWith(expath): return
+        for absRouteKey, absRoute in router.abstractRoutes:
+          if absRouteKey.startsWith(`prefix`):
+            result.route = absRoute
+            break # found it, then break the loop
+
+proc checkExists*(
+  router: var RouterInstance,
+  path: string,
+  httpMethod: HttpMethod,
+  exclude: openarray[string] = [],
+): tuple[
+    exists: bool,
+    route: Route,
+    patterns: Table[string, string]
+] =
+  case httpMethod
+  of HttpGet:   checkRouteExists("httpGet", exclude)
+  of HttpPost:  checkRouteExists("httpPost", exclude)
+  of HttpPut:   checkRouteExists("httpPut", exclude)
+  of HttpPatch: checkRouteExists("httpPatch", exclude)
+  of HttpHead:  checkRouteExists("httpHead", exclude)
+  of HttpDelete: checkRouteExists("httpDelete", exclude)
+  of HttpTrace: checkRouteExists("httpTrace", exclude)
+  of HttpOptions: checkRouteExists("httpTrace", exclude)
+  of HttpConnect: checkRouteExists("httpConnect", exclude)
   result.exists = likely(result.route != nil)
 
 #
@@ -264,7 +275,8 @@ template abort*(target: string = "/"): typed =
     # req.redirectUri(res,target)
   return Http302
 
-proc resolveMiddleware*(route: Route, req: Request, res: var Response): HttpCode {.gcsafe.} =
+proc resolveMiddleware*(route: Route,
+    req: Request, res: var Response): HttpCode {.gcsafe.} =
   ## Checks a `route` if has any implemented middlewares
   if route.hasMiddleware:
     result = route.middlewares[res.middlewareIndex](req, res)
@@ -280,10 +292,10 @@ proc resolveMiddleware*(route: Route, req: Request, res: var Response): HttpCode
 #
 # Compile-time API 
 #
-
 var queueRouter {.compileTime.} = RouterInstance()
-const queuedRoutes* = CacheTable("QueuedRoutes")
-const baseMiddlewares* = CacheTable("BaseMiddlewares")
+const
+  queuedRoutes* = CacheTable("QueuedRoutes")
+  baseMiddlewares* = CacheTable("BaseMiddlewares")
 
 proc getNameByPath(route: string): string {.compileTime.} =
   #[
@@ -314,9 +326,10 @@ proc getNameByPath(route: string): string {.compileTime.} =
       inc i
     else: discard
 
-proc genCtrl(httpMethod: HttpMethod,
-    path: string): (string, NimNode, bool) {.compileTime.} =
-  ## Generate a Controller name by `path`
+proc genCtrl(httpMethod: HttpMethod, path: string): tuple[
+    ctrlName: string, routePatterns: NimNode,
+    isAbstract: bool] {.compileTime.} =
+  ## Auto-link a controller based on given route
   var isdynam: bool
   if path.len > 1:
     var i = 0
@@ -385,17 +398,19 @@ proc genCtrl(httpMethod: HttpMethod,
   if not isdynam:
     result[1] = newNimNode(nnkBracket)
   result[0] = toLowerAscii($httpMethod) & getNameByPath(path)
+  result[2] =
+    if result[1].len == 1:
+      if not result[1][0][1].eqIdent("textPattern"): true
+      else: false
+    else: false
 
 macro routes*(body: untyped): untyped =
   ## Register new routes
   result = newStmtList()
   add result, `body`
-  # add result, quote do:
-  #   proc initRouter* {.thread.} =
-  #     ## Initialize a `RouterInstance` for the current thread
-  #     Router = RouterInstance()
 
-proc genCallable(callbackBody: NimNode, ctrlIdent: NimNode): NimNode {.compileTime.} =
+proc genCallable(callbackBody: NimNode,
+    ctrlIdent: NimNode): NimNode {.compileTime.} =
   result =
     newProc(
       ctrlIdent,
@@ -455,18 +470,6 @@ macro `&&`*(x, y: untyped) =
   add result, y
 
 # GET
-# macro get*(path: static string, middlewares: static seq[Middleware], callbackBody: untyped) =
-#   ## Register a new `GET` route using `callbackBody`  
-#   checkRoute(HttpGet, path)
-#   var result = newStmtList()
-#   let c = genCtrl(HttpGet, path)
-#   let ctrl = ident(c[0])
-#   queuedRoutes[c[0]] = newLit(path)
-#   var patterns = nnkPrefix.newTree(ident "@", c[1])
-#   result.add genCallable(callbackBody, ctrl)
-#   result.add quote do:
-#     Router.route(`path`, HttpGet, `ctrl`, `patterns`, `middlewares`)
-
 macro get*(path: static string, middlewares: seq[Middleware] = @[]) =
   ## Register a new `GET` route using auto-linking controller
   checkRoute(HttpGet, path)
@@ -479,7 +482,8 @@ macro get*(path: static string, middlewares: seq[Middleware] = @[]) =
     ident("HttpGet"),
     ctrl,
     nnkPrefix.newTree(ident "@", c[1]),
-    middlewares
+    middlewares,
+    newLit(c[2])
   )
 
 #
@@ -497,7 +501,8 @@ macro post*(path: static string, middlewares: seq[Middleware] = @[]) =
     ident("HttpPost"),
     ctrl,
     nnkPrefix.newTree(ident "@", c[1]),
-    middlewares
+    middlewares,
+    newLit(c[2])
   )
 
 #
@@ -515,7 +520,8 @@ macro put*(path: static string, middlewares: seq[Middleware] = @[]) =
     ident("HttpPut"),
     ctrl,
     nnkPrefix.newTree(ident "@", c[1]),
-    middlewares
+    middlewares,
+    newLit(c[2])
   )
 
 #
@@ -533,7 +539,8 @@ macro patch*(path: static string, middlewares: seq[Middleware] = @[]) =
     ident("HttpPatch"),
     ctrl,
     nnkPrefix.newTree(ident "@", c[1]),
-    middlewares
+    middlewares,
+    newLit(c[2])
   )
 
 #
@@ -551,7 +558,8 @@ macro head*(path: static string, middlewares: seq[Middleware] = @[]) =
     ident("HttpHead"),
     ctrl,
     nnkPrefix.newTree(ident "@", c[1]),
-    middlewares
+    middlewares,
+    newLit(c[2])
   )
 
 #
@@ -569,7 +577,8 @@ macro delete*(path: static string, middlewares: seq[Middleware] = @[]) =
     ident("HttpDelete"),
     ctrl,
     nnkPrefix.newTree(ident "@", c[1]),
-    middlewares
+    middlewares,
+    newLit(c[2])
   )
 
 #
@@ -587,7 +596,8 @@ macro trace*(path: static string, middlewares: seq[Middleware] = @[]) =
     ident("HttpTrace"),
     ctrl,
     nnkPrefix.newTree(ident "@", c[1]),
-    middlewares
+    middlewares,
+    newLit(c[2])
   )
 
 #
@@ -605,7 +615,8 @@ macro options*(path: static string, middlewares: seq[Middleware] = @[]) =
     ident("HttpOptions"),
     ctrl,
     nnkPrefix.newTree(ident "@", c[1]),
-    middlewares
+    middlewares,
+    newLit(c[2])
   )
 
 #
@@ -623,7 +634,8 @@ macro connect*(path: static string, middlewares: seq[Middleware] = @[]) =
     ident("HttpConnect"),
     ctrl,
     nnkPrefix.newTree(ident "@", c[1]),
-    middlewares
+    middlewares,
+    newLit(c[2])
   )
 
 # fwd
