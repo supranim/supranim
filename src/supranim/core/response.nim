@@ -10,7 +10,6 @@ import pkg/jsony
 import ../support/uuid
 
 from ./request import Request, send
-
 export HttpCode
 
 type
@@ -24,7 +23,7 @@ type
     code*: HttpCode = Http200
     headers*: HttpHeaders
     body*: string
-    middlewareIndex*: int
+    middlewareIndex*, afterwareIndex*: int
 
 const
   HeaderHttpRedirect = "Location: $1"
@@ -71,6 +70,9 @@ proc getHeaders*(res: Response): string =
     for h in res.headers.pairs():
       str.add(h.key & ":" & indent(h.value, 1))
     result &= str.join("\n")
+
+proc getHttpHeaders*(res: var Response): HttpHeaders =
+  result = res.headers
 
 proc redirectUri*(req: Request, res: Response, target: string, code = Http303) =
   res.addHeader("Location", target)

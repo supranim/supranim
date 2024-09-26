@@ -4,20 +4,29 @@
 # (c) 2024 MIT License | Made by Humans from OpenPeeps
 # https://supranim.com | https://github.com/supranim
 
+
 import std/[macros, os, tables, strutils, cpuinfo,
           json, jsonutils, envvars, typeinfo, macrocache]
 
-import pkg/nyml
+# when compileOption("app", "lib"):
+#   static:
+#     error("This import is restricted for dynamic libraries")
+
+import pkg/[nyml, zmq]
 import pkg/enimsql/model
-import support/[uuid]
+import ./support/[uuid]
+
+import ./core/[config, paths]
+import ./core/http/router
 
 from std/net import `$`, Port
 
-export json, nyml
+export json, nyml, paths
+export supranimServer
 
 type
   Application* = ref object
-    key: Uuid
+    key*: Uuid
     port: Port
     address: string = "127.0.0.1"
     domain, name: string
@@ -25,25 +34,26 @@ type
       assets: tuple[source, public: string]
     basepath: string
     configs*: OrderedTableRef[string, nyml.Document]
+    router*: type(router.Router)
 
   AppConfigDefect* = object of CatchableError
 
-const
-  supranimBasePath {.strdefine.} = getProjectPath()
-  basePath* = supranimBasePath
-  rootPath* = normalizedPath(basepath.parentDir)
-  binPath* = normalizedPath(rootPath / "bin")
-  cachePath* = normalizedPath(rootPath / ".cache")
-  runtimeConfigPath* = cachePath / "runtime" / "config"
-  configPath* = basepath / "config"
-  controllerPath* = basepath / "controller"
-  middlewarePath* = basepath / "middleware"
-  databasePath* = basepath / "database"
-  servicePath* = basepath / "service"
-  modelPath* = databasePath / "models"
-  migrationPath* = databasePath / "migrations"
-  storagePath* = basepath / "storage"
-  logsPath* = storagePath / "logs"
+#
+# Application Universal API
+#
+# var uapi: Thread[void]
+# proc runUniversalApi {.thread.} =
+#   var router = listen("tcp://127.0.0.1:55000", mode=ROUTER)
+#   while true:
+#     let sockid = router.receive()
+#     if len(sockid) > 0:
+#       let recv = router.receiveAll()
+#       let commandName = recv[0]
+#       router.send(sockid, SNDMORE)
+#       echo commandName
+#     sleep(100)
+
+# createThread(uapi, runUniversalApi)
 
 #
 # Application Crypto
@@ -53,6 +63,7 @@ export bin2hex, hex2bin
 
 proc info*(str: string, indentSize = 0) =
   echo indent(str, indentSize)
+
 #
 # Config API
 #
@@ -83,73 +94,73 @@ template initSystemServices*() =
           ident("initRouter")
         ),
         body = nnkStmtList.newTree(
-          newAssignment(
-            ident "Router",
-            newCall(ident "newRouter")
-          ),
-          registerRoutes
+          nnkPragmaBlock.newTree(
+            nnkPragma.newTree(
+              newIdentNode("gcsafe")
+            ),
+            nnkStmtList.newTree(
+              newAssignment(
+                newDotExpr(ident"app", ident"router"),
+                newCall(ident "newHttpRouter")
+              ),
+              registerRoutes
+            )
+          )
         ),
         pragmas = nnkPragma.newTree(
           ident "thread"
         )
       )
+    add result,
+      newCall(ident"initRouter")
+  app.key = uuid4()
   initSystem()
 
-macro loadEnvStatic* =
-  let
-    envContents = staticRead(rootPath / ".env.yml")
-    ymlEnv = yaml(envContents).toJson
-  when not defined release:
-    let
-      dbUser = ymlEnv.get("database.local.user").getStr
-      dbName = ymlEnv.get("database.local.name").getStr
-      dbPassword = ymlEnv.get("database.local.password").getStr
-      dbPort = ymlEnv.get("database.local.port").getStr
-  else:
-    let
-      dbUser = ymlEnv.get("database.prod.user").getStr
-      dbName = ymlEnv.get("database.prod.name").getStr
-      dbPassword = ymlEnv.get("database.prod.password").getStr
-      dbPort = ymlEnv.get("database.prod.port").getStr
+proc loadMiddlewares: NimNode {.compileTime.} =
+  # auto discover /middleware/*.nim
+  # nim files prefixed with `!` will be ignored
   result = newStmtList()
-  add result, quote do:
-    putEnv("database.user", `dbUser`)
-    putEnv("database.name", `dbName`)
-    putEnv("database.password", `dbPassword`)
-    putEnv("database.port", `dbPort`)
+  for fMiddleware in walkDirRec(basePath / "middleware"):
+    if fMiddleware.endsWith(".nim"):
+      if not fMiddleware.splitFile.name.startsWith("!"):
+        add result, nnkImportStmt.newTree(newLit(fMiddleware))
+  add result, nnkIncludeStmt.newTree(
+    newLit(basePath / "routes.nim")
+  )
+
+proc loadControllers: NimNode {.compileTime.} =
+  # walks recursively and auto discover nim modules
+  # found in /controller/*.nim
+  # nim files prefixed with `!` will be ignored
+  result = newStmtList()
+  for fController in walkDirRec(basePath / "controller"):
+    if fController.endsWith(".nim"):
+      if not fController.splitFile.name.startsWith("!"):
+        add result, nnkImportStmt.newTree(newLit(fController))
 
 macro init*(x) =
-  ## Initializes the Application
+  ## Initializes Supranim application
   expectKind(x, nnkLetSection)
   expectKind(x[0][2], nnkEmpty)
   result = newStmtList()
   x[0][2] = newCall(ident "Application")
   add result, x
-  echo dirExists(cachePath)
-  # read `.env.yml` config file
-  loadEnvStatic()
-  add result, quote do:
-    block:
-      app.configs = newOrderedTable[string, Document]()
-      app.loadConfig()
+  when not compileOption("app", "lib"):
+    # read `.env.yml` config file
+    loadEnvStatic()
+    add result, quote do:
+      block:
+        app.configs = newOrderedTable[string, Document]()
+        app.loadConfig()
   if not dirExists(cachePath):
     # creates `.cache` directory inside working project path.
     # here we'll store generated nim files that can be
     # called via `supranim/runtime`
     createDir(cachePath)
-
-  add result,
-    nnkImportStmt.newTree(
-      nnkInfix.newTree(
-        ident"/",
-        ident"std",
-        nnkBracket.newTree(
-          ident"tables",
-          ident"envvars",
-          ident"typeinfo"
-        )
-      )
-    )
+  if not dirExists(pluginsPath):
+    # Creates `/storage/plugins` directory for storing
+    # dynamic libraries aka plugins
+    createDir(pluginsPath)
 
   # autoload /{project}./cache/runtime.nim
   var y = newStmtList()
@@ -183,36 +194,23 @@ macro init*(x) =
 
   # auto include `routes.nim` file
   add result, quote do:
-    import ./core/[request, response]
+    import supranim/core/[request, response]
     import std/[httpcore, macros, macrocache]
 
-  # auto discover /middleware/*.nim
-  # nim files prefixed with `!` will be ignored
-  for fMiddleware in walkDirRec(basePath / "middleware"):
-    if fMiddleware.endsWith(".nim"):
-      if not fMiddleware.splitFile.name.startsWith("!"):
-        add result, nnkImportStmt.newTree(newLit(fMiddleware))
-
-  add result, nnkIncludeStmt.newTree(newLit(basePath / "routes.nim"))
-
-  # auto discover /controller/*.nim
-  # nim files prefixed with `!` will be ignored
-  for fController in walkDirRec(basePath / "controller"):
-    if fController.endsWith(".nim"):
-      if not fController.splitFile.name.startsWith("!"):
-        add result, nnkImportStmt.newTree(newLit(fController))
+  add result, loadMiddlewares()
+  add result, loadControllers()
 
   # auto discover /database/models/*.nim
   # nim files prefixed with `!` will be ignored
-  for fModel in walkDirRec(basePath / "database" / "models"):
-    let f = fModel.splitFile
-    if f.ext == ".nim":
-      if not f.name.startsWith("!"):
-        echo fModel
-        # add result, nnkImportStmt.newTree(newLit(fModel))
+  # for fModel in walkDirRec(basePath / "database" / "models"):
+  #   let f = fModel.splitFile
+  #   if f.ext == ".nim":
+  #     if not f.name.startsWith("!"):
+  #       add result, nnkImportStmt.newTree(newLit(fModel))
 
   add result, quote do:
     initSystemServices()
+    app.router.errorHandler(Http404, errors.get4xx)
 
 template services*(s) {.inject.} =
   macro initServices(x) =

@@ -7,7 +7,12 @@
 import std/[options, httpcore, strutils,
     sequtils, uri, tables]
 
-from ./http import Request, ip, body, send, forget, headers
+import ./config
+import ../support/cookie
+
+from ./http import Request, ip, body,
+    send, forget, headers
+
 export ip, body, send, forget, headers
 
 type
@@ -19,22 +24,31 @@ type
     root*: RootRequest
     reqHeaders: Option[HttpHeaders]
     methodType: Option[HttpMethod]
-    patterns*: Table[string, string]
+    params*: Table[string, string]
     uri: Uri
 
-proc newRequest*(root: http.Request, uri: Uri): Request =
-  ## Create a new `Request`
-  Request(root: root, uri: uri)
-
-proc initRequestHeaders*(req: var Request) =
+proc getHeaders*(req: http.Request): Option[HttpHeaders] =
   ## Parse and set `HttpHeaders` (when available)
-  let someHeaders: Option[HttpHeaders] = req.root.headers()
-  if someHeaders.isSome:
-    req.reqHeaders = someHeaders
+  result = req.headers()
+
+proc newRequest*(root: http.Request, uri: Uri,
+    headers: sink Option[HttpHeaders]): Request =
+  ## Create a new `Request`
+  result.root = root
+  result.uri = uri
+  result.reqHeaders = root.getHeaders
+
+proc getId*(req: Request): string =
+  ## Returns the `UserSession` id
+  req.ssid
 
 proc getUri*(req: Request): Uri =
   ## Returns `Uri` from `Request`
   result = req.uri
+
+proc getUrl*(req: Request): string =
+  ## Returns a string `Uri` from `Request`
+  result = $(req.uri)
 
 proc getUriPath*(req: Request): string =
   ## Returns `Uri` path from `Request`
