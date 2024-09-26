@@ -2,7 +2,7 @@ import std/[unidecode, strutils]
 
 proc slugify*(str: string, sep: static char = '-'): string =
   ## Convert `input` string to a ascii slug
-  var str = unidecode(str)
+  var str = unidecode(str.strip)
   result = newStringOfCap(str.len)
   var i = 0
   while i < str.len:    
@@ -13,13 +13,14 @@ proc slugify*(str: string, sep: static char = '-'): string =
         while str[i] notin IdentChars:
           inc i
         add result, sep
-      except ValueError: discard
+      except IndexDefect: discard
     of PunctuationChars:
       inc i
       try:
         while str[i] notin IdentChars:
           inc i
-      except ValueError:
+        add result, sep
+      except IndexDefect:
         discard
     else:
       add result, str[i].toLowerAscii
