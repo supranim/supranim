@@ -7,16 +7,20 @@
 import std/[macros, macrocache, asyncdispatch, strutils,
   tables, httpcore, uri, sequtils, options]
 
-import ./core/[request, response, router]
+import pkg/jsony
+import ./core/[request, response]
+import ./core/http/[router]
 import ./support/cookie
 
-import ./application except init, initSystemServices, configs
-export application
+# import ./application except init, initSystemServices, configs
+# export application
 
-export request, response
+export request, response, tables
 export asyncdispatch, options
 
 import pkg/libsodium/[sodium, sodium_sizes]
+export jsony
+
 let keypair* = crypto_box_keypair()
 
 #
@@ -80,11 +84,11 @@ macro newController*(name, body: untyped) =
           nnkVarTy.newTree(ident("Response")),
           newEmptyNode()
         ),
-        newIdentDefs(
-          ident("app"),
-          ident("Application"),
-          newEmptyNode()
-        ),
+        # newIdentDefs(
+        #   ident("app"),
+        #   ident("Application"),
+        #   newEmptyNode()
+        # ),
       ],
       body =
         nnkPragmaBlock.newTree(
@@ -97,19 +101,22 @@ template ctrl*(name, body: untyped) =
   newController(name, body)
 
 macro go*(id: untyped) =
+  ## To be used inside a controller handle
+  ## to redirect from other verbs to a GET route, for example
+  ## in a POST after login success you can say `go getAccount`. Nice!
   if queuedRoutes.hasKey(id.strVal):
-    let routeRegistrar = queuedRoutes[id.strVal]
-    let methodType = routeRegistrar[3]
+    let routeNode = queuedRoutes[id.strVal]
+    let methodType = routeNode[3]
     if methodType.eqIdent("HttpGet"):
       result = newStmtList()
-      add result, newCall(ident("redirect"), routeRegistrar[2])
+      add result, newCall(ident("redirect"), routeNode[2][1]) # support named routes
     else: discard # todo compile-time error
 
 template isAuth*(): bool =
   (
     let ssid = req.getClientId
     if not ssid.isNone:
-      let status = execCheckSession(ssid.get, req.getIp, req.getPlatform)
+      let status = checkSession(ssid.get, req.getIp, req.getPlatform)
       status.isSome()
     else:
       false

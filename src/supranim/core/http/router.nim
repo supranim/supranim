@@ -130,7 +130,7 @@ proc parseRouteNode(verb, routePath: string,
     httpMethod = parseEnum[HttpMethod](toUpperAscii(verb))
     autolinked = autolinkController(routePath, httpMethod)
   let controllerIdent = ident(autolinked.handleName)
-  queuedRoutes[autolinked.path] =
+  queuedRoutes[autolinked.handleName] =
     newCall(
       ident"registerRoute",
       newDotExpr(ident"app", ident"router"),
@@ -146,15 +146,20 @@ proc parseRouteNode(verb, routePath: string,
 
 proc preparePath(path: string, prefix = ""): string {.compileTime.} =
   if prefix.len > 0:
-    add result, prefix
+    result = prefix
     if path == "/" and prefix == path:
       return # result
-    if path[0] == '/' and prefix == "/":
-      add result, path[1..^1]
-  elif path.len > 1:
-    if path[^1] == '/':
-      return path[1..^2]
+    if path[0] == '/':
+      if prefix[^1] == '/':
+        add result, path[1..^1]
+      else:
+        add result, path
+    else:
+      add result, "/" & path
+  else:
     result = path
+  if result.len > 1 and result[^1] == '/':
+    return result[0..^2]
 
 macro routes*(body: untyped): untyped =
   ##[
