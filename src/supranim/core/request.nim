@@ -4,15 +4,11 @@
 # (c) 2024 MIT License | Made by Humans from OpenPeeps
 # https://supranim.com | https://github.com/supranim
 
-import std/[options, httpcore, strutils,
-    sequtils, uri, tables]
+import std/[options, httpcore, uri, tables]
 
-import ./config
 import ../support/cookie
 
-from ./http import Request, ip, body,
-    send, forget, headers
-
+from ./http import Request, ip, body, send, forget, headers
 export ip, body, send, forget, headers
 
 type
@@ -108,7 +104,8 @@ proc getAgent*(req: Request): string =
   result = req.getHeader("user-agent")
 
 proc getPlatform*(req: Request): string =
-  ## Return the platform name, It can be one of the following common platform values:
-  ## ``Android``, ``Chrome OS``, ``iOS``, ``Linux``, ``macOS``, ``Windows``, or ``Unknown``.
-  # https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform
+  ## Return the platform name, It can be one of the following
+  ## common platform values: `Android`, `Chrome OS`, `iOS`,
+  ## `Linux`, `macOS`, `Windows`, or `Unknown`.
+  ## https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform
   result = req.getHeader("sec-ch-ua-platform")

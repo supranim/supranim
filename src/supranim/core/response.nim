@@ -13,11 +13,6 @@ from ./request import Request, send
 export HttpCode
 
 type
-  ContentType* = enum
-    contentTypeHtml = "text/html; charset=utf-8"
-    contentTypeJson = "application/json; charset=utf-8"
-    contentTypeCalendar = "text/calendar; charset=utf-8"
-
   Response* = object
     id*: Uuid
     code*: HttpCode = Http200
@@ -27,8 +22,11 @@ type
 
 const
   HeaderHttpRedirect = "Location: $1"
+  contentTypeHtml = "text/html; charset=utf-8"
+  contentTypeJson = "application/json; charset=utf-8"
+  contentTypeCalendar = "text/calendar; charset=utf-8"
 
-proc getDefaultContentType*(): ContentType =
+proc getContentType*(): string =
   when defined webapp:
     result = contentTypeHtml
   else:
@@ -78,20 +76,21 @@ proc redirectUri*(req: Request, res: Response, target: string, code = Http303) =
   res.addHeader("Location", target)
   req.root.send(code, "", res.getHeaders())
 
-template redirect*(target: string, code = Http303) =
+template redirect*(target: string, code = Http303) {.dirty.} =
   ## Setup a HttpRedirect with a default `Http303` See Other
   ## This response code is often sent back as a result of `PUT` or `POST`.
   ## The method used to display this redirected page is always `GET`.
   res.addHeader("Location", target)
   req.root.send(code, "", res.getHeaders())
-  return res
+  return # blocks code execution
 
 template redirect301*(target:string) =
   ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
   req.root.send(Http301, "", HeaderHttpRedirect % [target])
-  return res
+  return # blocks code execution
 
 proc getCode*(res: Response): HttpCode = res.code
+
 proc setCode*(res: var Response, code: HttpCode) =
   ## Set a `HttpCode` to `res` Response
   res.code = code
@@ -103,22 +102,35 @@ proc setBody*(res: var Response, body: string) =
   ## Set a string body to `res` Response
   res.body = body
 
-template response*(body: string, contentType: ContentType = getDefaultContentType()): untyped {.dirty.} =
-  ## Send a response using `body`
-  res.addHeader("Content-Type", $contentType)
-  res.setBody(body)
-  return
-
-template response*(code: HttpCode, body: string,
-    contentType: ContentType = getDefaultContentType()): untyped {.dirty.} =
-  ## Send a `response`
-  res.setCode(code)
-  res.addHeader("Content-Type", $contentType)
-  res.setBody(body)
-  return
-
 template json*(body: typed, code: HttpCode = Http200): untyped =
-  res.setCode(code)
-  res.addHeader("Content-Type", $contentTypeJson)
-  res.setBody(jsony.toJson(body))
+  when compileOption("app", "lib"):
+    res[].setCode(code)
+    res[].addHeader("Content-Type", $contentTypeJson)
+    res[].setBody(jsony.toJson(body))
+  else:
+    res.setCode(code)
+    res.addHeader("Content-Type", $contentTypeJson)
+    res.setBody(jsony.toJson(body))
+  return
+
+template respond*(body: string, contentType: string = getContentType()): untyped {.dirty.} =
+  when compileOption("app", "lib"):
+    res[].addHeader("Content-Type", $contentType)
+    res[].setBody(body)
+  else:
+    res.addHeader("Content-Type", $contentType)
+    res.setBody(body)
+  return
+
+template respond*(code: HttpCode, body: string,
+  contentType: string = getContentType()
+): untyped {.dirty.} =
+  when compileOption("app", "lib"):
+    res[].setCode(code)
+    res[].addHeader("Content-Type", $contentType)
+    res[].setBody(body)
+  else:
+    res.setCode(code)
+    res.addHeader("Content-Type", $contentType)
+    res.setBody(body)
   return

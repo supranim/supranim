@@ -1,3 +1,8 @@
+# Supranim - A fast MVC web framework
+# for building web apps & microservices in Nim.
+#   (c) 2024 MIT License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
+
 import std/[httpcore, critbits, tables,
   nre, macros, macrocache, strutils, sequtils,
   enumutils]
@@ -5,11 +10,18 @@ import std/[httpcore, critbits, tables,
 import ../request, ../response
 import ./autolink
 
+export Request, Response, HttpCode
+
 type
   HttpRouteType* = enum
     StaticRoute, DynamicRoute
-
-  Callable* = proc(req: Request, res: var Response): Response {.nimcall, gcsafe.}
+  Callable* =
+    (
+      when defined supraMicroservice:
+        proc(req: ptr Request, res: ptr Response): void {.nimcall, gcsafe.}
+      else:
+        proc(req: Request, res: var Response): void {.nimcall, gcsafe.}
+    )
   Middleware* = proc(req: Request, res: var Response): HttpCode {.nimcall.}
   Afterware* = Middleware
 
@@ -33,13 +45,25 @@ type
   HttpRouterInstance = object
     httpGet, httpPost, httpPut, httpHead,
       httpConnect, httpDelete, httpPatch,
-      httpTrace, httpOptions, httpErrors: CritBitTree[HttpRoute]
+      httpTrace, httpOptions, httpErrors, httpWS: CritBitTree[HttpRoute]
     # abstractRoutes: CritBitTree[Route]
 
   HttpRouterError* = object of CatchableError
 
 var Router*: HttpRouterInstance
   ## a singleton of `HttpRouterInstance`
+
+const
+  # Register default HTTP Error Handles
+  # let browsers use their default screen without providing
+  # a specific body
+  DefaultHttpError*: Callable =
+    when defined supraMicroservice:
+      proc(req: ptr Request, res: ptr Response) =
+        discard
+    else:
+      proc(req: Request, res: var Response) =
+        discard
 
 #
 # Compile-time API
@@ -84,8 +108,9 @@ proc registerRoute*(router: var HttpRouterInstance,
   autolinked: sink (string, string),
   httpMethod: HttpMethod,
   callback: Callable,
-  middlewares: seq[Middleware],
-  afterwares: seq[Afterware]
+  middlewares: seq[Middleware] = @[],
+  afterwares: seq[Afterware] = @[],
+  isWebSocket = false
 ) =
   ## Register a new `Route`
   let path = autolinked[0]
@@ -93,8 +118,12 @@ proc registerRoute*(router: var HttpRouterInstance,
     newHttpRoute(path, httpMethod, callback, middlewares, afterwares)
   case httpMethod
   of HttpGet:
-    if not router.httpGet.hasKey(path):
-      router.httpGet[path] = routeObject
+    if isWebSocket:
+      if not router.httpWS.hasKey(path):
+        router.httpWS[path] = routeObject
+    else:
+      if not router.httpGet.hasKey(path):
+        router.httpGet[path] = routeObject
   of HttpPost:
     if not router.httpPost.hasKey(path):
       router.httpPost[path] = routeObject
@@ -121,30 +150,82 @@ proc registerRoute*(router: var HttpRouterInstance,
       router.httpConnect[path] = routeObject
 
 const httpMethods = ["get", "post", "put", "patch", "head",
-  "delete", "trace", "options", "connect"]
-  
-proc parseRouteNode(verb, routePath: string,
-  middlewares, afterwares: var NimNode
+  "delete", "trace", "options", "connect", "ws"]
+
+proc parseRouteNode*(verb, routePath: string,
+  middlewares, afterwares: var NimNode,
+  closureHandle: NimNode = nil
 ) {.compileTime.} =
   let
-    httpMethod = parseEnum[HttpMethod](toUpperAscii(verb))
-    autolinked = autolinkController(routePath, httpMethod)
+    httpMethod =
+      if verb != "ws":
+        parseEnum[HttpMethod](toUpperAscii(verb))
+      else: HttpGet
+    autolinked: Autolinked =
+      autolinkController(routePath, httpMethod, verb == "ws")
   let controllerIdent = ident(autolinked.handleName)
-  queuedRoutes[autolinked.handleName] =
-    newCall(
-      ident"registerRoute",
-      newDotExpr(ident"app", ident"router"),
+  if closureHandle.isNil:
+    queuedRoutes[autolinked.handleName] =
+      newCall(
+        ident"registerRoute",
+        newDotExpr(ident"app", ident"router"),
+        nnkTupleConstr.newTree(
+          newLit(autolinked[1]),
+          newLit(autolinked[2]),
+        ),
+        ident(httpMethod.symbolName),
+        controllerIdent,
+        newTree(nnkPrefix, ident "@", middlewares),
+        newTree(nnkPrefix, ident "@", afterwares),
+        nnkExprEqExpr.newTree(
+          ident"isWebSocket",
+          newLit(verb == "ws")
+        )
+      )
+  else:
+    let routeDescription: NimNode = 
+      if closureHandle[0].kind == nnkCommentStmt:
+        newLit(closureHandle[0].strVal)
+      else: nil
+    queuedRoutes[autolinked.handleName] =
       nnkTupleConstr.newTree(
+        ident(autolinked[0]),
         newLit(autolinked[1]),
         newLit(autolinked[2]),
-      ),
-      ident(httpMethod.symbolName),
-      controllerIdent,
-      newTree(nnkPrefix, ident "@", middlewares),
-      newTree(nnkPrefix, ident "@", afterwares)
-    )
+        ident(httpMethod.symbolName),
+        routeDescription,
+        newProc(
+          name = ident(autolinked[0]),
+          params = [
+            newEmptyNode(),
+            newIdentDefs(
+              ident"req",
+              newDotExpr(
+                ident"request",
+                ident"Request"
+              ),
+              newEmptyNode()
+            ),
+            newIdentDefs(
+              ident"res",
+              nnkVarTy.newTree(
+                ident"Response"
+              ),
+              newEmptyNode()
+            ),
+          ],
+          pragmas = nnkPragma.newTree(ident"nimcall"),
+          body =
+            nnkPragmaBlock.newTree(
+              nnkPragma.newTree(
+                ident"gcsafe"
+              ),
+              closureHandle
+            )
+        )
+      )
 
-proc preparePath(path: string, prefix = ""): string {.compileTime.} =
+proc preparePath*(path: string, prefix = ""): string {.compileTime.} =
   if prefix.len > 0:
     result = prefix
     if path == "/" and prefix == path:
@@ -191,45 +272,63 @@ group "/account":
   ]## 
   for x in body:
     x.expectKind(nnkCommand)
-    let httpMethodName = x[0]
-    var middlewares, afterwares = newNimNode(nnkBracket)
-    if httpMethodName.strVal in httpMethods:
-      # todo parse middlwares/afterwares
-      parseRouteNode(httpMethodName.strVal, x[1].strVal.preparePath(),
-        middlewares, afterwares)
-    elif httpMethodName.eqIdent("group"):
-      x[1].expectKind(nnkStrLit)
-      x[2].expectKind(nnkStmtList)
-      for y in x[2]:
-        case y.kind
-        of nnkCommand, nnkCall:
-          # parse prefixed routes
-          parseRouteNode(y[0].strVal,
-            preparePath(y[1].strVal, x[1].strVal),
-            middlewares, afterwares
-          )
-        of nnkPragmaBlock:
-          # The allowed pragma block `{.middleware: [some, auth, handles].}`
-          # that registers one or more middlewares for a group of routes
-          expectKind(y[0][0], nnkExprColonExpr)
-          expectKind(y[1], nnkStmtList)
-          if y[0][0][0].eqIdent("middleware"):
-            case y[0][0][1].kind
-            of nnkBracket:
-              for m in y[0][0][1]:
-                add middlewares, m
-            of nnkIdent:
-              add middlewares
-            else: discard # todo error
-            for r in y[1]:
-              parseRouteNode(r[0].strVal,
-                preparePath(r[1].strVal, x[1].strVal),
-                middlewares, afterwares
-              )
-        else:
-          error("Invalid route", y) 
+    var httpMethodNames: seq[NimNode]
+    if x[0].kind == nnkBracketExpr:
+      for verb in x[0]:
+        add httpMethodNames, verb
     else:
-      error("Use a valid http method or `group` for grouping routes under the same prefix path", x[0])
+      httpMethodNames = @[x[0]]
+    for httpMethodName in httpMethodNames:
+      var middlewares, afterwares = newNimNode(nnkBracket)
+      if httpMethodName.eqIdent("group"):
+        x[1].expectKind(nnkStrLit)
+        x[2].expectKind(nnkStmtList)
+        for y in x[2]:
+          case y.kind
+          of nnkCommand, nnkCall:
+            # parse prefixed routes
+            parseRouteNode(y[0].strVal,
+              preparePath(y[1].strVal, x[1].strVal),
+              middlewares, afterwares
+            )
+          of nnkPragmaBlock:
+            # The allowed pragma block `{.middleware: [some, auth, handles].}`
+            # that registers one or more middlewares for a group of routes
+            expectKind(y[0][0], nnkExprColonExpr)
+            expectKind(y[1], nnkStmtList)
+            if y[0][0][0].eqIdent("middleware"):
+              case y[0][0][1].kind
+              of nnkBracket:
+                for m in y[0][0][1]:
+                  add middlewares, m
+              of nnkIdent:
+                add middlewares
+              else: discard # todo error
+              for r in y[1]:
+                case r[0].kind
+                of nnkIdent:
+                  parseRouteNode(r[0].strVal,
+                    preparePath(r[1].strVal, x[1].strVal),
+                    middlewares, afterwares
+                  )
+                of nnkBracketExpr:
+                  for v in r[0]:
+                    parseRouteNode(v.strVal,
+                      preparePath(r[1].strVal, x[1].strVal),
+                      middlewares, afterwares
+                    )
+                else: discard # todo error
+          else:
+            error("Invalid route", y) 
+      elif httpMethodName.strVal in httpMethods:
+        let routeStmtHandle =
+          if x.len == 3:
+            x[2]
+          else: nil
+        parseRouteNode(httpMethodName.strVal,
+          x[1].strVal.preparePath(), middlewares, afterwares, routeStmtHandle)
+      else:
+        error("Invalid HTTP method `" & httpMethodName.strVal & "`", httpMethodName)
 
 macro searchRoute(httpMethod: static string) =
   result = newstmtList()
@@ -321,10 +420,16 @@ proc errorHandler*(router: var HttpRouterInstance,
     router.httpErrors["4xx"] = httpRoute
   else: discard
 
-proc call4xx*(router: var HttpRouterInstance,
-    req: Request, res: var Response): Response {.discardable.} =
-  ## Run the `4xx` callback
-  router.httpErrors["4xx"].callback(req, res)
+when defined supraMicroservice:
+  proc call4xx*(router: var HttpRouterInstance,
+      req: ptr Request, res: ptr Response) {.discardable.} =
+    ## Run the `4xx` callback
+    router.httpErrors["4xx"].callback(req, res)
+else:
+  proc call4xx*(router: var HttpRouterInstance,
+      req: Request, res: var Response) {.discardable.} =
+    ## Run the `4xx` callback
+    router.httpErrors["4xx"].callback(req, res)
 
 template initRouterErrorHandlers* =
   Router.errorHandler(Http404, errors.get4xx)

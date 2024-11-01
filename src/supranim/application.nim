@@ -5,18 +5,15 @@
 # https://supranim.com | https://github.com/supranim
 
 
-import std/[macros, os, tables, strutils, cpuinfo,
-          json, jsonutils, envvars, typeinfo, macrocache]
+import std/[macros, os, tables, strutils,
+    cpuinfo, json, jsonutils, hashes,
+    dynlib, envvars, typeinfo, macrocache]
 
-# when compileOption("app", "lib"):
-#   static:
-#     error("This import is restricted for dynamic libraries")
-
-import pkg/[nyml, zmq]
+import pkg/[nyml, kapsis]
 import pkg/enimsql/model
-import ./support/[uuid]
 
-import ./core/[config, paths]
+import ./support/[uuid]
+import ./core/[config, paths, pluginManager]
 import ./core/http/router
 
 from std/net import `$`, Port
@@ -25,6 +22,10 @@ export json, nyml, paths
 export supranimServer
 
 type
+  PluggableController* = proc(req: ptr Request, res: ptr Response) {.nimcall, gcsafe.}
+  PluggableModules* = object
+    controller: Table[Hash, PluggableController]
+  
   Application* = ref object
     key*: Uuid
     port: Port
@@ -35,25 +36,10 @@ type
     basepath: string
     configs*: OrderedTableRef[string, nyml.Document]
     router*: type(router.Router)
+    modules: PluggableModules
+    pluginManager: PluginManager
 
   AppConfigDefect* = object of CatchableError
-
-#
-# Application Universal API
-#
-# var uapi: Thread[void]
-# proc runUniversalApi {.thread.} =
-#   var router = listen("tcp://127.0.0.1:55000", mode=ROUTER)
-#   while true:
-#     let sockid = router.receive()
-#     if len(sockid) > 0:
-#       let recv = router.receiveAll()
-#       let commandName = recv[0]
-#       router.send(sockid, SNDMORE)
-#       echo commandName
-#     sleep(100)
-
-# createThread(uapi, runUniversalApi)
 
 #
 # Application Crypto
@@ -81,23 +67,19 @@ proc config*(app: Application, key: string): JsonNode =
 #
 # Application API
 #
-template initSystemServices*() =
-  macro initSystem() =
+template initHttpRouter* =
+  app.key = uuid4()
+  macro initHttpRouter() =
     result = newStmtList()
     var registerRoutes = newStmtList()
     for k, ctrl in queuedRoutes:
       add registerRoutes, ctrl
     add result,
       newProc(
-        nnkPostfix.newTree(
-          ident("*"),
-          ident("initRouter")
-        ),
+        ident"initRouter",
         body = nnkStmtList.newTree(
           nnkPragmaBlock.newTree(
-            nnkPragma.newTree(
-              newIdentNode("gcsafe")
-            ),
+            nnkPragma.newTree(ident"gcsafe"),
             nnkStmtList.newTree(
               newAssignment(
                 newDotExpr(ident"app", ident"router"),
@@ -111,39 +93,85 @@ template initSystemServices*() =
           ident "thread"
         )
       )
-    add result,
-      newCall(ident"initRouter")
-  app.key = uuid4()
-  initSystem()
+    add result, newCall(ident"initRouter")
+  initHttpRouter()
 
-proc loadMiddlewares: NimNode {.compileTime.} =
-  # auto discover /middleware/*.nim
-  # nim files prefixed with `!` will be ignored
-  result = newStmtList()
-  for fMiddleware in walkDirRec(basePath / "middleware"):
-    if fMiddleware.endsWith(".nim"):
-      if not fMiddleware.splitFile.name.startsWith("!"):
-        add result, nnkImportStmt.newTree(newLit(fMiddleware))
-  add result, nnkIncludeStmt.newTree(
-    newLit(basePath / "routes.nim")
-  )
+when defined supraMicroservice:
+  # Supranim's microservice architecture
+  # builds pluggable modules as Shared Libraries.
+  proc loadPluggableModules*(app: Application) =
+    ## Autoload pluggable modules from dynamic libraries
+    displayInfo("Autoload Pluggable Modules")
+    for path in walkDirRec(binPath / "modules" / "controller"):
+      if path.endsWith(".dylib"):
+        var lib: LibHandle = dynlib.loadLib(path)
+        if not lib.isNil:
+          let callableHandle = cast[PluggableController](lib.symAddr("getTestpage"))
+          if not callableHandle.isNil:
+            app.modules.controller[hash("getTestpage")] = callableHandle
+          else: discard
+  
+  proc enablePluginManager(app: Application) =
+    displayInfo("Enable Plugin Manager")
+    app.pluginmanager = initPluginManager()
+    for path in walkDirRec(binPath / "modules" / "controller"):
+      let module: ptr AutoloadPluggableModule =
+        app.pluginmanager.autoloadModule(path, rootPath)
+      if not module.isNil:
+        for route in module[].routes[].routes:
+          app.router.registerRoute((route[1], route[2]), route[3], module[].controllers[route[0]])
+  
+  # proc controllers*(app: Application, key: string): PluggableController =
+  #   ## Retrieves a Pluggable Controller by `key`. If not found
+  #   ## returns `nil`
+  #   let key = hash(key)
+  #   if likely(app.modules.controller.hasKey(key)):
+  #     result = app.modules.controller[key]
 
-proc loadControllers: NimNode {.compileTime.} =
-  # walks recursively and auto discover nim modules
-  # found in /controller/*.nim
-  # nim files prefixed with `!` will be ignored
-  result = newStmtList()
-  for fController in walkDirRec(basePath / "controller"):
-    if fController.endsWith(".nim"):
-      if not fController.splitFile.name.startsWith("!"):
-        add result, nnkImportStmt.newTree(newLit(fController))
+  # proc exec*(ctrl: PluggableController, req: ptr Request, res: ptr Response) =
+  #   ## Executes a Pluggable Controller
+  #   if likely(not ctrl.isNil):
+  #     ctrl(req, res)
+  #   else:
+  #     res[].code = HttpCode(500)
+
+  # proc getModel*(app: Application, k: string): PluggableModel =
+  #   ## Retrieve a Pluggable Model
+  #   let k = hash(k)
+  #   if likely(app.modules.model.hasKey(k)):
+  #     result = app.modules.model[k]
+
+else:
+  # Supranim's monolithic architecture.
+  # Bundle Middleware, Controller and Route modules
+  # as part of the main application
+  proc loadMiddlewares: NimNode {.compileTime.} =
+    # walks recursively and auto discover middleware handles
+    # available at /middleware/*.nim.
+    result = newStmtList()
+    for fMiddleware in walkDirRec(basePath / "middleware"):
+      if fMiddleware.endsWith(".nim"):
+        if not fMiddleware.splitFile.name.startsWith("!"):
+          add result, nnkImportStmt.newTree(newLit(fMiddleware))
+    # include `routes.nim` module
+    add result, nnkIncludeStmt.newTree(newLit(basePath / "routes.nim"))
+
+  proc loadControllers: NimNode {.compileTime.} =
+    # walks recursively and auto discover controllers
+    # available at /controller/*.nim
+    # nim files prefixed with `!` will be ignored
+    result = newStmtList()
+    for fController in walkDirRec(basePath / "controller"):
+      if fController.endsWith(".nim"):
+        if not fController.splitFile.name.startsWith("!"):
+          add result, nnkImportStmt.newTree(newLit(fController))
 
 macro init*(x) =
   ## Initializes Supranim application
   expectKind(x, nnkLetSection)
   expectKind(x[0][2], nnkEmpty)
   result = newStmtList()
-  x[0][2] = newCall(ident "Application")
+  x[0][2] = newCall(ident"Application")
   add result, x
   when not compileOption("app", "lib"):
     # read `.env.yml` config file
@@ -152,11 +180,13 @@ macro init*(x) =
       block:
         app.configs = newOrderedTable[string, Document]()
         app.loadConfig()
+
   if not dirExists(cachePath):
     # creates `.cache` directory inside working project path.
     # here we'll store generated nim files that can be
     # called via `supranim/runtime`
     createDir(cachePath)
+
   if not dirExists(pluginsPath):
     # Creates `/storage/plugins` directory for storing
     # dynamic libraries aka plugins
@@ -192,25 +222,20 @@ macro init*(x) =
   add result,
     nnkExportStmt.newTree(ident"runtime")
 
-  # auto include `routes.nim` file
   add result, quote do:
     import supranim/core/[request, response]
     import std/[httpcore, macros, macrocache]
-
-  add result, loadMiddlewares()
-  add result, loadControllers()
-
-  # auto discover /database/models/*.nim
-  # nim files prefixed with `!` will be ignored
-  # for fModel in walkDirRec(basePath / "database" / "models"):
-  #   let f = fModel.splitFile
-  #   if f.ext == ".nim":
-  #     if not f.name.startsWith("!"):
-  #       add result, nnkImportStmt.newTree(newLit(fModel))
-
-  add result, quote do:
-    initSystemServices()
-    app.router.errorHandler(Http404, errors.get4xx)
+  when defined supraMicroservice:
+    add result, quote do:
+      app.router.errorHandler(Http404, DefaultHttpError)
+      app.router.errorHandler(Http500, DefaultHttpError)
+      app.enablePluginManager()
+  else:
+    add result, loadMiddlewares()
+    add result, loadControllers()
+    add result, quote do:
+      initHttpRouter()
+      app.router.errorHandler(Http404, errors.get4xx)
 
 template services*(s) {.inject.} =
   macro initServices(x) =
@@ -221,8 +246,6 @@ template services*(s) {.inject.} =
     add result, blockStmt
   initServices(s)
 
-proc initDeveloperTools*() =
-  discard
 
 #
 # Runtime API

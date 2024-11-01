@@ -9,7 +9,7 @@ import std/[macros, macrocache, asyncdispatch, strutils,
 
 import pkg/jsony
 import ./core/[request, response]
-import ./core/http/[router]
+import ./core/http/router
 import ./support/cookie
 
 # import ./application except init, initSystemServices, configs
@@ -65,34 +65,27 @@ proc getClientCookie*(req: Request): ref Cookie =
 # Controller Compile utils
 macro newController*(name, body: untyped) =
   expectKind name, nnkIdent
-  # case body[0].kind
-  # of nnkCommentStmt:
-    # ctrlDescription[name.strVal] = body[0]
-  # else: discard
   result =
     newProc(
       name = nnkPostfix.newTree(ident("*"), name),
       params = [
-        ident("Response"),
+        newEmptyNode(),
         newIdentDefs(
-          ident("req"),
-          ident("Request"),
+          ident"req",
+          ident"Request",
           newEmptyNode()
         ),
         newIdentDefs(
-          ident("res"),
-          nnkVarTy.newTree(ident("Response")),
+          ident"res",
+          nnkVarTy.newTree(
+            ident"Response" # a mutable `Response`
+          ),
           newEmptyNode()
         ),
-        # newIdentDefs(
-        #   ident("app"),
-        #   ident("Application"),
-        #   newEmptyNode()
-        # ),
       ],
       body =
         nnkPragmaBlock.newTree(
-          nnkPragma.newTree(ident("gcsafe")),
+          nnkPragma.newTree(ident"gcsafe"),
           body
         )
     )
@@ -104,13 +97,17 @@ macro go*(id: untyped) =
   ## To be used inside a controller handle
   ## to redirect from other verbs to a GET route, for example
   ## in a POST after login success you can say `go getAccount`. Nice!
+  expectKind(id, nnkIdent)
   if queuedRoutes.hasKey(id.strVal):
     let routeNode = queuedRoutes[id.strVal]
     let methodType = routeNode[3]
     if methodType.eqIdent("HttpGet"):
-      result = newStmtList()
-      add result, newCall(ident("redirect"), routeNode[2][1]) # support named routes
-    else: discard # todo compile-time error
+      return nnkStmtList.newTree(
+        newCall(ident("redirect"),
+        routeNode[2][1]) # support named routes
+      )
+    error("HTTP redirects are available for GET handles. Got " & methodType.strVal, methodType)
+  error("Unknown handle name " & id.strVal, id)
 
 template isAuth*(): bool =
   (

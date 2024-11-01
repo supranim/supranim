@@ -12,7 +12,7 @@ type
       # when prefixed with `?` char
       # will mark the pattern as optional
   ]
-
+  Autolinked* = tuple[handleName, regexPath, path: string]
   RoutePatternsTable* = OrderedTableRef[string, RoutePattern]
 
 const
@@ -23,13 +23,12 @@ const
   }.toTable()
 
 proc autolinkController*(routePath: string,
-    httpMethod: HttpMethod
-): tuple[handleName, regexPath, path: string] {.compileTime.} =
+    httpMethod: HttpMethod, isWebSocket = false
+): Autolinked {.compileTime.} =
   # Generates controller name and route
   # patterns from `routePath` string
   var
     i = 0
-    path: string
     patterns: OrderedTable[string, RoutePattern]
   while i < routePath.len:
     case routePath[i]
@@ -59,11 +58,14 @@ proc autolinkController*(routePath: string,
             "`. Use one of: " & choices)
     else:
       var p: RoutePattern
-      i += routePath.parseUntil(p.key, '{', i)
+      i += routePath.parseUntil(p.key, {'{'}, i)
       patterns[p.key] = p
-  var pathRegExpr: string
-  let methodName = toLowerAscii(symbolName(httpMethod)[4..^1])
-  var ctrlName = methodName
+  let methodName =
+    if isWebSocket: "ws" # websocket handles are always prefixed with `ws`
+    else: toLowerAscii(symbolName(httpMethod)[4..^1])
+  var
+    pathRegExpr: string
+    ctrlName = methodName
   for x, v in patterns:
     if v.reKey.len > 0:
       add pathRegExpr,
@@ -73,7 +75,23 @@ proc autolinkController*(routePath: string,
           "(?<" & x & ">(" & RegexPatterns[v.reKey] & ")?)"
       add ctrlName, capitalizeAscii(x)
     else:
-      add ctrlName, capitalizeAscii(x.replace("/"))
+      var i = 0
+      var needsUpper: bool
+      var prepareCtrlName: string
+      while i < x.len:
+        case x[i]
+        of {'-', '_'}:
+          needsUpper = true; inc(i)
+        of '/':
+          needsUpper = true; inc(i);
+        else:
+          if needsUpper:
+            add prepareCtrlName, x[i].toUpperAscii()
+            needsUpper = false
+          else:
+            add prepareCtrlName, x[i]
+          inc(i)
+      add ctrlName, prepareCtrlName.capitalizeAscii()
       add pathRegExpr,
         strutils.multiReplace(x,
           ("/", "\\/"), ("-", "\\-"), ("+", "\\+")
@@ -82,3 +100,6 @@ proc autolinkController*(routePath: string,
   if ctrlName == methodName:
     add ctrlName, "Homepage"
   result = (ctrlName, pathRegExpr, routePath)
+  when defined supranimDebugAutolink:
+    debugEcho result
+
