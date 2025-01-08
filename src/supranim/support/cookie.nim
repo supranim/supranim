@@ -53,8 +53,9 @@ proc parseCookies*(cookies: string): CookiesTable =
   if cookies.len == 0: return
   new result
   for cookie in cookies.split(";"):
-    var kv = cookie.split("=").mapIt(it.strip)
-    result[kv[0]] = newCookie(kv[0], kv[1], now() + 1.hours)
+    let kv = cookie.split("=").mapIt(it.strip)
+    if kv.len == 2:
+      result[kv[0]] = newCookie(kv[0], kv[1], now() + 1.hours)
 
 proc `$`*(cookie: ref Cookie): string =
   result.add kv(cookie.name, cookie.value)
