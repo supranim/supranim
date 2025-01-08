@@ -171,7 +171,12 @@ macro init*(x) =
   expectKind(x, nnkLetSection)
   expectKind(x[0][2], nnkEmpty)
   result = newStmtList()
-  x[0][2] = newCall(ident"Application")
+  x[0][2] = newCall(
+    newDotExpr(
+      ident"supranim",
+      ident"Application"
+    )
+  )
   add result, x
   when not compileOption("app", "lib"):
     # read `.env.yml` config file

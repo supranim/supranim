@@ -29,7 +29,7 @@ proc autolinkController*(routePath: string,
   # patterns from `routePath` string
   var
     i = 0
-    patterns: OrderedTable[string, RoutePattern]
+    patterns: seq[tuple[str: string, pattern: RoutePattern]]
   while i < routePath.len:
     case routePath[i]
     of '{':
@@ -48,52 +48,51 @@ proc autolinkController*(routePath: string,
             inc(i, 2) # ?
           else:
             error("Invalid optional pattern missing ending `}`")
-        else: inc(i) # }
+        else:
+          inc(i) # }
         if likely(RegexPatterns.hasKey(p.reKey)):
-          if likely(not patterns.hasKey(p.key)):
-            patterns[p.key] = p
+          add patterns, (p.key, p)
         else:
           let choices = RegexPatterns.keys.toSeq().join(", ")
-          error("Unknown pattern `" & p.reKey &
-            "`. Use one of: " & choices)
+          error("Unknown pattern `" & p.reKey & "`. Use one of: " & choices)
     else:
       var p: RoutePattern
       i += routePath.parseUntil(p.key, {'{'}, i)
-      patterns[p.key] = p
+      add patterns, (p.key, p)
   let methodName =
     if isWebSocket: "ws" # websocket handles are always prefixed with `ws`
     else: toLowerAscii(symbolName(httpMethod)[4..^1])
   var
     pathRegExpr: string
     ctrlName = methodName
-  for x, v in patterns:
-    if v.reKey.len > 0:
+  for v in patterns:
+    if v.pattern.reKey.len > 0:
       add pathRegExpr,
-        if not v.isOptional:
-          "(?<" & x & ">" & RegexPatterns[v.reKey] & ")"
+        if not v.pattern.isOptional:
+          "(?<" & v.str & ">" & RegexPatterns[v.pattern.reKey] & ")"
         else:
-          "(?<" & x & ">(" & RegexPatterns[v.reKey] & ")?)"
-      add ctrlName, capitalizeAscii(x)
+          "(?<" & v.str & ">(" & RegexPatterns[v.pattern.reKey] & ")?)"
+      add ctrlName, capitalizeAscii(v.str)
     else:
       var i = 0
       var needsUpper: bool
       var prepareCtrlName: string
-      while i < x.len:
-        case x[i]
+      while i < v.str.len:
+        case v.str[i]
         of {'-', '_'}:
           needsUpper = true; inc(i)
         of '/':
           needsUpper = true; inc(i);
         else:
           if needsUpper:
-            add prepareCtrlName, x[i].toUpperAscii()
+            add prepareCtrlName, v.str[i].toUpperAscii()
             needsUpper = false
           else:
-            add prepareCtrlName, x[i]
+            add prepareCtrlName, v.str[i]
           inc(i)
       add ctrlName, prepareCtrlName.capitalizeAscii()
       add pathRegExpr,
-        strutils.multiReplace(x,
+        strutils.multiReplace(v.str,
           ("/", "\\/"), ("-", "\\-"), ("+", "\\+")
         )
   add pathRegExpr, "$"

@@ -10,9 +10,9 @@ import std/[os, strutils, tables, macros,
   enumutils, json]
 
 import pkg/[zmq, jsony]
-import ./core/utils
 
-from supranim/application import cachePath
+import ./core/utils
+import ./core/paths
 
 export zmq, macros, macrocache, enumutils,
   options, json, jsony, freemem
@@ -26,13 +26,16 @@ type
 
   ServiceType* = enum
     RouterDealer = "RouterDealer",
+    DealerRouter = "DealerRouter",
     Inproc = "Inproc"
+    Singleton = "Singleton"
 
   ServiceProvider* = ref object of RootObj
     spType*: ServiceType
     spName*, spPort*, spPath*, spDescription*: string
     spAddress*: string
     spCommands*: seq[string]
+    spThreads*: int = 1
     spPrivate: bool
     spPrivateKey: string
 
@@ -108,6 +111,8 @@ proc getService*(man: ServiceManagerInstance, x: string): ServiceProvider =
 proc getZSocketType(st: ServiceType): (NimNode, NimNode) {.compileTime.} =
   case st
   of RouterDealer:
+    result = (ident "ROUTER", ident "DEALER")
+  of DealerRouter:
     result = (ident "DEALER", ident "ROUTER")
   of Inproc:
     result = (ident "PAIR", ident "PAIR")
@@ -155,6 +160,8 @@ template newService*(serviceId, serviceConfig) =
         elif k.eqIdent "commands":
           for cmd in v:
             add service.spCommands, cmd.strVal
+        elif k.eqIdent "threads":
+          service.spThreads = v.intVal
       of nnkCommentStmt: discard # ignore comments
       of nnkCall:
         if x[0].eqIdent "before":
@@ -190,7 +197,7 @@ template newService*(serviceId, serviceConfig) =
           ident"std",
           nnkBracket.newTree(
             ident"os",
-            ident"asyncdispatch",
+            # ident"asyncdispatch",
             ident"strutils",
           )
         )
@@ -223,8 +230,8 @@ template newService*(serviceId, serviceConfig) =
     if service.spPrivate:
       add bNode, newConstStmt(ident"privateKey", newLit service.spPrivateKey)
     case service.spType:
-    of RouterDealer:
-      # handle ZMQ Router/Dealer pattern
+    of RouterDealer, DealerRouter:
+      # handle ZMQ Router/Dealer or Dealer/Router pattern
       #   var server = listen("tcp://127.0.0.1:" & port, mode)
       #   while true:
       #     let sockid = receive(server)
@@ -232,19 +239,37 @@ template newService*(serviceId, serviceConfig) =
       #       let recv = receiveAll(server)
       #       let id = `serviceEnum`(parseInt(recv[0]))
       #       send(server, sockid, SNDMORE)
-      #       caseBranches
+      #       `caseBranches`
       identZmqServer = genSym(nskProc, "initZmqServer")
       service.spAddress = "tcp://127.0.0.1:" & service.spPort
+      let zSocketType =
+        if service.spType == RouterDealer:
+          getZSocketType(service.spType)[0]
+        else:
+          getZSocketType(service.spType)[1]
+      # let xxxx = getZmqServerHandle(identZmqServer, serviceEnumName, service).getAst()
+      # echo xxxx.repr
       baseServiceNode[identZmqServer.strVal] =
         newProc(
           identZmqServer,
           body = nnkStmtList.newTree(
+            newLetStmt(
+              ident"ctx",
+              newCall(
+                ident"newZContext",
+                newLit(service.spThreads)
+              )
+            ),
             newVarStmt(
               ident"server",
               newCall(
                 ident"listen",
                 newLit(service.spAddress),
-                getZSocketType(service.spType)[1]
+                newDotExpr(
+                  ident"ZSocketType",
+                  zSocketType
+                ),
+                ident"ctx"
               )
             ),
             nnkWhileStmt.newTree(
@@ -284,17 +309,21 @@ template newService*(serviceId, serviceConfig) =
             )
           )
         )
+      # echo baseServiceNode[identZmqServer.strVal].repr
     of Inproc:
       # handle ZMQ `inproc` pattern
       identZmqServer = genSym(nskProc, "initZmqServer")
-      service.spAddress = "inproc:/" & getProjectPath() / ".." / ".." / ".cache" / normalize(service.spName)
+      service.spAddress = "inproc://tmp/" & normalize(service.spName)
       baseServiceNode[identZmqServer.strVal] = nnkStmtList.newTree(
         newVarStmt(
           ident"server",
           newCall(
             ident"listen",
             newLit(service.spAddress),
-            getZSocketType(service.spType)[1]
+            newDotExpr(
+              ident"ZSocketType",
+              getZSocketType(service.spType)[1]
+            )
           )
         ),
         newCall(
@@ -370,8 +399,8 @@ template newService*(serviceId, serviceConfig) =
         )
       add baseServiceNode["publicInitializer"],
         newCall(ident"createThread", ident"ipcthr", identZmqServer)
-          # )
-        # )
+    of Singleton:
+      discard # todo
     cacheServiceManager()
   initService(serviceId, serviceConfig)
 
@@ -455,7 +484,12 @@ macro command*(x): untyped =
   var isAutoRunnable: bool
   var cmdProcName = genSym(nskProc, x[0].strVal)
   checkEnableAutoRunnable()
+  x[4] = newEmptyNode() # reset pragmas
   x[0] = cmdProcName
+  checkIsAutorunnable()
+  # if not isAutoRunnable:
+    # add procStmtBody, newCall(ident"send", ident"server", newLit"")
+    # defaultZConnection = newEmptyNode()
   registeredCommandsParams[initialName.strVal] = x[3].copy()
   if service.spType == Inproc:
     add x[3], nnkIdentDefs.newTree(ident"context", ident"ZContext", newNilLit())
@@ -535,38 +569,40 @@ macro asyncTask*(interval: TimeInterval, x: untyped) =
   x[0] = cmdProcName
   registeredCommands[initialName.strVal] = x
 
+var zmqConn: ZConnection
 template executeServiceCommand*(id: untyped, zaddr: string,
     zmode: ZSocketType, msgs: seq[string] = @[]): untyped =
   # Execute a command of a standalone Service Provider
-  var client = zmq.connect(zaddr, mode = zmode)
-  client.setsockopt(RCVTIMEO, 200.cint)
+  if zmqConn == nil:
+    zmqConn = zmq.connect(zaddr, mode = zmode)
+  zmqConn.setsockopt(RCVTIMEO, 200.cint)
   var x = msgs
   sequtils.insert(x, @[$(symbolRank(id))], 0)
-  client.sendAll(x)
-  let recv = client.receiveAll()
+  zmqConn.sendAll(x)
+  let recv = zmqConn.receiveAll()
   var resp: Option[seq[string]]
   if recv.len > 0:
     if recv[0].len > 0:
       resp = some(recv)
-  client.close()
-  freemem(client)
+  # client.close()
+  # freemem(client)
   resp
 
 template executeServiceCommand*(id: untyped, zaddr: string,
     ctx: ZContext, msgs: seq[string] = @[]): untyped =
   # Execute a command of an `inproc` based Service Provider
-  var client = zmq.connect(zaddr, mode = PAIR, context = ctx)
-  client.setsockopt(RCVTIMEO, 200.cint)
+  var zmqConnInproc = zmq.connect(zaddr, mode = PAIR, context = ctx)
+  zmqConnInproc.setsockopt(RCVTIMEO, 200.cint)
   var x = msgs
   sequtils.insert(x, @[$(symbolRank(id))], 0)
-  client.sendAll(x)
-  let recv = client.receiveAll()
+  zmqConnInproc.sendAll(x)
+  let recv = zmqConnInproc.receiveAll()
   var resp: Option[seq[string]]
   if recv.len > 0:
     if recv[0].len > 0:
       resp = some(recv)
-  client.close()
-  freemem(client)
+  # client.close()
+  # freemem(client)
   resp
 
 macro runService*(frontendBranch): untyped =
@@ -578,15 +614,24 @@ macro runService*(frontendBranch): untyped =
   for enumCommand in service.spCommands:
     # create frontend commands
     var execCallNode: NimNode
-    if service.spType == RouterDealer:
+    case service.spType
+    of RouterDealer:
       execCallNode =
         newCall(
           ident"executeServiceCommand",
           ident enumCommand,
           newLit("tcp://127.0.0.1:" & service.spPort),
-          getZSocketType(service.spType)[0]
+          getZSocketType(service.spType)[1]
         )
-    elif service.spType == Inproc:
+    of DealerRouter:
+      execCallNode =
+        newCall(
+          ident"executeServiceCommand",
+          ident enumCommand,
+          newLit("tcp://127.0.0.1:" & service.spPort),
+          getZSocketType(service.spType)[1]
+        )
+    of Inproc:
       execCallNode =
         newCall(
           ident"executeServiceCommand",
@@ -594,6 +639,8 @@ macro runService*(frontendBranch): untyped =
           newLit(service.spAddress),
           newDotExpr(ident"server", ident"context"),
         )
+    of Singleton:
+      discard # todo
     if registeredCommandsParams.len > 0:
       var asgnArgs = nnkBracket.newTree()
       for param in registeredCommandsParams[enumCommand]:
@@ -623,7 +670,7 @@ macro runService*(frontendBranch): untyped =
       newProc(
         nnkPostfix.newTree(
           ident"*",
-          ident("exec" & enumCommand.capitalizeAscii)
+          ident(enumCommand)
         ),
         params = [
           nnkBracketExpr.newTree(
@@ -666,7 +713,7 @@ macro runService*(frontendBranch): untyped =
       add mainModule,
         newCall(
           ident"displayInfo",
-          newLit("Execute auto-runnable command `" & k & "`")
+          newLit("Start auto-runnable command `" & k & "`")
         )
       add mainModule, commandCallWithArgs(k, true)
   if service.spType == Inproc:
@@ -681,7 +728,7 @@ macro runService*(frontendBranch): untyped =
     add mainModule, baseServiceNode["publicInitializer"]
   else:
     for cmd in service.spCommands:
-      add baseServiceNode[identZmqServer.strVal][6][1][1][1][0][1][3],
+      add baseServiceNode[identZmqServer.strVal][6][2][1][1][0][1][3],
         nnkOfBranch.newTree(
           ident cmd,
           safeWrap(commandCallWithArgs(cmd), cmd)
@@ -690,7 +737,7 @@ macro runService*(frontendBranch): untyped =
     add mainModule, zmqBaseProc
     add mainModule, newCall(zmqBaseProc[0])
   add modifiedFrontendBranch, frontendBranch
-  if service.spType == RouterDealer:
+  if service.spType in {RouterDealer, DealerRouter}:
     add result,
       nnkWhenStmt.newTree(
         nnkElifBranch.newTree(
@@ -704,7 +751,7 @@ macro runService*(frontendBranch): untyped =
   else:
     add result, mainModule
     add result, modifiedFrontendBranch
-  # debugEcho result.repr
+  # echo result.repr
   result
 
 template send*(x: varargs[string]) {.dirty.} =
@@ -714,4 +761,3 @@ template send*(x: varargs[string]) {.dirty.} =
 template empty* {.dirty.} =
   server.send("")
   return # block code execution
-

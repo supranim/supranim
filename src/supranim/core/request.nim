@@ -9,7 +9,7 @@ import std/[options, httpcore, uri, tables]
 import ../support/cookie
 
 from ./http import Request, ip, body, send, forget, headers
-export ip, body, send, forget, headers
+export ip, body, send, forget, headers, `$`
 
 type
   RootRequest* = http.Request

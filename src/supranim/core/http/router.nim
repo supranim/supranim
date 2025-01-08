@@ -149,8 +149,10 @@ proc registerRoute*(router: var HttpRouterInstance,
     if not router.httpConnect.hasKey(path):
       router.httpConnect[path] = routeObject
 
-const httpMethods = ["get", "post", "put", "patch", "head",
+const httpMethods* = ["get", "post", "put", "patch", "head",
   "delete", "trace", "options", "connect", "ws"]
+  # `ws` is just an alias for `get` method used
+  # internally when defining a websocket route
 
 proc parseRouteNode*(verb, routePath: string,
   middlewares, afterwares: var NimNode,
@@ -335,7 +337,6 @@ macro searchRoute(httpMethod: static string) =
   let verb = ident httpMethod
   add result, quote do:
     if router.`verb`.hasKey(requestPath):
-      # static routes are easy to find!
       result.route = router.`verb`[requestPath]
     else:
       for k in router.`verb`.keys:
@@ -344,7 +345,6 @@ macro searchRoute(httpMethod: static string) =
           result.route = router.`verb`[k]
           let pattern = someRegexMatch.get().captures()
           for key in RegexMatch(pattern).pattern.captureNameId.keys:
-            # if key in pattern: # we know it's a match
             result.params[key] = pattern[key]
           break
 

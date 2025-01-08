@@ -5,7 +5,7 @@
 # https://supranim.com | https://github.com/supranim
 
 import std/[macros, os]
-from ./application import cachePath
+import ./core/paths
 
 macro initRuntime() =
   result = newStmtList()
