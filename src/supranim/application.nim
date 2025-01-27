@@ -239,8 +239,10 @@ macro init*(x) =
     add result, loadMiddlewares()
     add result, loadControllers()
     add result, quote do:
-      initHttpRouter()
-      app.router.errorHandler(Http404, errors.get4xx)
+      proc startupCallback() {.gcsafe.} =
+        {.gcsafe.}:
+          initHttpRouter()
+          app.router.errorHandler(Http404, errors.get4xx)
 
 template services*(s) {.inject.} =
   macro initServices(x) =

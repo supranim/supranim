@@ -135,10 +135,6 @@ else:
           freemem(req)
           freemem(res)
 
-      # proc startup() =
-      #   discard
-      #   # initRouter()
-      #   # initRouterErrorHandlers() # register 4xx/5xx error handlers
       let domain: Domain = parseEnum[Domain](App.config("server.type").getStr)
       let settings =
         initSettings(
@@ -146,6 +142,7 @@ else:
           bindAddr = App.config("server.address").getStr,
           domain = domain,
           numThreads = 1,
+          startup = startupCallback # pre-declared in `application.nim`
       )
       # event("httpserver_boot") do(args: Args):
         # echo("Starting ", settings.numThreads, " threads")

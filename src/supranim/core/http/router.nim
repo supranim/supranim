@@ -45,8 +45,8 @@ type
   HttpRouterInstance = object
     httpGet, httpPost, httpPut, httpHead,
       httpConnect, httpDelete, httpPatch,
-      httpTrace, httpOptions, httpErrors, httpWS: CritBitTree[HttpRoute]
-    # abstractRoutes: CritBitTree[Route]
+      httpTrace, httpOptions, httpErrors,
+      httpWS: CritBitTree[HttpRoute]
 
   HttpRouterError* = object of CatchableError
 
@@ -69,9 +69,9 @@ const
 # Compile-time API
 #
 var queueRouter {.compileTime.} = HttpRouterInstance()
-const
-  queuedRoutes* = CacheTable("QueuedRoutes")
-  baseMiddlewares* = CacheTable("BaseMiddlewares")
+var
+  queuedRoutes* {.compileTime.} = CacheTable("QueuedRoutes")
+  baseMiddlewares* {.compileTime.} = CacheTable("BaseMiddlewares")
 
 #
 # Public API
@@ -348,15 +348,9 @@ macro searchRoute(httpMethod: static string) =
             result.params[key] = pattern[key]
           break
 
-proc checkExists*(
-  router: var HttpRouterInstance,
-  requestPath: string,
-  httpMethod: HttpMethod
-): tuple[
-    exists: bool,
-    route: HttpRoute,
-    params: owned Table[string, string]
-  ] =
+proc checkExists*(router: var HttpRouterInstance,
+    requestPath: string, httpMethod: HttpMethod
+  ): tuple[exists: bool, route: HttpRoute, params: owned Table[string, string]] =
   case httpMethod
     of HttpGet:     searchRoute("httpGet")
     of HttpPost:    searchRoute("httpPost")

@@ -5,7 +5,7 @@
 # https://supranim.com | https://github.com/supranim
 
 import std/[macros, macrocache, asyncdispatch, strutils,
-  tables, httpcore, uri, sequtils, options]
+  tables, httpcore, uri, sequtils, options, json]
 
 import pkg/jsony
 import ./core/[request, response]
@@ -34,9 +34,23 @@ proc getFields*(req: Request): seq[(string, string)] =
   ## Decodes `Request` body
   result = toSeq(req.root.body.get().decodeQuery)
 
-proc getFieldsTable*(req: Request): Table[string, string] =
-  for x in req.root.body.get().decodeQuery:
-    result[x[0]] = x[1]
+proc getFieldsJson*(req: Request): JsonNode =
+  try:
+    result = fromJson(req.root.body.get())
+  except jsony.JsonError:
+    discard
+
+proc getFieldsTable*(req: Request, fromJson: bool = false): Table[string, string] =
+  ## Decodes `Request` body to `Table[string, string]`
+  ## Optionally set `fromJson` to true if data is sent as JSON
+  if fromJson:
+    let jsonData = req.getFieldsJson()
+    if likely(jsonData != nil):
+      for k, v in jsonData:
+        result[k] = v.getStr
+  else:
+    for x in req.root.body.get().decodeQuery:
+      result[x[0]] = x[1]
 
 proc hasCookies*(req: Request): bool =
   ## Check if `Request` contains Cookies header

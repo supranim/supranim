@@ -1,35 +1,47 @@
 # Package
 
-version       = "0.1.3"
+version       = "0.1.0"
 author        = "George Lemon"
 description   = "A fast web framework for Nim development"
 license       = "MIT"
 srcDir        = "src"
-bin           = @["supranim"]
-binDir        = "bin"
-installExt    = @["nim"]
 
 # Core dependencies
 requires "nim >= 2.0.0"
-requires "mummy"
-requires "httpbeast#head"
-requires "zmq", "ws"
-requires "flatty"
-requires "ioselectors"
-requires "supersnappy"
-requires "libsodium"
-requires "jsony"
-requires "nyml#head"
-requires "https://github.com/supranim/enimsql"
-# requires "enimsql"
-requires "msgpack4nim"
 
-# Supranim packages
+# web servers
+requires "ioselectors"
+requires "zmq"
+
+requires "ws"
+requires "netty"
+requires "flatty"
+requires "supersnappy"
+
+requires "libsodium"
+
+requires "jsony"
+
+# github.com/openpeeps
+requires "nyml#head"
 requires "emitter"
 requires "find"
+requires "multipart"
+
+requires "https://github.com/supranim/enimsql"
+requires "threading"
+requires "taskman"
+
+# requires "otp >= 0.3.3"
+# requires "qr"
+# requires "quickjwt"
 
 # CLI dependencies
-requires "kapsis#head"
+# requires "kapsis#head"
+# https://github.com/OpenSystemsLab/daemonize.nim/tree/master
 
 task cli, "Build Supranim's CLI":
   exec "nimble build"
+
+task test_autolink, "dev build autolink router":
+  exec "nim c --out:./bin/autolink src/supranim/core/http/autolink.nim"
