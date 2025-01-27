@@ -13,7 +13,7 @@ import pkg/[nyml, kapsis]
 import pkg/enimsql/model
 
 import ./support/[uuid]
-import ./core/[config, paths, pluginManager]
+import ./core/[config, paths, pluginmanager]
 import ./core/http/router
 
 from std/net import `$`, Port
