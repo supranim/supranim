@@ -1,18 +1,19 @@
-import std/[macros, tables, nre,
-  strutils, parseutils, sequtils,
-  enumutils]
+import std/[macros, tables, nre, options,
+  strutils, parseutils, sequtils, enumutils]
 
 from std/httpcore import HttpMethod
 
 type
   RoutePattern* = tuple[
-    key: string,
-    reKey: string,
-    isOptional: bool
-      # when prefixed with `?` char
-      # will mark the pattern as optional
+    key: string,   # the pattern name
+    reKey: string, # the regex key
+    isOptional: bool # suffixed with `?` marks route pattern as optional
   ]
-  Autolinked* = tuple[handleName, regexPath, path: string]
+  
+  Autolinked* = tuple[
+    handleName, regexPath, path: string,
+    params: Option[seq[(string, bool)]]
+  ]
   RoutePatternsTable* = OrderedTableRef[string, RoutePattern]
 
 const
@@ -23,7 +24,8 @@ const
   }.toTable()
 
 proc autolinkController*(routePath: string,
-    httpMethod: HttpMethod, isWebSocket = false
+        httpMethod: HttpMethod, isWebSocket = false,
+
 ): Autolinked {.compileTime.} =
   # Generates controller name and route
   # patterns from `routePath` string
@@ -65,6 +67,7 @@ proc autolinkController*(routePath: string,
   var
     pathRegExpr: string
     ctrlName = methodName
+    routeParams: seq[(string, bool)]
   for v in patterns:
     if v.pattern.reKey.len > 0:
       add pathRegExpr,
@@ -73,6 +76,7 @@ proc autolinkController*(routePath: string,
         else:
           "(?<" & v.str & ">(" & RegexPatterns[v.pattern.reKey] & ")?)"
       add ctrlName, capitalizeAscii(v.str)
+      add routeParams, (v.str, v.pattern.isOptional)
     else:
       var i = 0
       var needsUpper: bool
@@ -95,10 +99,15 @@ proc autolinkController*(routePath: string,
         strutils.multiReplace(v.str,
           ("/", "\\/"), ("-", "\\-"), ("+", "\\+")
         )
+  let someRouteParams = 
+    if routeParams.len > 0:
+      some(routeParams)
+    else:
+      none(routeParams.type)
   add pathRegExpr, "$"
   if ctrlName == methodName:
     add ctrlName, "Homepage"
-  result = (ctrlName, pathRegExpr, routePath)
+  result = (ctrlName, pathRegExpr, routePath, someRouteParams)
   when defined supranimDebugAutolink:
     debugEcho result
 
