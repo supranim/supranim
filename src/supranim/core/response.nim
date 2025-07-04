@@ -54,7 +54,7 @@ proc getDefault*(code: HttpCode): string =
   else:
     result = "" # todo
 
-proc addHeader*(res: Response, key, value: string) =
+proc addHeader*(res: var Response, key, value: string) =
   ## Add a new Http header to `Response`.
   ## https://nim-lang.org/docs/httpcore.html#HttpHeaders
   # if not res.headers.hasKey(key):
@@ -72,7 +72,7 @@ proc getHeaders*(res: Response): string =
 proc getHttpHeaders*(res: var Response): HttpHeaders =
   result = res.headers
 
-proc redirectUri*(req: Request, res: Response, target: string, code = Http303) =
+proc redirectUri*(req: Request, res: var Response, target: string, code = Http303) =
   res.addHeader("Location", target)
   req.root.send(code, "", res.getHeaders())
 
