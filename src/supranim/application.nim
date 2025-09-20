@@ -1,20 +1,25 @@
-# Supranim is a simple MVC web framework
-# for building web apps & microservices in Nim.
 #
-# (c) 2024 MIT License | Made by Humans from OpenPeeps
-# https://supranim.com | https://github.com/supranim
+# Supranim is a full-featured web framework for building
+# web apps & microservices in Nim.
+# 
+#   (c) 2025 MIT License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
+#
 
+import std/[macros, os, tables, strutils, cpuinfo,
+    json, jsonutils, hashes, dynlib, envvars, typeinfo,
+    macrocache, cmdline, parseopt]
 
-import std/[macros, os, tables, strutils,
-    cpuinfo, json, jsonutils, hashes,
-    dynlib, envvars, typeinfo, macrocache]
-
+import pkg/threading/[once, channels]
 import pkg/[nyml, kapsis]
+
 import pkg/enimsql/model
 
-import ./support/[uuid]
-import ./core/[config, paths, pluginmanager]
-import ./core/http/router
+import ./core/[config, paths, plugins]
+import ./http/[request, response, router]
+
+import ./support/uuid
+import ./service/events
 
 from std/net import `$`, Port
 
@@ -26,23 +31,31 @@ type
   PluggableModules* = object
     controller: Table[Hash, PluggableController]
   
-  Application* = ref object
+  JsonString* = string  # an alias for JSON string
+
+  ApplicationObject = object
     key*: Uuid
     port: Port
     address: string = "127.0.0.1"
     domain, name: string
+    applicationPaths*: ApplicationPaths
+      ## A singleton of `ApplicationPaths`
     when defined webapp:
       assets: tuple[source, public: string]
     basepath: string
     configs*: OrderedTableRef[string, nyml.Document]
     router*: type(router.Router)
-    modules: PluggableModules
+    when defined supraMicroservice:
+      modules: PluggableModules
+        # A table of pluggable modules
     pluginManager: PluginManager
+      # An instance of the PluginManager
+    runtime*: Table[string, string]
 
   AppConfigDefect* = object of CatchableError
-
+  
 #
-# Application Crypto
+# ApplicationObject Crypto
 #
 import pkg/libsodium/[sodium, sodium_sizes]
 export bin2hex, hex2bin
@@ -51,12 +64,27 @@ proc info*(str: string, indentSize = 0) =
   echo indent(str, indentSize)
 
 #
+# ApplicationObject Instance
+#
+var
+  App: ptr ApplicationObject
+  onceApp = createOnce()
+
+type
+  Application* = ptr ApplicationObject
+
+proc initApplication*: Application =
+  ## Returns the singleton instance of the application
+  once(onceApp):
+    App = createSharedU(ApplicationObject)
+  result = App
+
+proc appInstance*(): ptr ApplicationObject =
+  result = initApplication()
+
+#
 # Config API
 #
-proc loadConfig*(app: Application) =
-  for ypath in walkPattern(configPath / "*.yml"):
-    app.configs[ypath.splitFile.name] = yaml(ypath.readFile).toJson
-
 proc config*(app: Application, key: string): JsonNode =
   let x = key.split(".")
   let id = x[0]
@@ -65,7 +93,7 @@ proc config*(app: Application, key: string): JsonNode =
     return app.configs[id].get(keys.join("."))
 
 #
-# Application API
+# ApplicationObject API
 #
 template initHttpRouter* =
   app.key = uuid4()
@@ -83,7 +111,7 @@ template initHttpRouter* =
             nnkStmtList.newTree(
               newAssignment(
                 newDotExpr(ident"app", ident"router"),
-                newCall(ident "newHttpRouter")
+                newCall(ident"newHttpRouter")
               ),
               registerRoutes
             )
@@ -99,7 +127,7 @@ template initHttpRouter* =
 when defined supraMicroservice:
   # Supranim's microservice architecture
   # builds pluggable modules as Shared Libraries.
-  proc loadPluggableModules*(app: Application) =
+  proc loadPluggableModules*(app: ApplicationObject) =
     ## Autoload pluggable modules from dynamic libraries
     displayInfo("Autoload Pluggable Modules")
     for path in walkDirRec(binPath / "modules" / "controller"):
@@ -111,7 +139,7 @@ when defined supraMicroservice:
             app.modules.controller[hash("getTestpage")] = callableHandle
           else: discard
   
-  proc enablePluginManager(app: Application) =
+  proc enablePluginManager(app: ApplicationObject) =
     displayInfo("Enable Plugin Manager")
     app.pluginmanager = initPluginManager()
     for path in walkDirRec(binPath / "modules" / "controller"):
@@ -121,7 +149,7 @@ when defined supraMicroservice:
         for route in module[].routes[].routes:
           app.router.registerRoute((route[1], route[2]), route[3], module[].controllers[route[0]])
   
-  # proc controllers*(app: Application, key: string): PluggableController =
+  # proc controllers*(app: ApplicationObject, key: string): PluggableController =
   #   ## Retrieves a Pluggable Controller by `key`. If not found
   #   ## returns `nil`
   #   let key = hash(key)
@@ -135,7 +163,7 @@ when defined supraMicroservice:
   #   else:
   #     res[].code = HttpCode(500)
 
-  # proc getModel*(app: Application, k: string): PluggableModel =
+  # proc getModel*(app: ApplicationObject, k: string): PluggableModel =
   #   ## Retrieve a Pluggable Model
   #   let k = hash(k)
   #   if likely(app.modules.model.hasKey(k)):
@@ -145,14 +173,27 @@ else:
   # Supranim's monolithic architecture.
   # Bundle Middleware, Controller and Route modules
   # as part of the main application
+  proc loadEventListeners*: NimNode {.compileTime.} =
+    # walks recursively and auto discover event listeners
+    # available at /event/listeners/*.nim.
+    result = newStmtList()
+    # add result, newCall(ident"initEventManager")
+    for f in walkDirRec(basePath / "event" / "listeners"):
+      if f.endsWith(".nim"):
+        if not f.splitFile.name.startsWith("!"):
+          add result, nnkImportStmt.newTree(newLit(f))
+  
   proc loadMiddlewares: NimNode {.compileTime.} =
     # walks recursively and auto discover middleware handles
     # available at /middleware/*.nim.
     result = newStmtList()
     for fMiddleware in walkDirRec(basePath / "middleware"):
       if fMiddleware.endsWith(".nim"):
-        if not fMiddleware.splitFile.name.startsWith("!"):
+        let f = fMiddleware.splitFile
+        if not f.name.startsWith("!"):
           add result, nnkImportStmt.newTree(newLit(fMiddleware))
+          let x = newLit(f.name)
+    
     # include `routes.nim` module
     add result, nnkIncludeStmt.newTree(newLit(basePath / "routes.nim"))
 
@@ -166,103 +207,168 @@ else:
         if not fController.splitFile.name.startsWith("!"):
           add result, nnkImportStmt.newTree(newLit(fController))
 
-macro init*(x) =
+
+macro init*(x: untyped) =
   ## Initializes Supranim application
   expectKind(x, nnkLetSection)
   expectKind(x[0][2], nnkEmpty)
-  result = newStmtList()
+  
   x[0][2] = newCall(
     newDotExpr(
       ident"supranim",
-      ident"Application"
+      ident"initApplication"
     )
   )
+  result = newStmtList()
   add result, x
+  add result, quote do:
+    displayInfo("Initialize Application")
+
   when not compileOption("app", "lib"):
-    # read `.env.yml` config file
-    loadEnvStatic()
+    loadEnvStatic() # read `.env.yml` config file
+    # Initialize the Supranim application
+    # in a CLI wrapper.
     add result, quote do:
+      import pkg/kapsis
+      import pkg/kapsis/[cli, runtime]
+
+      proc startCommand(v: Values) =
+        ## Kapsis `init` command handler
+        displayInfo("Initialize Application via CLI")
+        let path = $(v.get("directory").getPath)
+        if app.applicationPaths.init(path):
+          # try to initialize the application
+          display(span("⚡️ Start Supranim application"))
+          display(span"📂 Installation path:", span(app.applicationPaths.getInstallationPath))
+      
+      kapsis.settings(
+        # tell kapsis to not exit after running the callback
+        # as we want to continue with the application initialization.
+        #
+        # if we need to prevent application from running after
+        # the callback, will quit the process inside the callback
+        exitAfterCallback = false,
+      )
+
+      commands:
+        start path(directory):
+          ## Initialize Application
+
+      # block:
+      #   # parse command line arguments and check if the
+      #   # user provided a path to the installation directory
+      #   # for the current Supranim application.
+      #   # todo move this to a system Service Provider (once implemented)
+      #   let usage = """
+      # Usage:
+      #   $1 --init:./path/to/dir
+      #   """ % getAppFileName().splitFile.name
+      #   if cmdline.paramCount() > 0:
+      #     var p = initOptParser(commandLineParams())
+      #     p.next()
+      #     if p.key in ["init", "i"]:
+      #       if p.val.len > 0:
+      #         if app.applicationPaths.init(p.val):
+      #           display(span("⚡️ Start Supranim application"))
+      #           display(span"📂 Installation path:", span(app.applicationPaths.getInstallationPath))
+      #         else:
+      #           displayError("Directory not found",
+      #             quitProcess = true)
+      #       else:
+      #         displayError("Provide a valid path for initialization",
+      #           quitProcess = true)
+      #     else:
+      #       displayError("Missing `--init:./path/dir` or `-i:./path/dir` argument",
+      #         quitProcess = true)
+      #   else:
+      #     display(usage); quit()
+
       block:
         app.configs = newOrderedTable[string, Document]()
-        app.loadConfig()
+        for yamlFilePath in walkPattern(configPath / "*.yml"):
+          let configFile = yamlFilePath.splitFile
+          try:
+            app.configs[configFile.name] = yaml(yamlFilePath.readFile).toJson
+          except YAMLException:
+            displayError("Invalid YAML configuration: " & yamlFilePath)
 
-  if not dirExists(cachePath):
-    # creates `.cache` directory inside working project path.
-    # here we'll store generated nim files that can be
-    # called via `supranim/runtime`
-    createDir(cachePath)
 
-  if not dirExists(pluginsPath):
-    # Creates `/storage/plugins` directory for storing
-    # dynamic libraries aka plugins
-    createDir(pluginsPath)
-
-  # autoload /{project}./cache/runtime.nim
+  #
+  # Autoload Singleton modules
+  # for first time initialization
+  #
   var y = newStmtList()
-  var exports = newNimNode(nnkExportStmt)
-  for ipcfile in walkDirRec(servicePath / "ipc"):
-    let ipcfname = ipcfile.splitFile.name
-    if ipcfname.startsWith("!") == false and ipcfile.endsWith(".nim"):
-      add y, nnkImportStmt.newTree(
-        nnkInfix.newTree(
-          ident"as",
-          newLit ipcfile,
-          ident ipcfname
-        )
-      )
-      add exports, ident ipcfname
-  if exports.len > 0:
-    add y, exports
-    writeFile(cachePath / "runtime.nim", y.repr)
-  add result,
-    nnkImportStmt.newTree(
-      nnkInfix.newTree(
-        ident"/",
-        ident"supranim",
-        nnkBracket.newTree(
-          ident"runtime",
-        )
-      ),
-    )
-  add result,
-    nnkExportStmt.newTree(ident"runtime")
+  var singletonBlockStmt = newNimNode(nnkStmtList)
+  for path in walkDirRec(servicePath / "singleton"):
+    let f = path.splitFile
+    if f.ext == ".nim" and f.name.startsWith("!") == false:
+      singletonBlockStmt.add(nnkImportStmt.newTree(newLit(path)))
+  add y, singletonBlockStmt
+  add result, singletonBlockStmt
 
   add result, quote do:
-    import supranim/core/[request, response]
-    import std/[httpcore, macros, macrocache]
+    import std/[httpcore, macros, macrocache, options]
+    import supranim/http/[request, response]
+
   when defined supraMicroservice:
     add result, quote do:
       app.router.errorHandler(Http404, DefaultHttpError)
       app.router.errorHandler(Http500, DefaultHttpError)
       app.enablePluginManager()
   else:
+    add result, loadEventListeners()
     add result, loadMiddlewares()
     add result, loadControllers()
     add result, quote do:
       proc startupCallback() {.gcsafe.} =
+        # Initialize the HTTP Router
         {.gcsafe.}:
           initHttpRouter()
           app.router.errorHandler(Http404, errors.get4xx)
 
-template services*(s) {.inject.} =
-  macro initServices(x) =
+type
+  AppConfig* = object
+    release_unused_memory*: bool = false
+      ## Release unused memory on each request/response cycle.
+      ## This is useful for long-running applications
+      ## that handle a lot of requests and want to
+      ## keep memory usage low.
+
+macro appConfig*(
+  releaseUnusedMemory: static bool = false,
+) =
+  ## Macro to define compile-time configuration settings
+  discard
+
+template services*(app: Application, servicesStmt) {.inject.} =
+  macro preloadServices(node) =
     result = newStmtList()
+    add result,
+      nnkImportStmt.newTree(
+        nnkInfix.newTree(
+          ident"/",        
+          ident"supranim",
+          nnkInfix.newTree(
+            ident"/",
+            ident"core",
+            ident "servicemanager"
+          )
+        )
+      )
     var blockStmt = newNimNode(nnkBlockStmt)
     add blockStmt, newEmptyNode()
-    add blockStmt, x
+    add blockStmt, node
     add result, blockStmt
-  initServices(s)
+    # add result, newCall(ident"extractThreadServicesBackend")
+    add result, newCall(ident"extractThreadServicesClient")
+  preloadServices(servicesStmt)
 
-
-#
-# Runtime API
-#
 proc getPort*(app: Application): Port =
   ## Get port number
   result = app.port
 
 proc getUuid*(app: Application): Uuid =
-  ## Get Application UUID
+  ## Get ApplicationObject UUID
   result = app.key
 
 proc getAddress*(app: Application): string =

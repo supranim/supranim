@@ -1,3 +1,11 @@
+#
+# Supranim is a full-featured web framework for building
+# web apps & microservices in Nim.
+# 
+#   (c) 2025 MIT License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
+#
+
 import std/[macros, os]
 import pkg/nyml
 
@@ -9,6 +17,8 @@ const
     # `httpbeast`, `mummy`, `experimental`
 
 macro loadEnvStatic* =
+  if not fileExists(rootPath / ".env.yml"):
+    return
   let
     envContents = staticRead(rootPath / ".env.yml")
     ymlEnv = yaml(envContents).toJson

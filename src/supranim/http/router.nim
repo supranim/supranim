@@ -1,16 +1,16 @@
-# Supranim - A fast MVC web framework
-# for building web apps & microservices in Nim.
-#   (c) 2024 MIT License | Made by Humans from OpenPeeps
+#
+# Supranim is a full-featured web framework for building
+# web apps & microservices in Nim.
+# 
+#   (c) 2025 MIT License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
+#
 
-import std/[httpcore, critbits, tables,
-  nre, macros, macrocache, strutils, sequtils,
-  enumutils]
+import std/[httpcore, critbits, tables, nre, macros,
+        macrocache, strutils, sequtils, enumutils]
 
-import ../request, ../response
+import ./request, ./response
 import ./autolink
-
-export Request, Response, HttpCode
 
 type
   HttpRouteType* = enum
@@ -25,11 +25,10 @@ type
   Middleware* = proc(req: var Request, res: var Response): HttpCode {.nimcall.}
   Afterware* = Middleware
 
-  HttpRoute* = ref object
+  HttpRoute* = ref object of RootObj
     path: string
     httpMethod: HttpMethod
     callback*: Callable
-    isws* : bool
     case httpRouteType: HttpRouteType
       of DynamicRoute:
         routePatterns: RoutePatternsTable
@@ -42,12 +41,15 @@ type
       of true:
         afterwares: seq[Afterware]
       else: discard
+  
+  HttpRouteWs* = ref object of HttpRoute
+
 
   HttpRouterInstance = object
     httpGet*, httpPost, httpPut, httpHead,
       httpConnect, httpDelete, httpPatch,
-      httpTrace, httpOptions, httpErrors,
-      httpWS: CritBitTree[HttpRoute]
+      httpTrace, httpOptions, httpErrors: CritBitTree[HttpRoute]
+    httpWS: CritBitTree[HttpRouteWs]
 
   HttpRouterError* = object of CatchableError
 
@@ -105,6 +107,23 @@ proc newHttpRoute(path: string,
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
 
+
+proc newWsRoute(path: string,
+    httpMethod: HttpMethod, callback: Callable,
+    middlewares: seq[Middleware],
+    afterwares: seq[Afterware]
+): HttpRouteWs =
+  # Create a new `HttpRoute`
+  result = HttpRouteWs(
+    path: path,
+    httpMethod: httpMethod,
+    callback: callback,
+    hasMiddleware: middlewares.len > 0,
+    hasAfterware: afterwares.len > 0
+  )
+  if result.hasMiddleware: result.middlewares = middlewares
+  if result.hasAfterware:  result.afterwares = afterwares
+
 proc registerRoute*(router: var HttpRouterInstance,
   autolinked: sink (string, string),
   httpMethod: HttpMethod,
@@ -115,41 +134,41 @@ proc registerRoute*(router: var HttpRouterInstance,
 ) =
   ## Register a new `Route`
   let path = autolinked[0]
-  let routeObject =
-    newHttpRoute(path, httpMethod, callback, middlewares, afterwares)
-  case httpMethod
-  of HttpGet:
-    if isWebSocket:
-      if not router.httpWS.hasKey(path):
-        routeObject.isws = true
-        router.httpWS[path] = routeObject
-    else:
+  if isWebSocket:
+    let routeObject = newWsRoute(path, HttpGet, callback, middlewares, afterwares)
+    if not router.httpWS.hasKey(path):
+      router.httpWS[path] = routeObject
+  else:
+    let routeObject =
+      newHttpRoute(path, httpMethod, callback, middlewares, afterwares)
+    case httpMethod
+    of HttpGet:
       if not router.httpGet.hasKey(path):
         router.httpGet[path] = routeObject
-  of HttpPost:
-    if not router.httpPost.hasKey(path):
-      router.httpPost[path] = routeObject
-  of HttpPut:
-    if not router.httpPut.hasKey(path):
-      router.httpPut[path] = routeObject
-  of HttpPatch:
-    if not router.httpPatch.hasKey(path):
-      router.httpPatch[path] = routeObject
-  of HttpHead:
-    if not router.httpPatch.hasKey(path):
-      router.httpPatch[path] = routeObject
-  of HttpDelete:
-    if not router.httpDelete.hasKey(path):
-      router.httpDelete[path] = routeObject
-  of HttpTrace:
-    if not router.httpTrace.hasKey(path):
-      router.httpTrace[path] = routeObject
-  of HttpOptions:
-    if not router.httpOptions.hasKey(path):
-      router.httpOptions[path] = routeObject
-  of HttpConnect:
-    if not router.httpConnect.hasKey(path):
-      router.httpConnect[path] = routeObject
+    of HttpPost:
+      if not router.httpPost.hasKey(path):
+        router.httpPost[path] = routeObject
+    of HttpPut:
+      if not router.httpPut.hasKey(path):
+        router.httpPut[path] = routeObject
+    of HttpPatch:
+      if not router.httpPatch.hasKey(path):
+        router.httpPatch[path] = routeObject
+    of HttpHead:
+      if not router.httpPatch.hasKey(path):
+        router.httpPatch[path] = routeObject
+    of HttpDelete:
+      if not router.httpDelete.hasKey(path):
+        router.httpDelete[path] = routeObject
+    of HttpTrace:
+      if not router.httpTrace.hasKey(path):
+        router.httpTrace[path] = routeObject
+    of HttpOptions:
+      if not router.httpOptions.hasKey(path):
+        router.httpOptions[path] = routeObject
+    of HttpConnect:
+      if not router.httpConnect.hasKey(path):
+        router.httpConnect[path] = routeObject
 
 const httpMethods* = ["get", "post", "put", "patch", "head",
   "delete", "trace", "options", "connect", "ws"]
@@ -361,8 +380,6 @@ macro searchRoute(httpMethod: static string) =
   add result, quote do:
     if router.`verb`.hasKey(requestPath):
       result.route = router.`verb`[requestPath]
-    elif router.httpWS.hasKey(requestPath):
-      result.route = router.httpWS[requestPath]      
     else:
       for k in router.`verb`.keys:
         let someRegexMatch = requestPath.match(re(k))
@@ -371,7 +388,15 @@ macro searchRoute(httpMethod: static string) =
           let pattern = someRegexMatch.get().captures()
           for key in RegexMatch(pattern).pattern.captureNameId.keys:
             result.params[key] = pattern[key]
-          break
+          break # stop at the first match
+
+macro searchRouteWs*() =
+  ## Search for a WebSocket route
+  result = newstmtList()
+  add result, quote do:
+    if router.httpWS.hasKey(requestPath):
+      result.route = router.httpWS[requestPath]
+    else:
       for k in router.httpWS.keys:
         let someRegexMatch = requestPath.match(re(k))
         if someRegexMatch.isSome():
@@ -379,7 +404,7 @@ macro searchRoute(httpMethod: static string) =
           let pattern = someRegexMatch.get().captures()
           for key in RegexMatch(pattern).pattern.captureNameId.keys:
             result.params[key] = pattern[key]
-          break
+          break # stop at the first match
 
 proc checkExists*(router: var HttpRouterInstance,
     requestPath: string, httpMethod: HttpMethod
@@ -396,6 +421,11 @@ proc checkExists*(router: var HttpRouterInstance,
     of HttpConnect: searchRoute("httpConnect")
   result.exists =
     likely(result.route != nil)
+
+proc checkWsExists*(router: var HttpRouterInstance, requestPath: string
+    ): tuple[exists: bool, route: HttpRouteWs, params: owned Table[string, string]] =
+  searchRouteWs()
+  result.exists = likely(result.route != nil)
 
 #
 # Middleware API

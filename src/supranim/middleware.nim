@@ -1,11 +1,12 @@
-# Supranim - a modular web framework 
-# for building web apps & microservices in Nim.
 #
-# (c) 2024 Made by Humans from OpenPeeps | MIT License
-#     Check Docs: https://supranim.com
-#     Check GitHub: https://github.com/supranim
+# Supranim is a full-featured web framework for building
+# web apps & microservices in Nim.
+# 
+#   (c) 2025 MIT License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
+#
 
-import std/[options, macros, macrocache]
+import std/[options, macros, macrocache, json]
 export options
 
 from std/httpcore import HttpCode,
@@ -15,15 +16,13 @@ from std/httpcore import HttpCode,
 export HttpCode, Http200, Http204, Http301,
     Http302, Http403, Http404, Http500, Http501
 
-import ./core/[request, response]
-from ./core/http import resp
+import ./http/[request, response]
 
-export request, response, resp
+from ./http/router import baseMiddlewares
+from ./controller import getClientId, getSessionCookie
 
-from ./core/http/router import baseMiddlewares
-
-from ./controller import getClientId, getClientCookie
-export getClientId, getClientCookie
+export request, response, resp, json
+export getClientId, getSessionCookie
 
 macro newBaseMiddleware*(name: untyped, body: untyped) =
   ## A macro that generates new middleware procedure
@@ -36,8 +35,8 @@ macro newBaseMiddleware*(name: untyped, body: untyped) =
       name = nnkPostfix.newTree(ident("*"), name),
       params = [
         ident "HttpCode",
-        newIdentDefs(ident "req", ident "Request"),
-        newIdentDefs(ident "res", nnkVarTy.newTree(ident "Response"))
+        newIdentDefs(ident"req", nnkVarTy.newTree(ident"Request")),
+        newIdentDefs(ident"res", nnkVarTy.newTree(ident "Response"))
       ],
       body = body
     )
@@ -51,8 +50,13 @@ macro newMiddleware*(name, body: untyped) =
     name = nnkPostfix.newTree(ident("*"), name),
     params = [
       ident "HttpCode",
-      newIdentDefs(ident "req", ident "Request"),
-      newIdentDefs(ident "res", nnkVarTy.newTree(ident "Response"))
+      newIdentDefs(ident "req", nnkVarTy.newTree(ident "Request")),
+      newIdentDefs(ident "res", nnkVarTy.newTree(
+        nnkDotExpr.newTree(
+          ident"response",
+          ident"Response"
+        )
+      ))
     ],
     body = body,
     pragmas = nnkPragma.newTree(ident"nimcall")

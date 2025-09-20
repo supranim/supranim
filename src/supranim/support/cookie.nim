@@ -5,16 +5,13 @@
 # https://supranim.com | https://github.com/supranim
 
 import std/[cookies, tables, options,
-  strutils, times, sequtils]
+            strutils, times, sequtils]
 
 type
   Cookie* = object
-    name, value: string
-    expires: DateTime
-    domain: string
-    path: string
-    secure: bool
-    httpOnly: bool
+    name, value, domain, path: string
+    expires: Option[DateTime]
+    secure, httpOnly: bool
     maxAge: Option[int]
     sameSite: SameSite
 
@@ -22,9 +19,10 @@ type
 
 proc kv(k, v: string): string = result = k & "=" & v & ";"
 
-proc newCookie*(name, value: string, expirationDate: DateTime,
+proc newCookie*(name, value: string,
+      expirationDate: Option[DateTime] = none(DateTime),
       maxAge = none(int), domain = "", path = "/", secure,
-      httpOnly = true, sameSite = Lax): ref Cookie =
+      httpOnly = true, sameSite = Strict): ref Cookie =
   ## Create a new `Cookie` object and return as a ref object.
   new result
   result.name = name
@@ -42,11 +40,13 @@ proc getValue*(cookie: ref Cookie): string = cookie.value
 proc getDomain*(cookie: ref Cookie): string = cookie.domain
 
 proc isExpired*(cookie: ref Cookie): bool =
-  result = now() >= cookie.expires
+  if cookie.expires.isSome:
+    result = now() >= cookie.expires.get()
 
 proc expires*(cookie: ref Cookie) =
   ## Set `Cookie` as expired
-  cookie.expires = cookie.expires - 1.years
+  if cookie.expires.isSome:
+    cookie.expires = some(cookie.expires.get() - 1.years)
 
 proc parseCookies*(cookies: string): CookiesTable =
   ## Parse cookies and return a `CookiesTable`
@@ -55,12 +55,13 @@ proc parseCookies*(cookies: string): CookiesTable =
   for cookie in cookies.split(";"):
     let kv = cookie.split("=").mapIt(it.strip)
     if kv.len == 2:
-      result[kv[0]] = newCookie(kv[0], kv[1], now() + 1.hours)
+      result[kv[0]] = newCookie(kv[0], kv[1], some(now() + 1.hours))
 
 proc `$`*(cookie: ref Cookie): string =
   result.add kv(cookie.name, cookie.value)
   result.add kv("HttpOnly", $cookie.httpOnly)
-  result.add kv("Expires", format(cookie.expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"))
+  if cookie.expires.isSome():
+    result.add kv("Expires", format(cookie.expires.get().utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"))
   # result.add kv("MaxAge", $(cookie.maxAge.get))
   result.add kv("Domain", $cookie.domain)
   result.add kv("Path", $cookie.path)

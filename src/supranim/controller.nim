@@ -1,77 +1,116 @@
-# Supranim is a simple MVC web framework
-# for building web apps & microservices in Nim.
 #
-# (c) 2024 MIT License | Made by Humans from OpenPeeps
-# https://supranim.com | https://github.com/supranim
+# Supranim is a full-featured web framework for building
+# web apps & microservices in Nim.
+# 
+#   (c) 2025 MIT License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
+#
 
 import std/[macros, macrocache, asyncdispatch, strutils,
-  tables, httpcore, uri, sequtils, options, json]
+        tables, httpcore, uri, sequtils, options, json]
 
 import pkg/jsony
-import ./core/[request, response]
-import ./core/http/router
+import pkg/libsodium/[sodium, sodium_sizes]
+
+import ./http/[request, response, router]
 import ./support/cookie
 
-# import ./application except init, initSystemServices, configs
-# export application
-
+export jsony, uri
 export request, response, tables
 export asyncdispatch, options
 
-import pkg/libsodium/[sodium, sodium_sizes]
-export jsony
-
 let keypair* = crypto_box_keypair()
+
+type
+  BodyFields* = Table[string, string]
+  SomeBodyFields* = Option[BodyFields]
 
 #
 # Request - High-level API
 #
-proc getBody*(req: Request): string =
-  ## Retrieves `Request` body
-  result = req.root.body().get()
+proc setParams*(req: var Request, params: Table[string, string]) =
+  ## Sets the route parameters in `Request`
+  req.appData = addr(params)
 
-proc getFields*(req: Request): seq[(string, string)] =
+proc params*(req: Request): Table[string, string] =
+  ## Returns the route parameters from `Request`
+  if req.appData != nil:
+    var res = cast[ptr Table[string, string]](req.appData)
+    result = res[]
+
+proc getRequestBody*(req: var Request): string =
+  ## Retrieves `Request` body
+  req.getBody().get("")
+
+proc getFields*(req: var Request): seq[(string, string)] =
   ## Decodes `Request` body
-  result = toSeq(req.root.body.get().decodeQuery)
+  let body = req.getBody()
+  if body.isSome:
+    return toSeq(body.get().decodeQuery)
 
 proc getFieldsJson*(req: Request): JsonNode =
   try:
-    result = fromJson(req.root.body.get())
+    # result = fromJson(req.root.body.get())
+    discard
   except jsony.JsonError:
     discard
 
-proc getFieldsTable*(req: Request, fromJson: bool = false): Table[string, string] =
-  ## Decodes `Request` body to `Table[string, string]`
-  ## Optionally set `fromJson` to true if data is sent as JSON
-  if fromJson:
-    let jsonData = req.getFieldsJson()
-    if likely(jsonData != nil):
-      for k, v in jsonData:
-        result[k] = v.getStr
-  else:
-    for x in req.root.body.get().decodeQuery:
-      result[x[0]] = x[1]
+proc getBodyFields*(req: var Request): SomeBodyFields =
+  ## Returns the body fields from `Request`.
+  ## When called for the first time it will decode the body
+  ## and store the result in `bodyFields` table.
+  ## 
+  ## If `bodyFields` is already set, it will return the
+  ## existing table.
+  var res = BodyFields()
+  for x in req.getBody.get().decodeQuery:
+    res[x[0]] = x[1]
+  some(res)
 
-proc hasCookies*(req: Request): bool =
-  ## Check if `Request` contains Cookies header
-  result = req.getHeaders.get().hasKey("cookie")
+proc getBodyFieldsJson*(req: var Request): SomeBodyFields =
+  ## Returns the body fields from `Request`.
+  ## When called for the first time it will decode the body
+  ## and store the result in `bodyFields` table.
+  ##
+  ## Note this must be called only when the provided body is JSON.
+  ## Invalid JSON will be rejected and the returned value
+  ## will be `none`.
+  # if req.bodyFields.isNone():
+  #   try:
+  #     var res = BodyFields()
+  #     let jsondata = jsony.fromJson(req.root.body.get())
+  #     if likely(jsondata != nil):
+  #       for k, v in jsondata:
+  #         res[k] = v.getStr()
+  #     req.bodyFields = some(res)
+  #     return req.bodyFields
+  #   except jsony.JsonError: discard
+  discard
 
-proc getCookies*(req: Request): string =
-  ## Returns Cookies header from `Request`
-  result = req.getHeaders.get()["cookie"]
+proc getFieldsTable*(req: var Request): SomeBodyFields {.inline.} =
+  ## An alias of `getBodyFields`
+  req.getBodyFields()
 
-proc getClientId*(req: Request): Option[string] =
+proc getFieldsTableJson*(req: var Request): SomeBodyFields {.inline.} =
+  ## An alias of `getBodyFieldsJson`
+  req.getBodyFieldsJson()
+
+proc getQueryTable*(req: var Request): TableRef[string, string] {.inline.} =
+  ## Retrieve query parameters as a table
+  result = req.getQuery().get()
+
+proc getClientId*(req: var Request): Option[string] =
   ## Returns the client-side `ssid` from `Request`
   if req.hasCookies:
-    var clientCookies: CookiesTable = req.getCookies().parseCookies
+    var clientCookies: CookiesTable = parseCookies(req.getCookies().get())
     if clientCookies.hasKey("ssid"):
       let ssidCookie = clientCookies["ssid"]
       return some(ssidCookie.getValue())
 
-proc getClientCookie*(req: Request): ref Cookie =
+proc getSessionCookie*(req: var Request): ref Cookie =
   ## Returns the client-side `ssid` Cookie from `Request`
   if req.hasCookies:
-    var clientCookies: CookiesTable = req.getCookies().parseCookies
+    var clientCookies: CookiesTable = parseCookies(req.getCookies().get())
     if clientCookies.hasKey("ssid"):
       return clientCookies["ssid"]
 
@@ -86,7 +125,9 @@ macro newController*(name, body: untyped) =
         newEmptyNode(),
         newIdentDefs(
           ident"req",
-          ident"Request",
+          nnkVarTy.newTree(
+            ident"Request"
+          ),
           newEmptyNode()
         ),
         newIdentDefs(
@@ -107,28 +148,72 @@ macro newController*(name, body: untyped) =
 template ctrl*(name, body: untyped) =
   newController(name, body)
 
+macro go*(id: untyped, params: typed) =
+  ## Redirects to a specific GET route
+  ## using the controller identifier. This macro adds
+  ## support for redirecting with query parameters.
+  if queuedRoutes.hasKey(id.strVal):
+    let
+      route = queuedRoutes[id.strVal]
+      mtype = route[3]
+    if mtype.eqIdent("HttpGet"):
+      let path = route[2][1].strVal & "?"
+      return nnkStmtList.newTree(
+        newCall(
+          ident("redirect"),
+          nnkInfix.newTree(
+            ident"&",
+            newLit(path),
+            newCall(ident"encodeQuery", params)
+          )
+        )
+      )
+    error("HTTP redirects are available for GET handles. Got " & mtype.strVal, mtype)
+  error("Unknown handle name " & id.strVal, id)
+
 macro go*(id: untyped) =
-  ## To be used inside a controller handle
-  ## to redirect from other verbs to a GET route, for example
-  ## in a POST after login success you can say `go getAccount`. Nice!
+  ## Redirects to a specific GET route
+  ## using the controller identifier. 
   expectKind(id, nnkIdent)
   if queuedRoutes.hasKey(id.strVal):
-    let routeNode = queuedRoutes[id.strVal]
-    let methodType = routeNode[3]
-    if methodType.eqIdent("HttpGet"):
+    let
+      route = queuedRoutes[id.strVal]
+      mtype = route[3]
+    if mtype.eqIdent("HttpGet"):
       return nnkStmtList.newTree(
-        newCall(ident("redirect"),
-        routeNode[2][1]) # support named routes
+        newCall(
+          ident("redirect"),
+          route[2][1]
+        )
       )
-    error("HTTP redirects are available for GET handles. Got " & methodType.strVal, methodType)
+    error("HTTP redirects are available for GET handles. Got " & mtype.strVal, mtype)
   error("Unknown handle name " & id.strVal, id)
+
+template redirectTo*(controllerIdentName: typed) =
+  ## An alias of `go` macro that redirects to
+  ## specific `GET` route using the controller name.
+  go controllerIdentName
 
 template isAuth*(): bool =
   (
-    let ssid = req.getClientId
-    if not ssid.isNone:
-      let status = checkSession(ssid.get, req.getIp, req.getPlatform)
-      status.isSome()
-    else:
-      false
+    withDB do:
+      let ssid = req.getClientId()
+      if not ssid.isNone:
+        # let userData = %*{
+        #   "ip": req.getIp(),
+        #   "platform": req.getPlatform().get(),
+        #   "agent": req.getAgent().get(),
+        #   "sec-ch-ua": req.getBrowserName().get()
+        # }
+        # checkSession(ssid.get, userData)
+        let anySessions = Models.table("user_sessions").select
+              .where("session_id", ssid.get()).getAll() 
+        if anySessions.isEmpty():
+          false
+        else:
+          for storedSession in anySessions:
+            echo storedSession
+          false
+      else:
+        false
   )
