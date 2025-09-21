@@ -99,8 +99,6 @@ proc websocketUpgrade*(req: ptr evhttp_request,
           onClose: CloseCb = nil,
           onError: ErrorCb = nil): WebSocketConnection
 
-# ===== Internals =====
-
 const wsGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 proc computeAccept(key: cstring): string =
@@ -310,39 +308,3 @@ proc websocketUpgrade(req: ptr evhttp_request,
   if not result.onOpen.isNil:
     result.onOpen(addr result[])
   evhttp_send_reply_end(req)
-
-# ===== Example usage (optional) =====
-# when isMainModule:
-#   {.passL:"-L/opt/local/lib -levent", passC:"-I /opt/local/include".}
-#   let base = event_base_new()
-#   let httpd = evhttp_new(base)
-
-#   proc onMessage(c: ptr WebSocketConnectionImpl, opcode: int, data: openArray[byte]) {.gcsafe.} =
-#     {.gcsafe.}:
-#       if opcode == 0x1: # text
-#         let s = cast[string](data.toSeq)
-#         echo s
-#         sendText(c, "echo: " & s)
-#       else:
-#         sendBinary(c, @data)
-
-#   proc onClose(c: ptr WebSocketConnectionImpl, code: int, reason: string) =
-#     discard
-
-#   proc onError(c: ptr WebSocketConnectionImpl, err: string) =
-#     discard
-
-#   proc onOpen(c: ptr WebSocketConnectionImpl) =
-#     echo "WebSocket connection opened: ", cast[int](c)
-
-#   discard evhttp_set_cb(httpd, "/live",
-#     proc (req: ptr evhttp_request, arg: pointer) {.cdecl.} =
-#       let ws = websocketUpgrade(req,
-#         onOpen = onOpen,
-#         onMessage = onMessage,
-#         onClose = onClose,
-#         onError = onError)
-#       discard ws
-#     , nil)
-#   discard evhttp_bind_socket(httpd, "0.0.0.0", 8080)
-#   discard event_base_loop(base, 0)
