@@ -60,9 +60,18 @@ else:
   #
   template getBaseMiddlewares(req, res) =
     runBaseMiddlewares(req, res)
-  
+
   template run*(App: Application) =
     # runs the application
+    
+    template invoke4xxHandler(path, req, res) =
+      when defined supraMicroservice:
+        App.router.call4xx(req.addr, res.addr)
+      else:
+        App.router.call4xx(req, res)
+      req.resp(Http404, res.getBody, res.getHeaders)
+      emitter("http.error", some(@[path, $Http404]))
+      
     when defined supraWebkit:
       # Bootstrap Supranim from a web-based `WebKit` desktop application. 
       discard # todo to be implemented/documented
@@ -101,11 +110,20 @@ else:
                   # resolve afterwares
                   discard runtimeCheck.route.resolveAfterware(req, res)
                   
-                  # send response
-                  req.resp(res.getCode, res.getBody, res.getHeaders)
+                  if not res.isStreaming:
+                    # when `isStreaming` is true the response is being streamed
+                    # otherwise we send the full response here
+                    req.resp(res.getCode, res.getBody, res.getHeaders)
                 else:
                   when not defined supraMicroservice:
-                    runtimeCheck.route.callback(req, res)
+                    try: 
+                      runtimeCheck.route.callback(req, res)
+                    except Exception as e:
+                      # is important to catch unexpected errors here
+                      # in order to prevent the server from crashing
+                      displayError("Error processing request: " & e.msg)
+                      req.resp(Http500, "Internal Server Error", res.getHeaders())
+                      return
                   discard runtimeCheck.route.resolveAfterware(req, res)
                   req.resp(res.getCode, res.getBody, res.headers)
             else:
@@ -114,7 +132,6 @@ else:
           of false:
             let runtimeCheck = App.router.checkWsExists(path)
             if runtimeCheck.exists:
-              discard
               # if req.raw.isWebSocketUpgrade():
                 # discard 
                 # discard evhttp_set_cb(httpd, "/live", ws_upgrader, nil)
@@ -136,24 +153,16 @@ else:
                   # useful when the supranim application is running
                   # without a proxy server in front of it.
                   var hasFoundResource: bool
-                  if strutils.startsWith(path, "/assets"):
+                  if strutils.startsWith(path, "/assets"): # expose `/assets` route for customization
                     req.sendAssets(path, res.getHeaders(), hasFoundResource)
                   if not hasFoundResource:
-                    when defined supraMicroservice:
-                      App.router.call4xx(req.addr, res.addr)
-                    else:
-                      App.router.call4xx(req, res)
-                    req.resp(Http404, res.getBody, res.getHeaders)
-                    emitter("http.error", some(@[path, $Http404]))
+                    invoke4xxHandler(path, req, res)
                 else:
-                  when defined supraMicroservice:
-                    App.router.call4xx(req.addr, res.addr)
-                  else:
-                    App.router.call4xx(req, res)
-                  req.resp(Http404, res.getBody, res.getHeaders)
-                  emitter("http.error", some(@[path, $Http404]))
-          freemem(req); freemem(res)
-      
+                  invoke4xxHandler(path, req, res)
+              else:
+                invoke4xxHandler(path, req, res)
+          discard releaseUnusedMemory() # free up memory after each request
+
       # Start the HTTP server
       let domain: Domain = parseEnum[Domain](App.config("server.type").getStr)
       emitter("app.startup")
@@ -163,6 +172,4 @@ else:
       else:
         # standard web server startup
         var server = newWebServer(Port(app.config("server.port").getInt))
-
-        # start the server
         server.start(onRequest, startupCallback)
