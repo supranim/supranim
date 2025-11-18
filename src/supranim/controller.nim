@@ -15,15 +15,19 @@ import pkg/libsodium/[sodium, sodium_sizes]
 import ./http/[request, response, router]
 import ./support/cookie
 
+from ./http/webserver import streamFile
+
 export jsony, uri
 export request, response, tables
 export asyncdispatch, options
 
+export streamFile
+
 let keypair* = crypto_box_keypair()
 
 type
-  BodyFields* = Table[string, string]
-  SomeBodyFields* = Option[BodyFields]
+  BodyData* = TableRef[string, string]
+  SomeBodyData* = Option[BodyData]
 
 #
 # Request - High-level API
@@ -55,45 +59,53 @@ proc getFieldsJson*(req: Request): JsonNode =
   except jsony.JsonError:
     discard
 
-proc getBodyFields*(req: var Request): SomeBodyFields =
+proc getSomeBodyData*(req: var Request): SomeBodyData =
   ## Returns the body fields from `Request`.
   ## When called for the first time it will decode the body
-  ## and store the result in `bodyFields` table.
+  ## and store the result in `BodyData` table.
   ## 
-  ## If `bodyFields` is already set, it will return the
+  ## If `BodyData` is already set, it will return the
   ## existing table.
-  var res = BodyFields()
+  var res = BodyData()
   for x in req.getBody.get().decodeQuery:
     res[x[0]] = x[1]
   some(res)
 
-proc getBodyFieldsJson*(req: var Request): SomeBodyFields =
+proc getBodyDataJson*(req: var Request): SomeBodyData =
   ## Returns the body fields from `Request`.
   ## When called for the first time it will decode the body
-  ## and store the result in `bodyFields` table.
+  ## and store the result in `BodyData` table.
   ##
   ## Note this must be called only when the provided body is JSON.
   ## Invalid JSON will be rejected and the returned value
   ## will be `none`.
-  # if req.bodyFields.isNone():
+  # if req.BodyData.isNone():
   #   try:
-  #     var res = BodyFields()
+  #     var res = BodyData()
   #     let jsondata = jsony.fromJson(req.root.body.get())
   #     if likely(jsondata != nil):
   #       for k, v in jsondata:
   #         res[k] = v.getStr()
-  #     req.bodyFields = some(res)
-  #     return req.bodyFields
+  #     req.BodyData = some(res)
+  #     return req.BodyData
   #   except jsony.JsonError: discard
   discard
 
-proc getFieldsTable*(req: var Request): SomeBodyFields {.inline.} =
-  ## An alias of `getBodyFields`
-  req.getBodyFields()
+proc getFieldsTable*(req: var Request): SomeBodyData {.inline.} =
+  ## An alias of `getSomeBodyData`
+  req.getSomeBodyData()
 
-proc getFieldsTableJson*(req: var Request): SomeBodyFields {.inline.} =
-  ## An alias of `getBodyFieldsJson`
-  req.getBodyFieldsJson()
+proc getFieldsTableJson*(req: var Request): SomeBodyData {.inline.} =
+  ## An alias of `getBodyDataJson`
+  req.getBodyDataJson()
+
+proc getBodyData*[T: BodyData|JsonNode](req: var Request, dataType: typedesc[T]): Option[T] =
+  ## Returns the body data from `Request` as `JsonNode`
+  # result = jsony.fromJson(req.getRequestBody())
+  when T is BodyData:
+    result = req.getSomeBodyData()
+  elif T is JsonNode:
+    return some(jsony.fromJson(req.getBody.get()))
 
 proc getQueryTable*(req: var Request): TableRef[string, string] {.inline.} =
   ## Retrieve query parameters as a table
@@ -211,9 +223,16 @@ template isAuth*(): bool =
         if anySessions.isEmpty():
           false
         else:
-          for storedSession in anySessions:
-            echo storedSession
+          # for storedSession in anySessions:
+            # echo storedSession
           false
       else:
         false
   )
+
+#
+# Paths
+#
+
+template storage*(path: string): string =
+  resolve(appInstance().applicationPaths, "storage", path)

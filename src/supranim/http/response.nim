@@ -21,6 +21,7 @@ type
     headers*: HttpHeaders
     body*: string
     middlewareIndex*, afterwareIndex*: int
+    isStreaming*: bool
 
 const
   HeaderHttpRedirect = "Location: $1"

@@ -93,13 +93,11 @@ proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
   let uriPath = $evhttp_request_get_uri(raw)
   let evUri: ptr evhttp_uri = evhttp_request_get_evhttp_uri(raw)
   if evUri != nil:
+    req.uri = uri.parseUri(uriPath)
     req.path = if uriPath.len == 0: "/" else: uriPath
-    req.uri = Uri(
-      scheme: $evhttp_uri_get_scheme(evUri),
-      path: req.path,
-      query: $evhttp_uri_get_query(evUri),
-      anchor: $evhttp_uri_get_fragment(evUri)
-    )
+    req.uri.scheme = $evhttp_uri_get_scheme(evUri)
+    req.uri.query = $evhttp_uri_get_query(evUri)
+    req.uri.anchor = $evhttp_uri_get_fragment(evUri)
   # Call the user-defined request handler
   appOnRequest(req)
 
@@ -287,11 +285,12 @@ proc getQuery*(req: var Request): Option[TableRef[string, string]] =
   if req.uriQuery.isSome:
     return req.uriQuery
   let query = decodeQuery(req.uri.query).toSeq()
+  var queryTable = newTable[string, string]()
   if query.len > 0:
-    req.uriQuery = some(newTable[string, string]())
     for q in query:
-      req.uriQuery.get()[q[0]] = q[1]
-  result = req.uriQuery
+      queryTable[q[0]] = q[1]
+  result = some(queryTable)
+  req.uriQuery = result
 
 type
   StreamFileCtx = object
@@ -352,7 +351,7 @@ proc streamFile*(req: var Request, filePath: string, resHeaders: HttpHeaders = n
   if fd < 0:
     req.send(404, "File not found")
     return
-  
+
   let fileSize = getFileSize(filePath)
   if fileSize < 0: # allow empty files
     discard close(fd)

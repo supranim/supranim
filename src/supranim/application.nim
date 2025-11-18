@@ -221,17 +221,14 @@ macro init*(x: untyped) =
   )
   result = newStmtList()
   add result, x
-  add result, quote do:
-    displayInfo("Initialize Application")
-
   when not compileOption("app", "lib"):
+    # Application Initialization via Kapsis CLI
     loadEnvStatic() # read `.env.yml` config file
-    # Initialize the Supranim application
-    # in a CLI wrapper.
     add result, quote do:
       import pkg/kapsis
       import pkg/kapsis/[cli, runtime]
 
+      var appInitialized = false
       proc startCommand(v: Values) =
         ## Kapsis `init` command handler
         displayInfo("Initialize Application via CLI")
@@ -240,7 +237,7 @@ macro init*(x: untyped) =
           # try to initialize the application
           display(span("⚡️ Start Supranim application"))
           display(span"📂 Installation path:", span(app.applicationPaths.getInstallationPath))
-      
+          appInitialized = true
       kapsis.settings(
         # tell kapsis to not exit after running the callback
         # as we want to continue with the application initialization.
@@ -253,35 +250,9 @@ macro init*(x: untyped) =
       commands:
         start path(directory):
           ## Initialize Application
-
-      # block:
-      #   # parse command line arguments and check if the
-      #   # user provided a path to the installation directory
-      #   # for the current Supranim application.
-      #   # todo move this to a system Service Provider (once implemented)
-      #   let usage = """
-      # Usage:
-      #   $1 --init:./path/to/dir
-      #   """ % getAppFileName().splitFile.name
-      #   if cmdline.paramCount() > 0:
-      #     var p = initOptParser(commandLineParams())
-      #     p.next()
-      #     if p.key in ["init", "i"]:
-      #       if p.val.len > 0:
-      #         if app.applicationPaths.init(p.val):
-      #           display(span("⚡️ Start Supranim application"))
-      #           display(span"📂 Installation path:", span(app.applicationPaths.getInstallationPath))
-      #         else:
-      #           displayError("Directory not found",
-      #             quitProcess = true)
-      #       else:
-      #         displayError("Provide a valid path for initialization",
-      #           quitProcess = true)
-      #     else:
-      #       displayError("Missing `--init:./path/dir` or `-i:./path/dir` argument",
-      #         quitProcess = true)
-      #   else:
-      #     display(usage); quit()
+      
+      # exit if not initialized
+      if not appInitialized: quit()
 
       block:
         app.configs = newOrderedTable[string, Document]()
@@ -291,7 +262,7 @@ macro init*(x: untyped) =
             app.configs[configFile.name] = yaml(yamlFilePath.readFile).toJson
           except YAMLException:
             displayError("Invalid YAML configuration: " & yamlFilePath)
-
+    
 
   #
   # Autoload Singleton modules
