@@ -1,37 +1,31 @@
-# Supranim is a simple MVC web framework
-# for building web apps & microservices in Nim.
+# Supranim is a lightweight, high-performance MVC framework for Nim,
+# designed to simplify the development of web applications and REST APIs.
 #
-# (c) 2024 MIT License | Made by Humans from OpenPeeps
-# https://supranim.com | https://github.com/supranim
-
-#   Written by Anirudh Oppiliappan.
-#   Released under the MIT license
-#   https://github.com/icyphox/nanoid.nim
+# It features intuitive routing, modular architecture, and built-in support
+# for modern web standards, making it easy to build scalable and maintainable
+# projects.
+#
+# (c) 2025 Supranim | MIT License
+#     Made by Humans from OpenPeeps
+#     https://supranim.com | https://github.com/supranim
 
 import std/[math, lenientops, sysrand]
 
 const
+  masks = [15, 31, 63, 127, 255]
   defaultAlphabet = "_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  defaultSize = 21
 
 proc generate*(alphabet: string = defaultAlphabet,
-    size: int = defaultSize): string =
-  if alphabet == "":
-    result = ""
-  if size < 1:
-    result = ""
-
-  let masks = [15, 31, 63, 127, 255]
+                size: int = 21): string =
+  if alphabet == "" or size < 1:
+    return # invalid parameters
   var mask: int = 1
-
   for m in masks:
     if m >= len(alphabet) - 1:
       mask = m
       break
 
   var step = int(ceil(1.6 * mask * size / len(alphabet)))
-  var nanoID: string
-
   while true:
     var randomBytes: seq[byte]
     randomBytes = urandom(step)
@@ -39,6 +33,6 @@ proc generate*(alphabet: string = defaultAlphabet,
       var randByte = randomBytes[i].int and mask
       if randByte < len(alphabet):
         if alphabet[randByte] in alphabet:
-          nanoID.add(alphabet[randByte])
-          if len(nanoID) >= size:
-            return nanoID
+          result.add(alphabet[randByte])
+          if len(result) >= size:
+            return # returns the generated ID from `result`

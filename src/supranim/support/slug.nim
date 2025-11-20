@@ -25,3 +25,7 @@ proc slugify*(str: string, sep: static char = '-'): string =
     else:
       add result, x[i].toLowerAscii
       inc i
+
+proc generate*(str: string, sep: static char = '-'): string {.inline.} =
+  ## An alias of `slugify`
+  slugify(str, sep)

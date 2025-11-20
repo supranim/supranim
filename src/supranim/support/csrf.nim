@@ -1,9 +1,13 @@
-# Supranim is a simple MVC-style web framework for building
-# fast web applications, REST API microservices and other cool things.
+# Supranim is a lightweight, high-performance MVC framework for Nim,
+# designed to simplify the development of web applications and REST APIs.
 #
-# (c) 2022 Supranim is released under MIT License
-#          Made by Humans from OpenPeep
-#          https://supranim.com | https://github.com/supranim
+# It features intuitive routing, modular architecture, and built-in support
+# for modern web standards, making it easy to build scalable and maintainable
+# projects.
+#
+# (c) 2025 Supranim | MIT License
+#      Made by Humans from OpenPeeps
+#      https://supranim.com | https://github.com/supranim
 
 import nimcrypto
 import std/[tables, times]
@@ -32,51 +36,51 @@ when compileOption("threads"):
 else:
   var Csrf*: SecurityTokens
 
-proc init*(this: var SecurityTokens, ttl = initDuration(minutes = 60)) =
+proc init*(csrfManager: var SecurityTokens, ttl = initDuration(minutes = 60)) =
   ## Initialize a `Csrf` singleton
   Csrf = SecurityTokens(tokens: newTable[string, Token](), ttl: ttl)
 
-method newToken*(this: var SecurityTokens): Token =
+proc newToken*(csrfManager: var SecurityTokens): Token =
   ## Generate a new CSRF token
   var randBytes = newSeq[byte](32)
   discard urandom(randBytes)
   let key = toLowerAscii($digest(sha1, randBytes.toHex))
   result = Token(state: NewToken, key: key, created: now())
-  this.tokens[key] = result
+  csrfManager.tokens[key] = result
 
-method checkToken*(this: var SecurityTokens, token: string): TokenState =
+proc checkToken*(csrfManager: var SecurityTokens, token: string): TokenState =
   ## Check a string token and determine its state.
   ## Invalid or non existing tokens will return `InvalidToken`.
-  if this.tokens.hasKey token:
-    if now() - this.tokens[token].created >= this.ttl:
+  if csrfManager.tokens.hasKey token:
+    if now() - csrfManager.tokens[token].created >= csrfManager.ttl:
       return ExpiredToken
-    result = this.tokens[token].state
+    result = csrfManager.tokens[token].state
 
-method isValid*(this: var SecurityTokens, token: string): bool =
+proc isValid*(csrfManager: var SecurityTokens, token: string): bool =
   ## Validates a string token.
   ## TODO create a csrf middleware to handle 403 responses
-  let tokenState = this.checkToken(token)
+  let tokenState = csrfManager.checkToken(token)
   result = tokenState == NewToken
 
-method use*(this: var SecurityTokens, token: string): HttpCode =
+proc use*(csrfManager: var SecurityTokens, token: string): HttpCode =
   ## Use the given token and change its state
-  if this.isValid token:
-    this.tokens[token].state = UsedToken
+  if csrfManager.isValid token:
+    csrfManager.tokens[token].state = UsedToken
     result = HttpCode(200)
   else:
     result = HttpCode(403)
 
-method use*(this: var SecurityTokens, token: Token): HttpCode =
+proc use*(csrfManager: var SecurityTokens, token: Token): HttpCode =
   result = use(this, token.key)
 
-method `$`*(token: Token): string =
+proc `$`*(token: Token): string =
   result = token.key
 
-method flush*(this: var SecurityTokens) =
+proc flush*(csrfManager: var SecurityTokens) =
   ## Flush all tokens that have been used or expired.
   var trash: seq[string]
-  for k, i in pairs(this.tokens):
+  for k, i in pairs(csrfManager.tokens):
     if i.state in {UsedToken, ExpiredToken}:
       trash.add k
   for token in trash:
-    this.tokens.del(token)
+    csrfManager.tokens.del(token)
