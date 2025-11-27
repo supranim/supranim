@@ -175,10 +175,9 @@ else:
   # as part of the main application
   proc loadEventListeners*: NimNode {.compileTime.} =
     # walks recursively and auto discover event listeners
-    # available at /event/listeners/*.nim.
     result = newStmtList()
     # add result, newCall(ident"initEventManager")
-    for f in walkDirRec(basePath / "event" / "listeners"):
+    for f in walkDirRec(eventsPath / "listener"):
       if f.endsWith(".nim"):
         if not f.splitFile.name.startsWith("!"):
           add result, nnkImportStmt.newTree(newLit(f))
@@ -187,7 +186,7 @@ else:
     # walks recursively and auto discover middleware handles
     # available at /middleware/*.nim.
     result = newStmtList()
-    for fMiddleware in walkDirRec(basePath / "middleware"):
+    for fMiddleware in walkDirRec(middlewarePath):
       if fMiddleware.endsWith(".nim"):
         let f = fMiddleware.splitFile
         if not f.name.startsWith("!"):
@@ -207,11 +206,14 @@ else:
         if not fController.splitFile.name.startsWith("!"):
           add result, nnkImportStmt.newTree(newLit(fController))
 
-
 macro init*(x: untyped) =
   ## Initializes Supranim application
   expectKind(x, nnkLetSection)
-  expectKind(x[0][2], nnkEmpty)
+  # expectKind(x[0][2], nnkEmpty)
+  var commandLineCommands = newEmptyNode()
+  if x[0][2].kind == nnkCall:
+    commandLineCommands = x[0][2][1] # get the commands block
+    x[0][2] = newEmptyNode() # remove commands from init
   
   x[0][2] = newCall(
     newDotExpr(
@@ -224,6 +226,14 @@ macro init*(x: untyped) =
   when not compileOption("app", "lib"):
     # Application Initialization via Kapsis CLI
     loadEnvStatic() # read `.env.yml` config file
+    
+    var cliCommandsStmt = newStmtList()
+    cliCommandsStmt.add(
+      newCall(
+        ident"commands",
+        commandLineCommands
+      )
+    )
     add result, quote do:
       import pkg/kapsis
       import pkg/kapsis/[cli, runtime]
@@ -238,6 +248,7 @@ macro init*(x: untyped) =
           display(span("⚡️ Start Supranim application"))
           display(span"📂 Installation path:", span(app.applicationPaths.getInstallationPath))
           appInitialized = true
+          
       kapsis.settings(
         # tell kapsis to not exit after running the callback
         # as we want to continue with the application initialization.
@@ -247,9 +258,7 @@ macro init*(x: untyped) =
         exitAfterCallback = false,
       )
 
-      commands:
-        start path(directory):
-          ## Initialize Application
+      `cliCommandsStmt`
       
       # exit if not initialized
       if not appInitialized: quit()
@@ -270,7 +279,7 @@ macro init*(x: untyped) =
   #
   var y = newStmtList()
   var singletonBlockStmt = newNimNode(nnkStmtList)
-  for path in walkDirRec(servicePath / "singleton"):
+  for path in walkDirRec(servicePath / "provider"):
     let f = path.splitFile
     if f.ext == ".nim" and f.name.startsWith("!") == false:
       singletonBlockStmt.add(nnkImportStmt.newTree(newLit(path)))
@@ -305,9 +314,7 @@ type
       ## that handle a lot of requests and want to
       ## keep memory usage low.
 
-macro appConfig*(
-  releaseUnusedMemory: static bool = false,
-) =
+macro appConfig*(releaseUnusedMemory: static bool = false) =
   ## Macro to define compile-time configuration settings
   discard
 
