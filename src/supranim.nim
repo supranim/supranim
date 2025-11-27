@@ -27,8 +27,6 @@ else:
 
   export application, router
   
-  displayInfo("Autoload Thread Service:")
-
   macro runBaseMiddlewares*(req, res) =
     ## This macro is used to run the base middlewares
     ## for the application

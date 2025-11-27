@@ -32,9 +32,3 @@ macro newAfterware*(name, body: untyped) =
     ],
     body = body
   )
-
-template next*(status: HttpCode = HttpCode(202)): typed =
-  return status
-
-template fail*(status: HttpCode = HttpCode(403)): typed =
-  return status
