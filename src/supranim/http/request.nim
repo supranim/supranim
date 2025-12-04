@@ -17,6 +17,8 @@ from ./webserver import Request, send, getIp, getHeaders,
 export Request, send, getIp, getHeaders,
       getHeader, findHeader, `$`, getQuery, getBody
 
+export httpcore
+
 proc getHttpMethod*(req: var Request): HttpMethod =
   ## Returns the `HttpMethod` from `Request`
   result = req.getMethod()

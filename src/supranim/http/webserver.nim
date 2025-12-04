@@ -9,7 +9,7 @@
 import std/[os, posix, tables, httpcore, options,
           uri, strutils, strscans, sequtils]
 
-import pkg/libevent/bindings/[http, event, buffer, threaded]
+import pkg/libevent/bindings/[http, event, buffer, threaded, listener]
 export evhttp_request, threaded
 
 # for some reason the emit pragma won't work if placed in
@@ -61,7 +61,7 @@ type
     appData*: pointer
       ## User-defined application data (optional).
 
-  OnRequest* = proc(req: var Request): void
+  OnRequest* = proc(req: var Request) {.nimcall.}
     ## Callback type for handling HTTP requests.
   
   StartupCallback* = proc() {.gcsafe.}
@@ -77,16 +77,17 @@ proc newWebServer*(port: Port = Port(8080)): WebServer =
   # Create HTTP server
   result.httpServer = evhttp_new(result.base)
   assert result.httpServer != nil
-  
-  result.port = port
 
-var appOnRequest: OnRequest # global request handler
+  result.port = port
 
 proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
   # initialize Request object
   var req = Request(
     raw: raw,
-    clientIp: $evhttp_request_get_host(raw),
+    clientIp: (
+      if evhttp_request_get_host(raw) != nil: $evhttp_request_get_host(raw)
+      else: "unknown"
+    ),
     httpMethod: evhttp_request_get_command(raw)
   )
   # parse the path and URI
@@ -99,7 +100,8 @@ proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
     req.uri.query = $evhttp_uri_get_query(evUri)
     req.uri.anchor = $evhttp_uri_get_fragment(evUri)
   # Call the user-defined request handler
-  appOnRequest(req)
+  let handler = cast[OnRequest](arg)
+  if handler != nil: handler(req)
 
 proc start*(server: var WebServer) =
   ## Start the web server with default no-op request handler.
@@ -108,16 +110,15 @@ proc start*(server: var WebServer) =
   discard event_base_dispatch(server.base) # or event_base_loop(base, 0)
 
 proc start*(server: var WebServer, onRequest: OnRequest,
-        startupCallback: StartupCallback = nil) =
+              startupCallback: StartupCallback = nil) =
   ## Starts the web server event loop.
   assert server.httpServer != nil # ensure server is initialized
   assert evhttp_bind_socket(server.httpServer, "0.0.0.0", server.port.uint16) == 0
   
   # Set the global request handler
-  appOnRequest = onRequest
   if startupCallback != nil:
     startupCallback() # TODO move to initialRequest?
-  evhttp_set_gencb(server.httpServer, initialOnRequest, nil)
+  evhttp_set_gencb(server.httpServer, initialOnRequest, cast[pointer](onRequest))
   assert event_base_dispatch(server.base) > -1
 
   # cleanup after event loop ends
@@ -422,7 +423,8 @@ proc streamFile*(req: var Request, filePath: string, resHeaders: HttpHeaders = n
 
 proc sendFile*(req: Request, filePath: string, resHeaders: HttpHeaders) =
   ## Sends a file as a single chunk using zero-copy.
-  ## Note: Does not check for file type. Ensure to set the correct `Content-Type` header.
+  ## Note: Does not check for file type. Ensure to
+  ## set the correct `Content-Type` header.
   let fd = open(filePath, O_RDONLY)
   if fd < 0:
     req.send(404, "File not found")
@@ -480,7 +482,8 @@ proc drainChunk*(stream: var BodyStream, len: int) =
   if stream.buf != nil and len > 0:
     discard evbuffer_drain(stream.buf, len.csize_t)
 
-proc runServer*(onRequest: OnRequest, startupCallback: StartupCallback, port = Port(3000)) =
+proc runServer*(onRequest: OnRequest,
+            startupCallback: StartupCallback, port = Port(3000)) =
   ## Starts the HTTP server using `pkg/libevent`
   ## and runs the request handler.
   var server = newWebServer(port)
