@@ -206,6 +206,15 @@ else:
         if not fController.splitFile.name.startsWith("!"):
           add result, nnkImportStmt.newTree(newLit(fController))
 
+  proc loadConsole: NimNode {.compileTime.} =
+    # walks recursively and auto discover console commands
+    # available at /console/*.nim
+    result = newStmtList()
+    for fConsole in walkDirRec(basePath / "console"):
+      if fConsole.endsWith(".nim"):
+        if not fConsole.splitFile.name.startsWith("!"):
+          add result, nnkImportStmt.newTree(newLit(fConsole))
+
 macro init*(x: untyped) =
   ## Initializes Supranim application
   expectKind(x, nnkLetSection)
@@ -226,43 +235,8 @@ macro init*(x: untyped) =
   when not compileOption("app", "lib"):
     # Application Initialization via Kapsis CLI
     loadEnvStatic() # read `.env.yml` config file
-    
-    var cliCommandsStmt = newStmtList()
-    cliCommandsStmt.add(
-      newCall(
-        ident"commands",
-        commandLineCommands
-      )
-    )
+
     add result, quote do:
-      import pkg/kapsis
-      import pkg/kapsis/[cli, runtime]
-
-      var appInitialized = false
-      proc startCommand(v: Values) =
-        ## Kapsis `init` command handler
-        displayInfo("Initialize Application via CLI")
-        let path = $(v.get("directory").getPath)
-        if app.applicationPaths.init(path):
-          # try to initialize the application
-          display(span("⚡️ Start Supranim application"))
-          display(span"📂 Installation path:", span(app.applicationPaths.getInstallationPath))
-          appInitialized = true
-          
-      kapsis.settings(
-        # tell kapsis to not exit after running the callback
-        # as we want to continue with the application initialization.
-        #
-        # if we need to prevent application from running after
-        # the callback, will quit the process inside the callback
-        exitAfterCallback = false,
-      )
-
-      `cliCommandsStmt`
-      
-      # exit if not initialized
-      if not appInitialized: quit()
-
       block:
         app.configs = newOrderedTable[string, Document]()
         for yamlFilePath in walkPattern(configPath / "*.yml"):
@@ -271,20 +245,19 @@ macro init*(x: untyped) =
             app.configs[configFile.name] = yaml(yamlFilePath.readFile).toJson
           except YAMLException:
             displayError("Invalid YAML configuration: " & yamlFilePath)
-    
+      
 
   #
-  # Autoload Singleton modules
-  # for first time initialization
+  # Autoload Service Providers
   #
   var y = newStmtList()
-  var singletonBlockStmt = newNimNode(nnkStmtList)
+  var serviceProviders = newNimNode(nnkStmtList)
   for path in walkDirRec(servicePath / "provider"):
     let f = path.splitFile
     if f.ext == ".nim" and f.name.startsWith("!") == false:
-      singletonBlockStmt.add(nnkImportStmt.newTree(newLit(path)))
-  add y, singletonBlockStmt
-  add result, singletonBlockStmt
+      serviceProviders.add(nnkImportStmt.newTree(newLit(path)))
+  add y, serviceProviders
+  add result, serviceProviders
 
   add result, quote do:
     import std/[httpcore, macros, macrocache, options]
@@ -299,9 +272,13 @@ macro init*(x: untyped) =
     add result, loadEventListeners()
     add result, loadMiddlewares()
     add result, loadControllers()
+
+    # when found, will load console commands
+    add result, loadConsole()
+
+    # initialize the HTTP Router
     add result, quote do:
       proc startupCallback() {.gcsafe.} =
-        # Initialize the HTTP Router
         {.gcsafe.}:
           initHttpRouter()
           app.router.errorHandler(Http404, errors.get4xx)
@@ -317,6 +294,40 @@ type
 macro appConfig*(releaseUnusedMemory: static bool = false) =
   ## Macro to define compile-time configuration settings
   discard
+
+var AppCommands = CacheTable"AppCommands"
+
+template cli*(app: Application, cliCommands) {.dirty.} =
+  ## Injects CLI commands into the application
+  macro registerCommands(cliCmds) =
+    result = newStmtList()
+    when not compileOption("app", "lib"):
+      var cliCommandsStmt = newStmtList()
+      cliCommandsStmt.add(newCall(ident"commands", cliCmds[0][1]))
+      add result, quote do:
+        import pkg/kapsis
+        import pkg/kapsis/[cli, runtime]
+
+        var appInitialized = false
+        proc startCommand(v: Values) =
+          ## Kapsis `init` command handler
+          displayInfo("Initialize Application via CLI")
+          let path = $(v.get("directory").getPath)
+          if app.applicationPaths.init(path):
+            # try to initialize the application
+            display(span("⚡️ Start Supranim application"))
+            display(span"📂 Installation path:", span(app.applicationPaths.getInstallationPath))
+            appInitialized = true
+            
+        kapsis.settings(
+          exitAfterCallback = false,
+        )
+
+        `cliCommandsStmt`
+        
+        # exit if not initialized
+        if not appInitialized: quit()
+  registerCommands(cliCommands)
 
 template services*(app: Application, servicesStmt) {.inject.} =
   macro preloadServices(node) =
@@ -337,8 +348,8 @@ template services*(app: Application, servicesStmt) {.inject.} =
     add blockStmt, newEmptyNode()
     add blockStmt, node
     add result, blockStmt
-    # add result, newCall(ident"extractThreadServicesBackend")
-    add result, newCall(ident"extractThreadServicesClient")
+    add result, newCall(ident"extractThreadServicesBackend")
+    # add result, newCall(ident"extractThreadServicesClient")
   preloadServices(servicesStmt)
 
 proc getPort*(app: Application): Port =
