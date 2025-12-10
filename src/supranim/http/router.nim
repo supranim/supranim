@@ -45,7 +45,7 @@ type
   HttpRouteWs* = ref object of HttpRoute
 
 
-  HttpRouterInstance = object
+  HttpRouterInstance* = object
     httpGet*, httpPost, httpPut, httpHead,
       httpConnect, httpDelete, httpPatch,
       httpTrace, httpOptions, httpErrors: CritBitTree[HttpRoute]
@@ -191,7 +191,7 @@ proc parseRouteNode*(verb, routePath: string,
     queuedRoutes[autolinked.handleName] =
       newCall(
         ident"registerRoute",
-        newDotExpr(ident"app", ident"router"),
+        newDotExpr(ident"App", ident"router"), # must match the singleton
         nnkTupleConstr.newTree(
           newLit(autolinked[1]),
           newLit(autolinked[2]),

@@ -1,36 +1,38 @@
 # Package
 
 version       = "0.1.0"
-author        = "George Lemon"
-description   = "A fast web framework for Nim development"
+author        = "OpenPeeps"
+description   = "A full-featured web framework for Nim"
 license       = "MIT"
 srcDir        = "src"
 
 # Core dependencies
 requires "nim >= 2.0.0"
-
-# web servers
-requires "ioselectors"
-requires "zmq"
-
-requires "ws"
-requires "netty"
-requires "flatty"
-requires "supersnappy"
-
 requires "libsodium"
+# requires "libdatachannel"
+requires "libevent"
+requires "cbor_serialization"
 
+# requires "monocypher"
+requires "flatty"
 requires "jsony"
 
 # github.com/openpeeps
 requires "nyml#head"
 requires "emitter"
-requires "find"
+# requires "find"
 requires "multipart"
+requires "kapsis"
+requires "enimsql#head"
 
-requires "https://github.com/supranim/enimsql"
+requires "semver"
 requires "threading"
-requires "taskman"
+
+# requires "taskman"
+# requires "https://github.com/supranim/enimsql"
+
+requires "zip"
+requires "mimedb#head"
 
 # requires "otp >= 0.3.3"
 # requires "qr"
@@ -41,7 +43,4 @@ requires "taskman"
 # https://github.com/OpenSystemsLab/daemonize.nim/tree/master
 
 task cli, "Build Supranim's CLI":
-  exec "nimble build"
-
-task test_autolink, "dev build autolink router":
-  exec "nim c --out:./bin/autolink src/supranim/core/http/autolink.nim"
+  exec "nimble compile -d:ssl --out:./bin/supra src/supranim.nim"

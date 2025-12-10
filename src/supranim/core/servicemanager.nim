@@ -1,39 +1,22 @@
 #
-# Supranim is a full-featured web framework for building
-# web apps & microservices in Nim.
+# Supranim - A high-performance MVC web framework for Nim,
+# designed to simplify web application and REST API development.
 # 
 #   (c) 2025 MIT License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
 
-## This module implements Supranim's Service Manager.
-## 
-## Can be used for building standalone microservices and other service providers,
-## which can communicate with Supranim applications or other web apps via
-## REST API over TCP (`WebService`) or Unix sockets (`UnixService`).
-## 
-## Aditionally, special service providers that require short latency
-## sensitive messages can communicate over UDP using one of:
-## 
-## 1. `UdpService`. For almost-naked UDP-based communication.
-## Based on [pkg/netty](https://github.com/treeform/netty).
-## 
-## 2. `CoAPService`, a specialized web transfer protocol for use
-## with constrained nodes and constrained networks in IoT. CoAP` is a
-## UDP-based protocol suited for limited network and resources.
-## 
-## **Note**: CoAPService requires [libcoap](https://github.com/obgm/libcoap)
 import std/[os, macros, macrocache, tables, sequtils,
-  critbits, strutils, random, parseopt, options]
+          critbits, strutils, random, parseopt, options]
 
 import pkg/checksums/md5
 import pkg/threading/once
+import pkg/kapsis/cli
 
+import pkg/supranim/application
 import pkg/supranim/[router, controller]
 import pkg/supranim/core/paths
 import pkg/supranim/http/autolink
-
-import pkg/kapsis/cli
 
 from std/net import Port, `$`
 from std/httpcore import HttpCode, HttpMethod
@@ -49,8 +32,7 @@ type
       ## Defines a Singleton service as part of the main application
     ChannelService = "Channel"
       ## Thread-based Service enabling inter thread communications 
-    UnixService = "UnixService"
-      ## REST API WebService that connects over Unix Socket
+    # UnixService = "UnixService"
     WebService = "WebService"
       ## REST API Service Provider that connects over TCP/IP
     ThreadService = "ThreadService"
@@ -62,13 +44,6 @@ type
       #   # based on CoAP (Constrained Application Protocol)
       #   # https://coap.space
 
-  # ServiceTransportType* = enum
-  #   Tcp = "Tcp"
-  #     ## Defines a TCP-based service
-  #   Udp = "Udp"
-  #     ## Defines a UDP-based service
-  #   UnixSocket = "UnixSocket"
-  #     ## Defines a Unix Socket-based service
 
   HttpRouteMeta* = object
     path*, regex*: string
@@ -108,6 +83,8 @@ type
     serviceType: ServiceType
     name*, description*, author*, version*: string
     threads: uint = 0 # by default all services are single-threaded
+    autoStart: bool
+      # Whether the service should auto start on application boot
     # case serviceType*: ServiceType
     # of UnixService, WebService:
     #   httpService: HttpService
@@ -253,13 +230,16 @@ template initService*(id, config: untyped) =
     StaticService = 
       ServiceProvider(
         name: serviceNameStr,
-        serviceType: serviceType
+        serviceType: serviceType,
+        autoStart: true
       )
     result = newStmtList()
     var backendNode, clientNode, routesNode: NimNode
     for attr in serviceConfig:
       case attr.kind
-      # of nnkAsgn:
+      of nnkAsgn:
+          if attr[0].eqIdent"autoStart":
+            StaticService.autoStart = attr[1].eqIdent"true"
       #   if attr[0].eqIdent"description":
       #     StaticService.description = attr[1].strVal
       #   elif attr[0].eqIdent"threads":
@@ -267,10 +247,9 @@ template initService*(id, config: untyped) =
       #       StaticService.threads = attr[1].intVal.uint
       #     else: discard # use main thread as default 
       of nnkCall:
-        if attr[0].eqIdent"configure":
-          # Parse service fields to configure
-          # the service provider
-          discard # todo
+        if attr[0].eqIdent"config":
+          # service may provide additional configuration
+          echo attr[1].repr
         elif attr[0].eqIdent"backend":
           backendNode = attr[1]
         elif attr[0].eqIdent"client":
@@ -284,25 +263,31 @@ template initService*(id, config: untyped) =
       serverHandle = newStmtList()
       clientHandle = newStmtList()
       serviceThreads = newEmptyNode()
+    
+    if backendNode.isNil:
+      backendNode = newStmtList()
+
     let serviceDescription = newLit(StaticService.description)
-    if StaticService.serviceType in {WebService,
-          UnixService, ThreadService, ChannelService}:
+    if StaticService.serviceType in {WebService, ThreadService, ChannelService}:
       # Handle definition of HTTP-based web services
       serviceThreads = newLit(StaticService.threads)
       add serverHandle, quote do:
         # Required modules for Service Provider
         import std/[asyncdispatch, httpcore, options,
                 critbits, json, strutils, sequtils, uri]
-        
         import pkg/supranim/http/[webserver, request, router, response]
         import pkg/jsony
-
         from std/net import Port
 
         type
           ErrorResponse* {.inject.} = object
+            ## A predefined HTTP Error Response Object
+            ## containing standard fields.
             code: HttpCode
+              ## Http Status Code
             message: string
+              ## HTTP Error Response Object
+
         proc newErrorResponse(code: range[100..599]; message: string): ErrorResponse =
           ErrorResponse(code: HttpCode(code), message: message)
 
@@ -389,22 +374,24 @@ template initService*(id, config: untyped) =
       add serverHandle, quote do:
         when isMainModule:
           error("Supranim Service Manager - Singleton Services cannot be built as standalone services")
+    
     elif StaticService.serviceType == Singleton:
       # Handle definition of a Singleton service.
       add serverHandle, quote do:
         when isMainModule:
           error("Supranim Service Manager - Singleton Services cannot be built as standalone services")
-      if backendNode.isNil:
-        backendNode = newStmtList()
+      
       let
         singletonIdent = ident(StaticService.name)
         singletonOfIdent = ident(serviceNameSingletonOf)
         procInstanceIdent = ident("get" & StaticService.name & "Instance")
+      
       add backendNode, quote do:
         type
           OnInitSingletonCallback* = proc(instance: ptr `singletonIdent.`) {.gcsafe.}
         var o = createOnce()
         var instance: ptr `singletonIdent.`
+        
         proc `procInstanceIdent.`*(onceCb: OnInitSingletonCallback = nil): ptr `singletonIdent.` =
           once(o):
             # Initialize the singleton instance
@@ -413,8 +400,8 @@ template initService*(id, config: untyped) =
             if onceCb != nil: onceCb(instance)
           result = instance
 
-    if backendNode != nil:
-      add serverHandle, backendNode
+    # if backendNode != nil:
+      # add serverHandle, backendNode
 
     if not routesNode.isNil:
       # Parse service routes
@@ -440,72 +427,76 @@ template initService*(id, config: untyped) =
               add clientSideRoutePaths, (httpRouteAutolink.handleName, httpRouteMethod, httpRouteAutolink)
             httpRoute[1] = httpRoute[1][1]
         else: discard # todo error?
-      add serverHandle, routesNode
-      add serverHandle, newCall(ident"initRouter")
+      
+      add backendNode, routesNode
+      add backendNode, newCall(ident"initRouter")
       
     let threadService = genSym(nskVar, "serviceType")
     let serviceName = newLit(StaticService.name)
 
-    if StaticService.serviceType in {WebService, UnixService,
-                                      ThreadService, UnixService}:
-      add serverHandle,
+    if StaticService.serviceType in {WebService, ThreadService}:
+      add backendNode,
         newVarStmt(threadService,
           newLit(StaticService.serviceType in {ThreadService, ChannelService}))
-      
-      add serverHandle, quote do:
-        let httpServiceIndex = HttpServiceIndex(
+
+      let httpServiceIndex = genSym(nskVar, "httpServiceIndex")
+      add backendNode, quote do:
+        let `httpServiceIndex`* = HttpServiceIndex(
           description: `serviceDescription.`,
           routes:`index.`
         )
+
         when defined release:
-          httpServiceIndex.release_mode = true
           # marks the service as a release build
           # this is used to add a note to the service index
+          httpServiceIndex.release_mode = true
 
-        proc onRequest(req: var Request) =
-          {.gcsafe.}:
-            let path = req.getUriPath()
-            var res = Response(headers: newHttpHeaders())
-            case path:
-              of "/":
-                # The `/` root path always returns
-                # a JSON index of all available routes
-                respond(req, httpServiceIndex)
-              else:
-                let reqPath = req.getUriPath()
-                let reqMethod = req.getHttpMethod()
-                let runtimeCheck = checkExists(`routerInstance.`, reqPath, reqMethod)
-                case runtimeCheck.exists
-                  of true:
-                    req.setParams(runtimeCheck.params)
-                    let middlewareStatus: HttpCode =
-                      runtimeCheck.route.resolveMiddleware(req, res)
-                    case middlewareStatus
-                      of Http301, Http302, Http303:
-                        req.resp(middlewareStatus, "", res.getHeaders())
-                      of Http204:
-                        # once middleware passed we can
-                        # execute controller's handle
-                        runtimeCheck.route.callback(req, res)
-                        req.resp(res.getCode, res.getBody, res.getHeaders)
-                      else:
-                        discard # todo
-                  else: req.respond(501, newErrorResponse(501, "Not implemented"))
-        if `threadService.`:
-          # Each thread-based web service runs on its own thread
-          proc runThreadService {.thread.} =
+        #
+        # HTTP Request Handler
+        #
+        template onRequestHandle =
+          proc onRequest(req: var Request) =
+            ## Handles incoming HTTP requests
             {.gcsafe.}:
-              webserver.runServer(onRequest, nil)
-          var thrService: Thread[void]
-          createThread(thrService, runThreadService)
-          display(
-            span((`serviceName.` & " Service").indent(4)),
-            green("[thread]"),
-          )
-          sleep(10)
-        else:
-          # Boot the service provider as a standalone service
-          # using the built-in web server
+              let path = req.getUriPath()
+              var res = Response(headers: newHttpHeaders())
+              case path:
+                of "/":
+                  # The `/` root path always returns
+                  # a JSON index of all available routes
+                  respond(req, httpServiceIndex)
+                else:
+                  # Handle other routes
+                  let reqPath = req.getUriPath()
+                  let reqMethod = req.getHttpMethod()
+                  let runtimeCheck = checkExists(`routerInstance.`, reqPath, reqMethod)
+                  case runtimeCheck.exists
+                    of true:
+                      req.setParams(runtimeCheck.params)
+                      let middlewareStatus: HttpCode =
+                        runtimeCheck.route.resolveMiddleware(req, res)
+                      case middlewareStatus
+                        of Http301, Http302, Http303:
+                          req.resp(middlewareStatus, "", res.getHeaders())
+                        of Http204:
+                          # once middleware passed we can
+                          # execute controller's handle
+                          runtimeCheck.route.callback(req, res)
+                          req.resp(res.getCode, res.getBody, res.getHeaders)
+                        else:
+                          discard # todo
+                    else: req.respond(501, newErrorResponse(501, "Not implemented"))
+      
+      # if StaticService.serviceType == ThreadService:
+      #   if StaticService.autoStart:
+      #     # When the service is set to `autoStart`
+      #     # start it in its own thread
+      var isThreadService = newLit(StaticService.serviceType == ThreadService)
+      var isThreadServiceAutoStart = newLit(StaticService.autoStart)
+      add backendNode, quote do:
+        when isMainModule and not `isThreadService.`:
+          # Boot the service provider as a
+          # standalone service using the built-in web server
           var p = initOptParser(commandLineParams())
           p.next() # skip the binary name
           var port = Port(0)
@@ -515,9 +506,38 @@ template initService*(id, config: untyped) =
               if key in ["p", "port"]:
                 port = Port(parseInt(val))
             else: discard
+          
           displayInfo("Starting Service Provider")
           displayInfo("Available at http://127.0.0.1:" & $(port))
+          
+          # Start the  web server
+          onRequestHandle()
           webserver.runServer(onRequest, nil, port)
+        else:
+          if `isThreadServiceAutoStart.`:
+            block:
+              var thrService: Thread[void]
+              onRequestHandle()
+              proc runThreadService {.thread.} =
+                # the thread proc handling the service
+                {.gcsafe.}:
+                  webserver.runServer(onRequest, nil, Port(9000))
+              
+              # Create a thread for the service
+              createThread(thrService, runThreadService)
+              
+              # Log service start info
+              display(
+                span((`serviceName.` & " Service").indent(4)),
+                green("[thread]"),
+              )
+              sleep(100) # allow some time for the thread to start
+          # else:
+          #   # When the service is not set to `autoStart`
+          #   # we just define the `onRequest` handler
+          #   proc startService*() =
+          #     onRequestHandle()
+              
 
       #
       # Client-side API
@@ -525,8 +545,8 @@ template initService*(id, config: untyped) =
       var httpClientId = ident(StaticService.name & "Client")
       add clientHandle, quote do:
         import std/[json, asyncdispatch]
-        import supranim/core/http/httpclient
         import pkg/jsony
+        import pkg/supranim/support/httpclient
         # we use a modified version of `httpclient`
         # that can handle HTTP operations over Unix Sockets
 
@@ -544,11 +564,14 @@ template initService*(id, config: untyped) =
 
     case StaticService.serviceType
     of ThreadService:
+      # Thread Services live in their own threads
       when isMainModule:
         error("ServiceManager - Thread Services cannot be built as standalone services")
+      add serverHandle, backendNode
       # ServiceManagerThreadServices[StaticService.name] = serverHandle
-      add result, quote do:
-        `serverHandle.`
+      # ServiceManagerThreadServices[StaticService.name] = serverHandle
+      add result, serverHandle
+
       let hashid = $(toMD5(instantiationInfo(fullPaths = true).filename))
       for fnEndpoint in clientSideRoutePaths:
         var routePath =
@@ -603,14 +626,17 @@ template initService*(id, config: untyped) =
       #
       # This feature is powered by
       # `pkg/threading/once` module.
+      add serverHandle, backendNode
       add serverHandle, clientHandle
       add result, serverHandle
     of ChannelService:
       # Channel Services are built as part of the main app.
       # add serverHandle, routesNode
+      add serverHandle, backendNode
       add serverHandle, clientHandle
       add result, serverHandle
     else:
+      add serverHandle, backendNode
       add result, 
         nnkWhenStmt.newTree(
           # Building a standalone Service using `serverHandle`
@@ -634,13 +660,13 @@ macro extractThreadServicesBackend* =
   ## available to the main application via `import supranim/runtime`
   result = newStmtList()
   for id, handle in ServiceManagerThreadServices:
-    add result, handle
+    echo handle.repr
+    # add result, handle
     # let fpath = cachePath / "f" & id & ".nim"
     # writeFile(fpath, handle.repr)
     # let runtimeImport = newLit(fpath)
     # add result, quote do:
-    #   import `runtimeImport.`
-
+    # import `runtimeImport.`
 
 macro extractThreadServicesClient* =
   ## Extracts the generated client-side API

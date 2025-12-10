@@ -1,6 +1,6 @@
 #
-# Supranim is a full-featured web framework for building
-# web apps & microservices in Nim.
+# Supranim - A high-performance MVC web framework for Nim,
+# designed to simplify web application and REST API development.
 # 
 #   (c) 2025 MIT License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
@@ -65,10 +65,13 @@ proc toString*(headers: HttpHeaders): string =
   result &= str.join("\n")
 
 proc resp*(req: Request, code: HttpCode,
-        body: sink string, headers: HttpHeaders) =
+        body: sink string, headers: HttpHeaders = nil) =
   ## Responds with the specified HttpCode and body.
   var serverDate = now().utc().format("ddd, dd MMM yyyy HH:mm:ss 'GMT'")
   let bodyLen = $body.len
+  var headers = headers
+  if headers == nil:
+    headers = HttpHeaders()
   headers.add("Content-Length", $bodyLen)
   headers.add("Date", $serverDate)
   req.send(code.int, body, headers)
@@ -132,6 +135,18 @@ template json*(body: typed, code: HttpCode = Http200): untyped =
     res.addHeader("Content-Type", $contentTypeJson)
     res.setBody(jsony.toJson(body))
   return
+
+template sendJson*(body: typed, code: HttpCode = Http200): untyped =
+  ## Sends the current response as JSON
+  when compileOption("app", "lib"):
+    res[].setCode(code)
+    res[].addHeader("Content-Type", $contentTypeJson)
+    res[].setBody(jsony.toJson(body))
+  else:
+    res.setCode(code)
+    res.addHeader("Content-Type", $contentTypeJson)
+    res.setBody(jsony.toJson(body))
+  req.send(res.getCode().int, res.getBody(), res.getHeaders())
 
 template respond*(body: string, contentType: string = getContentType()): untyped {.dirty.} =
   when compileOption("app", "lib"):

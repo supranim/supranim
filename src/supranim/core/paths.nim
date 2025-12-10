@@ -20,25 +20,21 @@ const
   cachePath* = normalizedPath(rootPath / ".cache")
   runtimeConfigPath* = cachePath / "runtime" / "config"
   configPath* = basepath / "config"
+  modelPath* = basepath / "model"
   controllerPath* = basepath / "controller"
-  middlewarePath* = basepath / "middleware"
-  databasePath* = basepath / "database"
   servicePath* = basepath / "service"
-  modelPath* = databasePath / "models"
+  middlewarePath* = servicePath / "middleware"
+  databasePath* = servicePath / "database"
+  eventsPath* = servicePath / "event"
   migrationPath* = databasePath / "migrations"
   storagePath* = basepath / "storage"
   pluginsPath* = storagePath / "plugins"
   logsPath* = storagePath / "logs"
-
-  # binPaths
-  # binPath* = normalizedPath(rootPath / "bin")
-  # binModulesPath = binPath / "modules"
-  # binController* = binModulesPath / "controller"
-  # binModel* = binModulesPath / "model"
-  # binServices* = binPath / "service"
-  # binStorage* = binPath / "storage"
-  # binStorageUploads* = binStorage / "uploads"
-  # binTemplates* = binPath / "templates"
+  
+  # path to console commands directory
+  # where CLI commands are stored as dynamic
+  # libraries
+  consolePath* = pluginsPath / "console"
 
 type
   ApplicationPaths* = object

@@ -21,7 +21,9 @@ else:
   import pkg/kapsis/cli
   
   import ./supranim/core/utils
-  import ./supranim/[application, controller]
+  import ./supranim/core/application
+  import ./supranim/controller
+  
   import ./supranim/http/[webserver, websocket, router, fileserver]
   import ./supranim/service/events
 
@@ -169,5 +171,5 @@ else:
         http.runServer(onRequest)
       else:
         # standard web server startup
-        var server = newWebServer(Port(app.config("server.port").getInt))
+        var server = newWebServer(Port(App.config("server.port").getInt))
         server.start(onRequest, startupCallback)

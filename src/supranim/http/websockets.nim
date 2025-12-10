@@ -191,21 +191,19 @@ proc pollWebSocketServers*(pools: var WebSocketPools) =
     onEvent(server)
 
 proc getOrCreateWebSocketServer*(pools: var WebSocketPools, route: string,
-    onOpen: WebSocketOnOpen = nil,
-    onMessage: WebSocketOnMessage = nil,
-    onClose: WebSocketOnClose = nil): WebSocketServer =
+                                  onOpen: WebSocketOnOpen = nil,
+                                  onMessage: WebSocketOnMessage = nil,
+                                  onClose: WebSocketOnClose = nil): WebSocketServer =
+  ## Retrieves or creates a WebSocketServer for the given route.
   if not pools.servers.hasKey(route):
     var server = WebSocketServer(connections: @[], onOpen: onOpen, onMessage: onMessage, onClose: onClose)
     pools.servers[route] = server
   result = pools.servers[route]
 
-proc acceptWebSocketHandle*(
-    pools: var WebSocketPools,
-    route: string,
-    req: ptr evhttp_request,
-    onOpen: WebSocketOnOpen = nil,
-    onMessage: WebSocketOnMessage = nil,
-    onClose: WebSocketOnClose = nil) =
+proc acceptWebSocketHandle*(pools: var WebSocketPools, route: string, req: ptr evhttp_request,
+                            onOpen: WebSocketOnOpen = nil, onMessage: WebSocketOnMessage = nil,
+                            onClose: WebSocketOnClose = nil) =
+  ## Accepts a WebSocket connection on the given request.
   let server = getOrCreateWebSocketServer(pools, route, onOpen, onMessage, onClose)
   let ws = WebSocketClient(closed: false)
   if req.hasHeader("Sec-WebSocket-Key"):

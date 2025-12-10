@@ -1,6 +1,6 @@
 #
-# Supranim is a full-featured web framework for building
-# web apps & microservices in Nim.
+# Supranim - A high-performance MVC web framework for Nim,
+# designed to simplify web application and REST API development.
 # 
 #   (c) 2025 MIT License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
@@ -61,11 +61,17 @@ type
     appData*: pointer
       ## User-defined application data (optional).
 
-  OnRequest* = proc(req: var Request) {.nimcall.}
-    ## Callback type for handling HTTP requests.
-  
   StartupCallback* = proc() {.gcsafe.}
     ## Callback type for server startup (optional).
+
+when defined supranimUseGlobalOnRequest:
+  type
+    OnRequest* = proc(req: var Request)
+      ## Callback type for handling HTTP requests.
+else:
+  type
+    OnRequest* = proc(req: var Request) {.nimcall.}
+      ## Callback type for handling HTTP requests.
 
 proc newWebServer*(port: Port = Port(8080)): WebServer =
   ## Creates a new WebServer instance.
@@ -79,6 +85,9 @@ proc newWebServer*(port: Port = Port(8080)): WebServer =
   assert result.httpServer != nil
 
   result.port = port
+
+when defined supranimUseGlobalOnRequest:
+  var appOnRequest: OnRequest # global request handler
 
 proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
   # initialize Request object
@@ -100,8 +109,11 @@ proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
     req.uri.query = $evhttp_uri_get_query(evUri)
     req.uri.anchor = $evhttp_uri_get_fragment(evUri)
   # Call the user-defined request handler
-  let handler = cast[OnRequest](arg)
-  if handler != nil: handler(req)
+  when defined supranimUseGlobalOnRequest:
+    appOnRequest(req) # use global handler
+  else:
+    let handler = cast[OnRequest](arg)
+    if handler != nil: handler(req)
 
 proc start*(server: var WebServer) =
   ## Start the web server with default no-op request handler.
@@ -115,10 +127,15 @@ proc start*(server: var WebServer, onRequest: OnRequest,
   assert server.httpServer != nil # ensure server is initialized
   assert evhttp_bind_socket(server.httpServer, "0.0.0.0", server.port.uint16) == 0
   
-  # Set the global request handler
+
   if startupCallback != nil:
     startupCallback() # TODO move to initialRequest?
-  evhttp_set_gencb(server.httpServer, initialOnRequest, cast[pointer](onRequest))
+  # Set the global request handler
+  when defined supranimUseGlobalOnRequest:
+    appOnRequest = onRequest
+    evhttp_set_gencb(server.httpServer, initialOnRequest, nil)
+  else:
+    evhttp_set_gencb(server.httpServer, initialOnRequest, cast[pointer](onRequest))
   assert event_base_dispatch(server.base) > -1
 
   # cleanup after event loop ends
