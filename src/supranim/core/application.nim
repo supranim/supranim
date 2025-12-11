@@ -14,7 +14,7 @@ import pkg/threading/[once, rwlock]
 import ./[config, paths, plugins]
 import ../http/[request, response, router]
 
-import ../network/udpserver
+# import ../network/udpserver
 import ../support/uuid
 
 export json, nyml, paths, macros
@@ -28,7 +28,7 @@ type
     services: Table[string, pointer]
 
   ApplicationUDP* = object
-    udpServer*: UdpServer
+    # udpServer*: UdpServer
       # A UDP socket for network communication
 
   ApplicationObject = object
