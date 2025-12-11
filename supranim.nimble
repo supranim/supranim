@@ -12,18 +12,15 @@ requires "libsodium"
 # requires "libdatachannel"
 requires "libevent"
 requires "cbor_serialization"
-
 # requires "monocypher"
+
 requires "flatty"
 requires "jsony"
 
 # github.com/openpeeps
 requires "nyml#head"
 requires "emitter"
-# requires "find"
-requires "multipart"
 requires "kapsis"
-requires "enimsql#head"
 
 requires "semver"
 requires "threading"
@@ -40,7 +37,6 @@ requires "mimedb#head"
 
 # CLI dependencies
 # requires "kapsis#head"
-# https://github.com/OpenSystemsLab/daemonize.nim/tree/master
 
 task cli, "Build Supranim's CLI":
   exec "nimble compile -d:ssl --out:./bin/supra src/supranim.nim"
