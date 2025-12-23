@@ -1,0 +1,35 @@
+name: test
+on:
+  push:
+    paths-ignore:
+      - LICENSE
+      - README.*
+  pull_request:
+    paths-ignore:
+      - LICENSE
+      - README.*
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        nim-version:
+          - 'stable'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: ${{ matrix.nim-version }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      # - run: |
+      #     sudo apt install -y libpcre3-dev libpcre3 libsodium
+      # - run: |
+      #     git clone https://github.com/paullouisageneau/libdatachannel.git
+      #     cd libdatachannel
+      #     git submodule update --init --recursive --depth 1
+      #     cmake -B build -DUSE_GNUTLS=0 -DUSE_NICE=0 -DCMAKE_BUILD_TYPE=Release
+      #     cd build
+      #     make -j2
+      # - run: nimble install -Y
+      # - run: nim c -r src/${{ github.event.repository.name }}.nim
+      # - run: nimble test
