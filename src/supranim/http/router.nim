@@ -46,15 +46,15 @@ type
 
 
   HttpRouterInstance* = object
-    httpGet*, httpPost, httpPut, httpHead,
-      httpConnect, httpDelete, httpPatch,
-      httpTrace, httpOptions, httpErrors: CritBitTree[HttpRoute]
-    httpWS: CritBitTree[HttpRouteWs]
+    httpGet*, httpPost*, httpPut*, httpHead*,
+      httpConnect*, httpDelete*, httpPatch*,
+      httpTrace*, httpOptions*, httpErrors*: CritBitTree[HttpRoute]
+    httpWS*: CritBitTree[HttpRouteWs]
 
   HttpRouterError* = object of CatchableError
 
-var Router*: HttpRouterInstance
-  ## a singleton of `HttpRouterInstance`
+# var Router*: HttpRouterInstance
+# a singleton of `HttpRouterInstance`
 
 const
   # Register default HTTP Error Handles

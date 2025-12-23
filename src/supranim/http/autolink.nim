@@ -27,13 +27,18 @@ type
 const
   RegexPatterns = {
     "slug": "[0-9A-Za-z-_]+",
+    "anySlug": "[0-9A-Za-z-_/]+",
     "alphaSlug": "[A-Za-z-_]+",
+    "uuid": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+    "hex": "[0-9a-fA-F]+",
+    "word": "\\w+",
+    "wordWithDots": "[\\w\\.]+",
+    "any": ".+",
     "id": "[0-9]+"
   }.toTable()
 
 proc autolinkController*(routePath: string,
         httpMethod: HttpMethod, isWebSocket = false,
-
 ): Autolinked {.compileTime.} =
   # Generates controller name and route
   # patterns from `routePath` string
@@ -93,7 +98,7 @@ proc autolinkController*(routePath: string,
         case v.str[i]
         of {'-', '_'}:
           needsUpper = true; inc(i)
-        of '/':
+        of '/', '.':
           needsUpper = true; inc(i);
         else:
           if needsUpper:

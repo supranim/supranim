@@ -45,7 +45,8 @@ type
     router*: HttpRouterInstance
       # The main HTTP router instance
     udp*: ApplicationUDP
-    counter*: int
+    applicationPaths* : ApplicationPaths
+      # The application paths 
 
   AppConfigDefect* = object of CatchableError
   
@@ -116,9 +117,9 @@ template initHttpRouter* =
             )
           )
         ),
-        pragmas = nnkPragma.newTree(
-          ident "thread"
-        )
+        # pragmas = nnkPragma.newTree(
+        #   ident "thread"
+        # )
       )
     add result, newCall(ident"initRouter")
   initHttpRouter()
@@ -195,10 +196,6 @@ else:
           add result, nnkImportStmt.newTree(newLit(fMiddleware))
           let x = newLit(f.name)
 
-    # include `routes.nim` module
-    add result, nnkIncludeStmt.newTree(
-      newLit(basePath / "routes.nim"))
-
   proc loadControllers: NimNode {.compileTime.} =
     # walks recursively and auto discover controllers
     # available at /controller/*.nim
@@ -218,7 +215,7 @@ else:
         if not fConsole.splitFile.name.startsWith("!"):
           add result, nnkImportStmt.newTree(newLit(fConsole))
 
-macro init*(appx: untyped, x: untyped) =
+macro init*(appx: untyped) =
   ## Initializes Supranim application
   # expectKind(x, nnkLetSection)
   # var commandLineCommands = newEmptyNode()
@@ -233,6 +230,11 @@ macro init*(appx: untyped, x: untyped) =
   #   )
   # )
   result = newStmtList()
+  
+  add result, quote do:
+    import std/[httpcore, macros, macrocache, options]
+    import supranim/http/[request, response]
+
   add result, newCall(ident"initApplication")
 
   when not compileOption("app", "lib"):
@@ -240,29 +242,21 @@ macro init*(appx: untyped, x: untyped) =
     loadEnvStatic() # read `.env.yml` config file
 
     add result, quote do:
-      block:
-        App.configs = newOrderedTable[string, Document]()
-        for yamlFilePath in walkPattern(configPath / "*.yml"):
-          let configFile = yamlFilePath.splitFile
-          try:
-            App.configs[configFile.name] = yaml(yamlFilePath.readFile).toJson
-          except YAMLException:
-            displayError("Invalid YAML configuration: " & yamlFilePath)
+      App.configs = newOrderedTable[string, Document]()
+      for yamlFilePath in walkPattern(configPath / "*.yml"):
+        let configFile = yamlFilePath.splitFile
+        try:
+          App.configs[configFile.name] = yaml(yamlFilePath.readFile).toJson
+        except YAMLException:
+          displayError("Invalid YAML configuration: " & yamlFilePath)
   #
   # Autoload Service Providers
   #
-  var y = newStmtList()
   var serviceProviders = newNimNode(nnkStmtList)
   for path in walkDirRec(servicePath / "provider"):
     let f = path.splitFile
     if f.ext == ".nim" and f.name.startsWith("!") == false:
       serviceProviders.add(nnkImportStmt.newTree(newLit(path)))
-  add y, serviceProviders
-  add result, serviceProviders
-
-  add result, quote do:
-    import std/[httpcore, macros, macrocache, options]
-    import supranim/http/[request, response]
 
   when defined supraMicroservice:
     add result, quote do:
@@ -272,6 +266,11 @@ macro init*(appx: untyped, x: untyped) =
   else:
     add result, loadEventListeners()
     add result, loadMiddlewares()
+    
+    # include `routes.nim` module
+    add result, nnkIncludeStmt.newTree(
+      newLit(basePath / "routes.nim"))
+
     add result, loadControllers()
 
     # when found, will load console commands
@@ -279,10 +278,15 @@ macro init*(appx: untyped, x: untyped) =
 
     # initialize the HTTP Router
     add result, quote do:
+      initHttpRouter()
+
       proc startupCallback() {.gcsafe.} =
         {.gcsafe.}:
-          initHttpRouter()
+          # initHttpRouter()
           App.router.errorHandler(Http404, get4xx)
+    
+    # add the service providers
+    add result, serviceProviders
 
 # type
 #   AppConfig* = object
@@ -297,6 +301,17 @@ macro init*(appx: untyped, x: untyped) =
 #   discard
 
 var AppCommands = CacheTable"AppCommands"
+var appInitialized* = false
+
+template initStartCommand*(v: Values, createDirs = true) =
+  ## Kapsis `init` command handler
+  displayInfo("Initialize Application via CLI")
+  let path = $(v.get("directory").getPath)
+  if App.applicationPaths.init(path, createDirs):
+    # try to initialize the application
+    display(span("⚡️ Start Supranim application"))
+    display(span"📂 Installation path:", span(App.applicationPaths.getInstallationPath))
+    appInitialized = true
 
 template cli*(app: Application, cliCommands) {.dirty.} =
   ## Injects CLI commands into the application
@@ -304,28 +319,17 @@ template cli*(app: Application, cliCommands) {.dirty.} =
     result = newStmtList()
     when not compileOption("app", "lib"):
       var cliCommandsStmt = newStmtList()
-      cliCommandsStmt.add(newCall(ident"commands", cliCmds[0][1]))
+      cliCommandsStmt.add(
+        newCall(ident"commands",
+          newStmtList().add(cliCmds[0])
+        )
+      )
       add result, quote do:
         import pkg/kapsis
         import pkg/kapsis/[cli, runtime]
 
-        var appInitialized = false
-        proc startCommand(v: Values) =
-          ## Kapsis `init` command handler
-          displayInfo("Initialize Application via CLI")
-          let path = $(v.get("directory").getPath)
-          if App.applicationPaths.init(path):
-            # try to initialize the application
-            display(span("⚡️ Start Supranim application"))
-            display(span"📂 Installation path:", span(app.applicationPaths.getInstallationPath))
-            appInitialized = true
-            
-        kapsis.settings(
-          exitAfterCallback = false,
-        )
-
+        kapsis.settings(exitAfterCallback = false)
         `cliCommandsStmt`
-        
         # exit if not initialized
         if not appInitialized: quit()
   registerCommands(cliCommands)
@@ -333,18 +337,17 @@ template cli*(app: Application, cliCommands) {.dirty.} =
 template services*(app: Application, servicesStmt) {.inject.} =
   macro preloadServices(node) =
     result = newStmtList()
-    add result,
-      nnkImportStmt.newTree(
+    add result, nnkImportStmt.newTree(
+      nnkInfix.newTree(
+        ident"/",
+        ident"supranim",
         nnkInfix.newTree(
-          ident"/",        
-          ident"supranim",
-          nnkInfix.newTree(
-            ident"/",
-            ident"core",
-            ident "servicemanager"
-          )
+          ident"/",
+          ident"core",
+          ident "servicemanager"
         )
       )
+    )
     var blockStmt = newNimNode(nnkBlockStmt)
     add blockStmt, newEmptyNode()
     add blockStmt, node
@@ -363,3 +366,4 @@ proc getUuid*(app: Application): Uuid =
 
 proc getAddress*(app: Application): string =
   result = app.address
+

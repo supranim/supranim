@@ -44,11 +44,11 @@ type
 template p*(x: varargs[string]): string =
   path.installPath / x.join("/")
 
-proc init*(path: var ApplicationPaths, installPath: string): bool =
+proc init*(path: var ApplicationPaths, installPath: string, createDirs: bool): bool =
   ## Initialize the application paths
   path.installPath = expandTilde(installPath).expandFilename
   result = dirExists(path.installPath)
-  if result:
+  if result and createDirs:
     discard existsOrCreateDir(p("storage"))
     discard existsOrCreateDir(p("storage", "plugins"))
     discard existsOrCreateDir(p("storage", "templates"))
