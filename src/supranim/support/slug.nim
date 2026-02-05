@@ -1,6 +1,6 @@
 import std/[unidecode, strutils]
 
-proc slugify*(str: string, sep: static char = '-'): string =
+proc slugify*(str: string, sep: static char = '-', allowSlash: bool = false): string =
   ## Convert `input` string to a ascii slug
   var x = unidecode(str.strip())
   result = newStringOfCap(x.len)
@@ -16,6 +16,10 @@ proc slugify*(str: string, sep: static char = '-'): string =
       except IndexDefect: discard
     of PunctuationChars:
       inc i
+      if result.len == 0: continue
+      if allowSlash and x[i - 1] == '/':
+        add result, '/'
+        continue
       try:
         while x[i] notin IdentChars:
           inc i

@@ -63,7 +63,7 @@ else:
   template getBaseMiddlewares*(req, res) =
     runBaseMiddlewares(req, res)
 
-  template run*(App: Application, optionalBlock: untyped = nil) {.dirty.} =
+  template run*(App: Application, optionalBlock: untyped) {.dirty.} =
     ## Runs the Supranim application server.
     ## You can provide an optional block to customize
     ## the server startup process.
@@ -155,3 +155,7 @@ else:
         var server = newWebServer(Port(App.config("server.port").getInt))
         optionalBlock
         server.start(onRequest, startupCallback)
+
+  template run*(App: Application) =
+    App.run do:
+      discard

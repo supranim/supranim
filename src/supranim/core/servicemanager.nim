@@ -380,25 +380,29 @@ template initService*(id, config: untyped) =
       add serverHandle, quote do:
         when isMainModule:
           error("Supranim Service Manager - Singleton Services cannot be built as standalone services")
-      
+
       let
         singletonIdent = ident(StaticService.name)
         singletonOfIdent = ident(serviceNameSingletonOf)
         procInstanceIdent = ident("get" & StaticService.name & "Instance")
-      
       add backendNode, quote do:
         type
           OnInitSingletonCallback* = proc(instance: ptr `singletonIdent.`) {.gcsafe.}
         var o = createOnce()
         var instance: ptr `singletonIdent.`
         
-        proc `procInstanceIdent.`*(onceCb: OnInitSingletonCallback = nil): ptr `singletonIdent.` =
-          once(o):
-            # Initialize the singleton instance
-            instance = createShared(`singletonIdent.`)
+        proc `procInstanceIdent.`*(onceCb: OnInitSingletonCallback = nil,
+                          initShared: static bool = true): ptr `singletonIdent.` =
+          ## Retrieve the singleton instance of the service
+          once(o): # Initialize the singleton instance
+            instance = 
+              when initShared == true:
+                createShared(`singletonIdent.`)
+              else:
+                createSharedU(`singletonIdent.`)
             # Call the user-defined initialization callback
             if onceCb != nil: onceCb(instance)
-          result = instance
+          result = instance # return the singleton instance
 
     # if backendNode != nil:
       # add serverHandle, backendNode

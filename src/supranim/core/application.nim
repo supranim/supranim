@@ -320,14 +320,11 @@ template cli*(app: Application, cliCommands) {.dirty.} =
     when not compileOption("app", "lib"):
       var cliCommandsStmt = newStmtList()
       cliCommandsStmt.add(
-        newCall(ident"commands",
-          newStmtList().add(cliCmds[0])
-        )
+        newCall(ident"commands", cliCmds) # add the commands block
       )
       add result, quote do:
         import pkg/kapsis
         import pkg/kapsis/[cli, runtime]
-
         kapsis.settings(exitAfterCallback = false)
         `cliCommandsStmt`
         # exit if not initialized
