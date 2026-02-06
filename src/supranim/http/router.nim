@@ -381,6 +381,7 @@ macro searchRoute(httpMethod: static string) =
     if router.`verb`.hasKey(requestPath):
       result.route = router.`verb`[requestPath]
     else:
+      new(result.params)
       for k in router.`verb`.keys:
         let someRegexMatch = requestPath.match(re(k))
         if someRegexMatch.isSome():
@@ -397,6 +398,7 @@ macro searchRouteWs*() =
     if router.httpWS.hasKey(requestPath):
       result.route = router.httpWS[requestPath]
     else:
+      new(result.params)
       for k in router.httpWS.keys:
         let someRegexMatch = requestPath.match(re(k))
         if someRegexMatch.isSome():
@@ -408,7 +410,7 @@ macro searchRouteWs*() =
 
 proc checkExists*(router: var HttpRouterInstance,
     requestPath: string, httpMethod: HttpMethod
-  ): tuple[exists: bool, route: HttpRoute, params: owned Table[string, string]] =
+  ): tuple[exists: bool, route: HttpRoute, params: TableRef[string, string]] =
   case httpMethod
     of HttpGet:     searchRoute("httpGet")
     of HttpPost:    searchRoute("httpPost")
@@ -423,7 +425,7 @@ proc checkExists*(router: var HttpRouterInstance,
     likely(result.route != nil)
 
 proc checkWsExists*(router: var HttpRouterInstance, requestPath: string
-    ): tuple[exists: bool, route: HttpRouteWs, params: owned Table[string, string]] =
+    ): tuple[exists: bool, route: HttpRouteWs, params: TableRef[string, string]] =
   searchRouteWs()
   result.exists = likely(result.route != nil)
 
