@@ -33,15 +33,13 @@ type
 #
 # Request - High-level API
 #
-proc setParams*(req: var Request, params: Table[string, string]) =
+proc setParams*(req: var Request, params: TableRef[string, string]) =
   ## Sets the route parameters in `Request`
-  req.appData = addr(params)
+  req.routeParams = params
 
-proc params*(req: Request): Table[string, string] =
+proc params*(req: Request): TableRef[string, string] =
   ## Returns the route parameters from `Request`
-  if req.appData != nil:
-    var res = cast[ptr Table[string, string]](req.appData)
-    result = res[]
+  req.routeParams
 
 proc getRequestBody*(req: var Request): string =
   ## Retrieves `Request` body

@@ -58,8 +58,8 @@ type
       ## The request headers (lazily initialized).
     body*: Option[string]
       ## The request body (lazily initialized).
-    appData*: pointer
-      ## User-defined application data (optional).
+    routeParams*: TableRef[string, string]
+      ## The route parameters extracted from the URL.
 
   StartupCallback* = proc() {.gcsafe.}
     ## Callback type for server startup (optional).
