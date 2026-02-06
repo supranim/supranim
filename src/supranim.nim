@@ -24,11 +24,14 @@ else:
   import ./supranim/core/application
   import ./supranim/controller
   
-  import ./supranim/http/[webserver, websocket, router, fileserver]
+  import ./supranim/network/http/webserver
+  import ./supranim/network/ws/websocket
+  import ./supranim/http/[router, fileserver]
   import ./supranim/service/events
 
   export application, webserver, websocket,
                 router, fileserver, strutils
+
   export Domain, Port, `$`, releaseUnusedMemory
   
   macro runBaseMiddlewares*(req, res) =

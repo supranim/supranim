@@ -11,7 +11,7 @@ import pkg/jsony
 
 import ../support/cookie
 
-from ./webserver import Request, send, getIp, getHeaders,
+from ../network/http/webserver import Request, send, getIp, getHeaders,
         getMethod, getHeader, findHeader, getQuery, getBody
 
 export Request, send, getIp, getHeaders,

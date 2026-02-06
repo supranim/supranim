@@ -16,7 +16,7 @@ import ./http/[request, response, router]
 import ./support/cookie
 
 from ./core/application import appInstance
-from ./http/webserver import streamFile
+from ./network/http/webserver import streamFile
 
 export jsony, uri
 export request, response, tables
@@ -234,6 +234,5 @@ template isAuth*(): bool =
 #
 # Paths
 #
-
 template storage*(path: string): string =
   resolve(appInstance().applicationPaths, "storage", path)

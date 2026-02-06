@@ -8,7 +8,7 @@
 import std/[os, strutils, httpcore, tables, options]
 import pkg/mimedb
 
-import ./webserver
+import ../network/http/webserver
 from ../core/application import storagePath
 
 const maxFileSize = high(int)

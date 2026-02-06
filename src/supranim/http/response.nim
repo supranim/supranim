@@ -11,7 +11,7 @@ import pkg/jsony
 
 import ../support/uuid
 
-from ./webserver import Request, send
+from ../network/http/webserver import Request, send
 export HttpCode
 
 type
