@@ -20,7 +20,7 @@ requires "jsony"
 # github.com/openpeeps
 requires "nyml#head"
 requires "emitter"
-requires "kapsis"
+requires "kapsis#head"
 
 requires "semver"
 requires "threading"
