@@ -126,6 +126,12 @@ proc setBody*(res: var Response, body: string) =
   res.body = body
 
 template json*(body: typed, code: HttpCode = Http200): untyped =
+  ## Prepare a JSON response with the specified body and HttpCode.
+  ## The actual sending of the response is handled in the main request handler,
+  ## allowing for any additional processing (like afterware) to be
+  ## applied before the response is sent.
+  ## 
+  ## This template blocks code execution after setting up the response.
   when compileOption("app", "lib"):
     res[].setCode(code)
     res[].addHeader("Content-Type", $contentTypeJson)
@@ -134,10 +140,14 @@ template json*(body: typed, code: HttpCode = Http200): untyped =
     res.setCode(code)
     res.addHeader("Content-Type", $contentTypeJson)
     res.setBody(jsony.toJson(body))
-  return
+  return # blocks code execution
 
 template sendJson*(body: typed, code: HttpCode = Http200): untyped =
-  ## Sends the current response as JSON
+  ## Sends the current response as JSON. This is typically used
+  ## in middleware to immediately send a response without proceeding
+  ## to the next middleware/controller.
+  ## 
+  ## TODO move this logic to middleware module
   when compileOption("app", "lib"):
     res[].setCode(code)
     res[].addHeader("Content-Type", $contentTypeJson)
@@ -147,8 +157,12 @@ template sendJson*(body: typed, code: HttpCode = Http200): untyped =
     res.addHeader("Content-Type", $contentTypeJson)
     res.setBody(jsony.toJson(body))
   req.send(res.getCode().int, res.getBody(), res.getHeaders())
+  return # blocks code execution
 
 template respond*(body: string, contentType: string = getContentType()): untyped {.dirty.} =
+  ## Prepare a response with the specified body and content type.
+  ## The actual sending of the response is handled in the main request handler.
+  ## This template blocks code execution after setting up the response.
   when compileOption("app", "lib"):
     res[].addHeader("Content-Type", $contentType)
     res[].setBody(body)

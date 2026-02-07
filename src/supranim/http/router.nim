@@ -171,7 +171,7 @@ proc registerRoute*(router: var HttpRouterInstance,
         router.httpConnect[path] = routeObject
 
 const httpMethods* = ["get", "post", "put", "patch", "head",
-  "delete", "trace", "options", "connect", "ws"]
+                  "delete", "trace", "options", "connect", "ws"]
   # `ws` is just an alias for `get` method used
   # internally when defining a websocket route
 
@@ -419,7 +419,7 @@ proc checkExists*(router: var HttpRouterInstance,
     of HttpHead:    searchRoute("httpHead")
     of HttpDelete:  searchRoute("httpDelete")
     of HttpTrace:   searchRoute("httpTrace")
-    of HttpOptions: searchRoute("httpTrace")
+    of HttpOptions: searchRoute("httpOptions")
     of HttpConnect: searchRoute("httpConnect")
   result.exists =
     likely(result.route != nil)
