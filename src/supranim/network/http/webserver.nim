@@ -84,6 +84,14 @@ proc newWebServer*(port: Port = Port(8080)): WebServer =
   result.httpServer = evhttp_new(result.base)
   assert result.httpServer != nil
 
+  # add allowed methods to evhttp to ensure it
+  # properly handles them and doesn't reject with 405
+  let allowedMethods = (uint16(EVHTTP_REQ_GET) or uint16(EVHTTP_REQ_POST) or
+    uint16(EVHTTP_REQ_HEAD) or uint16(EVHTTP_REQ_PUT) or
+    uint16(EVHTTP_REQ_DELETE) or uint16(EVHTTP_REQ_OPTIONS) or
+    uint16(EVHTTP_REQ_PATCH) or uint16(EVHTTP_REQ_TRACE) or
+    uint16(EVHTTP_REQ_CONNECT))
+  evhttp_set_allowed_methods(result.httpServer, allowedMethods)
   result.port = port
 
 when defined supranimUseGlobalOnRequest:
