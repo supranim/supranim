@@ -150,7 +150,7 @@ else:
                   invoke4xxHandler(path, req, res)
               else:
                 invoke4xxHandler(path, req, res)
-            discard releaseUnusedMemory() # free up memory after each request
+            # discard releaseUnusedMemory() # free up memory after each request
 
         # Start the HTTP server
         let domain: Domain = parseEnum[Domain](App.config("server.type").getStr)
