@@ -18,7 +18,7 @@ jobs:
         with:
           nim-version: ${{ env.nim-version }}
       - run: nimble install -Y
-      - run: nim doc --index:on --project --path:. --out:${{ env.deploy-dir }} ${{ env.nim-src }}
+      - run: nim doc -d:buildingDocs --index:on --project --path:. --out:${{ env.deploy-dir }} ${{ env.nim-src }}
       
       - name: "Rename to index.html"
         run: mv ${{ env.deploy-dir }}/${{ github.event.repository.name }}.html ${{ env.deploy-dir }}/index.html 

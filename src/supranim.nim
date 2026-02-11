@@ -5,8 +5,7 @@
 #   (c) 2025 MIT License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
-
-when isMainModule:
+when isMainModule and not defined buildingDocs:
   # builds Supra, Supranim's command line interface
   include ./supranim/cli/supra
 else:
