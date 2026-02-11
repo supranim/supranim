@@ -1,14 +1,18 @@
-# Supranim is a lightweight, high-performance MVC framework for Nim,
-# designed to simplify the development of web applications and REST APIs.
 #
-# It features intuitive routing, modular architecture, and built-in support
-# for modern web standards, making it easy to build scalable and maintainable
-# projects.
+# Supranim - A high-performance MVC web framework for Nim,
+# designed to simplify web application and REST API development.
+# 
+#   (c) 2025 MIT License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
 #
-# (c) 2025 Supranim | MIT License
-#     Made by Humans from OpenPeeps
-#     https://supranim.com | https://github.com/supranim
 
+## This module provides a simple and efficient way to generate unique IDs,
+## inspired by the popular NanoID library. It uses a customizable alphabet
+## and allows you to specify the length of the generated ID. The implementation is
+## designed to be fast and secure, making it suitable for various use cases such as database keys,
+## session identifiers, or any scenario where a unique identifier is needed.
+## 
+## Originally written by [Anirudh Oppiliappan](https://github.com/icyphox/nanoid.nim)
 import std/[math, lenientops, sysrand]
 
 const
@@ -17,6 +21,7 @@ const
 
 proc generate*(alphabet: string = defaultAlphabet,
                 size: int = 21): string =
+  ## Generates a unique ID using the specified alphabet and size.
   if alphabet == "" or size < 1:
     return # invalid parameters
   var mask: int = 1

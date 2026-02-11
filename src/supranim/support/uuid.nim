@@ -1,14 +1,19 @@
-# Supranim is a lightweight, high-performance MVC framework for Nim,
-# designed to simplify the development of web applications and REST APIs.
 #
-# It features intuitive routing, modular architecture, and built-in support
-# for modern web standards, making it easy to build scalable and maintainable
-# projects.
+# Supranim - A high-performance MVC web framework for Nim,
+# designed to simplify web application and REST API development.
+# 
+#   (c) 2025 MIT License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
 #
-# (c) 2025 Supranim | MIT License
-#     Made by Humans from OpenPeeps
-#     https://supranim.com | https://github.com/supranim
 
+## This module provides a simple and efficient way to generate unique UUIDs.
+## It includes functions to generate version 4 UUIDs (randomly generated) and to parse
+## UUIDs from strings or byte arrays. The implementation follows the RFC-4122 standard for UUIDs,
+## ensuring compatibility with other systems and libraries that use UUIDs. The module also provides
+## utility functions to determine the variant and version of a given UUID, as well as to convert
+## UUIDs to their string representation.
+## 
+## Originally written by [Matt Cooper](https://github.com/vtbassmatt/nim-uuid4)
 import std/[sysrand, strformat, hashes]
 
 from std/strutils import toHex, replace, split, join
@@ -25,17 +30,21 @@ type
   UUIDError* = object of CatchableError
 
 proc hexify*(bytes: openArray[uint8]): string =
+  ## Converts an array of bytes to a hexadecimal string representation.
   for byte in bytes:
     result.add fmt"{byte:02x}"
 
 proc hexify*(uuid: Uuid): string =
+  ## Converts a Uuid object to its hexadecimal string representation.
   for byte in uuid.bytes:
     result.add fmt"{byte:02x}"
 
 proc getUuidBytes*(uuid: Uuid): array[16, uint8] =
+  ## Returns the byte array representation of the UUID.
   result = uuid.bytes
 
 proc toStr(uuid: Uuid): string =
+  ## Converts a Uuid object to its standard string representation (8-4-4-4-12).
   result = hexify(uuid.bytes[0..3]) & "-" &
        hexify(uuid.bytes[4..5]) & "-" &
        hexify(uuid.bytes[6..7]) & "-" &
@@ -43,6 +52,7 @@ proc toStr(uuid: Uuid): string =
        hexify(uuid.bytes[10..15])
 
 proc uuid4*(): Uuid =
+  ## Generates a random version 4 UUID.
   let success = result.bytes.urandom()
   if success:
     result.bytes[6] = (result.bytes[6] and 0x0F) or 0x40
@@ -50,6 +60,7 @@ proc uuid4*(): Uuid =
     result.strv = result.toStr()
 
 proc normalizeUuidStr(candidateStr: string): string =
+  ## Normalizes a UUID string by removing hyphens and validating its format.
   let uuidStr = candidateStr.split('-').join()
   if len(uuidStr) != 32:
     raise newException(UUIDError,
