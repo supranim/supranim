@@ -110,7 +110,9 @@
     
     <div id="tocRoot"></div>
     
-    <p class="module-desc"></p>
+    <p class="module-desc"><p>This module provides a simple and efficient way to generate unique UUIDs. It includes functions to generate version 4 UUIDs (randomly generated) and to parse UUIDs from strings or byte arrays. The implementation follows the RFC-4122 standard for UUIDs, ensuring compatibility with other systems and libraries that use UUIDs. The module also provides utility functions to determine the variant and version of a given UUID, as well as to convert UUIDs to their string representation.</p>
+<p>Originally written by <a class="reference external" href="https://github.com/vtbassmatt/nim-uuid4">Matt Cooper</a></p>
+</p>
     <div class="section" id="7">
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
@@ -173,7 +175,7 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Returns the byte array representation of the UUID.
     
   </dd>
 </div>
@@ -184,7 +186,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#hexify%2CopenArray%5Buint8%5D"><span class="Identifier">hexify</span></a><span class="Other">(</span><span class="Identifier">bytes</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Identifier">uint8</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Converts an array of bytes to a hexadecimal string representation.
     
   </dd>
 </div>
@@ -192,7 +194,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#hexify%2CUuid"><span class="Identifier">hexify</span></a><span class="Other">(</span><span class="Identifier">uuid</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Converts a Uuid object to its hexadecimal string representation.
     
   </dd>
 </div>
@@ -203,7 +205,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#uuid4"><span class="Identifier">uuid4</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Generates a random version 4 UUID.
     
   </dd>
 </div>
@@ -258,7 +260,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-11 06:35:47 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-11 08:00:36 UTC</small>
       </div>
     </div>
   </div>
