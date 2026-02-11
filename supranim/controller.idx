@@ -1,0 +1,25 @@
+nimTitle	controller	supranim/controller.html	module supranim/controller		0
+nim	keypair	supranim/controller.html#keypair	let keypair		27
+nim	BodyData	supranim/controller.html#BodyData	type BodyData		30
+nim	SomeBodyData	supranim/controller.html#SomeBodyData	type SomeBodyData		31
+nim	setParams	supranim/controller.html#setParams,Request,TableRef[string,string]	proc setParams(req: var Request; params: TableRef[string, string])		36
+nim	params	supranim/controller.html#params,Request	proc params(req: Request): TableRef[string, string]		40
+nim	getRequestBody	supranim/controller.html#getRequestBody,Request	proc getRequestBody(req: var Request): string		44
+nim	getFields	supranim/controller.html#getFields,Request	proc getFields(req: var Request): seq[(string, string)]		48
+nim	getFieldsJson	supranim/controller.html#getFieldsJson,Request	proc getFieldsJson(req: Request): JsonNode		54
+nim	getSomeBodyData	supranim/controller.html#getSomeBodyData,Request	proc getSomeBodyData(req: var Request): SomeBodyData		61
+nim	getBodyDataJson	supranim/controller.html#getBodyDataJson,Request	proc getBodyDataJson(req: var Request): SomeBodyData		73
+nim	getFieldsTable	supranim/controller.html#getFieldsTable,Request	proc getFieldsTable(req: var Request): SomeBodyData		93
+nim	getFieldsTableJson	supranim/controller.html#getFieldsTableJson,Request	proc getFieldsTableJson(req: var Request): SomeBodyData		97
+nim	getBodyData	supranim/controller.html#getBodyData,Request,typedesc[T]	proc getBodyData[T: BodyData | JsonNode](req: var Request; dataType: typedesc[T]): Option[\n    T]		101
+nim	getQueryTable	supranim/controller.html#getQueryTable,Request	proc getQueryTable(req: var Request): TableRef[string, string]		109
+nim	getClientId	supranim/controller.html#getClientId,Request	proc getClientId(req: var Request): Option[string]		113
+nim	getSessionCookie	supranim/controller.html#getSessionCookie,Request	proc getSessionCookie(req: var Request): ref Cookie		121
+nim	newController	supranim/controller.html#newController.m,untyped,untyped	macro newController(name, body: untyped)		130
+nim	ctrl	supranim/controller.html#ctrl.t,untyped,untyped	template ctrl(name, body: untyped)		159
+nim	go	supranim/controller.html#go.m,untyped,typed	macro go(id: untyped; params: typed)		162
+nim	go	supranim/controller.html#go.m,untyped	macro go(id: untyped)		185
+nim	redirectTo	supranim/controller.html#redirectTo.t,typed	template redirectTo(controllerIdentName: typed)		203
+nim	isAuth	supranim/controller.html#isAuth.t	template isAuth(): bool		208
+nim	storage	supranim/controller.html#storage.t,string	template storage(path: string): string		235
+nimgrp	go	supranim/controller.html#go-macros-all	macro		162

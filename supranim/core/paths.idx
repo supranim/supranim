@@ -1,0 +1,22 @@
+nimTitle	paths	supranim/core/paths.html	module supranim/core/paths		0
+nim	basePath	supranim/core/paths.html#basePath	const basePath		18
+nim	rootPath	supranim/core/paths.html#rootPath	const rootPath		19
+nim	cachePath	supranim/core/paths.html#cachePath	const cachePath		20
+nim	runtimeConfigPath	supranim/core/paths.html#runtimeConfigPath	const runtimeConfigPath		21
+nim	configPath	supranim/core/paths.html#configPath	const configPath		22
+nim	modelPath	supranim/core/paths.html#modelPath	const modelPath		23
+nim	controllerPath	supranim/core/paths.html#controllerPath	const controllerPath		24
+nim	servicePath	supranim/core/paths.html#servicePath	const servicePath		25
+nim	middlewarePath	supranim/core/paths.html#middlewarePath	const middlewarePath		26
+nim	databasePath	supranim/core/paths.html#databasePath	const databasePath		27
+nim	eventsPath	supranim/core/paths.html#eventsPath	const eventsPath		28
+nim	migrationPath	supranim/core/paths.html#migrationPath	const migrationPath		29
+nim	storagePath	supranim/core/paths.html#storagePath	const storagePath		30
+nim	pluginsPath	supranim/core/paths.html#pluginsPath	const pluginsPath		31
+nim	logsPath	supranim/core/paths.html#logsPath	const logsPath		32
+nim	consolePath	supranim/core/paths.html#consolePath	const consolePath		37
+nim	ApplicationPaths	supranim/core/paths.html#ApplicationPaths	object ApplicationPaths		40
+nim	p	supranim/core/paths.html#p.t,varargs[string]	template p(x: varargs[string]): string		44
+nim	init	supranim/core/paths.html#init,ApplicationPaths,string,bool	proc init(path: var ApplicationPaths; installPath: string; createDirs: bool): bool		47
+nim	getInstallationPath	supranim/core/paths.html#getInstallationPath,ApplicationPaths	proc getInstallationPath(path: ApplicationPaths): string		59
+nim	resolve	supranim/core/paths.html#resolve,ApplicationPaths,string,string	proc resolve(path: ApplicationPaths; dir: string; fpath = ""): string		63

@@ -1,2 +1,0 @@
-nimTitle	new	supranim/cli/commands/new.html	module supranim/cli/commands/new		0
-nim	newCommand	supranim/cli/commands/new.html#newCommand,Values	proc newCommand(v: Values)		3

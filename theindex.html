@@ -25,28 +25,1198 @@
   <div class="document" id="documentId">
     <div class="container">
       <h1 class="title">Index</h1>
-      Modules: <a href="index.html">supranim</a>, <a href="supranim/cli/commands/list.html">supranim/cli/commands/list</a>, <a href="supranim/cli/commands/new.html">supranim/cli/commands/new</a>, <a href="supranim/cli/commands/serve.html">supranim/cli/commands/serve</a>, <a href="supranim/cli/commands/stop.html">supranim/cli/commands/stop</a>.<br/><p /><h2>API symbols</h2>
-<dl><dt><a name="listCommand" href="#listCommand"><span>listCommand:</span></a></dt><dd><ul class="simple">
+      Modules: <a href="index.html">supranim</a>, <a href="supranim/application.html">supranim/application</a>, <a href="supranim/controller.html">supranim/controller</a>, <a href="supranim/core/application.html">supranim/core/application</a>, <a href="supranim/core/config.html">supranim/core/config</a>, <a href="supranim/core/paths.html">supranim/core/paths</a>, <a href="supranim/core/plugins.html">supranim/core/plugins</a>, <a href="supranim/core/servicemanager.html">supranim/core/servicemanager</a>, <a href="supranim/core/utils.html">supranim/core/utils</a>, <a href="supranim/http/autolink.html">supranim/http/autolink</a>, <a href="supranim/http/fileserver.html">supranim/http/fileserver</a>, <a href="supranim/http/request.html">supranim/http/request</a>, <a href="supranim/http/response.html">supranim/http/response</a>, <a href="supranim/http/router.html">supranim/http/router</a>, <a href="supranim/network/http/webserver.html">supranim/network/http/webserver</a>, <a href="supranim/network/ws/websocket.html">supranim/network/ws/websocket</a>, <a href="supranim/router.html">supranim/router</a>, <a href="supranim/service/events.html">supranim/service/events</a>, <a href="supranim/support/cookie.html">supranim/support/cookie</a>, <a href="supranim/support/nanoid.html">supranim/support/nanoid</a>, <a href="supranim/support/uuid.html">supranim/support/uuid</a>.<br/><p /><h2>API symbols</h2>
+<dl><dt><a name="%60%24%24%60" href="#%60%24%24%60"><span>`$$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="list: proc listCommand(v: Values)" href="supranim/cli/commands/list.html#listCommand%2CValues">list: proc listCommand(v: Values)</a></li>
+          data-doc-search-tag="uuid: proc `$$`(uuid: Uuid): string" href="supranim/support/uuid.html#%24%24%2CUuid">uuid: proc `$$`(uuid: Uuid): string</a></li>
           </ul></dd>
-<dt><a name="newCommand" href="#newCommand"><span>newCommand:</span></a></dt><dd><ul class="simple">
+<dt><a name="%60%24%60" href="#%60%24%60"><span>`$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="new: proc newCommand(v: Values)" href="supranim/cli/commands/new.html#newCommand%2CValues">new: proc newCommand(v: Values)</a></li>
+          data-doc-search-tag="cookie: proc `$`(cookie: ref Cookie): string" href="supranim/support/cookie.html#%24%2Cref.Cookie">cookie: proc `$`(cookie: ref Cookie): string</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="uuid: proc `$`(uuid: Uuid): string" href="supranim/support/uuid.html#%24%2CUuid">uuid: proc `$`(uuid: Uuid): string</a></li>
           </ul></dd>
-<dt><a name="serveCommand" href="#serveCommand"><span>serveCommand:</span></a></dt><dd><ul class="simple">
+<dt><a name="addCallback" href="#addCallback"><span>addCallback:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="serve: proc serveCommand(v: Values)" href="supranim/cli/commands/serve.html#serveCommand%2CValues">serve: proc serveCommand(v: Values)</a></li>
+          data-doc-search-tag="webserver: proc addCallback(server: WebServer; path: string;
+            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})" href="supranim/network/http/webserver.html#addCallback%2CWebServer%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29">webserver: proc addCallback(server: WebServer; path: string;
+            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})</a></li>
           </ul></dd>
-<dt><a name="stopCommand" href="#stopCommand"><span>stopCommand:</span></a></dt><dd><ul class="simple">
+<dt><a name="addEvent" href="#addEvent"><span>addEvent:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="stop: proc stopCommand(v: Values)" href="supranim/cli/commands/stop.html#stopCommand%2CValues">stop: proc stopCommand(v: Values)</a></li>
+          data-doc-search-tag="webserver: proc addEvent(server: WebServer;
+         callback: proc (fd: cint; events: cshort; arg: pointer) {.cdecl.})" href="supranim/network/http/webserver.html#addEvent%2CWebServer%2Cproc%28cint%2Ccshort%2Cpointer%29">webserver: proc addEvent(server: WebServer;
+         callback: proc (fd: cint; events: cshort; arg: pointer) {.cdecl.})</a></li>
+          </ul></dd>
+<dt><a name="addHeader" href="#addHeader"><span>addHeader:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc addHeader(res: var Response; key, value: string)" href="supranim/http/response.html#addHeader%2CResponse%2Cstring%2Cstring">response: proc addHeader(res: var Response; key, value: string)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc addHeader(req: var Request; name, value: string)" href="supranim/network/http/webserver.html#addHeader%2CRequest%2Cstring%2Cstring">webserver: proc addHeader(req: var Request; name, value: string)</a></li>
+          </ul></dd>
+<dt><a name="Afterware" href="#Afterware"><span>Afterware:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.Afterware" href="supranim/core/plugins.html#Afterware">plugins: PluginPermission.Afterware</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="plugins: ModuleType.Afterware" href="supranim/core/plugins.html#Afterware_2">plugins: ModuleType.Afterware</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="router: type Afterware" href="supranim/http/router.html#Afterware">router: type Afterware</a></li>
+          </ul></dd>
+<dt><a name="App" href="#App"><span>App:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: var App" href="supranim/core/application.html#App">application: var App</a></li>
+          </ul></dd>
+<dt><a name="AppConfigDefect" href="#AppConfigDefect"><span>AppConfigDefect:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: object AppConfigDefect" href="supranim/core/application.html#AppConfigDefect">application: object AppConfigDefect</a></li>
+          </ul></dd>
+<dt><a name="appInitialized" href="#appInitialized"><span>appInitialized:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: var appInitialized" href="supranim/core/application.html#appInitialized">application: var appInitialized</a></li>
+          </ul></dd>
+<dt><a name="appInstance" href="#appInstance"><span>appInstance:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: proc appInstance(): Application" href="supranim/core/application.html#appInstance">application: proc appInstance(): Application</a></li>
+          </ul></dd>
+<dt><a name="Application" href="#Application"><span>Application:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: type Application" href="supranim/core/application.html#Application">application: type Application</a></li>
+          </ul></dd>
+<dt><a name="ApplicationPaths" href="#ApplicationPaths"><span>ApplicationPaths:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: object ApplicationPaths" href="supranim/core/paths.html#ApplicationPaths">paths: object ApplicationPaths</a></li>
+          </ul></dd>
+<dt><a name="ApplicationUDP" href="#ApplicationUDP"><span>ApplicationUDP:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: object ApplicationUDP" href="supranim/core/application.html#ApplicationUDP">application: object ApplicationUDP</a></li>
+          </ul></dd>
+<dt><a name="autolinkController" href="#autolinkController"><span>autolinkController:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="autolink: proc autolinkController(routePath: string; httpMethod: HttpMethod;
+                   isWebSocket = false): Autolinked" href="supranim/http/autolink.html#autolinkController%2Cstring%2CHttpMethod">autolink: proc autolinkController(routePath: string; httpMethod: HttpMethod;
+                   isWebSocket = false): Autolinked</a></li>
+          </ul></dd>
+<dt><a name="Autolinked" href="#Autolinked"><span>Autolinked:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="autolink: tuple Autolinked" href="supranim/http/autolink.html#Autolinked">autolink: tuple Autolinked</a></li>
+          </ul></dd>
+<dt><a name="autoloadModule" href="#autoloadModule"><span>autoloadModule:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: proc autoloadModule(manager: PluginManager; path: string; basePath: string): ptr AutoloadPluggableModule" href="supranim/core/plugins.html#autoloadModule%2CPluginManager%2Cstring%2Cstring">plugins: proc autoloadModule(manager: PluginManager; path: string; basePath: string): ptr AutoloadPluggableModule</a></li>
+          </ul></dd>
+<dt><a name="AutoloadPluggableModule" href="#AutoloadPluggableModule"><span>AutoloadPluggableModule:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: object AutoloadPluggableModule" href="supranim/core/plugins.html#AutoloadPluggableModule">plugins: object AutoloadPluggableModule</a></li>
+          </ul></dd>
+<dt><a name="baseMiddlewares" href="#baseMiddlewares"><span>baseMiddlewares:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: var baseMiddlewares" href="supranim/http/router.html#baseMiddlewares">router: var baseMiddlewares</a></li>
+          </ul></dd>
+<dt><a name="basePath" href="#basePath"><span>basePath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const basePath" href="supranim/core/paths.html#basePath">paths: const basePath</a></li>
+          </ul></dd>
+<dt><a name="BodyData" href="#BodyData"><span>BodyData:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: type BodyData" href="supranim/controller.html#BodyData">controller: type BodyData</a></li>
+          </ul></dd>
+<dt><a name="BodyStream" href="#BodyStream"><span>BodyStream:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: object BodyStream" href="supranim/network/http/webserver.html#BodyStream">webserver: object BodyStream</a></li>
+          </ul></dd>
+<dt><a name="cachePath" href="#cachePath"><span>cachePath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const cachePath" href="supranim/core/paths.html#cachePath">paths: const cachePath</a></li>
+          </ul></dd>
+<dt><a name="call4xx" href="#call4xx"><span>call4xx:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc call4xx(router: var HttpRouterInstance; req: var Request; res: var Response)" href="supranim/http/router.html#call4xx%2CHttpRouterInstance%2CRequest%2CResponse">router: proc call4xx(router: var HttpRouterInstance; req: var Request; res: var Response)</a></li>
+          </ul></dd>
+<dt><a name="Callable" href="#Callable"><span>Callable:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: type Callable" href="supranim/http/router.html#Callable">router: type Callable</a></li>
+          </ul></dd>
+<dt><a name="ChannelService" href="#ChannelService"><span>ChannelService:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: ServiceType.ChannelService" href="supranim/core/servicemanager.html#ChannelService">servicemanager: ServiceType.ChannelService</a></li>
+          </ul></dd>
+<dt><a name="checkExists" href="#checkExists"><span>checkExists:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
+            httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
+    params: TableRef[string, string]]" href="supranim/http/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
+            httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
+    params: TableRef[string, string]]</a></li>
+          </ul></dd>
+<dt><a name="checkWsExists" href="#checkWsExists"><span>checkWsExists:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
+    exists: bool, route: HttpRouteWs, params: TableRef[string, string]]" href="supranim/http/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
+    exists: bool, route: HttpRouteWs, params: TableRef[string, string]]</a></li>
+          </ul></dd>
+<dt><a name="clearHeaders" href="#clearHeaders"><span>clearHeaders:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc clearHeaders(req: var Request)" href="supranim/network/http/webserver.html#clearHeaders%2CRequest">webserver: proc clearHeaders(req: var Request)</a></li>
+          </ul></dd>
+<dt><a name="cli" href="#cli"><span>cli:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: template cli(app: Application; cliCommands)" href="supranim/core/application.html#cli.t%2CApplication%2C">application: template cli(app: Application; cliCommands)</a></li>
+          </ul></dd>
+<dt><a name="close" href="#close"><span>close:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc close(c: ptr WebSocketConnectionImpl; code: int = 1000; reason = &quot;&quot;)" href="supranim/network/ws/websocket.html#close%2Cptr.WebSocketConnectionImpl%2Cint%2Cstring">websocket: proc close(c: ptr WebSocketConnectionImpl; code: int = 1000; reason = &quot;&quot;)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="websocket: proc close(ws: WebSocketConnection; code: int = 1000; reason = &quot;&quot;)" href="supranim/network/ws/websocket.html#close%2CWebSocketConnection%2Cint%2Cstring">websocket: proc close(ws: WebSocketConnection; code: int = 1000; reason = &quot;&quot;)</a></li>
+          </ul></dd>
+<dt><a name="CloseCb" href="#CloseCb"><span>CloseCb:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: type CloseCb" href="supranim/network/ws/websocket.html#CloseCb">websocket: type CloseCb</a></li>
+          </ul></dd>
+<dt><a name="config" href="#config"><span>config:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: proc config(app: Application; key: string): JsonNode" href="supranim/core/application.html#config%2CApplication%2Cstring">application: proc config(app: Application; key: string): JsonNode</a></li>
+          </ul></dd>
+<dt><a name="configPath" href="#configPath"><span>configPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const configPath" href="supranim/core/paths.html#configPath">paths: const configPath</a></li>
+          </ul></dd>
+<dt><a name="consolePath" href="#consolePath"><span>consolePath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const consolePath" href="supranim/core/paths.html#consolePath">paths: const consolePath</a></li>
+          </ul></dd>
+<dt><a name="Controller" href="#Controller"><span>Controller:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.Controller" href="supranim/core/plugins.html#Controller">plugins: PluginPermission.Controller</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="plugins: ModuleType.Controller" href="supranim/core/plugins.html#Controller_2">plugins: ModuleType.Controller</a></li>
+          </ul></dd>
+<dt><a name="controllerPath" href="#controllerPath"><span>controllerPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const controllerPath" href="supranim/core/paths.html#controllerPath">paths: const controllerPath</a></li>
+          </ul></dd>
+<dt><a name="ControllersTable" href="#ControllersTable"><span>ControllersTable:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: type ControllersTable" href="supranim/core/plugins.html#ControllersTable">plugins: type ControllersTable</a></li>
+          </ul></dd>
+<dt><a name="Cookie" href="#Cookie"><span>Cookie:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: object Cookie" href="supranim/support/cookie.html#Cookie">cookie: object Cookie</a></li>
+          </ul></dd>
+<dt><a name="CookiesTable" href="#CookiesTable"><span>CookiesTable:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: type CookiesTable" href="supranim/support/cookie.html#CookiesTable">cookie: type CookiesTable</a></li>
+          </ul></dd>
+<dt><a name="ctrl" href="#ctrl"><span>ctrl:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: template ctrl(name, body: untyped)" href="supranim/controller.html#ctrl.t%2Cuntyped%2Cuntyped">controller: template ctrl(name, body: untyped)</a></li>
+          </ul></dd>
+<dt><a name="databasePath" href="#databasePath"><span>databasePath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const databasePath" href="supranim/core/paths.html#databasePath">paths: const databasePath</a></li>
+          </ul></dd>
+<dt><a name="DBRead" href="#DBRead"><span>DBRead:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.DBRead" href="supranim/core/plugins.html#DBRead">plugins: PluginPermission.DBRead</a></li>
+          </ul></dd>
+<dt><a name="DBWrite" href="#DBWrite"><span>DBWrite:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.DBWrite" href="supranim/core/plugins.html#DBWrite">plugins: PluginPermission.DBWrite</a></li>
+          </ul></dd>
+<dt><a name="DefaultHttpError" href="#DefaultHttpError"><span>DefaultHttpError:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: const DefaultHttpError" href="supranim/http/router.html#DefaultHttpError">router: const DefaultHttpError</a></li>
+          </ul></dd>
+<dt><a name="drainChunk" href="#drainChunk"><span>drainChunk:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc drainChunk(stream: var BodyStream; len: int)" href="supranim/network/http/webserver.html#drainChunk%2CBodyStream%2Cint">webserver: proc drainChunk(stream: var BodyStream; len: int)</a></li>
+          </ul></dd>
+<dt><a name="DynamicRoute" href="#DynamicRoute"><span>DynamicRoute:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: HttpRouteType.DynamicRoute" href="supranim/http/router.html#DynamicRoute">router: HttpRouteType.DynamicRoute</a></li>
+          </ul></dd>
+<dt><a name="emitter" href="#emitter"><span>emitter:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="events: proc emitter(eventName: string; args: Option[seq[JsonString]] = none(seq[JsonString]))" href="supranim/service/events.html#emitter%2Cstring%2COption%5Bseq%5BJsonString%5D%5D">events: proc emitter(eventName: string; args: Option[seq[JsonString]] = none(seq[JsonString]))</a></li>
+          </ul></dd>
+<dt><a name="emptyResponseBody" href="#emptyResponseBody"><span>emptyResponseBody:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: const emptyResponseBody" href="supranim/http/response.html#emptyResponseBody">response: const emptyResponseBody</a></li>
+          </ul></dd>
+<dt><a name="endChunk" href="#endChunk"><span>endChunk:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc endChunk(req: Request)" href="supranim/network/http/webserver.html#endChunk%2CRequest">webserver: proc endChunk(req: Request)</a></li>
+          </ul></dd>
+<dt><a name="ErrorCb" href="#ErrorCb"><span>ErrorCb:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: type ErrorCb" href="supranim/network/ws/websocket.html#ErrorCb">websocket: type ErrorCb</a></li>
+          </ul></dd>
+<dt><a name="errorHandler" href="#errorHandler"><span>errorHandler:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc errorHandler(router: var HttpRouterInstance; code: HttpCode; callback: Callable)" href="supranim/http/router.html#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable">router: proc errorHandler(router: var HttpRouterInstance; code: HttpCode; callback: Callable)</a></li>
+          </ul></dd>
+<dt><a name="event" href="#event"><span>event:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="events: proc event(): ptr EventManager" href="supranim/service/events.html#event">events: proc event(): ptr EventManager</a></li>
+          </ul></dd>
+<dt><a name="EventCallback" href="#EventCallback"><span>EventCallback:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="events: type EventCallback" href="supranim/service/events.html#EventCallback">events: type EventCallback</a></li>
+          </ul></dd>
+<dt><a name="eventsPath" href="#eventsPath"><span>eventsPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const eventsPath" href="supranim/core/paths.html#eventsPath">paths: const eventsPath</a></li>
+          </ul></dd>
+<dt><a name="expires" href="#expires"><span>expires:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc expires(cookie: ref Cookie)" href="supranim/support/cookie.html#expires%2Cref.Cookie">cookie: proc expires(cookie: ref Cookie)</a></li>
+          </ul></dd>
+<dt><a name="extractThreadServicesBackend" href="#extractThreadServicesBackend"><span>extractThreadServicesBackend:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: macro extractThreadServicesBackend()" href="supranim/core/servicemanager.html#extractThreadServicesBackend.m">servicemanager: macro extractThreadServicesBackend()</a></li>
+          </ul></dd>
+<dt><a name="extractThreadServicesClient" href="#extractThreadServicesClient"><span>extractThreadServicesClient:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: macro extractThreadServicesClient()" href="supranim/core/servicemanager.html#extractThreadServicesClient.m">servicemanager: macro extractThreadServicesClient()</a></li>
+          </ul></dd>
+<dt><a name="Filesystem" href="#Filesystem"><span>Filesystem:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.Filesystem" href="supranim/core/plugins.html#Filesystem">plugins: PluginPermission.Filesystem</a></li>
+          </ul></dd>
+<dt><a name="findHeader" href="#findHeader"><span>findHeader:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc findHeader(req: Request; name: string): string" href="supranim/network/http/webserver.html#findHeader%2CRequest%2Cstring">webserver: proc findHeader(req: Request; name: string): string</a></li>
+          </ul></dd>
+<dt><a name="freemem" href="#freemem"><span>freemem:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="utils: template freemem(x: untyped)" href="supranim/core/utils.html#freemem.t%2Cuntyped">utils: template freemem(x: untyped)</a></li>
+          </ul></dd>
+<dt><a name="FullAccess" href="#FullAccess"><span>FullAccess:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.FullAccess" href="supranim/core/plugins.html#FullAccess">plugins: PluginPermission.FullAccess</a></li>
+          </ul></dd>
+<dt><a name="generate" href="#generate"><span>generate:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="nanoid: proc generate(alphabet: string = defaultAlphabet; size: int = 21): string" href="supranim/support/nanoid.html#generate%2Cstring%2Cint">nanoid: proc generate(alphabet: string = defaultAlphabet; size: int = 21): string</a></li>
+          </ul></dd>
+<dt><a name="getAddress" href="#getAddress"><span>getAddress:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: proc getAddress(app: Application): string" href="supranim/core/application.html#getAddress%2CApplication">application: proc getAddress(app: Application): string</a></li>
+          </ul></dd>
+<dt><a name="getAgent" href="#getAgent"><span>getAgent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc getAgent(req: var Request): Option[string]" href="supranim/http/request.html#getAgent%2CRequest">request: proc getAgent(req: var Request): Option[string]</a></li>
+          </ul></dd>
+<dt><a name="getBaseMiddlewares" href="#getBaseMiddlewares"><span>getBaseMiddlewares:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="supranim: template getBaseMiddlewares(req, res)" href="index.html#getBaseMiddlewares.t%2C%2C">supranim: template getBaseMiddlewares(req, res)</a></li>
+          </ul></dd>
+<dt><a name="getBody" href="#getBody"><span>getBody:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc getBody(res: Response): string" href="supranim/http/response.html#getBody%2CResponse">response: proc getBody(res: Response): string</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc getBody(req: var Request): Option[string]" href="supranim/network/http/webserver.html#getBody%2CRequest">webserver: proc getBody(req: var Request): Option[string]</a></li>
+          </ul></dd>
+<dt><a name="getBodyData" href="#getBodyData"><span>getBodyData:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getBodyData[T: BodyData | JsonNode](req: var Request; dataType: typedesc[T]): Option[
+    T]" href="supranim/controller.html#getBodyData%2CRequest%2Ctypedesc%5BT%5D">controller: proc getBodyData[T: BodyData | JsonNode](req: var Request; dataType: typedesc[T]): Option[
+    T]</a></li>
+          </ul></dd>
+<dt><a name="getBodyDataJson" href="#getBodyDataJson"><span>getBodyDataJson:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getBodyDataJson(req: var Request): SomeBodyData" href="supranim/controller.html#getBodyDataJson%2CRequest">controller: proc getBodyDataJson(req: var Request): SomeBodyData</a></li>
+          </ul></dd>
+<dt><a name="getBodyStream" href="#getBodyStream"><span>getBodyStream:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc getBodyStream(req: var Request): BodyStream" href="supranim/network/http/webserver.html#getBodyStream%2CRequest">webserver: proc getBodyStream(req: var Request): BodyStream</a></li>
+          </ul></dd>
+<dt><a name="getBrowserName" href="#getBrowserName"><span>getBrowserName:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc getBrowserName(req: var Request): Option[string]" href="supranim/http/request.html#getBrowserName%2CRequest">request: proc getBrowserName(req: var Request): Option[string]</a></li>
+          </ul></dd>
+<dt><a name="getClientData" href="#getClientData"><span>getClientData:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc getClientData(req: var Request): JsonNode" href="supranim/http/request.html#getClientData%2CRequest">request: proc getClientData(req: var Request): JsonNode</a></li>
+          </ul></dd>
+<dt><a name="getClientId" href="#getClientId"><span>getClientId:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getClientId(req: var Request): Option[string]" href="supranim/controller.html#getClientId%2CRequest">controller: proc getClientId(req: var Request): Option[string]</a></li>
+          </ul></dd>
+<dt><a name="getCode" href="#getCode"><span>getCode:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc getCode(res: Response): HttpCode" href="supranim/http/response.html#getCode%2CResponse">response: proc getCode(res: Response): HttpCode</a></li>
+          </ul></dd>
+<dt><a name="getContentType" href="#getContentType"><span>getContentType:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc getContentType(): string" href="supranim/http/response.html#getContentType">response: proc getContentType(): string</a></li>
+          </ul></dd>
+<dt><a name="getCookies" href="#getCookies"><span>getCookies:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc getCookies(req: var Request): Option[string]" href="supranim/http/request.html#getCookies%2CRequest">request: proc getCookies(req: var Request): Option[string]</a></li>
+          </ul></dd>
+<dt><a name="getDefault" href="#getDefault"><span>getDefault:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc getDefault(code: HttpCode): string" href="supranim/http/response.html#getDefault%2CHttpCode">response: proc getDefault(code: HttpCode): string</a></li>
+          </ul></dd>
+<dt><a name="getDomain" href="#getDomain"><span>getDomain:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc getDomain(cookie: ref Cookie): string" href="supranim/support/cookie.html#getDomain%2Cref.Cookie">cookie: proc getDomain(cookie: ref Cookie): string</a></li>
+          </ul></dd>
+<dt><a name="getEventManagerInstance" href="#getEventManagerInstance"><span>getEventManagerInstance:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="events: proc getEventManagerInstance(onceCb`gensym0`gensym10: OnInitSingletonCallback`gensym0`gensym10 = nil;
+                        initShared`gensym0`gensym10: static bool = true): ptr EventManager" href="supranim/service/events.html#getEventManagerInstance%2COnInitSingletonCallback%60gensym0%60gensym10%2Cstaticbool">events: proc getEventManagerInstance(onceCb`gensym0`gensym10: OnInitSingletonCallback`gensym0`gensym10 = nil;
+                        initShared`gensym0`gensym10: static bool = true): ptr EventManager</a></li>
+          </ul></dd>
+<dt><a name="getFields" href="#getFields"><span>getFields:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getFields(req: var Request): seq[(string, string)]" href="supranim/controller.html#getFields%2CRequest">controller: proc getFields(req: var Request): seq[(string, string)]</a></li>
+          </ul></dd>
+<dt><a name="getFieldsJson" href="#getFieldsJson"><span>getFieldsJson:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getFieldsJson(req: Request): JsonNode" href="supranim/controller.html#getFieldsJson%2CRequest">controller: proc getFieldsJson(req: Request): JsonNode</a></li>
+          </ul></dd>
+<dt><a name="getFieldsTable" href="#getFieldsTable"><span>getFieldsTable:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getFieldsTable(req: var Request): SomeBodyData" href="supranim/controller.html#getFieldsTable%2CRequest">controller: proc getFieldsTable(req: var Request): SomeBodyData</a></li>
+          </ul></dd>
+<dt><a name="getFieldsTableJson" href="#getFieldsTableJson"><span>getFieldsTableJson:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getFieldsTableJson(req: var Request): SomeBodyData" href="supranim/controller.html#getFieldsTableJson%2CRequest">controller: proc getFieldsTableJson(req: var Request): SomeBodyData</a></li>
+          </ul></dd>
+<dt><a name="getHeader" href="#getHeader"><span>getHeader:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc getHeader(req: var Request; key: string): Option[string]" href="supranim/network/http/webserver.html#getHeader%2CRequest%2Cstring">webserver: proc getHeader(req: var Request; key: string): Option[string]</a></li>
+          </ul></dd>
+<dt><a name="getHeaders" href="#getHeaders"><span>getHeaders:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc getHeaders(res: var Response): HttpHeaders" href="supranim/http/response.html#getHeaders%2CResponse">response: proc getHeaders(res: var Response): HttpHeaders</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc getHeaders(req: var Request): Option[HttpHeaders]" href="supranim/network/http/webserver.html#getHeaders%2CRequest">webserver: proc getHeaders(req: var Request): Option[HttpHeaders]</a></li>
+          </ul></dd>
+<dt><a name="getHttpMethod" href="#getHttpMethod"><span>getHttpMethod:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc getHttpMethod(req: var Request): HttpMethod" href="supranim/http/request.html#getHttpMethod%2CRequest">request: proc getHttpMethod(req: var Request): HttpMethod</a></li>
+          </ul></dd>
+<dt><a name="getInstallationPath" href="#getInstallationPath"><span>getInstallationPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: proc getInstallationPath(path: ApplicationPaths): string" href="supranim/core/paths.html#getInstallationPath%2CApplicationPaths">paths: proc getInstallationPath(path: ApplicationPaths): string</a></li>
+          </ul></dd>
+<dt><a name="getIp" href="#getIp"><span>getIp:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc getIp(req: var Request): string" href="supranim/network/http/webserver.html#getIp%2CRequest">webserver: proc getIp(req: var Request): string</a></li>
+          </ul></dd>
+<dt><a name="getMethod" href="#getMethod"><span>getMethod:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc getMethod(req: var Request): HttpMethod" href="supranim/network/http/webserver.html#getMethod%2CRequest">webserver: proc getMethod(req: var Request): HttpMethod</a></li>
+          </ul></dd>
+<dt><a name="getName" href="#getName"><span>getName:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc getName(cookie: ref Cookie): string" href="supranim/support/cookie.html#getName%2Cref.Cookie">cookie: proc getName(cookie: ref Cookie): string</a></li>
+          </ul></dd>
+<dt><a name="getOutputHeaders" href="#getOutputHeaders"><span>getOutputHeaders:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc getOutputHeaders(req: Request): string" href="supranim/network/http/webserver.html#getOutputHeaders%2CRequest">webserver: proc getOutputHeaders(req: Request): string</a></li>
+          </ul></dd>
+<dt><a name="getPlatform" href="#getPlatform"><span>getPlatform:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc getPlatform(req: var Request): Option[string]" href="supranim/http/request.html#getPlatform%2CRequest">request: proc getPlatform(req: var Request): Option[string]</a></li>
+          </ul></dd>
+<dt><a name="getPort" href="#getPort"><span>getPort:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: proc getPort(app: Application): Port" href="supranim/core/application.html#getPort%2CApplication">application: proc getPort(app: Application): Port</a></li>
+          </ul></dd>
+<dt><a name="getQuery" href="#getQuery"><span>getQuery:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc getQuery(req: var Request): Option[TableRef[string, string]]" href="supranim/network/http/webserver.html#getQuery%2CRequest">webserver: proc getQuery(req: var Request): Option[TableRef[string, string]]</a></li>
+          </ul></dd>
+<dt><a name="getQueryTable" href="#getQueryTable"><span>getQueryTable:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getQueryTable(req: var Request): TableRef[string, string]" href="supranim/controller.html#getQueryTable%2CRequest">controller: proc getQueryTable(req: var Request): TableRef[string, string]</a></li>
+          </ul></dd>
+<dt><a name="getRequestBody" href="#getRequestBody"><span>getRequestBody:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getRequestBody(req: var Request): string" href="supranim/controller.html#getRequestBody%2CRequest">controller: proc getRequestBody(req: var Request): string</a></li>
+          </ul></dd>
+<dt><a name="getSessionCookie" href="#getSessionCookie"><span>getSessionCookie:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getSessionCookie(req: var Request): ref Cookie" href="supranim/controller.html#getSessionCookie%2CRequest">controller: proc getSessionCookie(req: var Request): ref Cookie</a></li>
+          </ul></dd>
+<dt><a name="getSomeBodyData" href="#getSomeBodyData"><span>getSomeBodyData:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc getSomeBodyData(req: var Request): SomeBodyData" href="supranim/controller.html#getSomeBodyData%2CRequest">controller: proc getSomeBodyData(req: var Request): SomeBodyData</a></li>
+          </ul></dd>
+<dt><a name="getUriPath" href="#getUriPath"><span>getUriPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc getUriPath(req: Request): string" href="supranim/http/request.html#getUriPath%2CRequest">request: proc getUriPath(req: Request): string</a></li>
+          </ul></dd>
+<dt><a name="getUrl" href="#getUrl"><span>getUrl:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc getUrl(req: Request): string" href="supranim/http/request.html#getUrl%2CRequest">request: proc getUrl(req: Request): string</a></li>
+          </ul></dd>
+<dt><a name="getUuid" href="#getUuid"><span>getUuid:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: proc getUuid(app: Application): Uuid" href="supranim/core/application.html#getUuid%2CApplication">application: proc getUuid(app: Application): Uuid</a></li>
+          </ul></dd>
+<dt><a name="getUuidBytes" href="#getUuidBytes"><span>getUuidBytes:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="uuid: proc getUuidBytes(uuid: Uuid): array[16, uint8]" href="supranim/support/uuid.html#getUuidBytes%2CUuid">uuid: proc getUuidBytes(uuid: Uuid): array[16, uint8]</a></li>
+          </ul></dd>
+<dt><a name="getValue" href="#getValue"><span>getValue:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc getValue(cookie: ref Cookie): string" href="supranim/support/cookie.html#getValue%2Cref.Cookie">cookie: proc getValue(cookie: ref Cookie): string</a></li>
+          </ul></dd>
+<dt><a name="Global" href="#Global"><span>Global:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: ServiceType.Global" href="supranim/core/servicemanager.html#Global">servicemanager: ServiceType.Global</a></li>
+          </ul></dd>
+<dt><a name="go" href="#go"><span>go:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: macro go(id: untyped)" href="supranim/controller.html#go.m%2Cuntyped">controller: macro go(id: untyped)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="controller: macro go(id: untyped; params: typed)" href="supranim/controller.html#go.m%2Cuntyped%2Ctyped">controller: macro go(id: untyped; params: typed)</a></li>
+          </ul></dd>
+<dt><a name="hasCookies" href="#hasCookies"><span>hasCookies:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc hasCookies(req: var Request): bool" href="supranim/http/request.html#hasCookies%2CRequest">request: proc hasCookies(req: var Request): bool</a></li>
+          </ul></dd>
+<dt><a name="hexify" href="#hexify"><span>hexify:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="uuid: proc hexify(bytes: openArray[uint8]): string" href="supranim/support/uuid.html#hexify%2CopenArray%5Buint8%5D">uuid: proc hexify(bytes: openArray[uint8]): string</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="uuid: proc hexify(uuid: Uuid): string" href="supranim/support/uuid.html#hexify%2CUuid">uuid: proc hexify(uuid: Uuid): string</a></li>
+          </ul></dd>
+<dt><a name="httpMethods" href="#httpMethods"><span>httpMethods:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: const httpMethods" href="supranim/http/router.html#httpMethods">router: const httpMethods</a></li>
+          </ul></dd>
+<dt><a name="HttpRoute" href="#HttpRoute"><span>HttpRoute:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: type HttpRoute" href="supranim/http/router.html#HttpRoute">router: type HttpRoute</a></li>
+          </ul></dd>
+<dt><a name="HttpRouteMeta" href="#HttpRouteMeta"><span>HttpRouteMeta:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: object HttpRouteMeta" href="supranim/core/servicemanager.html#HttpRouteMeta">servicemanager: object HttpRouteMeta</a></li>
+          </ul></dd>
+<dt><a name="HttpRouterError" href="#HttpRouterError"><span>HttpRouterError:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: object HttpRouterError" href="supranim/http/router.html#HttpRouterError">router: object HttpRouterError</a></li>
+          </ul></dd>
+<dt><a name="HttpRouterInstance" href="#HttpRouterInstance"><span>HttpRouterInstance:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: object HttpRouterInstance" href="supranim/http/router.html#HttpRouterInstance">router: object HttpRouterInstance</a></li>
+          </ul></dd>
+<dt><a name="HttpRoutes" href="#HttpRoutes"><span>HttpRoutes:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: type HttpRoutes" href="supranim/core/servicemanager.html#HttpRoutes">servicemanager: type HttpRoutes</a></li>
+          </ul></dd>
+<dt><a name="HttpRouteType" href="#HttpRouteType"><span>HttpRouteType:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: enum HttpRouteType" href="supranim/http/router.html#HttpRouteType">router: enum HttpRouteType</a></li>
+          </ul></dd>
+<dt><a name="HttpRouteVerbs" href="#HttpRouteVerbs"><span>HttpRouteVerbs:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: type HttpRouteVerbs" href="supranim/core/servicemanager.html#HttpRouteVerbs">servicemanager: type HttpRouteVerbs</a></li>
+          </ul></dd>
+<dt><a name="HttpRouteWs" href="#HttpRouteWs"><span>HttpRouteWs:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: type HttpRouteWs" href="supranim/http/router.html#HttpRouteWs">router: type HttpRouteWs</a></li>
+          </ul></dd>
+<dt><a name="HttpService" href="#HttpService"><span>HttpService:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: object HttpService" href="supranim/core/servicemanager.html#HttpService">servicemanager: object HttpService</a></li>
+          </ul></dd>
+<dt><a name="HttpServiceIndex" href="#HttpServiceIndex"><span>HttpServiceIndex:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: type HttpServiceIndex" href="supranim/core/servicemanager.html#HttpServiceIndex">servicemanager: type HttpServiceIndex</a></li>
+          </ul></dd>
+<dt><a name="index" href="#index"><span>index:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: var index" href="supranim/core/servicemanager.html#index">servicemanager: var index</a></li>
+          </ul></dd>
+<dt><a name="info" href="#info"><span>info:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: proc info(str: string; indentSize = 0)" href="supranim/core/application.html#info%2Cstring%2Cint">application: proc info(str: string; indentSize = 0)</a></li>
+          </ul></dd>
+<dt><a name="init" href="#init"><span>init:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: macro init(appx: untyped)" href="supranim/core/application.html#init.m%2Cuntyped">application: macro init(appx: untyped)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="paths: proc init(path: var ApplicationPaths; installPath: string; createDirs: bool): bool" href="supranim/core/paths.html#init%2CApplicationPaths%2Cstring%2Cbool">paths: proc init(path: var ApplicationPaths; installPath: string; createDirs: bool): bool</a></li>
+          </ul></dd>
+<dt><a name="initApplication" href="#initApplication"><span>initApplication:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: proc initApplication()" href="supranim/core/application.html#initApplication">application: proc initApplication()</a></li>
+          </ul></dd>
+<dt><a name="initChannelRouter" href="#initChannelRouter"><span>initChannelRouter:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: template initChannelRouter()" href="supranim/core/servicemanager.html#initChannelRouter.t">servicemanager: template initChannelRouter()</a></li>
+          </ul></dd>
+<dt><a name="initHttpRouter" href="#initHttpRouter"><span>initHttpRouter:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: template initHttpRouter()" href="supranim/core/application.html#initHttpRouter.t">application: template initHttpRouter()</a></li>
+          </ul></dd>
+<dt><a name="initPluginManager" href="#initPluginManager"><span>initPluginManager:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: proc initPluginManager(enableUpdates = false): PluginManager" href="supranim/core/plugins.html#initPluginManager">plugins: proc initPluginManager(enableUpdates = false): PluginManager</a></li>
+          </ul></dd>
+<dt><a name="initRouter" href="#initRouter"><span>initRouter:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: template initRouter(): untyped" href="supranim/core/servicemanager.html#initRouter.t">servicemanager: template initRouter(): untyped</a></li>
+          </ul></dd>
+<dt><a name="initRouterErrorHandlers" href="#initRouterErrorHandlers"><span>initRouterErrorHandlers:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: template initRouterErrorHandlers()" href="supranim/http/router.html#initRouterErrorHandlers.t">router: template initRouterErrorHandlers()</a></li>
+          </ul></dd>
+<dt><a name="initService" href="#initService"><span>initService:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: template initService(id, config: untyped)" href="supranim/core/servicemanager.html#initService.t%2Cuntyped%2Cuntyped">servicemanager: template initService(id, config: untyped)</a></li>
+          </ul></dd>
+<dt><a name="initStartCommand" href="#initStartCommand"><span>initStartCommand:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: template initStartCommand(v: Values; createDirs = true)" href="supranim/core/application.html#initStartCommand.t%2CValues">application: template initStartCommand(v: Values; createDirs = true)</a></li>
+          </ul></dd>
+<dt><a name="isAuth" href="#isAuth"><span>isAuth:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: template isAuth(): bool" href="supranim/controller.html#isAuth.t">controller: template isAuth(): bool</a></li>
+          </ul></dd>
+<dt><a name="isExpired" href="#isExpired"><span>isExpired:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc isExpired(cookie: ref Cookie): bool" href="supranim/support/cookie.html#isExpired%2Cref.Cookie">cookie: proc isExpired(cookie: ref Cookie): bool</a></li>
+          </ul></dd>
+<dt><a name="json" href="#json"><span>json:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: template json(body: typed; code: HttpCode = Http200): untyped" href="supranim/http/response.html#json.t%2Ctyped%2CHttpCode">response: template json(body: typed; code: HttpCode = Http200): untyped</a></li>
+          </ul></dd>
+<dt><a name="JsonString" href="#JsonString"><span>JsonString:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: type JsonString" href="supranim/core/application.html#JsonString">application: type JsonString</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="events: type JsonString" href="supranim/service/events.html#JsonString">events: type JsonString</a></li>
+          </ul></dd>
+<dt><a name="keypair" href="#keypair"><span>keypair:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: let keypair" href="supranim/controller.html#keypair">controller: let keypair</a></li>
+          </ul></dd>
+<dt><a name="listener" href="#listener"><span>listener:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="events: macro listener(eventName: static string; handle: untyped): untyped" href="supranim/service/events.html#listener.m%2Cstaticstring%2Cuntyped">events: macro listener(eventName: static string; handle: untyped): untyped</a></li>
+          </ul></dd>
+<dt><a name="loadEnvStatic" href="#loadEnvStatic"><span>loadEnvStatic:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="config: macro loadEnvStatic()" href="supranim/core/config.html#loadEnvStatic.m">config: macro loadEnvStatic()</a></li>
+          </ul></dd>
+<dt><a name="loadEventListeners" href="#loadEventListeners"><span>loadEventListeners:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: proc loadEventListeners(): NimNode" href="supranim/core/application.html#loadEventListeners">application: proc loadEventListeners(): NimNode</a></li>
+          </ul></dd>
+<dt><a name="LoadPluginHandle" href="#LoadPluginHandle"><span>LoadPluginHandle:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: type LoadPluginHandle" href="supranim/core/plugins.html#LoadPluginHandle">plugins: type LoadPluginHandle</a></li>
+          </ul></dd>
+<dt><a name="LoadPluginRoutes" href="#LoadPluginRoutes"><span>LoadPluginRoutes:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: type LoadPluginRoutes" href="supranim/core/plugins.html#LoadPluginRoutes">plugins: type LoadPluginRoutes</a></li>
+          </ul></dd>
+<dt><a name="logsPath" href="#logsPath"><span>logsPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const logsPath" href="supranim/core/paths.html#logsPath">paths: const logsPath</a></li>
+          </ul></dd>
+<dt><a name="malloc_trim" href="#malloc_trim"><span>malloc_trim:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="utils: proc malloc_trim(pad: csize_t = 0): bool" href="supranim/core/utils.html#malloc_trim%2Ccsize_t">utils: proc malloc_trim(pad: csize_t = 0): bool</a></li>
+          </ul></dd>
+<dt><a name="MessageCb" href="#MessageCb"><span>MessageCb:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: type MessageCb" href="supranim/network/ws/websocket.html#MessageCb">websocket: type MessageCb</a></li>
+          </ul></dd>
+<dt><a name="Middleware" href="#Middleware"><span>Middleware:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.Middleware" href="supranim/core/plugins.html#Middleware">plugins: PluginPermission.Middleware</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="plugins: ModuleType.Middleware" href="supranim/core/plugins.html#Middleware_2">plugins: ModuleType.Middleware</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="router: type Middleware" href="supranim/http/router.html#Middleware">router: type Middleware</a></li>
+          </ul></dd>
+<dt><a name="middlewarePath" href="#middlewarePath"><span>middlewarePath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const middlewarePath" href="supranim/core/paths.html#middlewarePath">paths: const middlewarePath</a></li>
+          </ul></dd>
+<dt><a name="migrationPath" href="#migrationPath"><span>migrationPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const migrationPath" href="supranim/core/paths.html#migrationPath">paths: const migrationPath</a></li>
+          </ul></dd>
+<dt><a name="Model" href="#Model"><span>Model:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.Model" href="supranim/core/plugins.html#Model">plugins: PluginPermission.Model</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="plugins: ModuleType.Model" href="supranim/core/plugins.html#Model_2">plugins: ModuleType.Model</a></li>
+          </ul></dd>
+<dt><a name="modelPath" href="#modelPath"><span>modelPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const modelPath" href="supranim/core/paths.html#modelPath">paths: const modelPath</a></li>
+          </ul></dd>
+<dt><a name="ModuleType" href="#ModuleType"><span>ModuleType:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: enum ModuleType" href="supranim/core/plugins.html#ModuleType">plugins: enum ModuleType</a></li>
+          </ul></dd>
+<dt><a name="moduleTypePluggableModule" href="#moduleTypePluggableModule"><span>moduleTypePluggableModule:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginType.moduleTypePluggableModule" href="supranim/core/plugins.html#moduleTypePluggableModule">plugins: PluginType.moduleTypePluggableModule</a></li>
+          </ul></dd>
+<dt><a name="moduleTypePlugin" href="#moduleTypePlugin"><span>moduleTypePlugin:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginType.moduleTypePlugin" href="supranim/core/plugins.html#moduleTypePlugin">plugins: PluginType.moduleTypePlugin</a></li>
+          </ul></dd>
+<dt><a name="newController" href="#newController"><span>newController:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: macro newController(name, body: untyped)" href="supranim/controller.html#newController.m%2Cuntyped%2Cuntyped">controller: macro newController(name, body: untyped)</a></li>
+          </ul></dd>
+<dt><a name="newCookie" href="#newCookie"><span>newCookie:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc newCookie(name, value: string;
+          expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
+          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): ref Cookie" href="supranim/support/cookie.html#newCookie%2Cstring%2Cstring%2COption%5BDateTime%5D%2Cstring%2Cstring">cookie: proc newCookie(name, value: string;
+          expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
+          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): ref Cookie</a></li>
+          </ul></dd>
+<dt><a name="newHttpRouter" href="#newHttpRouter"><span>newHttpRouter:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc newHttpRouter(): HttpRouterInstance" href="supranim/http/router.html#newHttpRouter">router: proc newHttpRouter(): HttpRouterInstance</a></li>
+          </ul></dd>
+<dt><a name="newWebServer" href="#newWebServer"><span>newWebServer:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc newWebServer(port: Port = Port(8080)): WebServer" href="supranim/network/http/webserver.html#newWebServer%2CPort">webserver: proc newWebServer(port: Port = Port(8080)): WebServer</a></li>
+          </ul></dd>
+<dt><a name="NoAccess" href="#NoAccess"><span>NoAccess:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.NoAccess" href="supranim/core/plugins.html#NoAccess">plugins: PluginPermission.NoAccess</a></li>
+          </ul></dd>
+<dt><a name="OnInitSingletonCallback%60gensym0%60gensym10" href="#OnInitSingletonCallback%60gensym0%60gensym10"><span>OnInitSingletonCallback`gensym0`gensym10:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="events: type OnInitSingletonCallback`gensym0`gensym10" href="supranim/service/events.html#OnInitSingletonCallback%60gensym0%60gensym10">events: type OnInitSingletonCallback`gensym0`gensym10</a></li>
+          </ul></dd>
+<dt><a name="OnRequest" href="#OnRequest"><span>OnRequest:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: type OnRequest" href="supranim/network/http/webserver.html#OnRequest">webserver: type OnRequest</a></li>
+          </ul></dd>
+<dt><a name="OpenCb" href="#OpenCb"><span>OpenCb:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: type OpenCb" href="supranim/network/ws/websocket.html#OpenCb">websocket: type OpenCb</a></li>
+          </ul></dd>
+<dt><a name="p" href="#p"><span>p:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: template p(x: varargs[string]): string" href="supranim/core/paths.html#p.t%2Cvarargs%5Bstring%5D">paths: template p(x: varargs[string]): string</a></li>
+          </ul></dd>
+<dt><a name="params" href="#params"><span>params:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc params(req: Request): TableRef[string, string]" href="supranim/controller.html#params%2CRequest">controller: proc params(req: Request): TableRef[string, string]</a></li>
+          </ul></dd>
+<dt><a name="parseCookies" href="#parseCookies"><span>parseCookies:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc parseCookies(cookies: string): CookiesTable" href="supranim/support/cookie.html#parseCookies%2Cstring">cookie: proc parseCookies(cookies: string): CookiesTable</a></li>
+          </ul></dd>
+<dt><a name="parseRouteNode" href="#parseRouteNode"><span>parseRouteNode:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc parseRouteNode(verb, routePath: string; middlewares, afterwares: var NimNode;
+               closureHandle: NimNode = nil)" href="supranim/http/router.html#parseRouteNode%2Cstring%2Cstring%2CNimNode%2CNimNode%2CNimNode">router: proc parseRouteNode(verb, routePath: string; middlewares, afterwares: var NimNode;
+               closureHandle: NimNode = nil)</a></li>
+          </ul></dd>
+<dt><a name="peekChunk" href="#peekChunk"><span>peekChunk:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc peekChunk(stream: BodyStream; maxLen: int): (pointer, int)" href="supranim/network/http/webserver.html#peekChunk%2CBodyStream%2Cint">webserver: proc peekChunk(stream: BodyStream; maxLen: int): (pointer, int)</a></li>
+          </ul></dd>
+<dt><a name="PluggableController" href="#PluggableController"><span>PluggableController:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: object PluggableController" href="supranim/core/plugins.html#PluggableController">plugins: object PluggableController</a></li>
+          </ul></dd>
+<dt><a name="PluggableModel" href="#PluggableModel"><span>PluggableModel:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: object PluggableModel" href="supranim/core/plugins.html#PluggableModel">plugins: object PluggableModel</a></li>
+          </ul></dd>
+<dt><a name="Plugin" href="#Plugin"><span>Plugin:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: object Plugin" href="supranim/core/plugins.html#Plugin">plugins: object Plugin</a></li>
+          </ul></dd>
+<dt><a name="pluginActivated" href="#pluginActivated"><span>pluginActivated:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginNotification.pluginActivated" href="supranim/core/plugins.html#pluginActivated">plugins: PluginNotification.pluginActivated</a></li>
+          </ul></dd>
+<dt><a name="pluginExists" href="#pluginExists"><span>pluginExists:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: template pluginExists(key: string; x, y: typed)" href="supranim/core/plugins.html#pluginExists.t%2Cstring%2Ctyped%2Ctyped">plugins: template pluginExists(key: string; x, y: typed)</a></li>
+          </ul></dd>
+<dt><a name="pluginExistsGet" href="#pluginExistsGet"><span>pluginExistsGet:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: template pluginExistsGet(key: string; x, y: untyped)" href="supranim/core/plugins.html#pluginExistsGet.t%2Cstring%2Cuntyped%2Cuntyped">plugins: template pluginExistsGet(key: string; x, y: untyped)</a></li>
+          </ul></dd>
+<dt><a name="PluginManager" href="#PluginManager"><span>PluginManager:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: type PluginManager" href="supranim/core/plugins.html#PluginManager">plugins: type PluginManager</a></li>
+          </ul></dd>
+<dt><a name="PluginNotification" href="#PluginNotification"><span>PluginNotification:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: enum PluginNotification" href="supranim/core/plugins.html#PluginNotification">plugins: enum PluginNotification</a></li>
+          </ul></dd>
+<dt><a name="PluginPermission" href="#PluginPermission"><span>PluginPermission:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: enum PluginPermission" href="supranim/core/plugins.html#PluginPermission">plugins: enum PluginPermission</a></li>
+          </ul></dd>
+<dt><a name="PluginRoutes" href="#PluginRoutes"><span>PluginRoutes:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: object PluginRoutes" href="supranim/core/plugins.html#PluginRoutes">plugins: object PluginRoutes</a></li>
+          </ul></dd>
+<dt><a name="pluginsPath" href="#pluginsPath"><span>pluginsPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const pluginsPath" href="supranim/core/paths.html#pluginsPath">paths: const pluginsPath</a></li>
+          </ul></dd>
+<dt><a name="PluginStatus" href="#PluginStatus"><span>PluginStatus:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: enum PluginStatus" href="supranim/core/plugins.html#PluginStatus">plugins: enum PluginStatus</a></li>
+          </ul></dd>
+<dt><a name="PluginType" href="#PluginType"><span>PluginType:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: enum PluginType" href="supranim/core/plugins.html#PluginType">plugins: enum PluginType</a></li>
+          </ul></dd>
+<dt><a name="preload" href="#preload"><span>preload:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: proc preload(manager: PluginManager; path: string): ptr Plugin" href="supranim/core/plugins.html#preload%2CPluginManager%2Cstring">plugins: proc preload(manager: PluginManager; path: string): ptr Plugin</a></li>
+          </ul></dd>
+<dt><a name="preloadPluginHandleError" href="#preloadPluginHandleError"><span>preloadPluginHandleError:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginNotification.preloadPluginHandleError" href="supranim/core/plugins.html#preloadPluginHandleError">plugins: PluginNotification.preloadPluginHandleError</a></li>
+          </ul></dd>
+<dt><a name="preloadPluginHandleInstanceError" href="#preloadPluginHandleInstanceError"><span>preloadPluginHandleInstanceError:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginNotification.preloadPluginHandleInstanceError" href="supranim/core/plugins.html#preloadPluginHandleInstanceError">plugins: PluginNotification.preloadPluginHandleInstanceError</a></li>
+          </ul></dd>
+<dt><a name="preloadPluginLibraryError" href="#preloadPluginLibraryError"><span>preloadPluginLibraryError:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginNotification.preloadPluginLibraryError" href="supranim/core/plugins.html#preloadPluginLibraryError">plugins: PluginNotification.preloadPluginLibraryError</a></li>
+          </ul></dd>
+<dt><a name="preloadPluginSuccess" href="#preloadPluginSuccess"><span>preloadPluginSuccess:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginNotification.preloadPluginSuccess" href="supranim/core/plugins.html#preloadPluginSuccess">plugins: PluginNotification.preloadPluginSuccess</a></li>
+          </ul></dd>
+<dt><a name="preparePath" href="#preparePath"><span>preparePath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc preparePath(path: string; prefix = &quot;&quot;): string" href="supranim/http/router.html#preparePath%2Cstring%2Cstring">router: proc preparePath(path: string; prefix = &quot;&quot;): string</a></li>
+          </ul></dd>
+<dt><a name="queuedRoutes" href="#queuedRoutes"><span>queuedRoutes:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: var queuedRoutes" href="supranim/http/router.html#queuedRoutes">router: var queuedRoutes</a></li>
+          </ul></dd>
+<dt><a name="readChunk" href="#readChunk"><span>readChunk:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc readChunk(stream: var BodyStream; maxLen: int): string" href="supranim/network/http/webserver.html#readChunk%2CBodyStream%2Cint">webserver: proc readChunk(stream: var BodyStream; maxLen: int): string</a></li>
+          </ul></dd>
+<dt><a name="redirect" href="#redirect"><span>redirect:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: template redirect(target: string; code = Http303)" href="supranim/http/response.html#redirect.t%2Cstring">response: template redirect(target: string; code = Http303)</a></li>
+          </ul></dd>
+<dt><a name="redirect301" href="#redirect301"><span>redirect301:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: template redirect301(target: string)" href="supranim/http/response.html#redirect301.t%2Cstring">response: template redirect301(target: string)</a></li>
+          </ul></dd>
+<dt><a name="redirectTo" href="#redirectTo"><span>redirectTo:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: template redirectTo(controllerIdentName: typed)" href="supranim/controller.html#redirectTo.t%2Ctyped">controller: template redirectTo(controllerIdentName: typed)</a></li>
+          </ul></dd>
+<dt><a name="redirectUri" href="#redirectUri"><span>redirectUri:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)" href="supranim/http/response.html#redirectUri%2CRequest%2CResponse%2Cstring">response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)</a></li>
+          </ul></dd>
+<dt><a name="registerListener" href="#registerListener"><span>registerListener:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="events: proc registerListener(eventName: string; callback: EventCallback)" href="supranim/service/events.html#registerListener%2Cstring%2CEventCallback">events: proc registerListener(eventName: string; callback: EventCallback)</a></li>
+          </ul></dd>
+<dt><a name="registerRoute" href="#registerRoute"><span>registerRoute:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc registerRoute(router: var HttpRouterInstance;
+              autolinked: sink (string, string); httpMethod: HttpMethod;
+              callback: Callable; middlewares: seq[Middleware] = @[];
+              afterwares: seq[Afterware] = @[]; isWebSocket = false)" href="supranim/http/router.html#registerRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D">router: proc registerRoute(router: var HttpRouterInstance;
+              autolinked: sink (string, string); httpMethod: HttpMethod;
+              callback: Callable; middlewares: seq[Middleware] = @[];
+              afterwares: seq[Afterware] = @[]; isWebSocket = false)</a></li>
+          </ul></dd>
+<dt><a name="releaseUnusedMemory" href="#releaseUnusedMemory"><span>releaseUnusedMemory:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="utils: proc releaseUnusedMemory(): bool" href="supranim/core/utils.html#releaseUnusedMemory">utils: proc releaseUnusedMemory(): bool</a></li>
+          </ul></dd>
+<dt><a name="reloadModule" href="#reloadModule"><span>reloadModule:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: proc reloadModule(manager: PluginManager; path: string)" href="supranim/core/plugins.html#reloadModule%2CPluginManager%2Cstring">plugins: proc reloadModule(manager: PluginManager; path: string)</a></li>
+          </ul></dd>
+<dt><a name="removeHeader" href="#removeHeader"><span>removeHeader:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc removeHeader(req: var Request; name: string)" href="supranim/network/http/webserver.html#removeHeader%2CRequest%2Cstring">webserver: proc removeHeader(req: var Request; name: string)</a></li>
+          </ul></dd>
+<dt><a name="Request" href="#Request"><span>Request:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: object Request" href="supranim/network/http/webserver.html#Request">webserver: object Request</a></li>
+          </ul></dd>
+<dt><a name="resolve" href="#resolve"><span>resolve:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: proc resolve(path: ApplicationPaths; dir: string; fpath = &quot;&quot;): string" href="supranim/core/paths.html#resolve%2CApplicationPaths%2Cstring%2Cstring">paths: proc resolve(path: ApplicationPaths; dir: string; fpath = &quot;&quot;): string</a></li>
+          </ul></dd>
+<dt><a name="resolveAfterware" href="#resolveAfterware"><span>resolveAfterware:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc resolveAfterware(route: HttpRoute; req: var Request; res: var Response): HttpCode" href="supranim/http/router.html#resolveAfterware%2CHttpRoute%2CRequest%2CResponse">router: proc resolveAfterware(route: HttpRoute; req: var Request; res: var Response): HttpCode</a></li>
+          </ul></dd>
+<dt><a name="resolveMiddleware" href="#resolveMiddleware"><span>resolveMiddleware:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc resolveMiddleware(route: HttpRoute; req: var Request; res: var Response): HttpCode" href="supranim/http/router.html#resolveMiddleware%2CHttpRoute%2CRequest%2CResponse">router: proc resolveMiddleware(route: HttpRoute; req: var Request; res: var Response): HttpCode</a></li>
+          </ul></dd>
+<dt><a name="resp" href="#resp"><span>resp:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc resp(req: Request; code: HttpCode; body: sink string; headers: HttpHeaders = nil)" href="supranim/http/response.html#resp%2CRequest%2CHttpCode%2Csinkstring%2CHttpHeaders">response: proc resp(req: Request; code: HttpCode; body: sink string; headers: HttpHeaders = nil)</a></li>
+          </ul></dd>
+<dt><a name="respond" href="#respond"><span>respond:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped" href="supranim/http/response.html#respond.t%2CHttpCode%2Cstring%2Cstring">response: template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="response: template respond(body: string; contentType: string = getContentType()): untyped" href="supranim/http/response.html#respond.t%2Cstring%2Cstring">response: template respond(body: string; contentType: string = getContentType()): untyped</a></li>
+          </ul></dd>
+<dt><a name="Response" href="#Response"><span>Response:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: object Response" href="supranim/http/response.html#Response">response: object Response</a></li>
+          </ul></dd>
+<dt><a name="rootPath" href="#rootPath"><span>rootPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const rootPath" href="supranim/core/paths.html#rootPath">paths: const rootPath</a></li>
+          </ul></dd>
+<dt><a name="RoutePattern" href="#RoutePattern"><span>RoutePattern:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="autolink: tuple RoutePattern" href="supranim/http/autolink.html#RoutePattern">autolink: tuple RoutePattern</a></li>
+          </ul></dd>
+<dt><a name="RoutePatternsTable" href="#RoutePatternsTable"><span>RoutePatternsTable:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="autolink: type RoutePatternsTable" href="supranim/http/autolink.html#RoutePatternsTable">autolink: type RoutePatternsTable</a></li>
+          </ul></dd>
+<dt><a name="Router" href="#Router"><span>Router:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.Router" href="supranim/core/plugins.html#Router">plugins: PluginPermission.Router</a></li>
+          </ul></dd>
+<dt><a name="routerInstance" href="#routerInstance"><span>routerInstance:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: var routerInstance" href="supranim/core/servicemanager.html#routerInstance">servicemanager: var routerInstance</a></li>
+          </ul></dd>
+<dt><a name="routes" href="#routes"><span>routes:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: macro routes(body: untyped): untyped" href="supranim/http/router.html#routes.m%2Cuntyped">router: macro routes(body: untyped): untyped</a></li>
+          </ul></dd>
+<dt><a name="run" href="#run"><span>run:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="supranim: template run(App: Application)" href="index.html#run.t%2CApplication">supranim: template run(App: Application)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="supranim: template run(App: Application; optionalBlock: untyped)" href="index.html#run.t%2CApplication%2Cuntyped">supranim: template run(App: Application; optionalBlock: untyped)</a></li>
+          </ul></dd>
+<dt><a name="runBaseMiddlewares" href="#runBaseMiddlewares"><span>runBaseMiddlewares:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="supranim: macro runBaseMiddlewares(req, res)" href="index.html#runBaseMiddlewares.m%2C%2C">supranim: macro runBaseMiddlewares(req, res)</a></li>
+          </ul></dd>
+<dt><a name="RunPluginHandle" href="#RunPluginHandle"><span>RunPluginHandle:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: type RunPluginHandle" href="supranim/core/plugins.html#RunPluginHandle">plugins: type RunPluginHandle</a></li>
+          </ul></dd>
+<dt><a name="runServer" href="#runServer"><span>runServer:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc runServer(onRequest: OnRequest; startupCallback: StartupCallback;
+          port = Port(3000))" href="supranim/network/http/webserver.html#runServer%2COnRequest%2CStartupCallback">webserver: proc runServer(onRequest: OnRequest; startupCallback: StartupCallback;
+          port = Port(3000))</a></li>
+          </ul></dd>
+<dt><a name="runtimeConfigPath" href="#runtimeConfigPath"><span>runtimeConfigPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const runtimeConfigPath" href="supranim/core/paths.html#runtimeConfigPath">paths: const runtimeConfigPath</a></li>
+          </ul></dd>
+<dt><a name="searchRouteWs" href="#searchRouteWs"><span>searchRouteWs:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: macro searchRouteWs()" href="supranim/http/router.html#searchRouteWs.m">router: macro searchRouteWs()</a></li>
+          </ul></dd>
+<dt><a name="send" href="#send"><span>send:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders">webserver: proc send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2Cint%2Cstring%2CHttpHeaders">webserver: proc send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)</a></li>
+          </ul></dd>
+<dt><a name="sendAssets" href="#sendAssets"><span>sendAssets:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="fileserver: proc sendAssets(req: var Request; path: string; headers: HttpHeaders;
+           hasFoundResource: var bool)" href="supranim/http/fileserver.html#sendAssets%2CRequest%2Cstring%2CHttpHeaders%2Cbool">fileserver: proc sendAssets(req: var Request; path: string; headers: HttpHeaders;
+           hasFoundResource: var bool)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="fileserver: proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool" href="supranim/http/fileserver.html#sendAssets%2CRequest%2Cstring%2Cstring%2CHttpHeaders">fileserver: proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool</a></li>
+          </ul></dd>
+<dt><a name="sendBinary" href="#sendBinary"><span>sendBinary:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc sendBinary(c: ptr WebSocketConnectionImpl; data: openArray[byte])" href="supranim/network/ws/websocket.html#sendBinary%2Cptr.WebSocketConnectionImpl%2CopenArray%5Bbyte%5D">websocket: proc sendBinary(c: ptr WebSocketConnectionImpl; data: openArray[byte])</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="websocket: proc sendBinary(ws: WebSocketConnection; data: openArray[byte])" href="supranim/network/ws/websocket.html#sendBinary%2CWebSocketConnection%2CopenArray%5Bbyte%5D">websocket: proc sendBinary(ws: WebSocketConnection; data: openArray[byte])</a></li>
+          </ul></dd>
+<dt><a name="sendChunk" href="#sendChunk"><span>sendChunk:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc sendChunk(req: Request; data: string)" href="supranim/network/http/webserver.html#sendChunk%2CRequest%2Cstring">webserver: proc sendChunk(req: Request; data: string)</a></li>
+          </ul></dd>
+<dt><a name="sendFile" href="#sendFile"><span>sendFile:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc sendFile(req: Request; filePath: string; resHeaders: HttpHeaders)" href="supranim/network/http/webserver.html#sendFile%2CRequest%2Cstring%2CHttpHeaders">webserver: proc sendFile(req: Request; filePath: string; resHeaders: HttpHeaders)</a></li>
+          </ul></dd>
+<dt><a name="sendFrame" href="#sendFrame"><span>sendFrame:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc sendFrame(c: ptr WebSocketConnectionImpl; opcode: int; payload: openArray[byte])" href="supranim/network/ws/websocket.html#sendFrame%2Cptr.WebSocketConnectionImpl%2Cint%2CopenArray%5Bbyte%5D">websocket: proc sendFrame(c: ptr WebSocketConnectionImpl; opcode: int; payload: openArray[byte])</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="websocket: proc sendFrame(ws: WebSocketConnection; opcode: int; payload: openArray[byte])" href="supranim/network/ws/websocket.html#sendFrame%2CWebSocketConnection%2Cint%2CopenArray%5Bbyte%5D">websocket: proc sendFrame(ws: WebSocketConnection; opcode: int; payload: openArray[byte])</a></li>
+          </ul></dd>
+<dt><a name="sendJson" href="#sendJson"><span>sendJson:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: template sendJson(body: typed; code: HttpCode = Http200): untyped" href="supranim/http/response.html#sendJson.t%2Ctyped%2CHttpCode">response: template sendJson(body: typed; code: HttpCode = Http200): untyped</a></li>
+          </ul></dd>
+<dt><a name="sendPing" href="#sendPing"><span>sendPing:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc sendPing(c: ptr WebSocketConnectionImpl; data: openArray[byte] = [])" href="supranim/network/ws/websocket.html#sendPing%2Cptr.WebSocketConnectionImpl%2CopenArray%5Bbyte%5D">websocket: proc sendPing(c: ptr WebSocketConnectionImpl; data: openArray[byte] = [])</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="websocket: proc sendPing(ws: WebSocketConnection; data: openArray[byte] = [])" href="supranim/network/ws/websocket.html#sendPing%2CWebSocketConnection%2CopenArray%5Bbyte%5D">websocket: proc sendPing(ws: WebSocketConnection; data: openArray[byte] = [])</a></li>
+          </ul></dd>
+<dt><a name="sendText" href="#sendText"><span>sendText:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc sendText(c: ptr WebSocketConnectionImpl; s: string)" href="supranim/network/ws/websocket.html#sendText%2Cptr.WebSocketConnectionImpl%2Cstring">websocket: proc sendText(c: ptr WebSocketConnectionImpl; s: string)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="websocket: proc sendText(ws: WebSocketConnection; s: string)" href="supranim/network/ws/websocket.html#sendText%2CWebSocketConnection%2Cstring">websocket: proc sendText(ws: WebSocketConnection; s: string)</a></li>
+          </ul></dd>
+<dt><a name="ServiceManagerThreadServices" href="#ServiceManagerThreadServices"><span>ServiceManagerThreadServices:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: const ServiceManagerThreadServices" href="supranim/core/servicemanager.html#ServiceManagerThreadServices">servicemanager: const ServiceManagerThreadServices</a></li>
+          </ul></dd>
+<dt><a name="ServiceManagerThreadServicesClients" href="#ServiceManagerThreadServicesClients"><span>ServiceManagerThreadServicesClients:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: const ServiceManagerThreadServicesClients" href="supranim/core/servicemanager.html#ServiceManagerThreadServicesClients">servicemanager: const ServiceManagerThreadServicesClients</a></li>
+          </ul></dd>
+<dt><a name="servicePath" href="#servicePath"><span>servicePath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const servicePath" href="supranim/core/paths.html#servicePath">paths: const servicePath</a></li>
+          </ul></dd>
+<dt><a name="ServiceProvider" href="#ServiceProvider"><span>ServiceProvider:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: object ServiceProvider" href="supranim/core/servicemanager.html#ServiceProvider">servicemanager: object ServiceProvider</a></li>
+          </ul></dd>
+<dt><a name="Services" href="#Services"><span>Services:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: object Services" href="supranim/core/application.html#Services">application: object Services</a></li>
+          </ul></dd>
+<dt><a name="services" href="#services"><span>services:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: template services(app: Application; servicesStmt)" href="supranim/core/application.html#services.t%2CApplication%2C">application: template services(app: Application; servicesStmt)</a></li>
+          </ul></dd>
+<dt><a name="ServiceType" href="#ServiceType"><span>ServiceType:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: enum ServiceType" href="supranim/core/servicemanager.html#ServiceType">servicemanager: enum ServiceType</a></li>
+          </ul></dd>
+<dt><a name="setBody" href="#setBody"><span>setBody:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc setBody(res: var Response; body: string)" href="supranim/http/response.html#setBody%2CResponse%2Cstring">response: proc setBody(res: var Response; body: string)</a></li>
+          </ul></dd>
+<dt><a name="setCode" href="#setCode"><span>setCode:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc setCode(res: var Response; code: HttpCode)" href="supranim/http/response.html#setCode%2CResponse%2CHttpCode">response: proc setCode(res: var Response; code: HttpCode)</a></li>
+          </ul></dd>
+<dt><a name="setOnClose" href="#setOnClose"><span>setOnClose:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc setOnClose(ws: ptr WebSocketConnectionImpl; cb: CloseCb)" href="supranim/network/ws/websocket.html#setOnClose%2Cptr.WebSocketConnectionImpl%2CCloseCb">websocket: proc setOnClose(ws: ptr WebSocketConnectionImpl; cb: CloseCb)</a></li>
+          </ul></dd>
+<dt><a name="setOnError" href="#setOnError"><span>setOnError:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc setOnError(ws: ptr WebSocketConnectionImpl; cb: ErrorCb)" href="supranim/network/ws/websocket.html#setOnError%2Cptr.WebSocketConnectionImpl%2CErrorCb">websocket: proc setOnError(ws: ptr WebSocketConnectionImpl; cb: ErrorCb)</a></li>
+          </ul></dd>
+<dt><a name="setOnMessage" href="#setOnMessage"><span>setOnMessage:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc setOnMessage(ws: ptr WebSocketConnectionImpl; cb: MessageCb)" href="supranim/network/ws/websocket.html#setOnMessage%2Cptr.WebSocketConnectionImpl%2CMessageCb">websocket: proc setOnMessage(ws: ptr WebSocketConnectionImpl; cb: MessageCb)</a></li>
+          </ul></dd>
+<dt><a name="setOnOpen" href="#setOnOpen"><span>setOnOpen:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc setOnOpen(ws: ptr WebSocketConnectionImpl; cb: OpenCb)" href="supranim/network/ws/websocket.html#setOnOpen%2Cptr.WebSocketConnectionImpl%2COpenCb">websocket: proc setOnOpen(ws: ptr WebSocketConnectionImpl; cb: OpenCb)</a></li>
+          </ul></dd>
+<dt><a name="setParams" href="#setParams"><span>setParams:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: proc setParams(req: var Request; params: TableRef[string, string])" href="supranim/controller.html#setParams%2CRequest%2CTableRef%5Bstring%2Cstring%5D">controller: proc setParams(req: var Request; params: TableRef[string, string])</a></li>
+          </ul></dd>
+<dt><a name="Singleton" href="#Singleton"><span>Singleton:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: ServiceType.Singleton" href="supranim/core/servicemanager.html#Singleton">servicemanager: ServiceType.Singleton</a></li>
+          </ul></dd>
+<dt><a name="SingletonService" href="#SingletonService"><span>SingletonService:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: object SingletonService" href="supranim/core/servicemanager.html#SingletonService">servicemanager: object SingletonService</a></li>
+          </ul></dd>
+<dt><a name="SomeBodyData" href="#SomeBodyData"><span>SomeBodyData:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: type SomeBodyData" href="supranim/controller.html#SomeBodyData">controller: type SomeBodyData</a></li>
+          </ul></dd>
+<dt><a name="start" href="#start"><span>start:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc start(server: var WebServer)" href="supranim/network/http/webserver.html#start%2CWebServer">webserver: proc start(server: var WebServer)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc start(server: var WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback = nil)" href="supranim/network/http/webserver.html#start%2CWebServer%2COnRequest%2CStartupCallback">webserver: proc start(server: var WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback = nil)</a></li>
+          </ul></dd>
+<dt><a name="startChunk" href="#startChunk"><span>startChunk:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc startChunk(req: Request)" href="supranim/network/http/webserver.html#startChunk%2CRequest">webserver: proc startChunk(req: Request)</a></li>
+          </ul></dd>
+<dt><a name="startPartialChunk" href="#startPartialChunk"><span>startPartialChunk:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc startPartialChunk(req: Request)" href="supranim/network/http/webserver.html#startPartialChunk%2CRequest">webserver: proc startPartialChunk(req: Request)</a></li>
+          </ul></dd>
+<dt><a name="StartupCallback" href="#StartupCallback"><span>StartupCallback:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: type StartupCallback" href="supranim/network/http/webserver.html#StartupCallback">webserver: type StartupCallback</a></li>
+          </ul></dd>
+<dt><a name="StaticRoute" href="#StaticRoute"><span>StaticRoute:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: HttpRouteType.StaticRoute" href="supranim/http/router.html#StaticRoute">router: HttpRouteType.StaticRoute</a></li>
+          </ul></dd>
+<dt><a name="StatusActive" href="#StatusActive"><span>StatusActive:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginStatus.StatusActive" href="supranim/core/plugins.html#StatusActive">plugins: PluginStatus.StatusActive</a></li>
+          </ul></dd>
+<dt><a name="StatusInvalid" href="#StatusInvalid"><span>StatusInvalid:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginStatus.StatusInvalid" href="supranim/core/plugins.html#StatusInvalid">plugins: PluginStatus.StatusInvalid</a></li>
+          </ul></dd>
+<dt><a name="StatusReady" href="#StatusReady"><span>StatusReady:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginStatus.StatusReady" href="supranim/core/plugins.html#StatusReady">plugins: PluginStatus.StatusReady</a></li>
+          </ul></dd>
+<dt><a name="StatusUnload" href="#StatusUnload"><span>StatusUnload:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginStatus.StatusUnload" href="supranim/core/plugins.html#StatusUnload">plugins: PluginStatus.StatusUnload</a></li>
+          </ul></dd>
+<dt><a name="storage" href="#storage"><span>storage:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="controller: template storage(path: string): string" href="supranim/controller.html#storage.t%2Cstring">controller: template storage(path: string): string</a></li>
+          </ul></dd>
+<dt><a name="storagePath" href="#storagePath"><span>storagePath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="paths: const storagePath" href="supranim/core/paths.html#storagePath">paths: const storagePath</a></li>
+          </ul></dd>
+<dt><a name="streamFile" href="#streamFile"><span>streamFile:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc streamFile(req: var Request; filePath: string; resHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#streamFile%2CRequest%2Cstring%2CHttpHeaders">webserver: proc streamFile(req: var Request; filePath: string; resHeaders: HttpHeaders = nil)</a></li>
+          </ul></dd>
+<dt><a name="supranimServer" href="#supranimServer"><span>supranimServer:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="config: const supranimServer" href="supranim/core/config.html#supranimServer">config: const supranimServer</a></li>
+          </ul></dd>
+<dt><a name="SystemVersion" href="#SystemVersion"><span>SystemVersion:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: object SystemVersion" href="supranim/core/plugins.html#SystemVersion">plugins: object SystemVersion</a></li>
+          </ul></dd>
+<dt><a name="Templates" href="#Templates"><span>Templates:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: PluginPermission.Templates" href="supranim/core/plugins.html#Templates">plugins: PluginPermission.Templates</a></li>
+          </ul></dd>
+<dt><a name="ThreadService" href="#ThreadService"><span>ThreadService:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: ServiceType.ThreadService" href="supranim/core/servicemanager.html#ThreadService">servicemanager: ServiceType.ThreadService</a></li>
+          </ul></dd>
+<dt><a name="toString" href="#toString"><span>toString:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="response: proc toString(headers: HttpHeaders): string" href="supranim/http/response.html#toString%2CHttpHeaders">response: proc toString(headers: HttpHeaders): string</a></li>
+          </ul></dd>
+<dt><a name="unload" href="#unload"><span>unload:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="plugins: proc unload(manager: PluginManager; path: string)" href="supranim/core/plugins.html#unload%2CPluginManager%2Cstring">plugins: proc unload(manager: PluginManager; path: string)</a></li>
+          </ul></dd>
+<dt><a name="Uuid" href="#Uuid"><span>Uuid:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="uuid: object Uuid" href="supranim/support/uuid.html#Uuid">uuid: object Uuid</a></li>
+          </ul></dd>
+<dt><a name="uuid4" href="#uuid4"><span>uuid4:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="uuid: proc uuid4(): Uuid" href="supranim/support/uuid.html#uuid4">uuid: proc uuid4(): Uuid</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="uuid: proc uuid4(uuidBytes: array[16, uint8]): Uuid" href="supranim/support/uuid.html#uuid4%2Carray%5B%2Cuint8%5D">uuid: proc uuid4(uuidBytes: array[16, uint8]): Uuid</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="uuid: proc uuid4(uuidStr: string): Uuid" href="supranim/support/uuid.html#uuid4%2Cstring">uuid: proc uuid4(uuidStr: string): Uuid</a></li>
+          </ul></dd>
+<dt><a name="UUIDError" href="#UUIDError"><span>UUIDError:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="uuid: object UUIDError" href="supranim/support/uuid.html#UUIDError">uuid: object UUIDError</a></li>
+          </ul></dd>
+<dt><a name="UuidVariant" href="#UuidVariant"><span>UuidVariant:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="uuid: enum UuidVariant" href="supranim/support/uuid.html#UuidVariant">uuid: enum UuidVariant</a></li>
+          </ul></dd>
+<dt><a name="variant" href="#variant"><span>variant:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="uuid: proc variant(u: Uuid): UuidVariant" href="supranim/support/uuid.html#variant%2CUuid">uuid: proc variant(u: Uuid): UuidVariant</a></li>
+          </ul></dd>
+<dt><a name="version" href="#version"><span>version:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="uuid: proc version(u: Uuid): int" href="supranim/support/uuid.html#version%2CUuid">uuid: proc version(u: Uuid): int</a></li>
+          </ul></dd>
+<dt><a name="WebServer" href="#WebServer"><span>WebServer:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: type WebServer" href="supranim/network/http/webserver.html#WebServer">webserver: type WebServer</a></li>
+          </ul></dd>
+<dt><a name="WebService" href="#WebService"><span>WebService:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="servicemanager: ServiceType.WebService" href="supranim/core/servicemanager.html#WebService">servicemanager: ServiceType.WebService</a></li>
+          </ul></dd>
+<dt><a name="WebSocketConnection" href="#WebSocketConnection"><span>WebSocketConnection:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: type WebSocketConnection" href="supranim/network/ws/websocket.html#WebSocketConnection">websocket: type WebSocketConnection</a></li>
+          </ul></dd>
+<dt><a name="WebSocketConnectionImpl" href="#WebSocketConnectionImpl"><span>WebSocketConnectionImpl:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: object WebSocketConnectionImpl" href="supranim/network/ws/websocket.html#WebSocketConnectionImpl">websocket: object WebSocketConnectionImpl</a></li>
+          </ul></dd>
+<dt><a name="WebSocketFrameKind" href="#WebSocketFrameKind"><span>WebSocketFrameKind:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: enum WebSocketFrameKind" href="supranim/network/ws/websocket.html#WebSocketFrameKind">websocket: enum WebSocketFrameKind</a></li>
+          </ul></dd>
+<dt><a name="websocketUpgrade" href="#websocketUpgrade"><span>websocketUpgrade:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc websocketUpgrade(req: ptr evhttp_request; onOpen: OpenCb = nil;
+                 onMessage: MessageCb = nil; onClose: CloseCb = nil;
+                 onError: ErrorCb = nil): WebSocketConnection" href="supranim/network/ws/websocket.html#websocketUpgrade%2Cptr.evhttp_request%2COpenCb%2CMessageCb%2CCloseCb%2CErrorCb">websocket: proc websocketUpgrade(req: ptr evhttp_request; onOpen: OpenCb = nil;
+                 onMessage: MessageCb = nil; onClose: CloseCb = nil;
+                 onError: ErrorCb = nil): WebSocketConnection</a></li>
+          </ul></dd>
+<dt><a name="withChunks" href="#withChunks"><span>withChunks:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: template withChunks(reqInstance: Request; httpHeaders: HttpHeaders; body)" href="supranim/network/http/webserver.html#withChunks.t%2CRequest%2CHttpHeaders%2C">webserver: template withChunks(reqInstance: Request; httpHeaders: HttpHeaders; body)</a></li>
+          </ul></dd>
+<dt><a name="wsBinary" href="#wsBinary"><span>wsBinary:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: WebSocketFrameKind.wsBinary" href="supranim/network/ws/websocket.html#wsBinary">websocket: WebSocketFrameKind.wsBinary</a></li>
+          </ul></dd>
+<dt><a name="wsClose" href="#wsClose"><span>wsClose:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: WebSocketFrameKind.wsClose" href="supranim/network/ws/websocket.html#wsClose">websocket: WebSocketFrameKind.wsClose</a></li>
+          </ul></dd>
+<dt><a name="wsNone" href="#wsNone"><span>wsNone:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: WebSocketFrameKind.wsNone" href="supranim/network/ws/websocket.html#wsNone">websocket: WebSocketFrameKind.wsNone</a></li>
+          </ul></dd>
+<dt><a name="wsPing" href="#wsPing"><span>wsPing:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: WebSocketFrameKind.wsPing" href="supranim/network/ws/websocket.html#wsPing">websocket: WebSocketFrameKind.wsPing</a></li>
+          </ul></dd>
+<dt><a name="wsPong" href="#wsPong"><span>wsPong:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: WebSocketFrameKind.wsPong" href="supranim/network/ws/websocket.html#wsPong">websocket: WebSocketFrameKind.wsPong</a></li>
+          </ul></dd>
+<dt><a name="wsText" href="#wsText"><span>wsText:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: WebSocketFrameKind.wsText" href="supranim/network/ws/websocket.html#wsText">websocket: WebSocketFrameKind.wsText</a></li>
           </ul></dd>
 </dl>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-11 06:16:12 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-11 06:35:47 UTC</small>
       </div>
     </div>
   </div>

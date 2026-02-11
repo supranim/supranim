@@ -1,2 +1,0 @@
-nimTitle	serve	supranim/cli/commands/serve.html	module supranim/cli/commands/serve		0
-nim	serveCommand	supranim/cli/commands/serve.html#serveCommand,Values	proc serveCommand(v: Values)		3

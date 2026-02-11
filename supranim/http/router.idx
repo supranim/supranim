@@ -1,0 +1,28 @@
+nimTitle	router	supranim/http/router.html	module supranim/http/router		0
+nim	StaticRoute	supranim/http/router.html#StaticRoute	HttpRouteType.StaticRoute		16
+nim	DynamicRoute	supranim/http/router.html#DynamicRoute	HttpRouteType.DynamicRoute		16
+nim	HttpRouteType	supranim/http/router.html#HttpRouteType	enum HttpRouteType		16
+nim	Callable	supranim/http/router.html#Callable	type Callable		18
+nim	Middleware	supranim/http/router.html#Middleware	type Middleware		25
+nim	Afterware	supranim/http/router.html#Afterware	type Afterware		26
+nim	HttpRoute	supranim/http/router.html#HttpRoute	type HttpRoute		28
+nim	HttpRouteWs	supranim/http/router.html#HttpRouteWs	type HttpRouteWs		45
+nim	HttpRouterInstance	supranim/http/router.html#HttpRouterInstance	object HttpRouterInstance		48
+nim	HttpRouterError	supranim/http/router.html#HttpRouterError	object HttpRouterError		54
+nim	DefaultHttpError	supranim/http/router.html#DefaultHttpError	const DefaultHttpError		63
+nim	queuedRoutes	supranim/http/router.html#queuedRoutes	var queuedRoutes		76
+nim	baseMiddlewares	supranim/http/router.html#baseMiddlewares	var baseMiddlewares		77
+nim	newHttpRouter	supranim/http/router.html#newHttpRouter	proc newHttpRouter(): HttpRouterInstance		82
+nim	registerRoute	supranim/http/router.html#registerRoute,HttpRouterInstance,sink,HttpMethod,Callable,seq[Middleware],seq[Afterware]	proc registerRoute(router: var HttpRouterInstance;\n              autolinked: sink (string, string); httpMethod: HttpMethod;\n              callback: Callable; middlewares: seq[Middleware] = @[];\n              afterwares: seq[Afterware] = @[]; isWebSocket = false)		127
+nim	httpMethods	supranim/http/router.html#httpMethods	const httpMethods		173
+nim	parseRouteNode	supranim/http/router.html#parseRouteNode,string,string,NimNode,NimNode,NimNode	proc parseRouteNode(verb, routePath: string; middlewares, afterwares: var NimNode;\n               closureHandle: NimNode = nil)		178
+nim	preparePath	supranim/http/router.html#preparePath,string,string	proc preparePath(path: string; prefix = ""): string		253
+nim	routes	supranim/http/router.html#routes.m,untyped	macro routes(body: untyped): untyped		270
+nim	searchRouteWs	supranim/http/router.html#searchRouteWs.m	macro searchRouteWs()		394
+nim	checkExists	supranim/http/router.html#checkExists,HttpRouterInstance,string,HttpMethod	proc checkExists(router: var HttpRouterInstance; requestPath: string;\n            httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,\n    params: TableRef[string, string]]		411
+nim	checkWsExists	supranim/http/router.html#checkWsExists,HttpRouterInstance,string	proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[\n    exists: bool, route: HttpRouteWs, params: TableRef[string, string]]		427
+nim	resolveMiddleware	supranim/http/router.html#resolveMiddleware,HttpRoute,Request,Response	proc resolveMiddleware(route: HttpRoute; req: var Request; res: var Response): HttpCode		438
+nim	resolveAfterware	supranim/http/router.html#resolveAfterware,HttpRoute,Request,Response	proc resolveAfterware(route: HttpRoute; req: var Request; res: var Response): HttpCode		455
+nim	errorHandler	supranim/http/router.html#errorHandler,HttpRouterInstance,HttpCode,Callable	proc errorHandler(router: var HttpRouterInstance; code: HttpCode; callback: Callable)		474
+nim	call4xx	supranim/http/router.html#call4xx,HttpRouterInstance,Request,Response	proc call4xx(router: var HttpRouterInstance; req: var Request; res: var Response)		488
+nim	initRouterErrorHandlers	supranim/http/router.html#initRouterErrorHandlers.t	template initRouterErrorHandlers()		493

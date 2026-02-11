@@ -1,0 +1,10 @@
+nimTitle	request	supranim/http/request.html	module supranim/http/request		0
+nim	getHttpMethod	supranim/http/request.html#getHttpMethod,Request	proc getHttpMethod(req: var Request): HttpMethod		22
+nim	getUrl	supranim/http/request.html#getUrl,Request	proc getUrl(req: Request): string		26
+nim	getUriPath	supranim/http/request.html#getUriPath,Request	proc getUriPath(req: Request): string		30
+nim	hasCookies	supranim/http/request.html#hasCookies,Request	proc hasCookies(req: var Request): bool		34
+nim	getCookies	supranim/http/request.html#getCookies,Request	proc getCookies(req: var Request): Option[string]		38
+nim	getAgent	supranim/http/request.html#getAgent,Request	proc getAgent(req: var Request): Option[string]		42
+nim	getBrowserName	supranim/http/request.html#getBrowserName,Request	proc getBrowserName(req: var Request): Option[string]		46
+nim	getPlatform	supranim/http/request.html#getPlatform,Request	proc getPlatform(req: var Request): Option[string]		51
+nim	getClientData	supranim/http/request.html#getClientData,Request	proc getClientData(req: var Request): JsonNode		73

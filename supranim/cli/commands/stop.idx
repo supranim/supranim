@@ -1,2 +1,0 @@
-nimTitle	stop	supranim/cli/commands/stop.html	module supranim/cli/commands/stop		0
-nim	stopCommand	supranim/cli/commands/stop.html#stopCommand,Values	proc stopCommand(v: Values)		3

@@ -1,0 +1,3 @@
+nimTitle	config	supranim/core/config.html	module supranim/core/config		0
+nim	supranimServer	supranim/core/config.html#supranimServer	const supranimServer		15
+nim	loadEnvStatic	supranim/core/config.html#loadEnvStatic.m	macro loadEnvStatic()		19

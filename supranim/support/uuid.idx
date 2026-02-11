@@ -1,0 +1,16 @@
+nimTitle	uuid	supranim/support/uuid.html	module supranim/support/uuid		0
+nim	UuidVariant	supranim/support/uuid.html#UuidVariant	enum UuidVariant		18
+nim	Uuid	supranim/support/uuid.html#Uuid	object Uuid		21
+nim	UUIDError	supranim/support/uuid.html#UUIDError	object UUIDError		25
+nim	hexify	supranim/support/uuid.html#hexify,openArray[uint8]	proc hexify(bytes: openArray[uint8]): string		27
+nim	hexify	supranim/support/uuid.html#hexify,Uuid	proc hexify(uuid: Uuid): string		31
+nim	getUuidBytes	supranim/support/uuid.html#getUuidBytes,Uuid	proc getUuidBytes(uuid: Uuid): array[16, uint8]		35
+nim	uuid4	supranim/support/uuid.html#uuid4	proc uuid4(): Uuid		45
+nim	variant	supranim/support/uuid.html#variant,Uuid	proc variant(u: Uuid): UuidVariant		59
+nim	version	supranim/support/uuid.html#version,Uuid	proc version(u: Uuid): int		72
+nim	uuid4	supranim/support/uuid.html#uuid4,string	proc uuid4(uuidStr: string): Uuid		77
+nim	uuid4	supranim/support/uuid.html#uuid4,array[,uint8]	proc uuid4(uuidBytes: array[16, uint8]): Uuid		91
+nim	`$`	supranim/support/uuid.html#$,Uuid	proc `$`(uuid: Uuid): string		95
+nim	`$$`	supranim/support/uuid.html#$$,Uuid	proc `$$`(uuid: Uuid): string		99
+nimgrp	uuid4	supranim/support/uuid.html#uuid4-procs-all	proc		45
+nimgrp	hexify	supranim/support/uuid.html#hexify-procs-all	proc		27

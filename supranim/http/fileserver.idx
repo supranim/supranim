@@ -1,0 +1,4 @@
+nimTitle	fileserver	supranim/http/fileserver.html	module supranim/http/fileserver		0
+nim	sendAssets	supranim/http/fileserver.html#sendAssets,Request,string,HttpHeaders,bool	proc sendAssets(req: var Request; path: string; headers: HttpHeaders;\n           hasFoundResource: var bool)		16
+nim	sendAssets	supranim/http/fileserver.html#sendAssets,Request,string,string,HttpHeaders	proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool		25
+nimgrp	sendassets	supranim/http/fileserver.html#sendAssets-procs-all	proc		16
