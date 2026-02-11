@@ -1,0 +1,2 @@
+nimTitle	list	supranim/cli/commands/list.html	module supranim/cli/commands/list		0
+nim	listCommand	supranim/cli/commands/list.html#listCommand,Values	proc listCommand(v: Values)		3
