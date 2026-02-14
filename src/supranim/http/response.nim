@@ -118,10 +118,11 @@ proc setCode*(res: var Response, code: HttpCode) =
   ## Set a `HttpCode` to `res` Response
   res.code = code
 
-proc getBody*(res: Response): string =
+proc getBody*(res: Response): lent string =
+  ## Get the body of `res` Response as a lent string
   res.body
 
-proc setBody*(res: var Response, body: string) =
+proc setBody*(res: var Response, body: sink string) =
   ## Set a string body to `res` Response
   res.body = body
 

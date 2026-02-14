@@ -12,6 +12,8 @@ import std/[os, posix, tables, httpcore, options,
 import pkg/libevent/bindings/[http, event, buffer, threaded, listener]
 export evhttp_request, threaded
 
+import ../../support/http
+
 # for some reason the emit pragma won't work if placed in
 # bindings/http.nim so will put it here
 {.emit: """
@@ -97,6 +99,8 @@ proc newWebServer*(port: Port = Port(8080)): WebServer =
 when defined supranimUseGlobalOnRequest:
   var appOnRequest: OnRequest # global request handler
 
+proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil)
+
 proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
   # initialize Request object
   var req = Request(
@@ -108,11 +112,17 @@ proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
     httpMethod: evhttp_request_get_command(raw)
   )
   # parse the path and URI
-  let uriPath = $evhttp_request_get_uri(raw)
   let evUri: ptr evhttp_uri = evhttp_request_get_evhttp_uri(raw)
   if evUri != nil:
-    req.uri = uri.parseUri(uriPath)
-    req.path = if uriPath.len == 0: "/" else: uriPath
+    let uriPath = $evhttp_request_get_uri(raw)
+    let normPath = normalizePath(if uriPath.len == 0: "/" else: uriPath)
+    if uriPath != normPath:
+      # redirect to normalized path if it differs (e.g. remove trailing slash)
+      let headers = newHttpHeaders({"Location": normPath})
+      req.send(301, "", headers)
+      return
+    req.path = normPath
+    req.uri = uri.parseUri(req.path)
     req.uri.scheme = $evhttp_uri_get_scheme(evUri)
     req.uri.query = $evhttp_uri_get_query(evUri)
     req.uri.anchor = $evhttp_uri_get_fragment(evUri)
@@ -135,7 +145,6 @@ proc start*(server: var WebServer, onRequest: OnRequest,
   assert server.httpServer != nil # ensure server is initialized
   assert evhttp_bind_socket(server.httpServer, "0.0.0.0", server.port.uint16) == 0
   
-
   if startupCallback != nil:
     startupCallback() # TODO move to initialRequest?
   # Set the global request handler
@@ -208,8 +217,7 @@ proc getBody*(req: var Request): Option[string] =
   ## Lazily initializes the body on first access. Then
   ## caches it for future accesses.
   if req.body.isSome:
-    # return cached body if already fetched
-    return req.body
+    return req.body # return cached body if already fetched
   # fetch body from evhttp_request
   let buf = evhttp_request_get_input_buffer(req.raw)
   if buf != nil:

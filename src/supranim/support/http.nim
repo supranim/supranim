@@ -10,9 +10,9 @@
 #     https://supranim.com | https://github.com/supranim
 
 import std/[uri, httpcore, sequtils]
-import pkg/jsony
+import pkg/jsony # todo change it with voodoo json
 
-import ../core/http/httpclient
+import ./httpclient
 export body
 
 type
@@ -101,6 +101,18 @@ proc retry*(H: Http, times: uint, retryAttemptCallback: RetryAttemptCallback)  =
   ## you may pass a closure as the second argument to the retry method.
   H.retryAttemptCallback = retryAttemptCallback
 
+proc normalizePath*(path: string): string =
+  ## Collapses multiple slashes into one, e.g. //foo//bar -> /foo/bar
+  result = ""
+  var lastWasSlash = false
+  for c in path:
+    if c == '/':
+      if not lastWasSlash:
+        result.add(c)
+      lastWasSlash = true
+    else:
+      result.add(c)
+      lastWasSlash = false
 
 when isMainModule:
   # https://laravel.com/docs/12.x/http-client#events
