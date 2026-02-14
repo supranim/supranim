@@ -12,10 +12,10 @@ nim	redirect	supranim/http/response.html#redirect.t,string	template redirect(tar
 nim	redirect301	supranim/http/response.html#redirect301.t,string	template redirect301(target: string)		106
 nim	getCode	supranim/http/response.html#getCode,Response	proc getCode(res: Response): HttpCode		114
 nim	setCode	supranim/http/response.html#setCode,Response,HttpCode	proc setCode(res: var Response; code: HttpCode)		117
-nim	getBody	supranim/http/response.html#getBody,Response	proc getBody(res: Response): string		121
-nim	setBody	supranim/http/response.html#setBody,Response,string	proc setBody(res: var Response; body: string)		124
-nim	json	supranim/http/response.html#json.t,typed,HttpCode	template json(body: typed; code: HttpCode = Http200): untyped		128
-nim	sendJson	supranim/http/response.html#sendJson.t,typed,HttpCode	template sendJson(body: typed; code: HttpCode = Http200): untyped		145
-nim	respond	supranim/http/response.html#respond.t,string,string	template respond(body: string; contentType: string = getContentType()): untyped		162
-nim	respond	supranim/http/response.html#respond.t,HttpCode,string,string	template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped		174
-nimgrp	respond	supranim/http/response.html#respond-templates-all	template		162
+nim	getBody	supranim/http/response.html#getBody,Response	proc getBody(res: Response): lent string		121
+nim	setBody	supranim/http/response.html#setBody,Response,sinkstring	proc setBody(res: var Response; body: sink string)		125
+nim	json	supranim/http/response.html#json.t,typed,HttpCode	template json(body: typed; code: HttpCode = Http200): untyped		129
+nim	sendJson	supranim/http/response.html#sendJson.t,typed,HttpCode	template sendJson(body: typed; code: HttpCode = Http200): untyped		146
+nim	respond	supranim/http/response.html#respond.t,string,string	template respond(body: string; contentType: string = getContentType()): untyped		163
+nim	respond	supranim/http/response.html#respond.t,HttpCode,string,string	template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped		175
+nimgrp	respond	supranim/http/response.html#respond-templates-all	template		163

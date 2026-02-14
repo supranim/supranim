@@ -25,7 +25,7 @@
   <div class="document" id="documentId">
     <div class="container">
       <h1 class="title">Index</h1>
-      Modules: <a href="index.html">supranim</a>, <a href="supranim/application.html">supranim/application</a>, <a href="supranim/controller.html">supranim/controller</a>, <a href="supranim/core/application.html">supranim/core/application</a>, <a href="supranim/core/config.html">supranim/core/config</a>, <a href="supranim/core/paths.html">supranim/core/paths</a>, <a href="supranim/core/plugins.html">supranim/core/plugins</a>, <a href="supranim/core/servicemanager.html">supranim/core/servicemanager</a>, <a href="supranim/core/utils.html">supranim/core/utils</a>, <a href="supranim/http/autolink.html">supranim/http/autolink</a>, <a href="supranim/http/fileserver.html">supranim/http/fileserver</a>, <a href="supranim/http/request.html">supranim/http/request</a>, <a href="supranim/http/response.html">supranim/http/response</a>, <a href="supranim/http/router.html">supranim/http/router</a>, <a href="supranim/network/http/webserver.html">supranim/network/http/webserver</a>, <a href="supranim/network/ws/websocket.html">supranim/network/ws/websocket</a>, <a href="supranim/router.html">supranim/router</a>, <a href="supranim/service/events.html">supranim/service/events</a>, <a href="supranim/support/cookie.html">supranim/support/cookie</a>, <a href="supranim/support/nanoid.html">supranim/support/nanoid</a>, <a href="supranim/support/uuid.html">supranim/support/uuid</a>.<br/><p /><h2>API symbols</h2>
+      Modules: <a href="index.html">supranim</a>, <a href="supranim/application.html">supranim/application</a>, <a href="supranim/controller.html">supranim/controller</a>, <a href="supranim/core/application.html">supranim/core/application</a>, <a href="supranim/core/config.html">supranim/core/config</a>, <a href="supranim/core/paths.html">supranim/core/paths</a>, <a href="supranim/core/plugins.html">supranim/core/plugins</a>, <a href="supranim/core/servicemanager.html">supranim/core/servicemanager</a>, <a href="supranim/core/utils.html">supranim/core/utils</a>, <a href="supranim/http/autolink.html">supranim/http/autolink</a>, <a href="supranim/http/fileserver.html">supranim/http/fileserver</a>, <a href="supranim/http/request.html">supranim/http/request</a>, <a href="supranim/http/response.html">supranim/http/response</a>, <a href="supranim/http/router.html">supranim/http/router</a>, <a href="supranim/network/http/webserver.html">supranim/network/http/webserver</a>, <a href="supranim/network/ws/websocket.html">supranim/network/ws/websocket</a>, <a href="supranim/router.html">supranim/router</a>, <a href="supranim/service/events.html">supranim/service/events</a>, <a href="supranim/support/cookie.html">supranim/support/cookie</a>, <a href="supranim/support/http.html">supranim/support/http</a>, <a href="supranim/support/httpclient.html">supranim/support/httpclient</a>, <a href="supranim/support/nanoid.html">supranim/support/nanoid</a>, <a href="supranim/support/uuid.html">supranim/support/uuid</a>.<br/><p /><h2>API symbols</h2>
 <dl><dt><a name="%60%24%24%60" href="#%60%24%24%60"><span>`$$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="uuid: proc `$$`(uuid: Uuid): string" href="supranim/support/uuid.html#%24%24%2CUuid">uuid: proc `$$`(uuid: Uuid): string</a></li>
@@ -34,7 +34,25 @@
 <li><a class="reference external"
           data-doc-search-tag="cookie: proc `$`(cookie: ref Cookie): string" href="supranim/support/cookie.html#%24%2Cref.Cookie">cookie: proc `$`(cookie: ref Cookie): string</a></li>
           <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc `$`(data: MultipartData): string" href="supranim/support/httpclient.html#%24%2CMultipartData">httpclient: proc `$`(data: MultipartData): string</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="uuid: proc `$`(uuid: Uuid): string" href="supranim/support/uuid.html#%24%2CUuid">uuid: proc `$`(uuid: Uuid): string</a></li>
+          </ul></dd>
+<dt><a name="%60%5B%5D%3D%60" href="#%60%5B%5D%3D%60"><span>`[]=`:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc `[]=`(p: MultipartData; name, content: string)" href="supranim/support/httpclient.html#%5B%5D%3D%2CMultipartData%2Cstring%2Cstring">httpclient: proc `[]=`(p: MultipartData; name, content: string)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc `[]=`(p: MultipartData; name: string;
+      file: tuple[name, contentType, content: string])" href="supranim/support/httpclient.html#%5B%5D%3D%2CMultipartData%2Cstring%2Ctuple%5Bstring%2Cstring%2Cstring%5D">httpclient: proc `[]=`(p: MultipartData; name: string;
+      file: tuple[name, contentType, content: string])</a></li>
+          </ul></dd>
+<dt><a name="add" href="#add"><span>add:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc add(p: MultipartData; xs: MultipartEntries): MultipartData" href="supranim/support/httpclient.html#add%2CMultipartData%2CMultipartEntries">httpclient: proc add(p: MultipartData; xs: MultipartEntries): MultipartData</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc add(p: MultipartData; name, content: string; filename: string = &quot;&quot;;
+    contentType: string = &quot;&quot;; useStream = true)" href="supranim/support/httpclient.html#add%2CMultipartData%2Cstring%2Cstring%2Cstring%2Cstring">httpclient: proc add(p: MultipartData; name, content: string; filename: string = &quot;&quot;;
+    contentType: string = &quot;&quot;; useStream = true)</a></li>
           </ul></dd>
 <dt><a name="addCallback" href="#addCallback"><span>addCallback:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -47,6 +65,12 @@
           data-doc-search-tag="webserver: proc addEvent(server: WebServer;
          callback: proc (fd: cint; events: cshort; arg: pointer) {.cdecl.})" href="supranim/network/http/webserver.html#addEvent%2CWebServer%2Cproc%28cint%2Ccshort%2Cpointer%29">webserver: proc addEvent(server: WebServer;
          callback: proc (fd: cint; events: cshort; arg: pointer) {.cdecl.})</a></li>
+          </ul></dd>
+<dt><a name="addFiles" href="#addFiles"><span>addFiles:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc addFiles(p: MultipartData; xs: openArray[tuple[name, file: string]];
+         mimeDb = newMimetypes(); useStream = true): MultipartData" href="supranim/support/httpclient.html#addFiles%2CMultipartData%2CopenArray%5Btuple%5Bstring%2Cstring%5D%5D">httpclient: proc addFiles(p: MultipartData; xs: openArray[tuple[name, file: string]];
+         mimeDb = newMimetypes(); useStream = true): MultipartData</a></li>
           </ul></dd>
 <dt><a name="addHeader" href="#addHeader"><span>addHeader:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -90,6 +114,14 @@
 <li><a class="reference external"
           data-doc-search-tag="application: object ApplicationUDP" href="supranim/core/application.html#ApplicationUDP">application: object ApplicationUDP</a></li>
           </ul></dd>
+<dt><a name="AsyncHttpClient" href="#AsyncHttpClient"><span>AsyncHttpClient:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: type AsyncHttpClient" href="supranim/support/httpclient.html#AsyncHttpClient">httpclient: type AsyncHttpClient</a></li>
+          </ul></dd>
+<dt><a name="AsyncResponse" href="#AsyncResponse"><span>AsyncResponse:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: type AsyncResponse" href="supranim/support/httpclient.html#AsyncResponse">httpclient: type AsyncResponse</a></li>
+          </ul></dd>
 <dt><a name="autolinkController" href="#autolinkController"><span>autolinkController:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="autolink: proc autolinkController(routePath: string; httpMethod: HttpMethod;
@@ -115,6 +147,12 @@
 <dt><a name="basePath" href="#basePath"><span>basePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="paths: const basePath" href="supranim/core/paths.html#basePath">paths: const basePath</a></li>
+          </ul></dd>
+<dt><a name="body" href="#body"><span>body:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc body(response: AsyncResponse): Future[string]" href="supranim/support/httpclient.html#body%2CAsyncResponse">httpclient: proc body(response: AsyncResponse): Future[string]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc body(response: Response): string" href="supranim/support/httpclient.html#body%2CResponse">httpclient: proc body(response: Response): string</a></li>
           </ul></dd>
 <dt><a name="BodyData" href="#BodyData"><span>BodyData:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -167,10 +205,16 @@
           data-doc-search-tag="websocket: proc close(c: ptr WebSocketConnectionImpl; code: int = 1000; reason = &quot;&quot;)" href="supranim/network/ws/websocket.html#close%2Cptr.WebSocketConnectionImpl%2Cint%2Cstring">websocket: proc close(c: ptr WebSocketConnectionImpl; code: int = 1000; reason = &quot;&quot;)</a></li>
           <li><a class="reference external"
           data-doc-search-tag="websocket: proc close(ws: WebSocketConnection; code: int = 1000; reason = &quot;&quot;)" href="supranim/network/ws/websocket.html#close%2CWebSocketConnection%2Cint%2Cstring">websocket: proc close(ws: WebSocketConnection; code: int = 1000; reason = &quot;&quot;)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc close(client: HttpClient | AsyncHttpClient)" href="supranim/support/httpclient.html#close">httpclient: proc close(client: HttpClient | AsyncHttpClient)</a></li>
           </ul></dd>
 <dt><a name="CloseCb" href="#CloseCb"><span>CloseCb:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="websocket: type CloseCb" href="supranim/network/ws/websocket.html#CloseCb">websocket: type CloseCb</a></li>
+          </ul></dd>
+<dt><a name="code" href="#code"><span>code:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc code(response: Response | AsyncResponse): HttpCode" href="supranim/support/httpclient.html#code">httpclient: proc code(response: Response | AsyncResponse): HttpCode</a></li>
           </ul></dd>
 <dt><a name="config" href="#config"><span>config:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -183,6 +227,14 @@
 <dt><a name="consolePath" href="#consolePath"><span>consolePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="paths: const consolePath" href="supranim/core/paths.html#consolePath">paths: const consolePath</a></li>
+          </ul></dd>
+<dt><a name="contentLength" href="#contentLength"><span>contentLength:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc contentLength(response: Response | AsyncResponse): int" href="supranim/support/httpclient.html#contentLength">httpclient: proc contentLength(response: Response | AsyncResponse): int</a></li>
+          </ul></dd>
+<dt><a name="contentType" href="#contentType"><span>contentType:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc contentType(response: Response | AsyncResponse): string" href="supranim/support/httpclient.html#contentType">httpclient: proc contentType(response: Response | AsyncResponse): string</a></li>
           </ul></dd>
 <dt><a name="Controller" href="#Controller"><span>Controller:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -225,6 +277,32 @@
 <dt><a name="DefaultHttpError" href="#DefaultHttpError"><span>DefaultHttpError:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: const DefaultHttpError" href="supranim/http/router.html#DefaultHttpError">router: const DefaultHttpError</a></li>
+          </ul></dd>
+<dt><a name="defUserAgent" href="#defUserAgent"><span>defUserAgent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: const defUserAgent" href="supranim/support/httpclient.html#defUserAgent">httpclient: const defUserAgent</a></li>
+          </ul></dd>
+<dt><a name="delete" href="#delete"><span>delete:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc delete(client: AsyncHttpClient; url: Uri | string): Future[AsyncResponse]" href="supranim/support/httpclient.html#delete%2CAsyncHttpClient%2C">httpclient: proc delete(client: AsyncHttpClient; url: Uri | string): Future[AsyncResponse]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc delete(client: HttpClient; url: Uri | string): Response" href="supranim/support/httpclient.html#delete%2CHttpClient%2C">httpclient: proc delete(client: HttpClient; url: Uri | string): Response</a></li>
+          </ul></dd>
+<dt><a name="deleteContent" href="#deleteContent"><span>deleteContent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc deleteContent(client: AsyncHttpClient; url: Uri | string): Future[string]" href="supranim/support/httpclient.html#deleteContent%2CAsyncHttpClient%2C">httpclient: proc deleteContent(client: AsyncHttpClient; url: Uri | string): Future[string]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc deleteContent(client: HttpClient; url: Uri | string): string" href="supranim/support/httpclient.html#deleteContent%2CHttpClient%2C">httpclient: proc deleteContent(client: HttpClient; url: Uri | string): string</a></li>
+          </ul></dd>
+<dt><a name="downloadFile" href="#downloadFile"><span>downloadFile:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc downloadFile(client: HttpClient | UnixHttpClient; url: Uri | string;
+             filename: string)" href="supranim/support/httpclient.html#downloadFile%2C%2C%2Cstring">httpclient: proc downloadFile(client: HttpClient | UnixHttpClient; url: Uri | string;
+             filename: string)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc downloadFile(client: AsyncHttpClient; url: Uri | string; filename: string): Future[
+    void]" href="supranim/support/httpclient.html#downloadFile%2CAsyncHttpClient%2C%2Cstring">httpclient: proc downloadFile(client: AsyncHttpClient; url: Uri | string; filename: string): Future[
+    void]</a></li>
           </ul></dd>
 <dt><a name="drainChunk" href="#drainChunk"><span>drainChunk:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -298,6 +376,18 @@
 <li><a class="reference external"
           data-doc-search-tag="nanoid: proc generate(alphabet: string = defaultAlphabet; size: int = 21): string" href="supranim/support/nanoid.html#generate%2Cstring%2Cint">nanoid: proc generate(alphabet: string = defaultAlphabet; size: int = 21): string</a></li>
           </ul></dd>
+<dt><a name="get" href="#get"><span>get:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: proc get(H: Http; uri: Uri | string): Response" href="supranim/support/http.html#get%2CHttp%2C">http: proc get(H: Http; uri: Uri | string): Response</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="http: proc get[T](H: Http; uri: Uri | string; t: typedesc[T]): T" href="supranim/support/http.html#get%2CHttp%2C%2Ctypedesc%5BT%5D">http: proc get[T](H: Http; uri: Uri | string; t: typedesc[T]): T</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="http: proc get(H: typedesc[Http]; uri: Uri | string): Response" href="supranim/support/http.html#get%2Ctypedesc%5BHttp%5D%2C">http: proc get(H: typedesc[Http]; uri: Uri | string): Response</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc get(client: AsyncHttpClient; url: Uri | string): Future[AsyncResponse]" href="supranim/support/httpclient.html#get%2CAsyncHttpClient%2C">httpclient: proc get(client: AsyncHttpClient; url: Uri | string): Future[AsyncResponse]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc get(client: HttpClient; url: Uri | string): Response" href="supranim/support/httpclient.html#get%2CHttpClient%2C">httpclient: proc get(client: HttpClient; url: Uri | string): Response</a></li>
+          </ul></dd>
 <dt><a name="getAddress" href="#getAddress"><span>getAddress:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: proc getAddress(app: Application): string" href="supranim/core/application.html#getAddress%2CApplication">application: proc getAddress(app: Application): string</a></li>
@@ -312,7 +402,7 @@
           </ul></dd>
 <dt><a name="getBody" href="#getBody"><span>getBody:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc getBody(res: Response): string" href="supranim/http/response.html#getBody%2CResponse">response: proc getBody(res: Response): string</a></li>
+          data-doc-search-tag="response: proc getBody(res: Response): lent string" href="supranim/http/response.html#getBody%2CResponse">response: proc getBody(res: Response): lent string</a></li>
           <li><a class="reference external"
           data-doc-search-tag="webserver: proc getBody(req: var Request): Option[string]" href="supranim/network/http/webserver.html#getBody%2CRequest">webserver: proc getBody(req: var Request): Option[string]</a></li>
           </ul></dd>
@@ -345,6 +435,12 @@
 <dt><a name="getCode" href="#getCode"><span>getCode:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="response: proc getCode(res: Response): HttpCode" href="supranim/http/response.html#getCode%2CResponse">response: proc getCode(res: Response): HttpCode</a></li>
+          </ul></dd>
+<dt><a name="getContent" href="#getContent"><span>getContent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc getContent(client: AsyncHttpClient; url: Uri | string): Future[string]" href="supranim/support/httpclient.html#getContent%2CAsyncHttpClient%2C">httpclient: proc getContent(client: AsyncHttpClient; url: Uri | string): Future[string]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc getContent(client: HttpClient; url: Uri | string): string" href="supranim/support/httpclient.html#getContent%2CHttpClient%2C">httpclient: proc getContent(client: HttpClient; url: Uri | string): string</a></li>
           </ul></dd>
 <dt><a name="getContentType" href="#getContentType"><span>getContentType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -442,6 +538,12 @@
 <li><a class="reference external"
           data-doc-search-tag="controller: proc getSessionCookie(req: var Request): ref Cookie" href="supranim/controller.html#getSessionCookie%2CRequest">controller: proc getSessionCookie(req: var Request): ref Cookie</a></li>
           </ul></dd>
+<dt><a name="getSocket" href="#getSocket"><span>getSocket:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc getSocket(client: AsyncHttpClient): AsyncSocket" href="supranim/support/httpclient.html#getSocket%2CAsyncHttpClient">httpclient: proc getSocket(client: AsyncHttpClient): AsyncSocket</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc getSocket(client: HttpClient): Socket" href="supranim/support/httpclient.html#getSocket%2CHttpClient">httpclient: proc getSocket(client: HttpClient): Socket</a></li>
+          </ul></dd>
 <dt><a name="getSomeBodyData" href="#getSomeBodyData"><span>getSomeBodyData:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="controller: proc getSomeBodyData(req: var Request): SomeBodyData" href="supranim/controller.html#getSomeBodyData%2CRequest">controller: proc getSomeBodyData(req: var Request): SomeBodyData</a></li>
@@ -480,15 +582,45 @@
 <li><a class="reference external"
           data-doc-search-tag="request: proc hasCookies(req: var Request): bool" href="supranim/http/request.html#hasCookies%2CRequest">request: proc hasCookies(req: var Request): bool</a></li>
           </ul></dd>
+<dt><a name="head" href="#head"><span>head:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc head(client: AsyncHttpClient; url: Uri | string): Future[AsyncResponse]" href="supranim/support/httpclient.html#head%2CAsyncHttpClient%2C">httpclient: proc head(client: AsyncHttpClient; url: Uri | string): Future[AsyncResponse]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc head(client: HttpClient; url: Uri | string): Response" href="supranim/support/httpclient.html#head%2CHttpClient%2C">httpclient: proc head(client: HttpClient; url: Uri | string): Response</a></li>
+          </ul></dd>
 <dt><a name="hexify" href="#hexify"><span>hexify:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="uuid: proc hexify(bytes: openArray[uint8]): string" href="supranim/support/uuid.html#hexify%2CopenArray%5Buint8%5D">uuid: proc hexify(bytes: openArray[uint8]): string</a></li>
           <li><a class="reference external"
           data-doc-search-tag="uuid: proc hexify(uuid: Uuid): string" href="supranim/support/uuid.html#hexify%2CUuid">uuid: proc hexify(uuid: Uuid): string</a></li>
           </ul></dd>
+<dt><a name="Http" href="#Http"><span>Http:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: type Http" href="supranim/support/http.html#Http">http: type Http</a></li>
+          </ul></dd>
+<dt><a name="HttpClient" href="#HttpClient"><span>HttpClient:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: type HttpClient" href="supranim/support/httpclient.html#HttpClient">httpclient: type HttpClient</a></li>
+          </ul></dd>
+<dt><a name="HttpClientBase" href="#HttpClientBase"><span>HttpClientBase:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: type HttpClientBase" href="supranim/support/httpclient.html#HttpClientBase">httpclient: type HttpClientBase</a></li>
+          </ul></dd>
+<dt><a name="HttpForm" href="#HttpForm"><span>HttpForm:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: type HttpForm" href="supranim/support/http.html#HttpForm">http: type HttpForm</a></li>
+          </ul></dd>
 <dt><a name="httpMethods" href="#httpMethods"><span>httpMethods:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: const httpMethods" href="supranim/http/router.html#httpMethods">router: const httpMethods</a></li>
+          </ul></dd>
+<dt><a name="HttpRequestError" href="#HttpRequestError"><span>HttpRequestError:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: object HttpRequestError" href="supranim/support/httpclient.html#HttpRequestError">httpclient: object HttpRequestError</a></li>
+          </ul></dd>
+<dt><a name="HttpResponse" href="#HttpResponse"><span>HttpResponse:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: object HttpResponse" href="supranim/support/http.html#HttpResponse">http: object HttpResponse</a></li>
           </ul></dd>
 <dt><a name="HttpRoute" href="#HttpRoute"><span>HttpRoute:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -598,6 +730,10 @@
 <li><a class="reference external"
           data-doc-search-tag="controller: let keypair" href="supranim/controller.html#keypair">controller: let keypair</a></li>
           </ul></dd>
+<dt><a name="lastModified" href="#lastModified"><span>lastModified:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc lastModified(response: Response | AsyncResponse): DateTime" href="supranim/support/httpclient.html#lastModified">httpclient: proc lastModified(response: Response | AsyncResponse): DateTime</a></li>
+          </ul></dd>
 <dt><a name="listener" href="#listener"><span>listener:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="events: macro listener(eventName: static string; handle: untyped): untyped" href="supranim/service/events.html#listener.m%2Cstaticstring%2Cuntyped">events: macro listener(eventName: static string; handle: untyped): untyped</a></li>
@@ -668,6 +804,22 @@
 <li><a class="reference external"
           data-doc-search-tag="plugins: PluginType.moduleTypePlugin" href="supranim/core/plugins.html#moduleTypePlugin">plugins: PluginType.moduleTypePlugin</a></li>
           </ul></dd>
+<dt><a name="MultipartData" href="#MultipartData"><span>MultipartData:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: type MultipartData" href="supranim/support/httpclient.html#MultipartData">httpclient: type MultipartData</a></li>
+          </ul></dd>
+<dt><a name="MultipartEntries" href="#MultipartEntries"><span>MultipartEntries:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: type MultipartEntries" href="supranim/support/httpclient.html#MultipartEntries">httpclient: type MultipartEntries</a></li>
+          </ul></dd>
+<dt><a name="newAsyncHttpClient" href="#newAsyncHttpClient"><span>newAsyncHttpClient:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc newAsyncHttpClient(userAgent = defUserAgent; maxRedirects = 5;
+                   sslContext = getDefaultSSL(); proxy: Proxy = nil;
+                   headers = newHttpHeaders()): AsyncHttpClient" href="supranim/support/httpclient.html#newAsyncHttpClient%2Cint%2CProxy">httpclient: proc newAsyncHttpClient(userAgent = defUserAgent; maxRedirects = 5;
+                   sslContext = getDefaultSSL(); proxy: Proxy = nil;
+                   headers = newHttpHeaders()): AsyncHttpClient</a></li>
+          </ul></dd>
 <dt><a name="newController" href="#newController"><span>newController:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="controller: macro newController(name, body: untyped)" href="supranim/controller.html#newController.m%2Cuntyped%2Cuntyped">controller: macro newController(name, body: untyped)</a></li>
@@ -680,9 +832,37 @@
           expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
           domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): ref Cookie</a></li>
           </ul></dd>
+<dt><a name="newHttpClient" href="#newHttpClient"><span>newHttpClient:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc newHttpClient(userAgent = defUserAgent; maxRedirects = 5;
+              sslContext = getDefaultSSL(); proxy: Proxy = nil; timeout = -1;
+              headers = newHttpHeaders()): HttpClient" href="supranim/support/httpclient.html#newHttpClient%2Cint%2CProxy%2Cint">httpclient: proc newHttpClient(userAgent = defUserAgent; maxRedirects = 5;
+              sslContext = getDefaultSSL(); proxy: Proxy = nil; timeout = -1;
+              headers = newHttpHeaders()): HttpClient</a></li>
+          </ul></dd>
 <dt><a name="newHttpRouter" href="#newHttpRouter"><span>newHttpRouter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc newHttpRouter(): HttpRouterInstance" href="supranim/http/router.html#newHttpRouter">router: proc newHttpRouter(): HttpRouterInstance</a></li>
+          </ul></dd>
+<dt><a name="newMultipartData" href="#newMultipartData"><span>newMultipartData:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc newMultipartData(): MultipartData" href="supranim/support/httpclient.html#newMultipartData">httpclient: proc newMultipartData(): MultipartData</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc newMultipartData(xs: MultipartEntries): MultipartData" href="supranim/support/httpclient.html#newMultipartData%2CMultipartEntries">httpclient: proc newMultipartData(xs: MultipartEntries): MultipartData</a></li>
+          </ul></dd>
+<dt><a name="newProxy" href="#newProxy"><span>newProxy:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc newProxy(url: string; auth = &quot;&quot;): Proxy" href="supranim/support/httpclient.html#newProxy%2Cstring%2Cstring">httpclient: proc newProxy(url: string; auth = &quot;&quot;): Proxy</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc newProxy(url: Uri; auth = &quot;&quot;): Proxy" href="supranim/support/httpclient.html#newProxy%2CUri%2Cstring">httpclient: proc newProxy(url: Uri; auth = &quot;&quot;): Proxy</a></li>
+          </ul></dd>
+<dt><a name="newUnixHttpClient" href="#newUnixHttpClient"><span>newUnixHttpClient:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc newUnixHttpClient(unixPath: string; userAgent = defUserAgent; maxRedirects = 5;
+                  sslContext = getDefaultSSL(); timeout = -1;
+                  headers = newHttpHeaders()): UnixHttpClient" href="supranim/support/httpclient.html#newUnixHttpClient%2Cstring%2Cint%2Cint">httpclient: proc newUnixHttpClient(unixPath: string; userAgent = defUserAgent; maxRedirects = 5;
+                  sslContext = getDefaultSSL(); timeout = -1;
+                  headers = newHttpHeaders()): UnixHttpClient</a></li>
           </ul></dd>
 <dt><a name="newWebServer" href="#newWebServer"><span>newWebServer:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -691,6 +871,10 @@
 <dt><a name="NoAccess" href="#NoAccess"><span>NoAccess:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="plugins: PluginPermission.NoAccess" href="supranim/core/plugins.html#NoAccess">plugins: PluginPermission.NoAccess</a></li>
+          </ul></dd>
+<dt><a name="normalizePath" href="#normalizePath"><span>normalizePath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: proc normalizePath(path: string): string" href="supranim/support/http.html#normalizePath%2Cstring">http: proc normalizePath(path: string): string</a></li>
           </ul></dd>
 <dt><a name="OnInitSingletonCallback%60gensym0%60gensym10" href="#OnInitSingletonCallback%60gensym0%60gensym10"><span>OnInitSingletonCallback`gensym0`gensym10:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -721,6 +905,26 @@
           data-doc-search-tag="router: proc parseRouteNode(verb, routePath: string; middlewares, afterwares: var NimNode;
                closureHandle: NimNode = nil)" href="supranim/http/router.html#parseRouteNode%2Cstring%2Cstring%2CNimNode%2CNimNode%2CNimNode">router: proc parseRouteNode(verb, routePath: string; middlewares, afterwares: var NimNode;
                closureHandle: NimNode = nil)</a></li>
+          </ul></dd>
+<dt><a name="patch" href="#patch"><span>patch:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc patch(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+      multipart: MultipartData = nil): Future[AsyncResponse]" href="supranim/support/httpclient.html#patch%2CAsyncHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc patch(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+      multipart: MultipartData = nil): Future[AsyncResponse]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc patch(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+      multipart: MultipartData = nil): Response" href="supranim/support/httpclient.html#patch%2CHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc patch(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+      multipart: MultipartData = nil): Response</a></li>
+          </ul></dd>
+<dt><a name="patchContent" href="#patchContent"><span>patchContent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc patchContent(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+             multipart: MultipartData = nil): Future[string]" href="supranim/support/httpclient.html#patchContent%2CAsyncHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc patchContent(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+             multipart: MultipartData = nil): Future[string]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc patchContent(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+             multipart: MultipartData = nil): string" href="supranim/support/httpclient.html#patchContent%2CHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc patchContent(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+             multipart: MultipartData = nil): string</a></li>
           </ul></dd>
 <dt><a name="peekChunk" href="#peekChunk"><span>peekChunk:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -778,6 +982,30 @@
 <li><a class="reference external"
           data-doc-search-tag="plugins: enum PluginType" href="supranim/core/plugins.html#PluginType">plugins: enum PluginType</a></li>
           </ul></dd>
+<dt><a name="post" href="#post"><span>post:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: proc post(H: typedesc[Http]; uri: Uri | string; httpForm: HttpForm): Response" href="supranim/support/http.html#post%2Ctypedesc%5BHttp%5D%2C%2CHttpForm">http: proc post(H: typedesc[Http]; uri: Uri | string; httpForm: HttpForm): Response</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="http: proc post(H: typedesc[Http]; uri: Uri | string; body: string = &quot;&quot;): Response" href="supranim/support/http.html#post%2Ctypedesc%5BHttp%5D%2C%2Cstring">http: proc post(H: typedesc[Http]; uri: Uri | string; body: string = &quot;&quot;): Response</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc post(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+     multipart: MultipartData = nil): Future[AsyncResponse]" href="supranim/support/httpclient.html#post%2CAsyncHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc post(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+     multipart: MultipartData = nil): Future[AsyncResponse]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc post(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+     multipart: MultipartData = nil): Response" href="supranim/support/httpclient.html#post%2CHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc post(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+     multipart: MultipartData = nil): Response</a></li>
+          </ul></dd>
+<dt><a name="postContent" href="#postContent"><span>postContent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc postContent(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+            multipart: MultipartData = nil): Future[string]" href="supranim/support/httpclient.html#postContent%2CAsyncHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc postContent(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+            multipart: MultipartData = nil): Future[string]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc postContent(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+            multipart: MultipartData = nil): string" href="supranim/support/httpclient.html#postContent%2CHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc postContent(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+            multipart: MultipartData = nil): string</a></li>
+          </ul></dd>
 <dt><a name="preload" href="#preload"><span>preload:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="plugins: proc preload(manager: PluginManager; path: string): ptr Plugin" href="supranim/core/plugins.html#preload%2CPluginManager%2Cstring">plugins: proc preload(manager: PluginManager; path: string): ptr Plugin</a></li>
@@ -801,6 +1029,38 @@
 <dt><a name="preparePath" href="#preparePath"><span>preparePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc preparePath(path: string; prefix = &quot;&quot;): string" href="supranim/http/router.html#preparePath%2Cstring%2Cstring">router: proc preparePath(path: string; prefix = &quot;&quot;): string</a></li>
+          </ul></dd>
+<dt><a name="ProgressChangedProc" href="#ProgressChangedProc"><span>ProgressChangedProc:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: type ProgressChangedProc" href="supranim/support/httpclient.html#ProgressChangedProc">httpclient: type ProgressChangedProc</a></li>
+          </ul></dd>
+<dt><a name="ProtocolError" href="#ProtocolError"><span>ProtocolError:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: object ProtocolError" href="supranim/support/httpclient.html#ProtocolError">httpclient: object ProtocolError</a></li>
+          </ul></dd>
+<dt><a name="Proxy" href="#Proxy"><span>Proxy:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: type Proxy" href="supranim/support/httpclient.html#Proxy">httpclient: type Proxy</a></li>
+          </ul></dd>
+<dt><a name="put" href="#put"><span>put:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc put(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+    multipart: MultipartData = nil): Future[AsyncResponse]" href="supranim/support/httpclient.html#put%2CAsyncHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc put(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+    multipart: MultipartData = nil): Future[AsyncResponse]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc put(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+    multipart: MultipartData = nil): Response" href="supranim/support/httpclient.html#put%2CHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc put(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+    multipart: MultipartData = nil): Response</a></li>
+          </ul></dd>
+<dt><a name="putContent" href="#putContent"><span>putContent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc putContent(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+           multipart: MultipartData = nil): Future[string]" href="supranim/support/httpclient.html#putContent%2CAsyncHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc putContent(client: AsyncHttpClient; url: Uri | string; body = &quot;&quot;;
+           multipart: MultipartData = nil): Future[string]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc putContent(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+           multipart: MultipartData = nil): string" href="supranim/support/httpclient.html#putContent%2CHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc putContent(client: HttpClient; url: Uri | string; body = &quot;&quot;;
+           multipart: MultipartData = nil): string</a></li>
           </ul></dd>
 <dt><a name="queuedRoutes" href="#queuedRoutes"><span>queuedRoutes:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -856,6 +1116,22 @@
 <li><a class="reference external"
           data-doc-search-tag="webserver: object Request" href="supranim/network/http/webserver.html#Request">webserver: object Request</a></li>
           </ul></dd>
+<dt><a name="request" href="#request"><span>request:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: proc request(client: AsyncHttpClient; url: Uri | string;
+        httpMethod: HttpMethod | string = HttpGet; body = &quot;&quot;;
+        headers: HttpHeaders = nil; multipart: MultipartData = nil): Future[
+    AsyncResponse]" href="supranim/support/httpclient.html#request%2CAsyncHttpClient%2C%2Cstring%2CHttpHeaders%2CMultipartData">httpclient: proc request(client: AsyncHttpClient; url: Uri | string;
+        httpMethod: HttpMethod | string = HttpGet; body = &quot;&quot;;
+        headers: HttpHeaders = nil; multipart: MultipartData = nil): Future[
+    AsyncResponse]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: proc request(client: HttpClient; url: Uri | string;
+        httpMethod: HttpMethod | string = HttpGet; body = &quot;&quot;;
+        headers: HttpHeaders = nil; multipart: MultipartData = nil): Response" href="supranim/support/httpclient.html#request%2CHttpClient%2C%2Cstring%2CHttpHeaders%2CMultipartData">httpclient: proc request(client: HttpClient; url: Uri | string;
+        httpMethod: HttpMethod | string = HttpGet; body = &quot;&quot;;
+        headers: HttpHeaders = nil; multipart: MultipartData = nil): Response</a></li>
+          </ul></dd>
 <dt><a name="resolve" href="#resolve"><span>resolve:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="paths: proc resolve(path: ApplicationPaths; dir: string; fpath = &quot;&quot;): string" href="supranim/core/paths.html#resolve%2CApplicationPaths%2Cstring%2Cstring">paths: proc resolve(path: ApplicationPaths; dir: string; fpath = &quot;&quot;): string</a></li>
@@ -881,6 +1157,18 @@
 <dt><a name="Response" href="#Response"><span>Response:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="response: object Response" href="supranim/http/response.html#Response">response: object Response</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="httpclient: type Response" href="supranim/support/httpclient.html#Response">httpclient: type Response</a></li>
+          </ul></dd>
+<dt><a name="retry" href="#retry"><span>retry:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: proc retry(H: Http; times: uint): Http" href="supranim/support/http.html#retry%2CHttp%2Cuint">http: proc retry(H: Http; times: uint): Http</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="http: proc retry(H: Http; times: uint; retryAttemptCallback: RetryAttemptCallback)" href="supranim/support/http.html#retry%2CHttp%2Cuint%2CRetryAttemptCallback">http: proc retry(H: Http; times: uint; retryAttemptCallback: RetryAttemptCallback)</a></li>
+          </ul></dd>
+<dt><a name="RetryAttemptCallback" href="#RetryAttemptCallback"><span>RetryAttemptCallback:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: type RetryAttemptCallback" href="supranim/support/http.html#RetryAttemptCallback">http: type RetryAttemptCallback</a></li>
           </ul></dd>
 <dt><a name="rootPath" href="#rootPath"><span>rootPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1014,7 +1302,7 @@
           </ul></dd>
 <dt><a name="setBody" href="#setBody"><span>setBody:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc setBody(res: var Response; body: string)" href="supranim/http/response.html#setBody%2CResponse%2Cstring">response: proc setBody(res: var Response; body: string)</a></li>
+          data-doc-search-tag="response: proc setBody(res: var Response; body: sink string)" href="supranim/http/response.html#setBody%2CResponse%2Csinkstring">response: proc setBody(res: var Response; body: sink string)</a></li>
           </ul></dd>
 <dt><a name="setCode" href="#setCode"><span>setCode:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1124,6 +1412,10 @@
 <li><a class="reference external"
           data-doc-search-tag="response: proc toString(headers: HttpHeaders): string" href="supranim/http/response.html#toString%2CHttpHeaders">response: proc toString(headers: HttpHeaders): string</a></li>
           </ul></dd>
+<dt><a name="UnixHttpClient" href="#UnixHttpClient"><span>UnixHttpClient:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="httpclient: type UnixHttpClient" href="supranim/support/httpclient.html#UnixHttpClient">httpclient: type UnixHttpClient</a></li>
+          </ul></dd>
 <dt><a name="unload" href="#unload"><span>unload:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="plugins: proc unload(manager: PluginManager; path: string)" href="supranim/core/plugins.html#unload%2CPluginManager%2Cstring">plugins: proc unload(manager: PluginManager; path: string)</a></li>
@@ -1188,6 +1480,14 @@
 <li><a class="reference external"
           data-doc-search-tag="webserver: template withChunks(reqInstance: Request; httpHeaders: HttpHeaders; body)" href="supranim/network/http/webserver.html#withChunks.t%2CRequest%2CHttpHeaders%2C">webserver: template withChunks(reqInstance: Request; httpHeaders: HttpHeaders; body)</a></li>
           </ul></dd>
+<dt><a name="withHeaders" href="#withHeaders"><span>withHeaders:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: proc withHeaders(H: typedesc[Http]; httpHeaders: openArray[tuple[key, val: string]]): Http" href="supranim/support/http.html#withHeaders%2Ctypedesc%5BHttp%5D%2CopenArray%5Btuple%5Bstring%2Cstring%5D%5D">http: proc withHeaders(H: typedesc[Http]; httpHeaders: openArray[tuple[key, val: string]]): Http</a></li>
+          </ul></dd>
+<dt><a name="withToken" href="#withToken"><span>withToken:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="http: proc withToken(H: Http; token: string): Http" href="supranim/support/http.html#withToken%2CHttp%2Cstring">http: proc withToken(H: Http; token: string): Http</a></li>
+          </ul></dd>
 <dt><a name="wsBinary" href="#wsBinary"><span>wsBinary:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="websocket: WebSocketFrameKind.wsBinary" href="supranim/network/ws/websocket.html#wsBinary">websocket: WebSocketFrameKind.wsBinary</a></li>
@@ -1216,7 +1516,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-11 08:00:36 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-14 22:36:31 UTC</small>
       </div>
     </div>
   </div>

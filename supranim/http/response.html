@@ -87,7 +87,7 @@
 
 </ul>
 <ul class="simple nested-toc-section">getBody
-  <li><a class="reference" href="#getBody%2CResponse" title="getBody(res: Response): string">getBody(res: Response): string</a></li>
+  <li><a class="reference" href="#getBody%2CResponse" title="getBody(res: Response): lent string">getBody(res: Response): lent string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">getCode
@@ -115,7 +115,7 @@
 
 </ul>
 <ul class="simple nested-toc-section">setBody
-  <li><a class="reference" href="#setBody%2CResponse%2Cstring" title="setBody(res: var Response; body: string)">setBody(res: var Response; body: string)</a></li>
+  <li><a class="reference" href="#setBody%2CResponse%2Csinkstring" title="setBody(res: var Response; body: sink string)">setBody(res: var Response; body: sink string)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">setCode
@@ -225,7 +225,7 @@
 </div>
 <div id="getBody-procs-all">
   <div id="getBody,Response">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getBody%2CResponse"><span class="Identifier">getBody</span></a><span class="Other">(</span><span class="Identifier">res</span><span class="Other">:</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getBody%2CResponse"><span class="Identifier">getBody</span></a><span class="Other">(</span><span class="Identifier">res</span><span class="Other">:</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -305,8 +305,8 @@
 
 </div>
 <div id="setBody-procs-all">
-  <div id="setBody,Response,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#setBody%2CResponse%2Cstring"><span class="Identifier">setBody</span></a><span class="Other">(</span><span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <div id="setBody,Response,sinkstring">
+  <dt><pre><span class="Keyword">proc</span> <a href="#setBody%2CResponse%2Csinkstring"><span class="Identifier">setBody</span></a><span class="Other">(</span><span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -424,7 +424,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-11 08:00:36 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-14 22:36:31 UTC</small>
       </div>
     </div>
   </div>

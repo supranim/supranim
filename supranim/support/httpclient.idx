@@ -1,0 +1,88 @@
+nimTitle	httpclient	supranim/support/httpclient.html	module supranim/support/httpclient		0
+nim	Response	supranim/support/httpclient.html#Response	type Response		260
+nim	AsyncResponse	supranim/support/httpclient.html#AsyncResponse	type AsyncResponse		267
+nim	code	supranim/support/httpclient.html#code	proc code(response: Response | AsyncResponse): HttpCode		274
+nim	contentType	supranim/support/httpclient.html#contentType	proc contentType(response: Response | AsyncResponse): string		282
+nim	contentLength	supranim/support/httpclient.html#contentLength	proc contentLength(response: Response | AsyncResponse): int		288
+nim	lastModified	supranim/support/httpclient.html#lastModified	proc lastModified(response: Response | AsyncResponse): DateTime		298
+nim	body	supranim/support/httpclient.html#body,Response	proc body(response: Response): string		308
+nim	body	supranim/support/httpclient.html#body,AsyncResponse	proc body(response: AsyncResponse): Future[string]		316
+nim	Proxy	supranim/support/httpclient.html#Proxy	type Proxy		324
+nim	MultipartEntries	supranim/support/httpclient.html#MultipartEntries	type MultipartEntries		337
+nim	MultipartData	supranim/support/httpclient.html#MultipartData	type MultipartData		338
+nim	ProtocolError	supranim/support/httpclient.html#ProtocolError	object ProtocolError		341
+nim	HttpRequestError	supranim/support/httpclient.html#HttpRequestError	object HttpRequestError		345
+nim	defUserAgent	supranim/support/httpclient.html#defUserAgent	const defUserAgent		349
+nim	newProxy	supranim/support/httpclient.html#newProxy,string,string	proc newProxy(url: string; auth = ""): Proxy		375
+nim	newProxy	supranim/support/httpclient.html#newProxy,Uri,string	proc newProxy(url: Uri; auth = ""): Proxy		379
+nim	newMultipartData	supranim/support/httpclient.html#newMultipartData	proc newMultipartData(): MultipartData		383
+nim	`$`	supranim/support/httpclient.html#$,MultipartData	proc `$`(data: MultipartData): string		387
+nim	add	supranim/support/httpclient.html#add,MultipartData,string,string,string,string	proc add(p: MultipartData; name, content: string; filename: string = "";\n    contentType: string = ""; useStream = true)		399
+nim	add	supranim/support/httpclient.html#add,MultipartData,MultipartEntries	proc add(p: MultipartData; xs: MultipartEntries): MultipartData		427
+nim	newMultipartData	supranim/support/httpclient.html#newMultipartData,MultipartEntries	proc newMultipartData(xs: MultipartEntries): MultipartData		438
+nim	addFiles	supranim/support/httpclient.html#addFiles,MultipartData,openArray[tuple[string,string]]	proc addFiles(p: MultipartData; xs: openArray[tuple[name, file: string]];\n         mimeDb = newMimetypes(); useStream = true): MultipartData		448
+nim	`[]=`	supranim/support/httpclient.html#[]=,MultipartData,string,string	proc `[]=`(p: MultipartData; name, content: string)		469
+nim	`[]=`	supranim/support/httpclient.html#[]=,MultipartData,string,tuple[string,string,string]	proc `[]=`(p: MultipartData; name: string;\n      file: tuple[name, contentType, content: string])		477
+nim	ProgressChangedProc	supranim/support/httpclient.html#ProgressChangedProc	type ProgressChangedProc		573
+nim	HttpClientBase	supranim/support/httpclient.html#HttpClientBase	type HttpClientBase		577
+nim	HttpClient	supranim/support/httpclient.html#HttpClient	type HttpClient		605
+nim	UnixHttpClient	supranim/support/httpclient.html#UnixHttpClient	type UnixHttpClient		606
+nim	newHttpClient	supranim/support/httpclient.html#newHttpClient,int,Proxy,int	proc newHttpClient(userAgent = defUserAgent; maxRedirects = 5;\n              sslContext = getDefaultSSL(); proxy: Proxy = nil; timeout = -1;\n              headers = newHttpHeaders()): HttpClient		608
+nim	newUnixHttpClient	supranim/support/httpclient.html#newUnixHttpClient,string,int,int	proc newUnixHttpClient(unixPath: string; userAgent = defUserAgent; maxRedirects = 5;\n                  sslContext = getDefaultSSL(); timeout = -1;\n                  headers = newHttpHeaders()): UnixHttpClient		648
+nim	AsyncHttpClient	supranim/support/httpclient.html#AsyncHttpClient	type AsyncHttpClient		678
+nim	newAsyncHttpClient	supranim/support/httpclient.html#newAsyncHttpClient,int,Proxy	proc newAsyncHttpClient(userAgent = defUserAgent; maxRedirects = 5;\n                   sslContext = getDefaultSSL(); proxy: Proxy = nil;\n                   headers = newHttpHeaders()): AsyncHttpClient		680
+nim	close	supranim/support/httpclient.html#close	proc close(client: HttpClient | AsyncHttpClient)		720
+nim	getSocket	supranim/support/httpclient.html#getSocket,HttpClient	proc getSocket(client: HttpClient): Socket		726
+nim	getSocket	supranim/support/httpclient.html#getSocket,AsyncHttpClient	proc getSocket(client: AsyncHttpClient): AsyncSocket		738
+nim	request	supranim/support/httpclient.html#request,AsyncHttpClient,,string,HttpHeaders,MultipartData	proc request(client: AsyncHttpClient; url: Uri | string;\n        httpMethod: HttpMethod | string = HttpGet; body = "";\n        headers: HttpHeaders = nil; multipart: MultipartData = nil): Future[\n    AsyncResponse]		1136
+nim	request	supranim/support/httpclient.html#request,HttpClient,,string,HttpHeaders,MultipartData	proc request(client: HttpClient; url: Uri | string;\n        httpMethod: HttpMethod | string = HttpGet; body = "";\n        headers: HttpHeaders = nil; multipart: MultipartData = nil): Response		1140
+nim	head	supranim/support/httpclient.html#head,AsyncHttpClient,	proc head(client: AsyncHttpClient; url: Uri | string): Future[AsyncResponse]		1248
+nim	head	supranim/support/httpclient.html#head,HttpClient,	proc head(client: HttpClient; url: Uri | string): Response		1249
+nim	get	supranim/support/httpclient.html#get,AsyncHttpClient,	proc get(client: AsyncHttpClient; url: Uri | string): Future[AsyncResponse]		1255
+nim	get	supranim/support/httpclient.html#get,HttpClient,	proc get(client: HttpClient; url: Uri | string): Response		1256
+nim	getContent	supranim/support/httpclient.html#getContent,AsyncHttpClient,	proc getContent(client: AsyncHttpClient; url: Uri | string): Future[string]		1262
+nim	getContent	supranim/support/httpclient.html#getContent,HttpClient,	proc getContent(client: HttpClient; url: Uri | string): string		1263
+nim	delete	supranim/support/httpclient.html#delete,AsyncHttpClient,	proc delete(client: AsyncHttpClient; url: Uri | string): Future[AsyncResponse]		1268
+nim	delete	supranim/support/httpclient.html#delete,HttpClient,	proc delete(client: HttpClient; url: Uri | string): Response		1269
+nim	deleteContent	supranim/support/httpclient.html#deleteContent,AsyncHttpClient,	proc deleteContent(client: AsyncHttpClient; url: Uri | string): Future[string]		1274
+nim	deleteContent	supranim/support/httpclient.html#deleteContent,HttpClient,	proc deleteContent(client: HttpClient; url: Uri | string): string		1275
+nim	post	supranim/support/httpclient.html#post,AsyncHttpClient,,string,MultipartData	proc post(client: AsyncHttpClient; url: Uri | string; body = "";\n     multipart: MultipartData = nil): Future[AsyncResponse]		1280
+nim	post	supranim/support/httpclient.html#post,HttpClient,,string,MultipartData	proc post(client: HttpClient; url: Uri | string; body = "";\n     multipart: MultipartData = nil): Response		1282
+nim	postContent	supranim/support/httpclient.html#postContent,AsyncHttpClient,,string,MultipartData	proc postContent(client: AsyncHttpClient; url: Uri | string; body = "";\n            multipart: MultipartData = nil): Future[string]		1287
+nim	postContent	supranim/support/httpclient.html#postContent,HttpClient,,string,MultipartData	proc postContent(client: HttpClient; url: Uri | string; body = "";\n            multipart: MultipartData = nil): string		1289
+nim	put	supranim/support/httpclient.html#put,AsyncHttpClient,,string,MultipartData	proc put(client: AsyncHttpClient; url: Uri | string; body = "";\n    multipart: MultipartData = nil): Future[AsyncResponse]		1294
+nim	put	supranim/support/httpclient.html#put,HttpClient,,string,MultipartData	proc put(client: HttpClient; url: Uri | string; body = "";\n    multipart: MultipartData = nil): Response		1296
+nim	putContent	supranim/support/httpclient.html#putContent,AsyncHttpClient,,string,MultipartData	proc putContent(client: AsyncHttpClient; url: Uri | string; body = "";\n           multipart: MultipartData = nil): Future[string]		1301
+nim	putContent	supranim/support/httpclient.html#putContent,HttpClient,,string,MultipartData	proc putContent(client: HttpClient; url: Uri | string; body = "";\n           multipart: MultipartData = nil): string		1302
+nim	patch	supranim/support/httpclient.html#patch,AsyncHttpClient,,string,MultipartData	proc patch(client: AsyncHttpClient; url: Uri | string; body = "";\n      multipart: MultipartData = nil): Future[AsyncResponse]		1307
+nim	patch	supranim/support/httpclient.html#patch,HttpClient,,string,MultipartData	proc patch(client: HttpClient; url: Uri | string; body = "";\n      multipart: MultipartData = nil): Response		1309
+nim	patchContent	supranim/support/httpclient.html#patchContent,AsyncHttpClient,,string,MultipartData	proc patchContent(client: AsyncHttpClient; url: Uri | string; body = "";\n             multipart: MultipartData = nil): Future[string]		1314
+nim	patchContent	supranim/support/httpclient.html#patchContent,HttpClient,,string,MultipartData	proc patchContent(client: HttpClient; url: Uri | string; body = "";\n             multipart: MultipartData = nil): string		1316
+nim	downloadFile	supranim/support/httpclient.html#downloadFile,,,string	proc downloadFile(client: HttpClient | UnixHttpClient; url: Uri | string;\n             filename: string)		1321
+nim	downloadFile	supranim/support/httpclient.html#downloadFile,AsyncHttpClient,,string	proc downloadFile(client: AsyncHttpClient; url: Uri | string; filename: string): Future[\n    void]		1359
+nimgrp	body	supranim/support/httpclient.html#body-procs-all	proc		308
+nimgrp	request	supranim/support/httpclient.html#request-procs-all	proc		1136
+nimgrp	getsocket	supranim/support/httpclient.html#getSocket-procs-all	proc		726
+nimgrp	postcontent	supranim/support/httpclient.html#postContent-procs-all	proc		1287
+nimgrp	newmultipartdata	supranim/support/httpclient.html#newMultipartData-procs-all	proc		383
+nimgrp	patchcontent	supranim/support/httpclient.html#patchContent-procs-all	proc		1314
+nimgrp	[]=	supranim/support/httpclient.html#[]=-procs-all	proc		469
+nimgrp	putcontent	supranim/support/httpclient.html#putContent-procs-all	proc		1301
+nimgrp	delete	supranim/support/httpclient.html#delete-procs-all	proc		1268
+nimgrp	getcontent	supranim/support/httpclient.html#getContent-procs-all	proc		1262
+nimgrp	post	supranim/support/httpclient.html#post-procs-all	proc		1280
+nimgrp	get	supranim/support/httpclient.html#get-procs-all	proc		1255
+nimgrp	downloadfile	supranim/support/httpclient.html#downloadFile-procs-all	proc		1321
+nimgrp	add	supranim/support/httpclient.html#add-procs-all	proc		399
+nimgrp	deletecontent	supranim/support/httpclient.html#deleteContent-procs-all	proc		1274
+nimgrp	newproxy	supranim/support/httpclient.html#newProxy-procs-all	proc		375
+nimgrp	head	supranim/support/httpclient.html#head-procs-all	proc		1248
+nimgrp	put	supranim/support/httpclient.html#put-procs-all	proc		1294
+nimgrp	patch	supranim/support/httpclient.html#patch-procs-all	proc		1307
+heading	Retrieving a website	supranim/support/httpclient.html#retrieving-a-website	 Retrieving a website		0
+heading	Using HTTP POST	supranim/support/httpclient.html#using-http-post	 Using HTTP POST		0
+heading	Progress reporting	supranim/support/httpclient.html#progress-reporting	 Progress reporting		0
+heading	SSL/TLS support	supranim/support/httpclient.html#sslslashtls-support	 SSL/TLS support		0
+heading	Timeouts	supranim/support/httpclient.html#timeouts	 Timeouts		0
+heading	Proxy	supranim/support/httpclient.html#proxy	 Proxy		0
+heading	Redirects	supranim/support/httpclient.html#redirects	 Redirects		0
