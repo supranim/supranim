@@ -8,8 +8,9 @@
 import std/[macros, os, net, tables, strutils,
           json, hashes, macrocache, posix]
 
-import pkg/[nyml, kapsis, cbor_serialization]
+import pkg/[nyml, kapsis, #[cbor_serialization]#]
 import pkg/threading/[once, rwlock]
+import pkg/libevent/bindings/[http, buffer, event]
 
 import ./[config, paths, plugins]
 import ../http/[request, response, router]
@@ -27,26 +28,32 @@ type
   Services* = object
     services: Table[string, pointer]
 
-  ApplicationUDP* = object
-    # udpServer*: UdpServer
-      # A UDP socket for network communication
+  # ApplicationUDP* = object
+  #   # udpServer*: UdpServer
+  #     # A UDP socket for network communication
+
+  ApplicationAssetsHandler* = proc (req: var Request, res: var Response, hasFoundResource: var bool) {.closure.}
 
   ApplicationObject = object
     key*: Uuid
-      # The unique application instance key
+      ## The unique application instance key
     port: Port
-      # The port number the application listens on
+      ## The port number the application listens on
     address*: string
-      # The address the application binds to
+      ## The address the application binds to
     configs*: OrderedTableRef[string, nyml.Document]
-      # A table of configuration documents
+      ## A table of configuration documents
     # services*: ApplicationServices
       # A table of service providers
     router*: HttpRouterInstance
-      # The main HTTP router instance
-    udp*: ApplicationUDP
+      ## The main HTTP router instance
+    # udp*: ApplicationUDP
     applicationPaths* : ApplicationPaths
-      # The application paths 
+      ## The application paths 
+    assetsHandler*: ApplicationAssetsHandler
+      ## Custom handler for serving static assets. If not defined,
+      ## static assets will be served from the `assets/` directory in
+      ## the application root. In development this is convenient, but
 
   AppConfigDefect* = object of CatchableError
   
@@ -73,7 +80,7 @@ type
 proc initApplication* =
   ## Initialize the application and returns the singleton instance
   once(onceApp):
-    App = createSharedU(ApplicationObject)
+    App = createShared(ApplicationObject)
 
 proc appInstance*: Application =
   ## Returns the singleton application instance
@@ -282,7 +289,6 @@ macro init*(appx: untyped) =
 
       proc startupCallback() {.gcsafe.} =
         {.gcsafe.}:
-          # initHttpRouter()
           App.router.errorHandler(Http404, get4xx)
     
     # add the service providers
@@ -352,6 +358,10 @@ template services*(app: Application, servicesStmt) {.inject.} =
     add result, newCall(ident"extractThreadServicesBackend")
     # add result, newCall(ident"extractThreadServicesClient")
   preloadServices(servicesStmt)
+
+template withAssetsHandler*(app: Application, handler: ApplicationAssetsHandler) =
+  ## Define a custom handler for serving static assets
+  app[].assetsHandler = handler
 
 proc getPort*(app: Application): Port =
   ## Get port number

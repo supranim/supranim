@@ -65,16 +65,16 @@ else:
   template getBaseMiddlewares*(req, res) =
     runBaseMiddlewares(req, res)
 
-  template run*(App: Application, optionalBlock: untyped) {.dirty.} =
+  template run*(app: Application, optionalBlock: untyped) {.dirty.} =
     ## Runs the Supranim application server.
     ## You can provide an optional block to customize
     ## the server startup process.
     block:
       template invoke4xxHandler(path, req, res) =
         when defined supraMicroservice:
-          App.router.call4xx(req.addr, res.addr)
+          app.router.call4xx(req.addr, res.addr)
         else:
-          App.router.call4xx(req, res)
+          app.router.call4xx(req, res)
         req.resp(Http404, res.getBody, res.getHeaders)
         emitter("http.error", some(@[path, $Http404]))
         
@@ -91,7 +91,7 @@ else:
               path = req.getUriPath()
               httpMethod = req.getHttpMethod()
               runtimeCheck =
-                App.router.checkExists(path, httpMethod)
+                app.router.checkExists(path, httpMethod)
             case runtimeCheck.exists
             of true:
               req.setParams(runtimeCheck.params)
@@ -139,25 +139,30 @@ else:
               when defined webApp:
                 when defined supraFileserver:
                   # useful when the supranim application is running
-                  # without a proxy server in front of it.
+                  # without a reverse proxy in front of it, for example in development.
+                  # in production it's recommended to serve static assets from a CDN or
+                  # a reverse proxy like Nginx
                   var hasFoundResource: bool
-                  if startsWith(path, "/assets"): # expose `/assets` route for customization
-                    req.sendAssets(path, res.getHeaders(), hasFoundResource)
-                  if not hasFoundResource:
-                    invoke4xxHandler(path, req, res)
+                  if app.assetsHandler != nil:
+                    app.assetsHandler(req, res, hasFoundResource)
+                  else:
+                    if startsWith(path, "/assets"): # TODO expose `/assets` route for customization
+                      req.sendAssets(path, res.getHeaders(), hasFoundResource)
+                  if not hasFoundResource: invoke4xxHandler(path, req, res)
                 else:
                   invoke4xxHandler(path, req, res)
               else:
                 invoke4xxHandler(path, req, res)
-            # discard releaseUnusedMemory() # free up memory after each request
+            discard releaseUnusedMemory() # free up memory after each request
 
         # Start the HTTP server
-        let domain: Domain = parseEnum[Domain](App.config("server.type").getStr)
+        let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)
         emitter("app.startup")
-        var server = newWebServer(Port(App.config("server.port").getInt))
+        var server = newWebServer(Port(app.config("server.port").getInt))
         optionalBlock
         server.start(onRequest, startupCallback)
 
-  template run*(App: Application) =
-    App.run do:
+  template run*(app: Application) =
+    ## Runs the Supranim application server without an optional block.
+    app.run do:
       discard

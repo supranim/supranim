@@ -476,6 +476,18 @@ proc sendFile*(req: Request, filePath: string, resHeaders: HttpHeaders) =
   discard evbuffer_add_file(buf, fd, 0, fileSize)
   evhttp_send_reply(req.raw, 200, "", buf)
 
+proc sendFile*(req: Request, bytes: seq[uint8], resHeaders: HttpHeaders) =
+  ## Sends a byte sequence as a file response.
+  ## Note: This is not zero-copy and is suitable for smaller files.
+  assert resHeaders.hasKey("Content-Type"), "Content-Type header must be set"
+  let outHeaders = evhttp_request_get_output_headers(req.raw)
+  for k, v in resHeaders:
+    discard evhttp_add_header(outHeaders, k.cstring, v.cstring)
+
+  let buf = evhttp_request_get_output_buffer(req.raw)
+  discard evbuffer_add(buf, cast[pointer](unsafeAddr bytes[0]), bytes.len.csize_t)
+  evhttp_send_reply(req.raw, 200, "", buf)
+
 type
   BodyStream* = object
     ## Represents a stream for reading the request body in chunks.
