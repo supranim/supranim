@@ -1,21 +1,22 @@
 nimTitle	application	supranim/core/application.html	module supranim/core/application		0
-nim	JsonString	supranim/core/application.html#JsonString	type JsonString		25
-nim	Services	supranim/core/application.html#Services	object Services		27
-nim	ApplicationUDP	supranim/core/application.html#ApplicationUDP	object ApplicationUDP		30
-nim	AppConfigDefect	supranim/core/application.html#AppConfigDefect	object AppConfigDefect		51
-nim	info	supranim/core/application.html#info,string,int	proc info(str: string; indentSize = 0)		59
-nim	App	supranim/core/application.html#App	var App		66
-nim	Application	supranim/core/application.html#Application	type Application		70
-nim	initApplication	supranim/core/application.html#initApplication	proc initApplication()		73
-nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		78
-nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): JsonNode		87
-nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		97
-nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		179
-nim	init	supranim/core/application.html#init.m,untyped	macro init(appx: untyped)		218
-nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		304
-nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		306
-nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		316
-nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		334
-nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): Port		356
-nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): Uuid		360
-nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): string		364
+nim	JsonString	supranim/core/application.html#JsonString	type JsonString		26
+nim	Services	supranim/core/application.html#Services	object Services		28
+nim	ApplicationAssetsHandler	supranim/core/application.html#ApplicationAssetsHandler	type ApplicationAssetsHandler		35
+nim	AppConfigDefect	supranim/core/application.html#AppConfigDefect	object AppConfigDefect		58
+nim	info	supranim/core/application.html#info,string,int	proc info(str: string; indentSize = 0)		66
+nim	App	supranim/core/application.html#App	var App		73
+nim	Application	supranim/core/application.html#Application	type Application		77
+nim	initApplication	supranim/core/application.html#initApplication	proc initApplication()		80
+nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		85
+nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): JsonNode		94
+nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		104
+nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		186
+nim	init	supranim/core/application.html#init.m,untyped	macro init(appx: untyped)		225
+nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		310
+nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		312
+nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		322
+nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		340
+nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		362
+nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): Port		366
+nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): Uuid		370
+nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): string		374

@@ -1,0 +1,13 @@
+nimTitle	assets	supranim/service/assets.html	module supranim/service/assets		0
+nim	StaticAssetsError	supranim/service/assets.html#StaticAssetsError	object StaticAssetsError		25
+nim	isPlainText	supranim/service/assets.html#isPlainText,openArray[uint8],int	proc isPlainText(data: openArray[uint8]; sampleSize = 8192): bool		27
+nim	OnInitSingletonCallback`gensym0`gensym10	supranim/service/assets.html#OnInitSingletonCallback`gensym0`gensym10	type OnInitSingletonCallback`gensym0`gensym10		390
+nim	getAssetsInstance	supranim/service/assets.html#getAssetsInstance,OnInitSingletonCallback`gensym0`gensym10,staticbool	proc getAssetsInstance(onceCb`gensym0`gensym10: OnInitSingletonCallback`gensym0`gensym10 = nil;\n                  initShared`gensym0`gensym10: static bool = true): ptr Assets		388
+nim	staticAssets	supranim/service/assets.html#staticAssets	proc staticAssets(): ptr Assets		43
+nim	hasAsset	supranim/service/assets.html#hasAsset,ptr.Assets,string	proc hasAsset(sta: ptr Assets; key: string): bool		47
+nim	get	supranim/service/assets.html#get,ptr.Assets,string	proc get(sta: ptr Assets; key: string): lent seq[uint8]		51
+nim	hasAssetString	supranim/service/assets.html#hasAssetString,ptr.Assets,string	proc hasAssetString(sta: ptr Assets; key: string): bool		57
+nim	getAssetString	supranim/service/assets.html#getAssetString,ptr.Assets,string	proc getAssetString(sta: ptr Assets; key: string): string		61
+nim	addAsset	supranim/service/assets.html#addAsset,ptr.Assets,string,seq[uint8]	proc addAsset(sta: ptr Assets; key: string; data: seq[uint8])		67
+nim	addTextAsset	supranim/service/assets.html#addTextAsset,ptr.Assets,string,string	proc addTextAsset(sta: ptr Assets; key: string; data: string)		73
+nim	embedAssets	supranim/service/assets.html#embedAssets.m,staticstring	macro embedAssets(dir: static string): untyped		77

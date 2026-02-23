@@ -16,10 +16,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.6">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.8">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.6"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.8"></script>
 </head>
 <body>
   <div class="document" id="documentId">
@@ -60,7 +60,8 @@
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#AppConfigDefect" title="AppConfigDefect = object of CatchableError">AppConfigDefect</a></li>
 <li><a class="reference" href="#Application" title="Application = ptr ApplicationObject">Application</a></li>
-<li><a class="reference" href="#ApplicationUDP" title="ApplicationUDP = object">ApplicationUDP</a></li>
+<li><a class="reference" href="#ApplicationAssetsHandler" title="ApplicationAssetsHandler = proc (req: var Request; res: var Response;
+                                 hasFoundResource: var bool) {.closure.}">ApplicationAssetsHandler</a></li>
 <li><a class="reference" href="#JsonString" title="JsonString = string">JsonString</a></li>
 <li><a class="reference" href="#Services" title="Services = object">Services</a></li>
 
@@ -149,6 +150,10 @@
   <li><a class="reference" href="#services.t%2CApplication%2C" title="services(app: Application; servicesStmt)">services(app: Application; servicesStmt)</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">withAssetsHandler
+  <li><a class="reference" href="#withAssetsHandler.t%2CApplication%2CApplicationAssetsHandler" title="withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)">withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)</a></li>
+
+</ul>
 
     </ul>
   </details>
@@ -190,8 +195,9 @@
     
   </dd>
 </div>
-<div id="ApplicationUDP">
-  <dt><pre><a href="application.html#ApplicationUDP"><span class="Identifier">ApplicationUDP</span></a> <span class="Other">=</span> <span class="Keyword">object</span></pre></dt>
+<div id="ApplicationAssetsHandler">
+  <dt><pre><a href="application.html#ApplicationAssetsHandler"><span class="Identifier">ApplicationAssetsHandler</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../http/response.html#Response"><span class="Identifier">Response</span></a><span class="Other">;</span>
+                                 <span class="Identifier">hasFoundResource</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">bool</span><span class="Other">)</span> {.<span class="Identifier">closure</span>.}</pre></dt>
   <dd>
     
     
@@ -399,6 +405,17 @@
 </div>
 
 </div>
+<div id="withAssetsHandler-templates-all">
+  <div id="withAssetsHandler.t,Application,ApplicationAssetsHandler">
+  <dt><pre><span class="Keyword">template</span> <a href="#withAssetsHandler.t%2CApplication%2CApplicationAssetsHandler"><span class="Identifier">withAssetsHandler</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">handler</span><span class="Other">:</span> <a href="application.html#ApplicationAssetsHandler"><span class="Identifier">ApplicationAssetsHandler</span></a><span class="Other">)</span></pre></dt>
+  <dd>
+    
+    Define a custom handler for serving static assets
+    
+  </dd>
+</div>
+
+</div>
 
   </dl>
 </div>
@@ -415,7 +432,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-14 22:36:31 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-02-23 23:27:33 UTC</small>
       </div>
     </div>
   </div>
