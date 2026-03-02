@@ -346,7 +346,6 @@ group "/account":
                   else: discard # todo error
             elif y.kind == nnkInfix and y[1].kind == nnkTupleConstr:
               # parse same route definition for multiple HTTP methods
-              echo y.treeRepr
               for tVerb in y[1]:
                 parseRouteNode(tVerb.strVal,
                   preparePath(y[2].strVal, x[1].strVal),
