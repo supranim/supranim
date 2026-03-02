@@ -1,9 +1,9 @@
 nimTitle	events	supranim/service/events.html	module supranim/service/events		0
-nim	JsonString	supranim/service/events.html#JsonString	type JsonString		20
-nim	EventCallback	supranim/service/events.html#EventCallback	type EventCallback		21
+nim	JsonString	supranim/service/events.html#JsonString	type JsonString		24
+nim	EventCallback	supranim/service/events.html#EventCallback	type EventCallback		25
 nim	OnInitSingletonCallback`gensym0`gensym5	supranim/service/events.html#OnInitSingletonCallback`gensym0`gensym5	type OnInitSingletonCallback`gensym0`gensym5		390
 nim	getEventManagerInstance	supranim/service/events.html#getEventManagerInstance,OnInitSingletonCallback`gensym0`gensym5,staticbool	proc getEventManagerInstance(onceCb`gensym0`gensym5: OnInitSingletonCallback`gensym0`gensym5 = nil;\n                        initShared`gensym0`gensym5: static bool = true): ptr EventManager		388
-nim	event	supranim/service/events.html#event	proc event(): ptr EventManager		28
-nim	registerListener	supranim/service/events.html#registerListener,string,EventCallback	proc registerListener(eventName: string; callback: EventCallback)		32
-nim	emitter	supranim/service/events.html#emitter,string,Option[seq[JsonString]]	proc emitter(eventName: string; args: Option[seq[JsonString]] = none(seq[JsonString]))		40
-nim	listener	supranim/service/events.html#listener.m,staticstring,untyped	macro listener(eventName: static string; handle: untyped): untyped		52
+nim	event	supranim/service/events.html#event	proc event(): ptr EventManager		32
+nim	registerListener	supranim/service/events.html#registerListener,string,EventCallback	proc registerListener(eventName: string; callback: EventCallback)		36
+nim	emitter	supranim/service/events.html#emitter,string,Option[seq[JsonString]]	proc emitter(eventName: string; args: Option[seq[JsonString]] = none(seq[JsonString]))		44
+nim	listener	supranim/service/events.html#listener.m,staticstring,untyped	macro listener(eventName: static string; handle: untyped): untyped		56
