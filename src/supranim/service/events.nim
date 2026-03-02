@@ -6,6 +6,11 @@
 
 import pkg/supranim/core/servicemanager
 
+## This service provider implements a simple event management system for the Supranim application.
+## It allows different parts of the application to register listeners for specific events and emit
+## those events with optional arguments. The EventManager is designed as a Singleton, ensuring
+## that there is only one instance managing all events throughout the application.
+
 initService EventManager[Singleton]:
   ## A thread-based web-service for handling
   ## events in the web application.
@@ -13,7 +18,6 @@ initService EventManager[Singleton]:
     import std/[os, tables, strutils, json, options]
     import pkg/supranim/core/paths
     import pkg/threading/once
-
     export json
 
     type
