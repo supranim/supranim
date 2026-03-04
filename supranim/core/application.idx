@@ -11,12 +11,12 @@ nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): A
 nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): JsonNode		94
 nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		104
 nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		186
-nim	init	supranim/core/application.html#init.m,untyped	macro init(appx: untyped)		225
-nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		310
-nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		312
-nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		322
-nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		340
-nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		362
-nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): Port		366
-nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): Uuid		370
-nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): string		374
+nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		225
+nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		301
+nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		303
+nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		313
+nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		331
+nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		353
+nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): Port		357
+nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): Uuid		361
+nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): string		365
