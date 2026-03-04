@@ -41,9 +41,9 @@ proc sendAssets*(req: var Request, path: string,
 proc sendAssets*(req: var Request, basePath, path: string,
         headers: HttpHeaders): bool =
   ## Serves static assets from /assets path
-  let reqpath = normalizedPath(path)
-  if fileExists(basePath / reqpath):
-    let ext = reqpath.splitFile.ext
+  let reqPath = normalizedPath(path)
+  if fileExists(basePath / reqPath):
+    let ext = reqPath.splitFile.ext
     let typ = mimedb.getMimeType(ext[1..^1]).get("application/octet-stream")
     if headers.hasKey("Content-Type"):
       # if content type already set, will override it
@@ -53,5 +53,5 @@ proc sendAssets*(req: var Request, basePath, path: string,
       headers.add("Content-Type", typ)
     if ext in [".woff", ".woff2", ".ttf", ".otf", ".eot"]:
       headers["Access-Control-Allow-Origin"] = "*"
-    req.sendFile(basePath / reqpath, headers)
+    req.sendFile(basePath / reqPath, headers)
     result = true

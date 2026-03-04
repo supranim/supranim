@@ -222,40 +222,31 @@ else:
         if not fConsole.splitFile.name.startsWith("!"):
           add result, nnkImportStmt.newTree(newLit(fConsole))
 
-macro init*(appx: untyped) =
+macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped = nil) =
   ## Initializes Supranim application
-  # expectKind(x, nnkLetSection)
-  # var commandLineCommands = newEmptyNode()
-  # if x[0][2].kind == nnkCall:
-  #   commandLineCommands = x[0][2][1] # get the commands block
-  #   x[0][2] = newEmptyNode() # remove commands from init
-  
-  # x[0][2] = newCall(
-  #   newDotExpr(
-  #     ident"supranim",
-  #     ident"initApplication"
-  #   )
-  # )
   result = newStmtList()
-  
   add result, quote do:
     import std/[httpcore, macros, macrocache, options]
     import supranim/http/[request, response]
 
   add result, newCall(ident"initApplication")
+  if not skipLocalConfig:
+    when not compileOption("app", "lib"):
+      # Application Initialization via Kapsis CLI
+      loadEnvStatic() # read `.env.yml` config file
 
-  when not compileOption("app", "lib"):
-    # Application Initialization via Kapsis CLI
-    loadEnvStatic() # read `.env.yml` config file
-
+      add result, quote do:
+        App.configs = newOrderedTable[string, Document]()
+        for yamlFilePath in walkPattern(configPath / "*.yml"):
+          let configFile = yamlFilePath.splitFile
+          try:
+            App.configs[configFile.name] = yaml(yamlFilePath.readFile).toJson
+          except YAMLException:
+            displayError("Invalid YAML configuration: " & yamlFilePath)
+  if initBody != nil:
     add result, quote do:
-      App.configs = newOrderedTable[string, Document]()
-      for yamlFilePath in walkPattern(configPath / "*.yml"):
-        let configFile = yamlFilePath.splitFile
-        try:
-          App.configs[configFile.name] = yaml(yamlFilePath.readFile).toJson
-        except YAMLException:
-          displayError("Invalid YAML configuration: " & yamlFilePath)
+      `initBody`
+
   #
   # Autoload Service Providers
   #
