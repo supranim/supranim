@@ -119,6 +119,10 @@
   <li><a class="reference" href="#embedAssets.m%2Cstaticstring" title="embedAssets(dir: static string): untyped">embedAssets(dir: static string): untyped</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">preloadAssets
+  <li><a class="reference" href="#preloadAssets.m" title="preloadAssets()">preloadAssets()</a></li>
+
+</ul>
 
     </ul>
   </details>
@@ -287,7 +291,20 @@
   <dt><pre><span class="Keyword">macro</span> <a href="#embedAssets.m%2Cstaticstring"><span class="Identifier">embedAssets</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
   <dd>
     
+    <p>Embed all files from the specified directory into the application binary.</p>
+<p>Use <tt class="docutils literal"><span class="pre"><span class="Identifier">supra</span> <span class="Identifier">bundle</span><span class="Operator">.</span><span class="Identifier">assets</span> <span class="Operator">&lt;</span><span class="Identifier">dir</span><span class="Operator">&gt;</span> <span class="Operator">&lt;</span><span class="Identifier">output</span><span class="Operator">&gt;</span></span></tt> command to generate the embedded assets file.</p>
+
     
+  </dd>
+</div>
+
+</div>
+<div id="preloadAssets-macros-all">
+  <div id="preloadAssets.m">
+  <dt><pre><span class="Keyword">macro</span> <a href="#preloadAssets.m"><span class="Identifier">preloadAssets</span></a><span class="Other">(</span><span class="Other">)</span></pre></dt>
+  <dd>
+    
+    Preloads assets at runtime (if needed). This can be used to trigger any lazy loading logic.
     
   </dd>
 </div>
@@ -303,7 +320,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-06 15:47:19 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-06 21:48:41 UTC</small>
       </div>
     </div>
   </div>
