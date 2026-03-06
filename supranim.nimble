@@ -5,8 +5,6 @@ author        = "OpenPeeps"
 description   = "A full-featured web framework for Nim"
 license       = "MIT"
 srcDir        = "src"
-bin           = @["supra"]
-binDir        = "bin" 
 
 # Core dependencies
 requires "nim >= 2.0.0"
