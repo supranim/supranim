@@ -206,28 +206,17 @@ template redirectTo*(controllerIdentName: typed) =
   go controllerIdentName
 
 template isAuth*(): bool =
-  (
-    withDB do:
-      let ssid = req.getClientId()
-      if not ssid.isNone:
-        # let userData = %*{
-        #   "ip": req.getIp(),
-        #   "platform": req.getPlatform().get(),
-        #   "agent": req.getAgent().get(),
-        #   "sec-ch-ua": req.getBrowserName().get()
-        # }
-        # checkSession(ssid.get, userData)
-        let anySessions = Models.table("user_sessions").select
-              .where("session_id", ssid.get()).getAll() 
-        if anySessions.isEmpty():
-          false
-        else:
-          # for storedSession in anySessions:
-            # echo storedSession
-          false
-      else:
-        false
-  )
+  var authorized = false
+  withDBPool do:
+    let ssid {.inject.} = req.getClientId()
+    if not ssid.isNone:
+      let anySessions =
+        Models.table(UserSessions).selectAll()
+          .where("session_id", ssid.get()).getAll()
+      authorized = not anySessions.isEmpty()
+    else:
+      authorized = false
+  authorized
 
 #
 # Paths
