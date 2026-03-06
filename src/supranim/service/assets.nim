@@ -1,4 +1,4 @@
-import std/[strutils, tables, times, macros, os]
+import std/[strutils, tables, times, macros, os, macrocache]
 
 import pkg/supranim/core/servicemanager
 import pkg/supranim/core/paths
@@ -16,7 +16,6 @@ import pkg/supranim/core/paths
 
 initService Assets[Singleton]:
   backend do:
-
     type
       Assets = object
         files: Table[string, seq[uint8]] = initTable[string, seq[uint8]]()
@@ -74,43 +73,18 @@ initService Assets[Singleton]:
       ## Add plain-text asset
       sta[].textFiles[key] = data
 
+    const AssetsImportStmt = CacheTable"AssetsImportStmt"
+    
     macro embedAssets*(dir: static string): untyped =
-      result = newStmtList()
-      for kind, path in walkDir(joinPath(storagePath, dir)):
-        if kind == pcFile:
-          if path.isHidden: continue # skip hidden files
-          let fileText = staticRead(path)
-          let relPath = path.replace(storagePath, "")
-          let key = relPath.replace("\\", "/")
-          # Build bytes once
-          var bytes = newSeq[uint8](fileText.len)
-          var byteElems = newNimNode(nnkBracket)
-          for i, ch in fileText:
-            let b = uint8(ord(ch))
-            bytes[i] = b
-            byteElems.add(newLit(b))
-          if isPlainText(bytes):
-            result.add(
-              nnkCall.newTree(
-                nnkDotExpr.newTree(
-                  nnkCall.newTree(
-                    ident"staticAssets"
-                  ),
-                  ident"addTextAsset"
-                ),
-                newLit(key), newLit(fileText)
-              )
-            )
-          else:
-            result.add(
-              nnkCall.newTree(
-                nnkDotExpr.newTree(
-                  nnkCall.newTree(
-                    ident"staticAssets"
-                  ),
-                  ident"addAsset"
-                ),
-                newLit(key),
-                nnkPrefix.newTree(ident"@", byteElems)
-              )
-            )
+      ## Embed all files from the specified directory into the application binary.
+      ## 
+      ## Use `supra bundle.assets <dir> <output>` command to generate the embedded assets file.
+      when defined embedAssetsPath:
+        let srcDir = joinPath(storagePath, dir)
+        let safeName = dir.replace("\\", "_").replace("/", "_")
+        let outFile = joinPath(cachePath, "embed_" & safeName & ".nim")
+        AssetsImportStmt["loadBundler"] = nnkIncludeStmt.newTree(newLit(outFile))
+
+    macro preloadAssets*() =
+      ## Preloads assets at runtime (if needed). This can be used to trigger any lazy loading logic.
+      result = AssetsImportStmt["loadBundler"]
