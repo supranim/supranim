@@ -21,5 +21,5 @@ nim	go	supranim/controller.html#go.m,untyped,typed	macro go(id: untyped; params:
 nim	go	supranim/controller.html#go.m,untyped	macro go(id: untyped)		185
 nim	redirectTo	supranim/controller.html#redirectTo.t,typed	template redirectTo(controllerIdentName: typed)		203
 nim	isAuth	supranim/controller.html#isAuth.t	template isAuth(): bool		208
-nim	storage	supranim/controller.html#storage.t,string	template storage(path: string): string		235
+nim	storage	supranim/controller.html#storage.t,string	template storage(path: string): string		224
 nimgrp	go	supranim/controller.html#go-macros-all	macro		162
