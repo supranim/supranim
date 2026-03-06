@@ -73,17 +73,15 @@ initService Assets[Singleton]:
       ## Add plain-text asset
       sta[].textFiles[key] = data
 
-    const AssetsImportStmt = CacheTable"AssetsImportStmt"
-    
+    const AssetsImportStmt* = CacheTable"AssetsImportStmt"
     macro embedAssets*(dir: static string): untyped =
       ## Embed all files from the specified directory into the application binary.
       ## 
       ## Use `supra bundle.assets <dir> <output>` command to generate the embedded assets file.
-      when defined embedAssetsPath:
-        let srcDir = joinPath(storagePath, dir)
-        let safeName = dir.replace("\\", "_").replace("/", "_")
-        let outFile = joinPath(cachePath, "embed_" & safeName & ".nim")
-        AssetsImportStmt["loadBundler"] = nnkIncludeStmt.newTree(newLit(outFile))
+      let srcDir = joinPath(storagePath, dir)
+      let safeName = dir.replace("\\", "_").replace("/", "_")
+      let outFile = joinPath(cachePath, "embed_" & safeName & ".nim")
+      AssetsImportStmt["loadBundler"] = nnkIncludeStmt.newTree(newLit(outFile))
 
     macro preloadAssets*() =
       ## Preloads assets at runtime (if needed). This can be used to trigger any lazy loading logic.
