@@ -144,12 +144,13 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                 else:
                   if startsWith(path, "/assets"): # TODO expose `/assets` route for customization
                     req.sendAssets(path, res.getHeaders(), hasFoundResource)
-                if not hasFoundResource: invoke4xxHandler(path, req, res)
+                if not hasFoundResource:
+                  invoke4xxHandler(path, req, res)
               else:
                 invoke4xxHandler(path, req, res)
             else:
               invoke4xxHandler(path, req, res)
-          discard releaseUnusedMemory() # free up memory after each request
+          # discard releaseUnusedMemory() # free up memory after each request
 
       # Start the HTTP server
       let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)

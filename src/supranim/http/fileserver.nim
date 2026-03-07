@@ -17,17 +17,19 @@ proc sendEmbeddedAsset*(req: var Request, path: string,
         headers: HttpHeaders, hasFoundResource: var bool) =
   ## Serves static assets from embedded resources
   let path = normalizedPath(path)
-  headers.add("Content-Type",
-    mimedb.getMimeType(path.splitFile.ext[1..^1]).get("application/octet-stream"))
-  try:
-    if staticAssets().hasAssetString(path):
-      req.send(200, staticAssets().getAssetString(path), headers)
-      hasFoundResource = true
-    elif staticAssets().hasAsset(path):
-      req.sendFile(staticAssets().get(path), headers)
-      hasFoundResource = true
-  except StaticAssetsError:
-    hasFoundResource = false
+  let splitPath = path.splitFile
+  if path.splitFile.ext.len > 0:
+    let mimeType = mimedb.getMimeType(splitPath.ext[1..^1]).get("application/octet-stream")
+    headers.add("Content-Type", mimeType)
+    try:
+      if staticAssets().hasAssetString(path):
+        req.send(200, staticAssets().getAssetString(path), headers)
+        hasFoundResource = true
+      elif staticAssets().hasAsset(path):
+        req.sendFile(staticAssets().get(path), headers)
+        hasFoundResource = true
+    except StaticAssetsError:
+      hasFoundResource = false
 
 proc sendAssets*(req: var Request, path: string, 
         headers: HttpHeaders, hasFoundResource: var bool) =
