@@ -14,7 +14,7 @@ import ../service/assets
 from ../core/application import storagePath
 
 proc sendEmbeddedAsset*(req: var Request, path: string, 
-        headers: HttpHeaders, hasFoundResource: var bool) =
+                headers: HttpHeaders, hasFoundResource: var bool) =
   ## Serves static assets from embedded resources
   let path = normalizedPath(path)
   let splitPath = path.splitFile

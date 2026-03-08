@@ -187,7 +187,7 @@ else:
     # walks recursively and auto discover event listeners
     result = newStmtList()
     # add result, newCall(ident"initEventManager")
-    for f in walkDirRec(eventsPath / "listener"):
+    for f in walkDirRec(eventsPath / "listeners"):
       if f.endsWith(".nim"):
         if not f.splitFile.name.startsWith("!"):
           add result, nnkImportStmt.newTree(newLit(f))
