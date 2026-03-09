@@ -1,2 +1,3 @@
 nimTitle	nanoid	supranim/support/nanoid.html	module supranim/support/nanoid		0
+nim	defaultAlphabet	supranim/support/nanoid.html#defaultAlphabet	const defaultAlphabet		20
 nim	generate	supranim/support/nanoid.html#generate,string,int	proc generate(alphabet: string = defaultAlphabet; size: int = 21): string		22
