@@ -17,7 +17,7 @@ import std/[math, lenientops, sysrand]
 
 const
   masks = [15, 31, 63, 127, 255]
-  defaultAlphabet = "_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  defaultAlphabet* = "_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 proc generate*(alphabet: string = defaultAlphabet,
                 size: int = 21): string =

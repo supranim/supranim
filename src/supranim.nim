@@ -20,7 +20,7 @@ import ./supranim/core/application
 import ./supranim/controller
 
 import ./supranim/network/http/webserver
-import ./supranim/network/ws/websocket
+import ./supranim/network/websocket
 import ./supranim/http/[router, fileserver]
 import ./supranim/service/events
 
@@ -72,7 +72,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
       else:
         app.router.call4xx(req, res)
       req.resp(Http404, res.getBody, res.getHeaders)
-      emitter("http.error", some(@[path, $Http404]))
+      event().emit("http.error", some(@[path, $Http404]))
       
     when defined supraWebkit:
       # Bootstrap Supranim from a web-based `WebKit` desktop application. 
@@ -130,7 +130,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                   req.resp(res.getCode, res.getBody, res.headers)
             else:
               req.resp(Http403, getDefault(Http403), res.getHeaders)
-              emitter("http.error", some(@[path, $Http403]))
+              event().emit("http.error", some(@[path, $Http403]))
           of false:
             when defined webApp:
               when defined supraFileserver:
@@ -154,7 +154,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
 
       # Start the HTTP server
       let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)
-      emitter("app.startup")
+      event().emit("app.startup")
       var server = newWebServer(Port(app.config("server.port").getInt))
       optionalBlock
       server.start(onRequest, startupCallback)
