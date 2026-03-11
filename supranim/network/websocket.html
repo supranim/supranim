@@ -63,12 +63,12 @@
 <li><a class="reference" href="#OpenCb" title="OpenCb = proc (req: ptr WebSocketConnectionImpl) {.gcsafe.}">OpenCb</a></li>
 <li><a class="reference" href="#WebSocketConnection" title="WebSocketConnection = ref WebSocketConnectionImpl">WebSocketConnection</a></li>
 <li><a class="reference" href="#WebSocketConnectionImpl" title="WebSocketConnectionImpl = object
-  id*: cint
-  bev*: ptr bufferevent
-  onMessage*: MessageCb
-  onClose*: CloseCb
-  onError*: ErrorCb
-  onOpen*: OpenCb">WebSocketConnectionImpl</a></li>
+  id*: cint                  ## Unique identifier for the connection, typically the underlying socket fd.
+  bev*: ptr bufferevent      ## Pointer to the libevent bufferevent associated with this connection.
+  onMessage*: MessageCb      ## Callback for handling incoming messages.
+  onClose*: CloseCb          ## Callback for handling connection closures.
+  onError*: ErrorCb          ## Callback for handling errors.
+  onOpen*: OpenCb            ## Callback for handling new connections.">WebSocketConnectionImpl</a></li>
 <li><a class="reference" href="#WebSocketFrameKind" title="WebSocketFrameKind = enum
   wsNone, wsText, wsBinary, wsClose, wsPing, wsPong">WebSocketFrameKind</a></li>
 
@@ -140,7 +140,7 @@
     
     <div id="tocRoot"></div>
     
-    <p class="module-desc"></p>
+    <p class="module-desc">This module provides WebSocket support using Libevent. It can be used to perform WebSocket upgrades in HTTP handlers and manage WebSocket connections with callbacks for open, message, close, and error events. The implementation handles WebSocket framing, including fragmentation and control frames, according to RFC6455.</p>
     <div class="section" id="7">
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
@@ -149,7 +149,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
-    
+    Called when a WebSocket connection is closed. <tt class="docutils literal"><span class="pre"><span class="Identifier">code</span></span></tt> is the close code (e.g., 1000 for normal closure). <tt class="docutils literal"><span class="pre"><span class="Identifier">reason</span></span></tt> provides an optional human-readable explanation.
     
   </dd>
 </div>
@@ -157,7 +157,7 @@
   <dt><pre><a href="websocket.html#ErrorCb"><span class="Identifier">ErrorCb</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">conn</span><span class="Other">:</span> <span class="Keyword">ptr</span> <a href="websocket.html#WebSocketConnectionImpl"><span class="Identifier">WebSocketConnectionImpl</span></a><span class="Other">;</span> <span class="Identifier">err</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
-    
+    Called when an error occurs on the WebSocket connection. <tt class="docutils literal"><span class="pre"><span class="Identifier">err</span></span></tt> contains a description of the error.
     
   </dd>
 </div>
@@ -166,7 +166,7 @@
                   <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Identifier">byte</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
-    
+    Called when a complete WebSocket message is received. <tt class="docutils literal"><span class="pre"><span class="Identifier">opcode</span></span></tt> indicates the message type (e.g., text, binary). <tt class="docutils literal"><span class="pre"><span class="Identifier">data</span></span></tt> contains the message payload.
     
   </dd>
 </div>
@@ -174,7 +174,7 @@
   <dt><pre><a href="websocket.html#OpenCb"><span class="Identifier">OpenCb</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">ptr</span> <a href="websocket.html#WebSocketConnectionImpl"><span class="Identifier">WebSocketConnectionImpl</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
-    
+    Called when a new WebSocket connection is established. The <tt class="docutils literal"><span class="pre"><span class="Identifier">req</span></span></tt> parameter provides access to the connection and request details.
     
   </dd>
 </div>
@@ -182,21 +182,21 @@
   <dt><pre><a href="websocket.html#WebSocketConnection"><span class="Identifier">WebSocketConnection</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <a href="websocket.html#WebSocketConnectionImpl"><span class="Identifier">WebSocketConnectionImpl</span></a></pre></dt>
   <dd>
     
-    
+    Reference type wrapper around <tt class="docutils literal"><span class="pre"><span class="Identifier">WebSocketConnectionImpl</span></span></tt> for easier usage in application code.
     
   </dd>
 </div>
 <div id="WebSocketConnectionImpl">
   <dt><pre><a href="websocket.html#WebSocketConnectionImpl"><span class="Identifier">WebSocketConnectionImpl</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">cint</span>
-  <span class="Identifier">bev</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">bufferevent</span>
-  <span class="Identifier">onMessage</span><span class="Operator">*</span><span class="Other">:</span> <a href="websocket.html#MessageCb"><span class="Identifier">MessageCb</span></a>
-  <span class="Identifier">onClose</span><span class="Operator">*</span><span class="Other">:</span> <a href="websocket.html#CloseCb"><span class="Identifier">CloseCb</span></a>
-  <span class="Identifier">onError</span><span class="Operator">*</span><span class="Other">:</span> <a href="websocket.html#ErrorCb"><span class="Identifier">ErrorCb</span></a>
-  <span class="Identifier">onOpen</span><span class="Operator">*</span><span class="Other">:</span> <a href="websocket.html#OpenCb"><span class="Identifier">OpenCb</span></a></pre></dt>
+  <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">cint</span>                  <span class="Comment">## Unique identifier for the connection, typically the underlying socket fd.</span>
+  <span class="Identifier">bev</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">bufferevent</span>      <span class="Comment">## Pointer to the libevent bufferevent associated with this connection.</span>
+  <span class="Identifier">onMessage</span><span class="Operator">*</span><span class="Other">:</span> <a href="websocket.html#MessageCb"><span class="Identifier">MessageCb</span></a>      <span class="Comment">## Callback for handling incoming messages.</span>
+  <span class="Identifier">onClose</span><span class="Operator">*</span><span class="Other">:</span> <a href="websocket.html#CloseCb"><span class="Identifier">CloseCb</span></a>          <span class="Comment">## Callback for handling connection closures.</span>
+  <span class="Identifier">onError</span><span class="Operator">*</span><span class="Other">:</span> <a href="websocket.html#ErrorCb"><span class="Identifier">ErrorCb</span></a>          <span class="Comment">## Callback for handling errors.</span>
+  <span class="Identifier">onOpen</span><span class="Operator">*</span><span class="Other">:</span> <a href="websocket.html#OpenCb"><span class="Identifier">OpenCb</span></a>            <span class="Comment">## Callback for handling new connections.</span></pre></dt>
   <dd>
     
-    
+    Internal implementation of a WebSocket connection.
     
   </dd>
 </div>
@@ -205,7 +205,7 @@
   <span class="Identifier">wsNone</span><span class="Other">,</span> <span class="Identifier">wsText</span><span class="Other">,</span> <span class="Identifier">wsBinary</span><span class="Other">,</span> <span class="Identifier">wsClose</span><span class="Other">,</span> <span class="Identifier">wsPing</span><span class="Other">,</span> <span class="Identifier">wsPong</span></pre></dt>
   <dd>
     
-    
+    WebSocket frame opcodes as defined in RFC6455.
     
   </dd>
 </div>
@@ -221,7 +221,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Close the WebSocket connection with an optional close code and reason.
     
   </dd>
 </div>
@@ -230,7 +230,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Close the WebSocket connection from a <tt class="docutils literal"><span class="pre"><span class="Identifier">WebSocketConnection</span></span></tt> reference with an optional close code and reason. If the connection is nil, this is a no-op.
     
   </dd>
 </div>
@@ -242,7 +242,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Send a binary message as a WebSocket frame. If the data is empty, send an empty frame.
     
   </dd>
 </div>
@@ -251,7 +251,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Send a binary message from a <tt class="docutils literal"><span class="pre"><span class="Identifier">WebSocketConnection</span></span></tt> reference. If the connection is nil, this is a no-op.
     
   </dd>
 </div>
@@ -264,7 +264,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Send a WebSocket frame with the given opcode and payload.
     
   </dd>
 </div>
@@ -273,7 +273,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Send a WebSocket frame from a <tt class="docutils literal"><span class="pre"><span class="Identifier">WebSocketConnection</span></span></tt> reference. If the connection is nil, this is a no-op.
     
   </dd>
 </div>
@@ -285,7 +285,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Send a ping frame with optional payload. If no data is provided, send an empty ping.
     
   </dd>
 </div>
@@ -294,7 +294,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Send a ping frame from a <tt class="docutils literal"><span class="pre"><span class="Identifier">WebSocketConnection</span></span></tt> reference. If the connection is nil, this is a no-op.
     
   </dd>
 </div>
@@ -306,7 +306,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Send a text message as a WebSocket frame. If the string is empty, send an empty frame.
     
   </dd>
 </div>
@@ -315,7 +315,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Send a text message from a <tt class="docutils literal"><span class="pre"><span class="Identifier">WebSocketConnection</span></span></tt> reference. If the connection is nil, this is a no-op.
     
   </dd>
 </div>
@@ -393,7 +393,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-11 07:01:17 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-11 07:25:20 UTC</small>
       </div>
     </div>
   </div>
