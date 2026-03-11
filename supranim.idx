@@ -1,6 +1,6 @@
 nimTitle	supranim	supranim.html	module supranim		0
-nim	runBaseMiddlewares	supranim.html#runBaseMiddlewares.m,,	macro runBaseMiddlewares(req, res)		32
-nim	getBaseMiddlewares	supranim.html#getBaseMiddlewares.t,,	template getBaseMiddlewares(req, res)		61
+nim	runBaseMiddlewares	supranim.html#runBaseMiddlewares.m,,	macro runBaseMiddlewares(req, res)		30
+nim	getBaseMiddlewares	supranim.html#getBaseMiddlewares.t,,	template getBaseMiddlewares(req, res)		60
 nim	run	supranim.html#run.t,Application,untyped	template run(app: Application; optionalBlock: untyped)		64
-nim	run	supranim.html#run.t,Application	template run(app: Application)		162
+nim	run	supranim.html#run.t,Application	template run(app: Application)		172
 nimgrp	run	supranim.html#run-templates-all	template		64

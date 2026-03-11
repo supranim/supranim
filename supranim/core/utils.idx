@@ -1,4 +1,5 @@
 nimTitle	utils	supranim/core/utils.html	module supranim/core/utils		0
-nim	malloc_trim	supranim/core/utils.html#malloc_trim,csize_t	proc malloc_trim(pad: csize_t = 0): bool		40
-nim	releaseUnusedMemory	supranim/core/utils.html#releaseUnusedMemory	proc releaseUnusedMemory(): bool		43
-nim	freemem	supranim/core/utils.html#freemem.t,untyped	template freemem(x: untyped)		50
+nim	MaxReqResSize	supranim/core/utils.html#MaxReqResSize	const MaxReqResSize		14
+nim	malloc_trim	supranim/core/utils.html#malloc_trim,csize_t	proc malloc_trim(pad: csize_t = 0): bool		43
+nim	releaseUnusedMemory	supranim/core/utils.html#releaseUnusedMemory	proc releaseUnusedMemory(): bool		46
+nim	freemem	supranim/core/utils.html#freemem.t,untyped	template freemem(x: untyped)		53

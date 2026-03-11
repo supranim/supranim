@@ -1,0 +1,5 @@
+nimTitle	fileserver	supranim/core/fileserver.html	module supranim/core/fileserver		0
+nim	sendEmbeddedAsset	supranim/core/fileserver.html#sendEmbeddedAsset,Request,string,HttpHeaders,bool	proc sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;\n                  hasFoundResource: var bool)		16
+nim	sendAssets	supranim/core/fileserver.html#sendAssets,Request,string,HttpHeaders,bool	proc sendAssets(req: var Request; path: string; headers: HttpHeaders;\n           hasFoundResource: var bool)		34
+nim	sendAssets	supranim/core/fileserver.html#sendAssets,Request,string,string,HttpHeaders	proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool		43
+nimgrp	sendassets	supranim/core/fileserver.html#sendAssets-procs-all	proc		34

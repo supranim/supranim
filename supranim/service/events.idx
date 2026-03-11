@@ -1,6 +1,6 @@
 nimTitle	events	supranim/service/events.html	module supranim/service/events		0
-nim	OnInitSingletonCallback`gensym0`gensym5	supranim/service/events.html#OnInitSingletonCallback`gensym0`gensym5	type OnInitSingletonCallback`gensym0`gensym5		390
-nim	getEventEmitterInstance	supranim/service/events.html#getEventEmitterInstance,OnInitSingletonCallback`gensym0`gensym5,staticbool	proc getEventEmitterInstance(onceCb`gensym0`gensym5: OnInitSingletonCallback`gensym0`gensym5 = nil;\n                        initShared`gensym0`gensym5: static bool = true): ptr EventEmitter		388
-nim	event	supranim/service/events.html#event	proc event(): ptr EventEmitter		21
-nim	init	supranim/service/events.html#init	proc init()		34
-nim	listener	supranim/service/events.html#listener.m,staticstring,untyped	macro listener(eventName: static string; handle: untyped): untyped		38
+nim	OnInitSingletonCallback`gensym0`gensym5	supranim/service/events.html#OnInitSingletonCallback`gensym0`gensym5	type OnInitSingletonCallback`gensym0`gensym5		388
+nim	getEventEmitterInstance	supranim/service/events.html#getEventEmitterInstance,OnInitSingletonCallback`gensym0`gensym5,staticbool	proc getEventEmitterInstance(onceCb`gensym0`gensym5: OnInitSingletonCallback`gensym0`gensym5 = nil;\n                        initShared`gensym0`gensym5: static bool = true): ptr EventEmitter		386
+nim	event	supranim/service/events.html#event	proc event(): ptr EventEmitter		22
+nim	init	supranim/service/events.html#init	proc init()		35
+nim	listener	supranim/service/events.html#listener.m,staticstring,untyped	macro listener(eventName: static string; handle: untyped): untyped		39

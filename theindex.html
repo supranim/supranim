@@ -25,7 +25,7 @@
   <div class="document" id="documentId">
     <div class="container">
       <h1 class="title">Index</h1>
-      Modules: <a href="index.html">supranim</a>, <a href="supranim/application.html">supranim/application</a>, <a href="supranim/controller.html">supranim/controller</a>, <a href="supranim/core/application.html">supranim/core/application</a>, <a href="supranim/core/config.html">supranim/core/config</a>, <a href="supranim/core/paths.html">supranim/core/paths</a>, <a href="supranim/core/plugins.html">supranim/core/plugins</a>, <a href="supranim/core/servicemanager.html">supranim/core/servicemanager</a>, <a href="supranim/core/utils.html">supranim/core/utils</a>, <a href="supranim/http/autolink.html">supranim/http/autolink</a>, <a href="supranim/http/fileserver.html">supranim/http/fileserver</a>, <a href="supranim/http/request.html">supranim/http/request</a>, <a href="supranim/http/response.html">supranim/http/response</a>, <a href="supranim/http/router.html">supranim/http/router</a>, <a href="supranim/network/http/webserver.html">supranim/network/http/webserver</a>, <a href="supranim/network/websocket.html">supranim/network/websocket</a>, <a href="supranim/router.html">supranim/router</a>, <a href="supranim/service/assets.html">supranim/service/assets</a>, <a href="supranim/service/events.html">supranim/service/events</a>, <a href="supranim/support/cookie.html">supranim/support/cookie</a>, <a href="supranim/support/http.html">supranim/support/http</a>, <a href="supranim/support/httpclient.html">supranim/support/httpclient</a>, <a href="supranim/support/nanoid.html">supranim/support/nanoid</a>, <a href="supranim/support/uuid.html">supranim/support/uuid</a>.<br/><p /><h2>API symbols</h2>
+      Modules: <a href="index.html">supranim</a>, <a href="supranim/application.html">supranim/application</a>, <a href="supranim/controller.html">supranim/controller</a>, <a href="supranim/core/application.html">supranim/core/application</a>, <a href="supranim/core/autolink.html">supranim/core/autolink</a>, <a href="supranim/core/config.html">supranim/core/config</a>, <a href="supranim/core/fileserver.html">supranim/core/fileserver</a>, <a href="supranim/core/paths.html">supranim/core/paths</a>, <a href="supranim/core/request.html">supranim/core/request</a>, <a href="supranim/core/response.html">supranim/core/response</a>, <a href="supranim/core/router.html">supranim/core/router</a>, <a href="supranim/core/services.html">supranim/core/services</a>, <a href="supranim/core/utils.html">supranim/core/utils</a>, <a href="supranim/network/http/webserver.html">supranim/network/http/webserver</a>, <a href="supranim/network/websocket.html">supranim/network/websocket</a>, <a href="supranim/service/assets.html">supranim/service/assets</a>, <a href="supranim/service/events.html">supranim/service/events</a>, <a href="supranim/support/cookie.html">supranim/support/cookie</a>, <a href="supranim/support/http.html">supranim/support/http</a>, <a href="supranim/support/httpclient.html">supranim/support/httpclient</a>, <a href="supranim/support/uuid.html">supranim/support/uuid</a>.<br/><p /><h2>API symbols</h2>
 <dl><dt><a name="%60%24%24%60" href="#%60%24%24%60"><span>`$$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="uuid: proc `$$`(uuid: Uuid): string" href="supranim/support/uuid.html#%24%24%2CUuid">uuid: proc `$$`(uuid: Uuid): string</a></li>
@@ -60,6 +60,10 @@
           </ul></dd>
 <dt><a name="addCallback" href="#addCallback"><span>addCallback:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="webserver: proc addCallback(httpServer: ptr evhttp; path: string;
+            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})" href="supranim/network/http/webserver.html#addCallback%2Cptr.evhttp%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29">webserver: proc addCallback(httpServer: ptr evhttp; path: string;
+            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="webserver: proc addCallback(server: WebServer; path: string;
             callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})" href="supranim/network/http/webserver.html#addCallback%2CWebServer%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29">webserver: proc addCallback(server: WebServer; path: string;
             callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})</a></li>
@@ -78,7 +82,7 @@
           </ul></dd>
 <dt><a name="addHeader" href="#addHeader"><span>addHeader:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc addHeader(res: var Response; key, value: string)" href="supranim/http/response.html#addHeader%2CResponse%2Cstring%2Cstring">response: proc addHeader(res: var Response; key, value: string)</a></li>
+          data-doc-search-tag="response: proc addHeader(res: var Response; key, value: string)" href="supranim/core/response.html#addHeader%2CResponse%2Cstring%2Cstring">response: proc addHeader(res: var Response; key, value: string)</a></li>
           <li><a class="reference external"
           data-doc-search-tag="webserver: proc addHeader(req: var Request; name, value: string)" href="supranim/network/http/webserver.html#addHeader%2CRequest%2Cstring%2Cstring">webserver: proc addHeader(req: var Request; name, value: string)</a></li>
           </ul></dd>
@@ -88,11 +92,7 @@
           </ul></dd>
 <dt><a name="Afterware" href="#Afterware"><span>Afterware:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.Afterware" href="supranim/core/plugins.html#Afterware">plugins: PluginPermission.Afterware</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="plugins: ModuleType.Afterware" href="supranim/core/plugins.html#Afterware_2">plugins: ModuleType.Afterware</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="router: type Afterware" href="supranim/http/router.html#Afterware">router: type Afterware</a></li>
+          data-doc-search-tag="router: type Afterware" href="supranim/core/router.html#Afterware">router: type Afterware</a></li>
           </ul></dd>
 <dt><a name="App" href="#App"><span>App:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -137,24 +137,16 @@
 <dt><a name="autolinkController" href="#autolinkController"><span>autolinkController:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="autolink: proc autolinkController(routePath: string; httpMethod: HttpMethod;
-                   isWebSocket = false): Autolinked" href="supranim/http/autolink.html#autolinkController%2Cstring%2CHttpMethod">autolink: proc autolinkController(routePath: string; httpMethod: HttpMethod;
+                   isWebSocket = false): Autolinked" href="supranim/core/autolink.html#autolinkController%2Cstring%2CHttpMethod">autolink: proc autolinkController(routePath: string; httpMethod: HttpMethod;
                    isWebSocket = false): Autolinked</a></li>
           </ul></dd>
 <dt><a name="Autolinked" href="#Autolinked"><span>Autolinked:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="autolink: tuple Autolinked" href="supranim/http/autolink.html#Autolinked">autolink: tuple Autolinked</a></li>
-          </ul></dd>
-<dt><a name="autoloadModule" href="#autoloadModule"><span>autoloadModule:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: proc autoloadModule(manager: PluginManager; path: string; basePath: string): ptr AutoloadPluggableModule" href="supranim/core/plugins.html#autoloadModule%2CPluginManager%2Cstring%2Cstring">plugins: proc autoloadModule(manager: PluginManager; path: string; basePath: string): ptr AutoloadPluggableModule</a></li>
-          </ul></dd>
-<dt><a name="AutoloadPluggableModule" href="#AutoloadPluggableModule"><span>AutoloadPluggableModule:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: object AutoloadPluggableModule" href="supranim/core/plugins.html#AutoloadPluggableModule">plugins: object AutoloadPluggableModule</a></li>
+          data-doc-search-tag="autolink: tuple Autolinked" href="supranim/core/autolink.html#Autolinked">autolink: tuple Autolinked</a></li>
           </ul></dd>
 <dt><a name="baseMiddlewares" href="#baseMiddlewares"><span>baseMiddlewares:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: var baseMiddlewares" href="supranim/http/router.html#baseMiddlewares">router: var baseMiddlewares</a></li>
+          data-doc-search-tag="router: var baseMiddlewares" href="supranim/core/router.html#baseMiddlewares">router: var baseMiddlewares</a></li>
           </ul></dd>
 <dt><a name="basePath" href="#basePath"><span>basePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -180,28 +172,28 @@
           </ul></dd>
 <dt><a name="call4xx" href="#call4xx"><span>call4xx:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc call4xx(router: var HttpRouterInstance; req: var Request; res: var Response)" href="supranim/http/router.html#call4xx%2CHttpRouterInstance%2CRequest%2CResponse">router: proc call4xx(router: var HttpRouterInstance; req: var Request; res: var Response)</a></li>
+          data-doc-search-tag="router: proc call4xx(router: var HttpRouterInstance; req: var Request; res: var Response)" href="supranim/core/router.html#call4xx%2CHttpRouterInstance%2CRequest%2CResponse">router: proc call4xx(router: var HttpRouterInstance; req: var Request; res: var Response)</a></li>
           </ul></dd>
 <dt><a name="Callable" href="#Callable"><span>Callable:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: type Callable" href="supranim/http/router.html#Callable">router: type Callable</a></li>
+          data-doc-search-tag="router: type Callable" href="supranim/core/router.html#Callable">router: type Callable</a></li>
           </ul></dd>
 <dt><a name="ChannelService" href="#ChannelService"><span>ChannelService:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: ServiceType.ChannelService" href="supranim/core/servicemanager.html#ChannelService">servicemanager: ServiceType.ChannelService</a></li>
+          data-doc-search-tag="services: ServiceType.ChannelService" href="supranim/core/services.html#ChannelService">services: ServiceType.ChannelService</a></li>
           </ul></dd>
 <dt><a name="checkExists" href="#checkExists"><span>checkExists:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
             httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
-    params: TableRef[string, string]]" href="supranim/http/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
+    params: TableRef[string, string]]" href="supranim/core/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
             httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
     params: TableRef[string, string]]</a></li>
           </ul></dd>
 <dt><a name="checkWsExists" href="#checkWsExists"><span>checkWsExists:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
-    exists: bool, route: HttpRouteWs, params: TableRef[string, string]]" href="supranim/http/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
+    exists: bool, route: HttpRouteWs, params: TableRef[string, string]]" href="supranim/core/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
     exists: bool, route: HttpRouteWs, params: TableRef[string, string]]</a></li>
           </ul></dd>
 <dt><a name="clearHeaders" href="#clearHeaders"><span>clearHeaders:</span></a></dt><dd><ul class="simple">
@@ -248,19 +240,9 @@
 <li><a class="reference external"
           data-doc-search-tag="httpclient: proc contentType(response: Response | AsyncResponse): string" href="supranim/support/httpclient.html#contentType">httpclient: proc contentType(response: Response | AsyncResponse): string</a></li>
           </ul></dd>
-<dt><a name="Controller" href="#Controller"><span>Controller:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.Controller" href="supranim/core/plugins.html#Controller">plugins: PluginPermission.Controller</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="plugins: ModuleType.Controller" href="supranim/core/plugins.html#Controller_2">plugins: ModuleType.Controller</a></li>
-          </ul></dd>
 <dt><a name="controllerPath" href="#controllerPath"><span>controllerPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="paths: const controllerPath" href="supranim/core/paths.html#controllerPath">paths: const controllerPath</a></li>
-          </ul></dd>
-<dt><a name="ControllersTable" href="#ControllersTable"><span>ControllersTable:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: type ControllersTable" href="supranim/core/plugins.html#ControllersTable">plugins: type ControllersTable</a></li>
           </ul></dd>
 <dt><a name="Cookie" href="#Cookie"><span>Cookie:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -278,21 +260,9 @@
 <li><a class="reference external"
           data-doc-search-tag="paths: const databasePath" href="supranim/core/paths.html#databasePath">paths: const databasePath</a></li>
           </ul></dd>
-<dt><a name="DBRead" href="#DBRead"><span>DBRead:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.DBRead" href="supranim/core/plugins.html#DBRead">plugins: PluginPermission.DBRead</a></li>
-          </ul></dd>
-<dt><a name="DBWrite" href="#DBWrite"><span>DBWrite:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.DBWrite" href="supranim/core/plugins.html#DBWrite">plugins: PluginPermission.DBWrite</a></li>
-          </ul></dd>
-<dt><a name="defaultAlphabet" href="#defaultAlphabet"><span>defaultAlphabet:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="nanoid: const defaultAlphabet" href="supranim/support/nanoid.html#defaultAlphabet">nanoid: const defaultAlphabet</a></li>
-          </ul></dd>
 <dt><a name="DefaultHttpError" href="#DefaultHttpError"><span>DefaultHttpError:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: const DefaultHttpError" href="supranim/http/router.html#DefaultHttpError">router: const DefaultHttpError</a></li>
+          data-doc-search-tag="router: const DefaultHttpError" href="supranim/core/router.html#DefaultHttpError">router: const DefaultHttpError</a></li>
           </ul></dd>
 <dt><a name="defUserAgent" href="#defUserAgent"><span>defUserAgent:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -326,7 +296,7 @@
           </ul></dd>
 <dt><a name="DynamicRoute" href="#DynamicRoute"><span>DynamicRoute:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: HttpRouteType.DynamicRoute" href="supranim/http/router.html#DynamicRoute">router: HttpRouteType.DynamicRoute</a></li>
+          data-doc-search-tag="router: HttpRouteType.DynamicRoute" href="supranim/core/router.html#DynamicRoute">router: HttpRouteType.DynamicRoute</a></li>
           </ul></dd>
 <dt><a name="embedAssets" href="#embedAssets"><span>embedAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -334,7 +304,7 @@
           </ul></dd>
 <dt><a name="emptyResponseBody" href="#emptyResponseBody"><span>emptyResponseBody:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: const emptyResponseBody" href="supranim/http/response.html#emptyResponseBody">response: const emptyResponseBody</a></li>
+          data-doc-search-tag="response: const emptyResponseBody" href="supranim/core/response.html#emptyResponseBody">response: const emptyResponseBody</a></li>
           </ul></dd>
 <dt><a name="endChunk" href="#endChunk"><span>endChunk:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -346,7 +316,7 @@
           </ul></dd>
 <dt><a name="errorHandler" href="#errorHandler"><span>errorHandler:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc errorHandler(router: var HttpRouterInstance; code: HttpCode; callback: Callable)" href="supranim/http/router.html#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable">router: proc errorHandler(router: var HttpRouterInstance; code: HttpCode; callback: Callable)</a></li>
+          data-doc-search-tag="router: proc errorHandler(router: var HttpRouterInstance; code: HttpCode; callback: Callable)" href="supranim/core/router.html#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable">router: proc errorHandler(router: var HttpRouterInstance; code: HttpCode; callback: Callable)</a></li>
           </ul></dd>
 <dt><a name="event" href="#event"><span>event:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -362,15 +332,11 @@
           </ul></dd>
 <dt><a name="extractThreadServicesBackend" href="#extractThreadServicesBackend"><span>extractThreadServicesBackend:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: macro extractThreadServicesBackend()" href="supranim/core/servicemanager.html#extractThreadServicesBackend.m">servicemanager: macro extractThreadServicesBackend()</a></li>
+          data-doc-search-tag="services: macro extractThreadServicesBackend()" href="supranim/core/services.html#extractThreadServicesBackend.m">services: macro extractThreadServicesBackend()</a></li>
           </ul></dd>
 <dt><a name="extractThreadServicesClient" href="#extractThreadServicesClient"><span>extractThreadServicesClient:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: macro extractThreadServicesClient()" href="supranim/core/servicemanager.html#extractThreadServicesClient.m">servicemanager: macro extractThreadServicesClient()</a></li>
-          </ul></dd>
-<dt><a name="Filesystem" href="#Filesystem"><span>Filesystem:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.Filesystem" href="supranim/core/plugins.html#Filesystem">plugins: PluginPermission.Filesystem</a></li>
+          data-doc-search-tag="services: macro extractThreadServicesClient()" href="supranim/core/services.html#extractThreadServicesClient.m">services: macro extractThreadServicesClient()</a></li>
           </ul></dd>
 <dt><a name="findHeader" href="#findHeader"><span>findHeader:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -379,14 +345,6 @@
 <dt><a name="freemem" href="#freemem"><span>freemem:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="utils: template freemem(x: untyped)" href="supranim/core/utils.html#freemem.t%2Cuntyped">utils: template freemem(x: untyped)</a></li>
-          </ul></dd>
-<dt><a name="FullAccess" href="#FullAccess"><span>FullAccess:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.FullAccess" href="supranim/core/plugins.html#FullAccess">plugins: PluginPermission.FullAccess</a></li>
-          </ul></dd>
-<dt><a name="generate" href="#generate"><span>generate:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="nanoid: proc generate(alphabet: string = defaultAlphabet; size: int = 21): string" href="supranim/support/nanoid.html#generate%2Cstring%2Cint">nanoid: proc generate(alphabet: string = defaultAlphabet; size: int = 21): string</a></li>
           </ul></dd>
 <dt><a name="get" href="#get"><span>get:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -408,7 +366,7 @@
           </ul></dd>
 <dt><a name="getAgent" href="#getAgent"><span>getAgent:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="request: proc getAgent(req: var Request): Option[string]" href="supranim/http/request.html#getAgent%2CRequest">request: proc getAgent(req: var Request): Option[string]</a></li>
+          data-doc-search-tag="request: proc getAgent(req: var Request): Option[string]" href="supranim/core/request.html#getAgent%2CRequest">request: proc getAgent(req: var Request): Option[string]</a></li>
           </ul></dd>
 <dt><a name="getAssetsInstance" href="#getAssetsInstance"><span>getAssetsInstance:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -426,7 +384,7 @@
           </ul></dd>
 <dt><a name="getBody" href="#getBody"><span>getBody:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc getBody(res: Response): lent string" href="supranim/http/response.html#getBody%2CResponse">response: proc getBody(res: Response): lent string</a></li>
+          data-doc-search-tag="response: proc getBody(res: Response): lent string" href="supranim/core/response.html#getBody%2CResponse">response: proc getBody(res: Response): lent string</a></li>
           <li><a class="reference external"
           data-doc-search-tag="webserver: proc getBody(req: var Request): Option[string]" href="supranim/network/http/webserver.html#getBody%2CRequest">webserver: proc getBody(req: var Request): Option[string]</a></li>
           </ul></dd>
@@ -446,11 +404,11 @@
           </ul></dd>
 <dt><a name="getBrowserName" href="#getBrowserName"><span>getBrowserName:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="request: proc getBrowserName(req: var Request): Option[string]" href="supranim/http/request.html#getBrowserName%2CRequest">request: proc getBrowserName(req: var Request): Option[string]</a></li>
+          data-doc-search-tag="request: proc getBrowserName(req: var Request): Option[string]" href="supranim/core/request.html#getBrowserName%2CRequest">request: proc getBrowserName(req: var Request): Option[string]</a></li>
           </ul></dd>
 <dt><a name="getClientData" href="#getClientData"><span>getClientData:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="request: proc getClientData(req: var Request): JsonNode" href="supranim/http/request.html#getClientData%2CRequest">request: proc getClientData(req: var Request): JsonNode</a></li>
+          data-doc-search-tag="request: proc getClientData(req: var Request): JsonNode" href="supranim/core/request.html#getClientData%2CRequest">request: proc getClientData(req: var Request): JsonNode</a></li>
           </ul></dd>
 <dt><a name="getClientId" href="#getClientId"><span>getClientId:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -458,7 +416,7 @@
           </ul></dd>
 <dt><a name="getCode" href="#getCode"><span>getCode:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc getCode(res: Response): HttpCode" href="supranim/http/response.html#getCode%2CResponse">response: proc getCode(res: Response): HttpCode</a></li>
+          data-doc-search-tag="response: proc getCode(res: Response): HttpCode" href="supranim/core/response.html#getCode%2CResponse">response: proc getCode(res: Response): HttpCode</a></li>
           </ul></dd>
 <dt><a name="getContent" href="#getContent"><span>getContent:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -468,15 +426,15 @@
           </ul></dd>
 <dt><a name="getContentType" href="#getContentType"><span>getContentType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc getContentType(): string" href="supranim/http/response.html#getContentType">response: proc getContentType(): string</a></li>
+          data-doc-search-tag="response: proc getContentType(): string" href="supranim/core/response.html#getContentType">response: proc getContentType(): string</a></li>
           </ul></dd>
 <dt><a name="getCookies" href="#getCookies"><span>getCookies:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="request: proc getCookies(req: var Request): Option[string]" href="supranim/http/request.html#getCookies%2CRequest">request: proc getCookies(req: var Request): Option[string]</a></li>
+          data-doc-search-tag="request: proc getCookies(req: var Request): Option[string]" href="supranim/core/request.html#getCookies%2CRequest">request: proc getCookies(req: var Request): Option[string]</a></li>
           </ul></dd>
 <dt><a name="getDefault" href="#getDefault"><span>getDefault:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc getDefault(code: HttpCode): string" href="supranim/http/response.html#getDefault%2CHttpCode">response: proc getDefault(code: HttpCode): string</a></li>
+          data-doc-search-tag="response: proc getDefault(code: HttpCode): string" href="supranim/core/response.html#getDefault%2CHttpCode">response: proc getDefault(code: HttpCode): string</a></li>
           </ul></dd>
 <dt><a name="getDomain" href="#getDomain"><span>getDomain:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -510,13 +468,13 @@
           </ul></dd>
 <dt><a name="getHeaders" href="#getHeaders"><span>getHeaders:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc getHeaders(res: var Response): HttpHeaders" href="supranim/http/response.html#getHeaders%2CResponse">response: proc getHeaders(res: var Response): HttpHeaders</a></li>
+          data-doc-search-tag="response: proc getHeaders(res: var Response): HttpHeaders" href="supranim/core/response.html#getHeaders%2CResponse">response: proc getHeaders(res: var Response): HttpHeaders</a></li>
           <li><a class="reference external"
           data-doc-search-tag="webserver: proc getHeaders(req: var Request): Option[HttpHeaders]" href="supranim/network/http/webserver.html#getHeaders%2CRequest">webserver: proc getHeaders(req: var Request): Option[HttpHeaders]</a></li>
           </ul></dd>
 <dt><a name="getHttpMethod" href="#getHttpMethod"><span>getHttpMethod:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="request: proc getHttpMethod(req: var Request): HttpMethod" href="supranim/http/request.html#getHttpMethod%2CRequest">request: proc getHttpMethod(req: var Request): HttpMethod</a></li>
+          data-doc-search-tag="request: proc getHttpMethod(req: var Request): HttpMethod" href="supranim/core/request.html#getHttpMethod%2CRequest">request: proc getHttpMethod(req: var Request): HttpMethod</a></li>
           </ul></dd>
 <dt><a name="getInstallationPath" href="#getInstallationPath"><span>getInstallationPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -540,7 +498,7 @@
           </ul></dd>
 <dt><a name="getPlatform" href="#getPlatform"><span>getPlatform:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="request: proc getPlatform(req: var Request): Option[string]" href="supranim/http/request.html#getPlatform%2CRequest">request: proc getPlatform(req: var Request): Option[string]</a></li>
+          data-doc-search-tag="request: proc getPlatform(req: var Request): Option[string]" href="supranim/core/request.html#getPlatform%2CRequest">request: proc getPlatform(req: var Request): Option[string]</a></li>
           </ul></dd>
 <dt><a name="getPort" href="#getPort"><span>getPort:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -574,11 +532,11 @@
           </ul></dd>
 <dt><a name="getUriPath" href="#getUriPath"><span>getUriPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="request: proc getUriPath(req: Request): string" href="supranim/http/request.html#getUriPath%2CRequest">request: proc getUriPath(req: Request): string</a></li>
+          data-doc-search-tag="request: proc getUriPath(req: Request): string" href="supranim/core/request.html#getUriPath%2CRequest">request: proc getUriPath(req: Request): string</a></li>
           </ul></dd>
 <dt><a name="getUrl" href="#getUrl"><span>getUrl:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="request: proc getUrl(req: Request): string" href="supranim/http/request.html#getUrl%2CRequest">request: proc getUrl(req: Request): string</a></li>
+          data-doc-search-tag="request: proc getUrl(req: Request): string" href="supranim/core/request.html#getUrl%2CRequest">request: proc getUrl(req: Request): string</a></li>
           </ul></dd>
 <dt><a name="getUuid" href="#getUuid"><span>getUuid:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -594,7 +552,7 @@
           </ul></dd>
 <dt><a name="Global" href="#Global"><span>Global:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: ServiceType.Global" href="supranim/core/servicemanager.html#Global">servicemanager: ServiceType.Global</a></li>
+          data-doc-search-tag="services: ServiceType.Global" href="supranim/core/services.html#Global">services: ServiceType.Global</a></li>
           </ul></dd>
 <dt><a name="go" href="#go"><span>go:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -612,7 +570,7 @@
           </ul></dd>
 <dt><a name="hasCookies" href="#hasCookies"><span>hasCookies:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="request: proc hasCookies(req: var Request): bool" href="supranim/http/request.html#hasCookies%2CRequest">request: proc hasCookies(req: var Request): bool</a></li>
+          data-doc-search-tag="request: proc hasCookies(req: var Request): bool" href="supranim/core/request.html#hasCookies%2CRequest">request: proc hasCookies(req: var Request): bool</a></li>
           </ul></dd>
 <dt><a name="head" href="#head"><span>head:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -644,7 +602,7 @@
           </ul></dd>
 <dt><a name="httpMethods" href="#httpMethods"><span>httpMethods:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: const httpMethods" href="supranim/http/router.html#httpMethods">router: const httpMethods</a></li>
+          data-doc-search-tag="router: const httpMethods" href="supranim/core/router.html#httpMethods">router: const httpMethods</a></li>
           </ul></dd>
 <dt><a name="HttpRequestError" href="#HttpRequestError"><span>HttpRequestError:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -656,47 +614,47 @@
           </ul></dd>
 <dt><a name="HttpRoute" href="#HttpRoute"><span>HttpRoute:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: type HttpRoute" href="supranim/http/router.html#HttpRoute">router: type HttpRoute</a></li>
+          data-doc-search-tag="router: type HttpRoute" href="supranim/core/router.html#HttpRoute">router: type HttpRoute</a></li>
           </ul></dd>
 <dt><a name="HttpRouteMeta" href="#HttpRouteMeta"><span>HttpRouteMeta:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: object HttpRouteMeta" href="supranim/core/servicemanager.html#HttpRouteMeta">servicemanager: object HttpRouteMeta</a></li>
+          data-doc-search-tag="services: object HttpRouteMeta" href="supranim/core/services.html#HttpRouteMeta">services: object HttpRouteMeta</a></li>
           </ul></dd>
 <dt><a name="HttpRouterError" href="#HttpRouterError"><span>HttpRouterError:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: object HttpRouterError" href="supranim/http/router.html#HttpRouterError">router: object HttpRouterError</a></li>
+          data-doc-search-tag="router: object HttpRouterError" href="supranim/core/router.html#HttpRouterError">router: object HttpRouterError</a></li>
           </ul></dd>
 <dt><a name="HttpRouterInstance" href="#HttpRouterInstance"><span>HttpRouterInstance:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: object HttpRouterInstance" href="supranim/http/router.html#HttpRouterInstance">router: object HttpRouterInstance</a></li>
+          data-doc-search-tag="router: object HttpRouterInstance" href="supranim/core/router.html#HttpRouterInstance">router: object HttpRouterInstance</a></li>
           </ul></dd>
 <dt><a name="HttpRoutes" href="#HttpRoutes"><span>HttpRoutes:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: type HttpRoutes" href="supranim/core/servicemanager.html#HttpRoutes">servicemanager: type HttpRoutes</a></li>
+          data-doc-search-tag="services: type HttpRoutes" href="supranim/core/services.html#HttpRoutes">services: type HttpRoutes</a></li>
           </ul></dd>
 <dt><a name="HttpRouteType" href="#HttpRouteType"><span>HttpRouteType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: enum HttpRouteType" href="supranim/http/router.html#HttpRouteType">router: enum HttpRouteType</a></li>
+          data-doc-search-tag="router: enum HttpRouteType" href="supranim/core/router.html#HttpRouteType">router: enum HttpRouteType</a></li>
           </ul></dd>
 <dt><a name="HttpRouteVerbs" href="#HttpRouteVerbs"><span>HttpRouteVerbs:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: type HttpRouteVerbs" href="supranim/core/servicemanager.html#HttpRouteVerbs">servicemanager: type HttpRouteVerbs</a></li>
+          data-doc-search-tag="services: type HttpRouteVerbs" href="supranim/core/services.html#HttpRouteVerbs">services: type HttpRouteVerbs</a></li>
           </ul></dd>
 <dt><a name="HttpRouteWs" href="#HttpRouteWs"><span>HttpRouteWs:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: type HttpRouteWs" href="supranim/http/router.html#HttpRouteWs">router: type HttpRouteWs</a></li>
+          data-doc-search-tag="router: type HttpRouteWs" href="supranim/core/router.html#HttpRouteWs">router: type HttpRouteWs</a></li>
           </ul></dd>
 <dt><a name="HttpService" href="#HttpService"><span>HttpService:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: object HttpService" href="supranim/core/servicemanager.html#HttpService">servicemanager: object HttpService</a></li>
+          data-doc-search-tag="services: object HttpService" href="supranim/core/services.html#HttpService">services: object HttpService</a></li>
           </ul></dd>
 <dt><a name="HttpServiceIndex" href="#HttpServiceIndex"><span>HttpServiceIndex:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: type HttpServiceIndex" href="supranim/core/servicemanager.html#HttpServiceIndex">servicemanager: type HttpServiceIndex</a></li>
+          data-doc-search-tag="services: type HttpServiceIndex" href="supranim/core/services.html#HttpServiceIndex">services: type HttpServiceIndex</a></li>
           </ul></dd>
 <dt><a name="index" href="#index"><span>index:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: var index" href="supranim/core/servicemanager.html#index">servicemanager: var index</a></li>
+          data-doc-search-tag="services: var index" href="supranim/core/services.html#index">services: var index</a></li>
           </ul></dd>
 <dt><a name="info" href="#info"><span>info:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -716,27 +674,23 @@
           </ul></dd>
 <dt><a name="initChannelRouter" href="#initChannelRouter"><span>initChannelRouter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: template initChannelRouter()" href="supranim/core/servicemanager.html#initChannelRouter.t">servicemanager: template initChannelRouter()</a></li>
+          data-doc-search-tag="services: template initChannelRouter()" href="supranim/core/services.html#initChannelRouter.t">services: template initChannelRouter()</a></li>
           </ul></dd>
 <dt><a name="initHttpRouter" href="#initHttpRouter"><span>initHttpRouter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: template initHttpRouter()" href="supranim/core/application.html#initHttpRouter.t">application: template initHttpRouter()</a></li>
           </ul></dd>
-<dt><a name="initPluginManager" href="#initPluginManager"><span>initPluginManager:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: proc initPluginManager(enableUpdates = false): PluginManager" href="supranim/core/plugins.html#initPluginManager">plugins: proc initPluginManager(enableUpdates = false): PluginManager</a></li>
-          </ul></dd>
 <dt><a name="initRouter" href="#initRouter"><span>initRouter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: template initRouter(): untyped" href="supranim/core/servicemanager.html#initRouter.t">servicemanager: template initRouter(): untyped</a></li>
+          data-doc-search-tag="services: template initRouter(): untyped" href="supranim/core/services.html#initRouter.t">services: template initRouter(): untyped</a></li>
           </ul></dd>
 <dt><a name="initRouterErrorHandlers" href="#initRouterErrorHandlers"><span>initRouterErrorHandlers:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: template initRouterErrorHandlers()" href="supranim/http/router.html#initRouterErrorHandlers.t">router: template initRouterErrorHandlers()</a></li>
+          data-doc-search-tag="router: template initRouterErrorHandlers()" href="supranim/core/router.html#initRouterErrorHandlers.t">router: template initRouterErrorHandlers()</a></li>
           </ul></dd>
 <dt><a name="initService" href="#initService"><span>initService:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: template initService(id, config: untyped)" href="supranim/core/servicemanager.html#initService.t%2Cuntyped%2Cuntyped">servicemanager: template initService(id, config: untyped)</a></li>
+          data-doc-search-tag="services: template initService(id, config: untyped)" href="supranim/core/services.html#initService.t%2Cuntyped%2Cuntyped">services: template initService(id, config: untyped)</a></li>
           </ul></dd>
 <dt><a name="initStartCommand" href="#initStartCommand"><span>initStartCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -756,7 +710,7 @@
           </ul></dd>
 <dt><a name="json" href="#json"><span>json:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: template json(body: typed; code: HttpCode = Http200): untyped" href="supranim/http/response.html#json.t%2Ctyped%2CHttpCode">response: template json(body: typed; code: HttpCode = Http200): untyped</a></li>
+          data-doc-search-tag="response: template json(body: typed; code: HttpCode = Http200): untyped" href="supranim/core/response.html#json.t%2Ctyped%2CHttpCode">response: template json(body: typed; code: HttpCode = Http200): untyped</a></li>
           </ul></dd>
 <dt><a name="JsonString" href="#JsonString"><span>JsonString:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -782,14 +736,6 @@
 <li><a class="reference external"
           data-doc-search-tag="application: proc loadEventListeners(): NimNode" href="supranim/core/application.html#loadEventListeners">application: proc loadEventListeners(): NimNode</a></li>
           </ul></dd>
-<dt><a name="LoadPluginHandle" href="#LoadPluginHandle"><span>LoadPluginHandle:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: type LoadPluginHandle" href="supranim/core/plugins.html#LoadPluginHandle">plugins: type LoadPluginHandle</a></li>
-          </ul></dd>
-<dt><a name="LoadPluginRoutes" href="#LoadPluginRoutes"><span>LoadPluginRoutes:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: type LoadPluginRoutes" href="supranim/core/plugins.html#LoadPluginRoutes">plugins: type LoadPluginRoutes</a></li>
-          </ul></dd>
 <dt><a name="logsPath" href="#logsPath"><span>logsPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="paths: const logsPath" href="supranim/core/paths.html#logsPath">paths: const logsPath</a></li>
@@ -798,17 +744,17 @@
 <li><a class="reference external"
           data-doc-search-tag="utils: proc malloc_trim(pad: csize_t = 0): bool" href="supranim/core/utils.html#malloc_trim%2Ccsize_t">utils: proc malloc_trim(pad: csize_t = 0): bool</a></li>
           </ul></dd>
+<dt><a name="MaxReqResSize" href="#MaxReqResSize"><span>MaxReqResSize:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="utils: const MaxReqResSize" href="supranim/core/utils.html#MaxReqResSize">utils: const MaxReqResSize</a></li>
+          </ul></dd>
 <dt><a name="MessageCb" href="#MessageCb"><span>MessageCb:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="websocket: type MessageCb" href="supranim/network/websocket.html#MessageCb">websocket: type MessageCb</a></li>
           </ul></dd>
 <dt><a name="Middleware" href="#Middleware"><span>Middleware:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.Middleware" href="supranim/core/plugins.html#Middleware">plugins: PluginPermission.Middleware</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="plugins: ModuleType.Middleware" href="supranim/core/plugins.html#Middleware_2">plugins: ModuleType.Middleware</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="router: type Middleware" href="supranim/http/router.html#Middleware">router: type Middleware</a></li>
+          data-doc-search-tag="router: type Middleware" href="supranim/core/router.html#Middleware">router: type Middleware</a></li>
           </ul></dd>
 <dt><a name="middlewarePath" href="#middlewarePath"><span>middlewarePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -818,27 +764,9 @@
 <li><a class="reference external"
           data-doc-search-tag="paths: const migrationPath" href="supranim/core/paths.html#migrationPath">paths: const migrationPath</a></li>
           </ul></dd>
-<dt><a name="Model" href="#Model"><span>Model:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.Model" href="supranim/core/plugins.html#Model">plugins: PluginPermission.Model</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="plugins: ModuleType.Model" href="supranim/core/plugins.html#Model_2">plugins: ModuleType.Model</a></li>
-          </ul></dd>
 <dt><a name="modelPath" href="#modelPath"><span>modelPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="paths: const modelPath" href="supranim/core/paths.html#modelPath">paths: const modelPath</a></li>
-          </ul></dd>
-<dt><a name="ModuleType" href="#ModuleType"><span>ModuleType:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: enum ModuleType" href="supranim/core/plugins.html#ModuleType">plugins: enum ModuleType</a></li>
-          </ul></dd>
-<dt><a name="moduleTypePluggableModule" href="#moduleTypePluggableModule"><span>moduleTypePluggableModule:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginType.moduleTypePluggableModule" href="supranim/core/plugins.html#moduleTypePluggableModule">plugins: PluginType.moduleTypePluggableModule</a></li>
-          </ul></dd>
-<dt><a name="moduleTypePlugin" href="#moduleTypePlugin"><span>moduleTypePlugin:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginType.moduleTypePlugin" href="supranim/core/plugins.html#moduleTypePlugin">plugins: PluginType.moduleTypePlugin</a></li>
           </ul></dd>
 <dt><a name="MultipartData" href="#MultipartData"><span>MultipartData:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -878,7 +806,7 @@
           </ul></dd>
 <dt><a name="newHttpRouter" href="#newHttpRouter"><span>newHttpRouter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc newHttpRouter(): HttpRouterInstance" href="supranim/http/router.html#newHttpRouter">router: proc newHttpRouter(): HttpRouterInstance</a></li>
+          data-doc-search-tag="router: proc newHttpRouter(): HttpRouterInstance" href="supranim/core/router.html#newHttpRouter">router: proc newHttpRouter(): HttpRouterInstance</a></li>
           </ul></dd>
 <dt><a name="newMultipartData" href="#newMultipartData"><span>newMultipartData:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -902,11 +830,7 @@
           </ul></dd>
 <dt><a name="newWebServer" href="#newWebServer"><span>newWebServer:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="webserver: proc newWebServer(port: Port = Port(8080)): WebServer" href="supranim/network/http/webserver.html#newWebServer%2CPort">webserver: proc newWebServer(port: Port = Port(8080)): WebServer</a></li>
-          </ul></dd>
-<dt><a name="NoAccess" href="#NoAccess"><span>NoAccess:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.NoAccess" href="supranim/core/plugins.html#NoAccess">plugins: PluginPermission.NoAccess</a></li>
+          data-doc-search-tag="webserver: proc newWebServer(port: Port = Port(8080); enableThreading: static bool = false): WebServer" href="supranim/network/http/webserver.html#newWebServer%2CPort%2Cstaticbool">webserver: proc newWebServer(port: Port = Port(8080); enableThreading: static bool = false): WebServer</a></li>
           </ul></dd>
 <dt><a name="normalizePath" href="#normalizePath"><span>normalizePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -943,7 +867,7 @@
 <dt><a name="parseRouteNode" href="#parseRouteNode"><span>parseRouteNode:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc parseRouteNode(verb, routePath: string; middlewares, afterwares: var NimNode;
-               closureHandle: NimNode = nil)" href="supranim/http/router.html#parseRouteNode%2Cstring%2Cstring%2CNimNode%2CNimNode%2CNimNode">router: proc parseRouteNode(verb, routePath: string; middlewares, afterwares: var NimNode;
+               closureHandle: NimNode = nil)" href="supranim/core/router.html#parseRouteNode%2Cstring%2Cstring%2CNimNode%2CNimNode%2CNimNode">router: proc parseRouteNode(verb, routePath: string; middlewares, afterwares: var NimNode;
                closureHandle: NimNode = nil)</a></li>
           </ul></dd>
 <dt><a name="patch" href="#patch"><span>patch:</span></a></dt><dd><ul class="simple">
@@ -970,57 +894,9 @@
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc peekChunk(stream: BodyStream; maxLen: int): (pointer, int)" href="supranim/network/http/webserver.html#peekChunk%2CBodyStream%2Cint">webserver: proc peekChunk(stream: BodyStream; maxLen: int): (pointer, int)</a></li>
           </ul></dd>
-<dt><a name="PluggableController" href="#PluggableController"><span>PluggableController:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: object PluggableController" href="supranim/core/plugins.html#PluggableController">plugins: object PluggableController</a></li>
-          </ul></dd>
-<dt><a name="PluggableModel" href="#PluggableModel"><span>PluggableModel:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: object PluggableModel" href="supranim/core/plugins.html#PluggableModel">plugins: object PluggableModel</a></li>
-          </ul></dd>
-<dt><a name="Plugin" href="#Plugin"><span>Plugin:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: object Plugin" href="supranim/core/plugins.html#Plugin">plugins: object Plugin</a></li>
-          </ul></dd>
-<dt><a name="pluginActivated" href="#pluginActivated"><span>pluginActivated:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginNotification.pluginActivated" href="supranim/core/plugins.html#pluginActivated">plugins: PluginNotification.pluginActivated</a></li>
-          </ul></dd>
-<dt><a name="pluginExists" href="#pluginExists"><span>pluginExists:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: template pluginExists(key: string; x, y: typed)" href="supranim/core/plugins.html#pluginExists.t%2Cstring%2Ctyped%2Ctyped">plugins: template pluginExists(key: string; x, y: typed)</a></li>
-          </ul></dd>
-<dt><a name="pluginExistsGet" href="#pluginExistsGet"><span>pluginExistsGet:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: template pluginExistsGet(key: string; x, y: untyped)" href="supranim/core/plugins.html#pluginExistsGet.t%2Cstring%2Cuntyped%2Cuntyped">plugins: template pluginExistsGet(key: string; x, y: untyped)</a></li>
-          </ul></dd>
-<dt><a name="PluginManager" href="#PluginManager"><span>PluginManager:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: type PluginManager" href="supranim/core/plugins.html#PluginManager">plugins: type PluginManager</a></li>
-          </ul></dd>
-<dt><a name="PluginNotification" href="#PluginNotification"><span>PluginNotification:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: enum PluginNotification" href="supranim/core/plugins.html#PluginNotification">plugins: enum PluginNotification</a></li>
-          </ul></dd>
-<dt><a name="PluginPermission" href="#PluginPermission"><span>PluginPermission:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: enum PluginPermission" href="supranim/core/plugins.html#PluginPermission">plugins: enum PluginPermission</a></li>
-          </ul></dd>
-<dt><a name="PluginRoutes" href="#PluginRoutes"><span>PluginRoutes:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: object PluginRoutes" href="supranim/core/plugins.html#PluginRoutes">plugins: object PluginRoutes</a></li>
-          </ul></dd>
 <dt><a name="pluginsPath" href="#pluginsPath"><span>pluginsPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="paths: const pluginsPath" href="supranim/core/paths.html#pluginsPath">paths: const pluginsPath</a></li>
-          </ul></dd>
-<dt><a name="PluginStatus" href="#PluginStatus"><span>PluginStatus:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: enum PluginStatus" href="supranim/core/plugins.html#PluginStatus">plugins: enum PluginStatus</a></li>
-          </ul></dd>
-<dt><a name="PluginType" href="#PluginType"><span>PluginType:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: enum PluginType" href="supranim/core/plugins.html#PluginType">plugins: enum PluginType</a></li>
           </ul></dd>
 <dt><a name="post" href="#post"><span>post:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1046,33 +922,13 @@
             multipart: MultipartData = nil): string" href="supranim/support/httpclient.html#postContent%2CHttpClient%2C%2Cstring%2CMultipartData">httpclient: proc postContent(client: HttpClient; url: Uri | string; body = &quot;&quot;;
             multipart: MultipartData = nil): string</a></li>
           </ul></dd>
-<dt><a name="preload" href="#preload"><span>preload:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: proc preload(manager: PluginManager; path: string): ptr Plugin" href="supranim/core/plugins.html#preload%2CPluginManager%2Cstring">plugins: proc preload(manager: PluginManager; path: string): ptr Plugin</a></li>
-          </ul></dd>
 <dt><a name="preloadAssets" href="#preloadAssets"><span>preloadAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="assets: macro preloadAssets()" href="supranim/service/assets.html#preloadAssets.m">assets: macro preloadAssets()</a></li>
           </ul></dd>
-<dt><a name="preloadPluginHandleError" href="#preloadPluginHandleError"><span>preloadPluginHandleError:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginNotification.preloadPluginHandleError" href="supranim/core/plugins.html#preloadPluginHandleError">plugins: PluginNotification.preloadPluginHandleError</a></li>
-          </ul></dd>
-<dt><a name="preloadPluginHandleInstanceError" href="#preloadPluginHandleInstanceError"><span>preloadPluginHandleInstanceError:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginNotification.preloadPluginHandleInstanceError" href="supranim/core/plugins.html#preloadPluginHandleInstanceError">plugins: PluginNotification.preloadPluginHandleInstanceError</a></li>
-          </ul></dd>
-<dt><a name="preloadPluginLibraryError" href="#preloadPluginLibraryError"><span>preloadPluginLibraryError:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginNotification.preloadPluginLibraryError" href="supranim/core/plugins.html#preloadPluginLibraryError">plugins: PluginNotification.preloadPluginLibraryError</a></li>
-          </ul></dd>
-<dt><a name="preloadPluginSuccess" href="#preloadPluginSuccess"><span>preloadPluginSuccess:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginNotification.preloadPluginSuccess" href="supranim/core/plugins.html#preloadPluginSuccess">plugins: PluginNotification.preloadPluginSuccess</a></li>
-          </ul></dd>
 <dt><a name="preparePath" href="#preparePath"><span>preparePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc preparePath(path: string; prefix = &quot;&quot;): string" href="supranim/http/router.html#preparePath%2Cstring%2Cstring">router: proc preparePath(path: string; prefix = &quot;&quot;): string</a></li>
+          data-doc-search-tag="router: proc preparePath(path: string; prefix = &quot;&quot;): string" href="supranim/core/router.html#preparePath%2Cstring%2Cstring">router: proc preparePath(path: string; prefix = &quot;&quot;): string</a></li>
           </ul></dd>
 <dt><a name="ProgressChangedProc" href="#ProgressChangedProc"><span>ProgressChangedProc:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1108,7 +964,7 @@
           </ul></dd>
 <dt><a name="queuedRoutes" href="#queuedRoutes"><span>queuedRoutes:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: var queuedRoutes" href="supranim/http/router.html#queuedRoutes">router: var queuedRoutes</a></li>
+          data-doc-search-tag="router: var queuedRoutes" href="supranim/core/router.html#queuedRoutes">router: var queuedRoutes</a></li>
           </ul></dd>
 <dt><a name="readChunk" href="#readChunk"><span>readChunk:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1116,11 +972,11 @@
           </ul></dd>
 <dt><a name="redirect" href="#redirect"><span>redirect:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: template redirect(target: string; code = Http303)" href="supranim/http/response.html#redirect.t%2Cstring">response: template redirect(target: string; code = Http303)</a></li>
+          data-doc-search-tag="response: template redirect(target: string; code = Http303)" href="supranim/core/response.html#redirect.t%2Cstring">response: template redirect(target: string; code = Http303)</a></li>
           </ul></dd>
 <dt><a name="redirect301" href="#redirect301"><span>redirect301:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: template redirect301(target: string)" href="supranim/http/response.html#redirect301.t%2Cstring">response: template redirect301(target: string)</a></li>
+          data-doc-search-tag="response: template redirect301(target: string)" href="supranim/core/response.html#redirect301.t%2Cstring">response: template redirect301(target: string)</a></li>
           </ul></dd>
 <dt><a name="redirectTo" href="#redirectTo"><span>redirectTo:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1128,14 +984,14 @@
           </ul></dd>
 <dt><a name="redirectUri" href="#redirectUri"><span>redirectUri:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)" href="supranim/http/response.html#redirectUri%2CRequest%2CResponse%2Cstring">response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)</a></li>
+          data-doc-search-tag="response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)" href="supranim/core/response.html#redirectUri%2CRequest%2CResponse%2Cstring">response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)</a></li>
           </ul></dd>
 <dt><a name="registerRoute" href="#registerRoute"><span>registerRoute:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc registerRoute(router: var HttpRouterInstance;
               autolinked: sink (string, string); httpMethod: HttpMethod;
               callback: Callable; middlewares: seq[Middleware] = @[];
-              afterwares: seq[Afterware] = @[]; isWebSocket = false)" href="supranim/http/router.html#registerRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D">router: proc registerRoute(router: var HttpRouterInstance;
+              afterwares: seq[Afterware] = @[]; isWebSocket = false)" href="supranim/core/router.html#registerRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D">router: proc registerRoute(router: var HttpRouterInstance;
               autolinked: sink (string, string); httpMethod: HttpMethod;
               callback: Callable; middlewares: seq[Middleware] = @[];
               afterwares: seq[Afterware] = @[]; isWebSocket = false)</a></li>
@@ -1143,10 +999,6 @@
 <dt><a name="releaseUnusedMemory" href="#releaseUnusedMemory"><span>releaseUnusedMemory:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="utils: proc releaseUnusedMemory(): bool" href="supranim/core/utils.html#releaseUnusedMemory">utils: proc releaseUnusedMemory(): bool</a></li>
-          </ul></dd>
-<dt><a name="reloadModule" href="#reloadModule"><span>reloadModule:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: proc reloadModule(manager: PluginManager; path: string)" href="supranim/core/plugins.html#reloadModule%2CPluginManager%2Cstring">plugins: proc reloadModule(manager: PluginManager; path: string)</a></li>
           </ul></dd>
 <dt><a name="removeHeader" href="#removeHeader"><span>removeHeader:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1178,25 +1030,25 @@
           </ul></dd>
 <dt><a name="resolveAfterware" href="#resolveAfterware"><span>resolveAfterware:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc resolveAfterware(route: HttpRoute; req: var Request; res: var Response): HttpCode" href="supranim/http/router.html#resolveAfterware%2CHttpRoute%2CRequest%2CResponse">router: proc resolveAfterware(route: HttpRoute; req: var Request; res: var Response): HttpCode</a></li>
+          data-doc-search-tag="router: proc resolveAfterware(route: HttpRoute; req: var Request; res: var Response): HttpCode" href="supranim/core/router.html#resolveAfterware%2CHttpRoute%2CRequest%2CResponse">router: proc resolveAfterware(route: HttpRoute; req: var Request; res: var Response): HttpCode</a></li>
           </ul></dd>
 <dt><a name="resolveMiddleware" href="#resolveMiddleware"><span>resolveMiddleware:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc resolveMiddleware(route: HttpRoute; req: var Request; res: var Response): HttpCode" href="supranim/http/router.html#resolveMiddleware%2CHttpRoute%2CRequest%2CResponse">router: proc resolveMiddleware(route: HttpRoute; req: var Request; res: var Response): HttpCode</a></li>
+          data-doc-search-tag="router: proc resolveMiddleware(route: HttpRoute; req: var Request; res: var Response): HttpCode" href="supranim/core/router.html#resolveMiddleware%2CHttpRoute%2CRequest%2CResponse">router: proc resolveMiddleware(route: HttpRoute; req: var Request; res: var Response): HttpCode</a></li>
           </ul></dd>
 <dt><a name="resp" href="#resp"><span>resp:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc resp(req: Request; code: HttpCode; body: sink string; headers: HttpHeaders = nil)" href="supranim/http/response.html#resp%2CRequest%2CHttpCode%2Csinkstring%2CHttpHeaders">response: proc resp(req: Request; code: HttpCode; body: sink string; headers: HttpHeaders = nil)</a></li>
+          data-doc-search-tag="response: proc resp(req: Request; code: HttpCode; body: sink string; headers: HttpHeaders = nil)" href="supranim/core/response.html#resp%2CRequest%2CHttpCode%2Csinkstring%2CHttpHeaders">response: proc resp(req: Request; code: HttpCode; body: sink string; headers: HttpHeaders = nil)</a></li>
           </ul></dd>
 <dt><a name="respond" href="#respond"><span>respond:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped" href="supranim/http/response.html#respond.t%2CHttpCode%2Cstring%2Cstring">response: template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped</a></li>
+          data-doc-search-tag="response: template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped" href="supranim/core/response.html#respond.t%2CHttpCode%2Cstring%2Cstring">response: template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="response: template respond(body: string; contentType: string = getContentType()): untyped" href="supranim/http/response.html#respond.t%2Cstring%2Cstring">response: template respond(body: string; contentType: string = getContentType()): untyped</a></li>
+          data-doc-search-tag="response: template respond(body: string; contentType: string = getContentType()): untyped" href="supranim/core/response.html#respond.t%2Cstring%2Cstring">response: template respond(body: string; contentType: string = getContentType()): untyped</a></li>
           </ul></dd>
 <dt><a name="Response" href="#Response"><span>Response:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: object Response" href="supranim/http/response.html#Response">response: object Response</a></li>
+          data-doc-search-tag="response: object Response" href="supranim/core/response.html#Response">response: object Response</a></li>
           <li><a class="reference external"
           data-doc-search-tag="httpclient: type Response" href="supranim/support/httpclient.html#Response">httpclient: type Response</a></li>
           </ul></dd>
@@ -1216,23 +1068,23 @@
           </ul></dd>
 <dt><a name="RoutePattern" href="#RoutePattern"><span>RoutePattern:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="autolink: tuple RoutePattern" href="supranim/http/autolink.html#RoutePattern">autolink: tuple RoutePattern</a></li>
+          data-doc-search-tag="autolink: tuple RoutePattern" href="supranim/core/autolink.html#RoutePattern">autolink: tuple RoutePattern</a></li>
           </ul></dd>
 <dt><a name="RoutePatternsTable" href="#RoutePatternsTable"><span>RoutePatternsTable:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="autolink: type RoutePatternsTable" href="supranim/http/autolink.html#RoutePatternsTable">autolink: type RoutePatternsTable</a></li>
+          data-doc-search-tag="autolink: type RoutePatternsTable" href="supranim/core/autolink.html#RoutePatternsTable">autolink: type RoutePatternsTable</a></li>
           </ul></dd>
 <dt><a name="Router" href="#Router"><span>Router:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.Router" href="supranim/core/plugins.html#Router">plugins: PluginPermission.Router</a></li>
+          data-doc-search-tag="router: var Router" href="supranim/core/router.html#Router">router: var Router</a></li>
           </ul></dd>
 <dt><a name="routerInstance" href="#routerInstance"><span>routerInstance:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: var routerInstance" href="supranim/core/servicemanager.html#routerInstance">servicemanager: var routerInstance</a></li>
+          data-doc-search-tag="services: var routerInstance" href="supranim/core/services.html#routerInstance">services: var routerInstance</a></li>
           </ul></dd>
 <dt><a name="routes" href="#routes"><span>routes:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: macro routes(body: untyped): untyped" href="supranim/http/router.html#routes.m%2Cuntyped">router: macro routes(body: untyped): untyped</a></li>
+          data-doc-search-tag="router: macro routes(body: untyped): untyped" href="supranim/core/router.html#routes.m%2Cuntyped">router: macro routes(body: untyped): untyped</a></li>
           </ul></dd>
 <dt><a name="run" href="#run"><span>run:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1243,10 +1095,6 @@
 <dt><a name="runBaseMiddlewares" href="#runBaseMiddlewares"><span>runBaseMiddlewares:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="supranim: macro runBaseMiddlewares(req, res)" href="index.html#runBaseMiddlewares.m%2C%2C">supranim: macro runBaseMiddlewares(req, res)</a></li>
-          </ul></dd>
-<dt><a name="RunPluginHandle" href="#RunPluginHandle"><span>RunPluginHandle:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: type RunPluginHandle" href="supranim/core/plugins.html#RunPluginHandle">plugins: type RunPluginHandle</a></li>
           </ul></dd>
 <dt><a name="runServer" href="#runServer"><span>runServer:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1260,21 +1108,23 @@
           </ul></dd>
 <dt><a name="searchRouteWs" href="#searchRouteWs"><span>searchRouteWs:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: macro searchRouteWs()" href="supranim/http/router.html#searchRouteWs.m">router: macro searchRouteWs()</a></li>
+          data-doc-search-tag="router: macro searchRouteWs()" href="supranim/core/router.html#searchRouteWs.m">router: macro searchRouteWs()</a></li>
           </ul></dd>
 <dt><a name="send" href="#send"><span>send:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders">webserver: proc send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc send(req: Request; code: int; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2Cint%2CHttpHeaders">webserver: proc send(req: Request; code: int; httpHeaders: HttpHeaders = nil)</a></li>
           <li><a class="reference external"
           data-doc-search-tag="webserver: proc send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2Cint%2Cstring%2CHttpHeaders">webserver: proc send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)</a></li>
           </ul></dd>
 <dt><a name="sendAssets" href="#sendAssets"><span>sendAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="fileserver: proc sendAssets(req: var Request; path: string; headers: HttpHeaders;
-           hasFoundResource: var bool)" href="supranim/http/fileserver.html#sendAssets%2CRequest%2Cstring%2CHttpHeaders%2Cbool">fileserver: proc sendAssets(req: var Request; path: string; headers: HttpHeaders;
+           hasFoundResource: var bool)" href="supranim/core/fileserver.html#sendAssets%2CRequest%2Cstring%2CHttpHeaders%2Cbool">fileserver: proc sendAssets(req: var Request; path: string; headers: HttpHeaders;
            hasFoundResource: var bool)</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="fileserver: proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool" href="supranim/http/fileserver.html#sendAssets%2CRequest%2Cstring%2Cstring%2CHttpHeaders">fileserver: proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool</a></li>
+          data-doc-search-tag="fileserver: proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool" href="supranim/core/fileserver.html#sendAssets%2CRequest%2Cstring%2Cstring%2CHttpHeaders">fileserver: proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool</a></li>
           </ul></dd>
 <dt><a name="sendBinary" href="#sendBinary"><span>sendBinary:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1289,7 +1139,7 @@
 <dt><a name="sendEmbeddedAsset" href="#sendEmbeddedAsset"><span>sendEmbeddedAsset:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="fileserver: proc sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;
-                  hasFoundResource: var bool)" href="supranim/http/fileserver.html#sendEmbeddedAsset%2CRequest%2Cstring%2CHttpHeaders%2Cbool">fileserver: proc sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;
+                  hasFoundResource: var bool)" href="supranim/core/fileserver.html#sendEmbeddedAsset%2CRequest%2Cstring%2CHttpHeaders%2Cbool">fileserver: proc sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;
                   hasFoundResource: var bool)</a></li>
           </ul></dd>
 <dt><a name="sendFile" href="#sendFile"><span>sendFile:</span></a></dt><dd><ul class="simple">
@@ -1306,7 +1156,7 @@
           </ul></dd>
 <dt><a name="sendJson" href="#sendJson"><span>sendJson:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: template sendJson(body: typed; code: HttpCode = Http200): untyped" href="supranim/http/response.html#sendJson.t%2Ctyped%2CHttpCode">response: template sendJson(body: typed; code: HttpCode = Http200): untyped</a></li>
+          data-doc-search-tag="response: template sendJson(body: typed; code: HttpCode = Http200): untyped" href="supranim/core/response.html#sendJson.t%2Ctyped%2CHttpCode">response: template sendJson(body: typed; code: HttpCode = Http200): untyped</a></li>
           </ul></dd>
 <dt><a name="sendPing" href="#sendPing"><span>sendPing:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1322,11 +1172,11 @@
           </ul></dd>
 <dt><a name="ServiceManagerThreadServices" href="#ServiceManagerThreadServices"><span>ServiceManagerThreadServices:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: const ServiceManagerThreadServices" href="supranim/core/servicemanager.html#ServiceManagerThreadServices">servicemanager: const ServiceManagerThreadServices</a></li>
+          data-doc-search-tag="services: const ServiceManagerThreadServices" href="supranim/core/services.html#ServiceManagerThreadServices">services: const ServiceManagerThreadServices</a></li>
           </ul></dd>
 <dt><a name="ServiceManagerThreadServicesClients" href="#ServiceManagerThreadServicesClients"><span>ServiceManagerThreadServicesClients:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: const ServiceManagerThreadServicesClients" href="supranim/core/servicemanager.html#ServiceManagerThreadServicesClients">servicemanager: const ServiceManagerThreadServicesClients</a></li>
+          data-doc-search-tag="services: const ServiceManagerThreadServicesClients" href="supranim/core/services.html#ServiceManagerThreadServicesClients">services: const ServiceManagerThreadServicesClients</a></li>
           </ul></dd>
 <dt><a name="servicePath" href="#servicePath"><span>servicePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1334,7 +1184,7 @@
           </ul></dd>
 <dt><a name="ServiceProvider" href="#ServiceProvider"><span>ServiceProvider:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: object ServiceProvider" href="supranim/core/servicemanager.html#ServiceProvider">servicemanager: object ServiceProvider</a></li>
+          data-doc-search-tag="services: object ServiceProvider" href="supranim/core/services.html#ServiceProvider">services: object ServiceProvider</a></li>
           </ul></dd>
 <dt><a name="Services" href="#Services"><span>Services:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1346,15 +1196,15 @@
           </ul></dd>
 <dt><a name="ServiceType" href="#ServiceType"><span>ServiceType:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: enum ServiceType" href="supranim/core/servicemanager.html#ServiceType">servicemanager: enum ServiceType</a></li>
+          data-doc-search-tag="services: enum ServiceType" href="supranim/core/services.html#ServiceType">services: enum ServiceType</a></li>
           </ul></dd>
 <dt><a name="setBody" href="#setBody"><span>setBody:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc setBody(res: var Response; body: sink string)" href="supranim/http/response.html#setBody%2CResponse%2Csinkstring">response: proc setBody(res: var Response; body: sink string)</a></li>
+          data-doc-search-tag="response: proc setBody(res: var Response; body: sink string)" href="supranim/core/response.html#setBody%2CResponse%2Csinkstring">response: proc setBody(res: var Response; body: sink string)</a></li>
           </ul></dd>
 <dt><a name="setCode" href="#setCode"><span>setCode:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc setCode(res: var Response; code: HttpCode)" href="supranim/http/response.html#setCode%2CResponse%2CHttpCode">response: proc setCode(res: var Response; code: HttpCode)</a></li>
+          data-doc-search-tag="response: proc setCode(res: var Response; code: HttpCode)" href="supranim/core/response.html#setCode%2CResponse%2CHttpCode">response: proc setCode(res: var Response; code: HttpCode)</a></li>
           </ul></dd>
 <dt><a name="setOnClose" href="#setOnClose"><span>setOnClose:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1378,11 +1228,11 @@
           </ul></dd>
 <dt><a name="Singleton" href="#Singleton"><span>Singleton:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: ServiceType.Singleton" href="supranim/core/servicemanager.html#Singleton">servicemanager: ServiceType.Singleton</a></li>
+          data-doc-search-tag="services: ServiceType.Singleton" href="supranim/core/services.html#Singleton">services: ServiceType.Singleton</a></li>
           </ul></dd>
 <dt><a name="SingletonService" href="#SingletonService"><span>SingletonService:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: object SingletonService" href="supranim/core/servicemanager.html#SingletonService">servicemanager: object SingletonService</a></li>
+          data-doc-search-tag="services: object SingletonService" href="supranim/core/services.html#SingletonService">services: object SingletonService</a></li>
           </ul></dd>
 <dt><a name="SomeBodyData" href="#SomeBodyData"><span>SomeBodyData:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1395,6 +1245,10 @@
           data-doc-search-tag="webserver: proc start(server: var WebServer; onRequest: OnRequest;
       startupCallback: StartupCallback = nil)" href="supranim/network/http/webserver.html#start%2CWebServer%2COnRequest%2CStartupCallback">webserver: proc start(server: var WebServer; onRequest: OnRequest;
       startupCallback: StartupCallback = nil)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc start(server: var WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback; threads: int)" href="supranim/network/http/webserver.html#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint">webserver: proc start(server: var WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback; threads: int)</a></li>
           </ul></dd>
 <dt><a name="startChunk" href="#startChunk"><span>startChunk:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1418,23 +1272,7 @@
           </ul></dd>
 <dt><a name="StaticRoute" href="#StaticRoute"><span>StaticRoute:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: HttpRouteType.StaticRoute" href="supranim/http/router.html#StaticRoute">router: HttpRouteType.StaticRoute</a></li>
-          </ul></dd>
-<dt><a name="StatusActive" href="#StatusActive"><span>StatusActive:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginStatus.StatusActive" href="supranim/core/plugins.html#StatusActive">plugins: PluginStatus.StatusActive</a></li>
-          </ul></dd>
-<dt><a name="StatusInvalid" href="#StatusInvalid"><span>StatusInvalid:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginStatus.StatusInvalid" href="supranim/core/plugins.html#StatusInvalid">plugins: PluginStatus.StatusInvalid</a></li>
-          </ul></dd>
-<dt><a name="StatusReady" href="#StatusReady"><span>StatusReady:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginStatus.StatusReady" href="supranim/core/plugins.html#StatusReady">plugins: PluginStatus.StatusReady</a></li>
-          </ul></dd>
-<dt><a name="StatusUnload" href="#StatusUnload"><span>StatusUnload:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginStatus.StatusUnload" href="supranim/core/plugins.html#StatusUnload">plugins: PluginStatus.StatusUnload</a></li>
+          data-doc-search-tag="router: HttpRouteType.StaticRoute" href="supranim/core/router.html#StaticRoute">router: HttpRouteType.StaticRoute</a></li>
           </ul></dd>
 <dt><a name="storage" href="#storage"><span>storage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1452,29 +1290,17 @@
 <li><a class="reference external"
           data-doc-search-tag="config: const supranimServer" href="supranim/core/config.html#supranimServer">config: const supranimServer</a></li>
           </ul></dd>
-<dt><a name="SystemVersion" href="#SystemVersion"><span>SystemVersion:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: object SystemVersion" href="supranim/core/plugins.html#SystemVersion">plugins: object SystemVersion</a></li>
-          </ul></dd>
-<dt><a name="Templates" href="#Templates"><span>Templates:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: PluginPermission.Templates" href="supranim/core/plugins.html#Templates">plugins: PluginPermission.Templates</a></li>
-          </ul></dd>
 <dt><a name="ThreadService" href="#ThreadService"><span>ThreadService:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: ServiceType.ThreadService" href="supranim/core/servicemanager.html#ThreadService">servicemanager: ServiceType.ThreadService</a></li>
+          data-doc-search-tag="services: ServiceType.ThreadService" href="supranim/core/services.html#ThreadService">services: ServiceType.ThreadService</a></li>
           </ul></dd>
 <dt><a name="toString" href="#toString"><span>toString:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc toString(headers: HttpHeaders): string" href="supranim/http/response.html#toString%2CHttpHeaders">response: proc toString(headers: HttpHeaders): string</a></li>
+          data-doc-search-tag="response: proc toString(headers: HttpHeaders): string" href="supranim/core/response.html#toString%2CHttpHeaders">response: proc toString(headers: HttpHeaders): string</a></li>
           </ul></dd>
 <dt><a name="UnixHttpClient" href="#UnixHttpClient"><span>UnixHttpClient:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="httpclient: type UnixHttpClient" href="supranim/support/httpclient.html#UnixHttpClient">httpclient: type UnixHttpClient</a></li>
-          </ul></dd>
-<dt><a name="unload" href="#unload"><span>unload:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="plugins: proc unload(manager: PluginManager; path: string)" href="supranim/core/plugins.html#unload%2CPluginManager%2Cstring">plugins: proc unload(manager: PluginManager; path: string)</a></li>
           </ul></dd>
 <dt><a name="Uuid" href="#Uuid"><span>Uuid:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1510,7 +1336,7 @@
           </ul></dd>
 <dt><a name="WebService" href="#WebService"><span>WebService:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="servicemanager: ServiceType.WebService" href="supranim/core/servicemanager.html#WebService">servicemanager: ServiceType.WebService</a></li>
+          data-doc-search-tag="services: ServiceType.WebService" href="supranim/core/services.html#WebService">services: ServiceType.WebService</a></li>
           </ul></dd>
 <dt><a name="WebSocketConnection" href="#WebSocketConnection"><span>WebSocketConnection:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1576,7 +1402,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-09 15:17:37 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-11 07:01:17 UTC</small>
       </div>
     </div>
   </div>

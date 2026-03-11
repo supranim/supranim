@@ -83,7 +83,10 @@
     <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
     <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">addCallback
-  <li><a class="reference" href="#addCallback%2CWebServer%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29" title="addCallback(server: WebServer; path: string;
+  <li><a class="reference" href="#addCallback%2Cptr.evhttp%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29" title="addCallback(httpServer: ptr evhttp; path: string;
+            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})">addCallback(httpServer: ptr evhttp; path: string;
+            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})</a></li>
+<li><a class="reference" href="#addCallback%2CWebServer%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29" title="addCallback(server: WebServer; path: string;
             callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})">addCallback(server: WebServer; path: string;
             callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})</a></li>
 
@@ -147,7 +150,7 @@
 
 </ul>
 <ul class="simple nested-toc-section">newWebServer
-  <li><a class="reference" href="#newWebServer%2CPort" title="newWebServer(port: Port = Port(8080)): WebServer">newWebServer(port: Port = Port(8080)): WebServer</a></li>
+  <li><a class="reference" href="#newWebServer%2CPort%2Cstaticbool" title="newWebServer(port: Port = Port(8080); enableThreading: static bool = false): WebServer">newWebServer(port: Port = Port(8080); enableThreading: static bool = false): WebServer</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">peekChunk
@@ -171,6 +174,7 @@
 <ul class="simple nested-toc-section">send
   <li><a class="reference" href="#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders" title="send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)">send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)</a></li>
 <li><a class="reference" href="#send%2CRequest%2Cint%2Cstring%2CHttpHeaders" title="send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)">send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)</a></li>
+<li><a class="reference" href="#send%2CRequest%2Cint%2CHttpHeaders" title="send(req: Request; code: int; httpHeaders: HttpHeaders = nil)">send(req: Request; code: int; httpHeaders: HttpHeaders = nil)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">sendChunk
@@ -187,6 +191,9 @@
 <li><a class="reference" href="#start%2CWebServer%2COnRequest%2CStartupCallback" title="start(server: var WebServer; onRequest: OnRequest;
       startupCallback: StartupCallback = nil)">start(server: var WebServer; onRequest: OnRequest;
       startupCallback: StartupCallback = nil)</a></li>
+<li><a class="reference" href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint" title="start(server: var WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback; threads: int)">start(server: var WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback; threads: int)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">startChunk
@@ -225,7 +232,10 @@
     
     <div id="tocRoot"></div>
     
-    <p class="module-desc"></p>
+    <p class="module-desc"><p>This module implements a high-performance HTTP server using the Libevent library.</p>
+<p>The server is designed to be used in a non-blocking, event-driven manner, allowing for high concurrency and efficient resource usage. It also includes support for HTTP Range requests when streaming files, enabling partial content delivery for large files.</p>
+<p>The API is flexible and can be used for simple use cases with a single request handler, or more complex scenarios with multiple callbacks for different paths.</p>
+</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
@@ -293,13 +303,27 @@
   <h1><a class="toc-backref" href="#12">Procs</a></h1>
   <dl class="item">
     <div id="addCallback-procs-all">
-  <div id="addCallback,WebServer,string,proc(ptr.evhttp_request,pointer)">
+  <div id="addCallback,ptr.evhttp,string,proc(ptr.evhttp_request,pointer)">
+  <dt><pre><span class="Keyword">proc</span> <a href="#addCallback%2Cptr.evhttp%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29"><span class="Identifier">addCallback</span></a><span class="Other">(</span><span class="Identifier">httpServer</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp</span><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span>
+    <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span>.}<span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    <p>Adds a callback for a specific path directly to an evhttp server.</p>
+<p>This is a lower-level API. For more complex routing consider using the Router service which provides higher-level abstractions</p>
+
+    
+  </dd>
+</div>
+<div id="addCallback,WebServer,string,proc(ptr.evhttp_request,pointer)">
   <dt><pre><span class="Keyword">proc</span> <a href="#addCallback%2CWebServer%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29"><span class="Identifier">addCallback</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span>
     <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span>.}<span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Adds a callback for a specific path.
+    <p>Adds a callback for a specific path. This allows you to define custom handler functions for different routes</p>
+<p>Note: This is a lower-level API. For more complex routing consider using the Router service which provides higher-level abstractions.</p>
+
     
   </dd>
 </div>
@@ -312,7 +336,9 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Adds a custom event to the server's event loop.
+    <p>Adds a custom event to the server's event loop.</p>
+<p>This allows you to integrate custom file descriptor events (e.g. for WebSockets or timers) into the same event loop as the HTTP server.</p>
+
     
   </dd>
 </div>
@@ -470,9 +496,8 @@
 
 </div>
 <div id="newWebServer-procs-all">
-  <div id="newWebServer,Port">
-  <dt><pre><span class="Keyword">proc</span> <a href="#newWebServer%2CPort"><span class="Identifier">newWebServer</span></a><span class="Other">(</span><span class="Identifier">port</span><span class="Other">:</span> <span class="Identifier">Port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">8080</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <div id="newWebServer,Port,staticbool">
+  <dt><pre><span class="Keyword">proc</span> <a href="#newWebServer%2CPort%2Cstaticbool"><span class="Identifier">newWebServer</span></a><span class="Other">(</span><span class="Identifier">port</span><span class="Other">:</span> <span class="Identifier">Port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">8080</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">enableThreading</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">bool</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a></pre></dt>
   <dd>
     
     Creates a new WebServer instance.
@@ -549,6 +574,15 @@
     
   </dd>
 </div>
+<div id="send,Request,int,HttpHeaders">
+  <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2Cint%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Sends an HTTP response with no body.
+    
+  </dd>
+</div>
 
 </div>
 <div id="sendChunk-procs-all">
@@ -599,6 +633,16 @@
   <dd>
     
     Starts the web server event loop.
+    
+  </dd>
+</div>
+<div id="start,WebServer,OnRequest,StartupCallback,int">
+  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="webserver.html#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
+           <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="webserver.html#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span> <span class="Identifier">threads</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ResourceExhaustedError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Starts the web server event loop in a thread pool mode for handling requests concurrently. This is suitable for production use to take advantage of multiple CPU cores and handle high traffic efficiently.
     
   </dd>
 </div>
@@ -656,7 +700,7 @@
     <span class="Identifier">inject</span>.}</pre></dt>
   <dd>
     
-    Enables chunked transfer encoding for the response. This template wraps the body of code that sends chunks. Once the body of code that sends chunks. Once the body is done executing it finalizes the chunked response.
+    Enables chunked transfer encoding for the response.
     
   </dd>
 </div>
@@ -672,7 +716,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-09 15:17:36 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-11 07:01:17 UTC</small>
       </div>
     </div>
   </div>

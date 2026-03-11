@@ -1,5 +1,0 @@
-nimTitle	autolink	supranim/http/autolink.html	module supranim/http/autolink		0
-nim	RoutePattern	supranim/http/autolink.html#RoutePattern	tuple RoutePattern		15
-nim	Autolinked	supranim/http/autolink.html#Autolinked	tuple Autolinked		21
-nim	RoutePatternsTable	supranim/http/autolink.html#RoutePatternsTable	type RoutePatternsTable		25
-nim	autolinkController	supranim/http/autolink.html#autolinkController,string,HttpMethod	proc autolinkController(routePath: string; httpMethod: HttpMethod;\n                   isWebSocket = false): Autolinked		40

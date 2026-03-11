@@ -1,11 +1,11 @@
 nimTitle	cookie	supranim/support/cookie.html	module supranim/support/cookie		0
-nim	Cookie	supranim/support/cookie.html#Cookie	object Cookie		16
-nim	CookiesTable	supranim/support/cookie.html#CookiesTable	type CookiesTable		23
-nim	newCookie	supranim/support/cookie.html#newCookie,string,string,Option[DateTime],string,string	proc newCookie(name, value: string;\n          expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);\n          domain = ""; path = "/"; secure, httpOnly = true; sameSite = Strict): ref Cookie		27
-nim	getName	supranim/support/cookie.html#getName,ref.Cookie	proc getName(cookie: ref Cookie): string		43
-nim	getValue	supranim/support/cookie.html#getValue,ref.Cookie	proc getValue(cookie: ref Cookie): string		44
-nim	getDomain	supranim/support/cookie.html#getDomain,ref.Cookie	proc getDomain(cookie: ref Cookie): string		45
-nim	isExpired	supranim/support/cookie.html#isExpired,ref.Cookie	proc isExpired(cookie: ref Cookie): bool		47
-nim	expires	supranim/support/cookie.html#expires,ref.Cookie	proc expires(cookie: ref Cookie)		51
-nim	parseCookies	supranim/support/cookie.html#parseCookies,string	proc parseCookies(cookies: string): CookiesTable		56
-nim	`$`	supranim/support/cookie.html#$,ref.Cookie	proc `$`(cookie: ref Cookie): string		65
+nim	Cookie	supranim/support/cookie.html#Cookie	object Cookie		19
+nim	CookiesTable	supranim/support/cookie.html#CookiesTable	type CookiesTable		26
+nim	newCookie	supranim/support/cookie.html#newCookie,string,string,Option[DateTime],string,string	proc newCookie(name, value: string;\n          expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);\n          domain = ""; path = "/"; secure, httpOnly = true; sameSite = Strict): ref Cookie		30
+nim	getName	supranim/support/cookie.html#getName,ref.Cookie	proc getName(cookie: ref Cookie): string		46
+nim	getValue	supranim/support/cookie.html#getValue,ref.Cookie	proc getValue(cookie: ref Cookie): string		47
+nim	getDomain	supranim/support/cookie.html#getDomain,ref.Cookie	proc getDomain(cookie: ref Cookie): string		48
+nim	isExpired	supranim/support/cookie.html#isExpired,ref.Cookie	proc isExpired(cookie: ref Cookie): bool		50
+nim	expires	supranim/support/cookie.html#expires,ref.Cookie	proc expires(cookie: ref Cookie)		54
+nim	parseCookies	supranim/support/cookie.html#parseCookies,string	proc parseCookies(cookies: string): CookiesTable		59
+nim	`$`	supranim/support/cookie.html#$,ref.Cookie	proc `$`(cookie: ref Cookie): string		68
