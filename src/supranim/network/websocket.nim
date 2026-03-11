@@ -181,7 +181,8 @@ proc parseFrames(ws: ptr WebSocketConnectionImpl, inbuf: ptr Evbuffer) =
     
     let
       u = cast[ptr UncheckedArray[uint8]](p)
-      b0 = u[0]; let b1 = u[1]
+      b0 = u[0]
+      b1 = u[1]
       fin = int((b0 shr 7) and 1)
       opcode = int(b0 and 0x0F)
       masked = int((b1 shr 7) and 1)
