@@ -1,3 +1,11 @@
+#
+# Supranim is a full-featured web framework for building
+# web apps & microservices in Nim.
+# 
+#   (c) 2026 LGPL-v2-or-later License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
+#
+
 import pkg/valido
 import pkg/libsodium/[sodium, sodium_sizes]
 
@@ -10,6 +18,10 @@ proc hashPassword*(pw: string): string =
 proc checkPassword*(pw, hash: string): bool =
   ## Checks if the password matches the hash.
   crypto_pwhash_str_verify(hash, pw)
+
+proc verifyPassword*(pw, hash: string): bool {.inline.} =
+  ## An alias for `checkPassword`
+  checkPassword(pw, hash)
 
 proc boxKeys*: (string, string) =
   ## Generates a new keypair

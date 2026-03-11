@@ -1,4 +1,21 @@
+#
+# Supranim is a full-featured web framework for building
+# web apps & microservices in Nim.
+# 
+#   (c) 2026 LGPL-v2-or-later License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
+#
 import std/[unidecode, strutils]
+
+## This module implements a simple slug generator that converts a string to a URL-friendly format.
+## The `slugify` procedure takes an input string and converts it to a slug by:
+## - Removing leading and trailing whitespace
+## - Replacing sequences of whitespace and punctuation with a specified separator (default is '-')
+## - Converting all characters to lowercase
+## - Optionally allowing slashes if `allowSlash` is set to true
+## 
+## It uses the `unidecode` library to convert non-ASCII characters to their closest ASCII equivalents,
+## ensuring that the resulting slug is URL-friendly and readable
 
 proc slugify*(str: string, sep: static char = '-', allowSlash: bool = false): string =
   ## Convert `input` string to a ascii slug

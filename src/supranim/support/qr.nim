@@ -1,9 +1,13 @@
-# Supranim is a simple MVC-style web framework for building
-# fast web applications, REST API microservices and other cool things.
+# Supranim is a lightweight, high-performance MVC framework for Nim,
+# designed to simplify the development of web applications and REST APIs.
 #
-#     (c) 2024 George Lemon | MIT License
+# It features intuitive routing, modular architecture, and built-in support
+# for modern web standards, making it easy to build scalable and maintainable
+# projects.
+#
+# (c) 2025 Supranim | MIT License
 #     Made by Humans from OpenPeeps
-#     https://github.com/supranim/supranim
+#     https://supranim.com | https://github.com/supranim
 
 import std/[strutils]
 import pkg/[otp, qr, base32]

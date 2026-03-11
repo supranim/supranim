@@ -1,20 +1,22 @@
-# Supranim is a lightweight, high-performance MVC framework for Nim,
-# designed to simplify the development of web applications and REST APIs.
 #
-# It features intuitive routing, modular architecture, and built-in support
-# for modern web standards, making it easy to build scalable and maintainable
-# projects.
+# Supranim is a full-featured web framework for building
+# web apps & microservices in Nim.
+# 
+#   (c) 2026 LGPL-v2-or-later License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
 #
-# (c) 2025 Supranim | MIT License
-#      Made by Humans from OpenPeeps
-#      https://supranim.com | https://github.com/supranim
-
 import nimcrypto
 import std/[tables, times]
 
 from std/httpcore import `$`, HttpCode
 from std/sysrand import urandom
 from std/strutils import toHex, toLowerAscii
+
+## This module implements a simple CSRF token manager that generates, validates, and manages
+## CSRF tokens for web applications. It provides functionality to create new tokens, check
+## their validity, mark them as used, and flush expired or used tokens from the manager.
+## 
+## The tokens are stored in an in-memory table with a specified time-to-live (TTL) for expiration.
 
 export `$`, times, HttpCode
 

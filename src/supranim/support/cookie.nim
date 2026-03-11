@@ -1,16 +1,19 @@
-# Supranim is a lightweight, high-performance MVC framework for Nim,
-# designed to simplify the development of web applications and REST APIs.
 #
-# It features intuitive routing, modular architecture, and built-in support
-# for modern web standards, making it easy to build scalable and maintainable
-# projects.
+# Supranim is a full-featured web framework for building
+# web apps & microservices in Nim.
+# 
+#   (c) 2026 LGPL-v2-or-later License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
 #
-# (c) 2025 Supranim | MIT License
-#     Made by Humans from OpenPeeps
-#     https://supranim.com | https://github.com/supranim
-
 import std/[cookies, tables, options,
             strutils, times, sequtils]
+
+## This module implements a simple cookie handling system for Supranim, allowing you to create,
+## parse, and manage HTTP cookies in your web applications. It provides a `Cookie` object
+## with properties like name, value, domain, path, expiration, and security flags. You
+## can use the `newCookie` procedure to create cookies and the `parseCookies` procedure to parse
+## cookies from request headers. The module also includes utility functions for checking cookie
+## expiration and formatting cookies for HTTP responses.
 
 type
   Cookie* = object
