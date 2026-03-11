@@ -16,9 +16,9 @@ from std/httpcore import HttpCode,
 export HttpCode, Http200, Http204, Http301,
     Http302, Http403, Http404, Http500, Http501
 
-import ./http/[request, response]
+import ./core/[request, response]
 
-from ./http/router import baseMiddlewares
+from ./core/router import baseMiddlewares
 from ./controller import getClientId, getSessionCookie
 
 export request, response, resp, json

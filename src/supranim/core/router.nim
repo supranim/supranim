@@ -27,6 +27,9 @@ type
 
   HttpRoute* = ref object of RootObj
     path: string
+      # The `path` is the original path string used to define the route.
+    regexPath: Regex
+      # The `regexPath` is used to match dynamic routes with parameters.
     httpMethod: HttpMethod
     callback*: Callable
     case httpRouteType: HttpRouteType
@@ -53,8 +56,14 @@ type
 
   HttpRouterError* = object of CatchableError
 
-# var Router*: HttpRouterInstance
-# a singleton of `HttpRouterInstance`
+var Router* {.threadvar.}: HttpRouterInstance
+  ## A thread local singleton instance of `HttpRouterInstance`
+  ## that is used to register routes and error handlers.
+  ## 
+  ## Note that this is a thread-local variable, so each thread will
+  ## have its own instance of the router. This allows for better
+  ## performance in multi-threaded applications, as each thread
+  ## can access its own router instance without any locking mechanism
 
 const
   # Register default HTTP Error Handles
@@ -104,6 +113,7 @@ proc newHttpRoute(path: string,
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
+  result.regexPath = re(path)
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
 
@@ -155,8 +165,8 @@ proc registerRoute*(router: var HttpRouterInstance,
       if not router.httpPatch.hasKey(path):
         router.httpPatch[path] = routeObject
     of HttpHead:
-      if not router.httpPatch.hasKey(path):
-        router.httpPatch[path] = routeObject
+      if not router.httpHead.hasKey(path):
+        router.httpHead[path] = routeObject
     of HttpDelete:
       if not router.httpDelete.hasKey(path):
         router.httpDelete[path] = routeObject
@@ -191,7 +201,8 @@ proc parseRouteNode*(verb, routePath: string,
     queuedRoutes[autolinked.handleName] =
       newCall(
         ident"registerRoute",
-        newDotExpr(ident"App", ident"router"), # must match the singleton
+        # newDotExpr(ident"App", ident"router"), # must match the singleton
+        ident"Router",
         nnkTupleConstr.newTree(
           newLit(autolinked[1]),
           newLit(autolinked[2]),
@@ -385,17 +396,18 @@ macro searchRoute(httpMethod: static string) =
   result = newstmtList()
   let verb = ident httpMethod
   add result, quote do:
-    if router.`verb`.hasKey(requestPath):
+    if likely(router.`verb`.hasKey(requestPath)):
       result.route = router.`verb`[requestPath]
     else:
-      new(result.params)
-      for k in router.`verb`.keys:
-        let someRegexMatch = requestPath.match(re(k))
+      for k, r in router.`verb`:
+        let someRegexMatch = requestPath.match(r.regexPath)
         if someRegexMatch.isSome():
-          result.route = router.`verb`[k]
+          result.route = r # found a matching route
           let pattern = someRegexMatch.get().captures()
-          for key in RegexMatch(pattern).pattern.captureNameId.keys:
-            result.params[key] = pattern[key]
+          if RegexMatch(pattern).pattern.captureNameId.len > 0:
+            new(result.params)
+            for key in RegexMatch(pattern).pattern.captureNameId.keys:
+              result.params[key] = pattern[key]
           break # stop at the first match
 
 macro searchRouteWs*() =
@@ -405,14 +417,15 @@ macro searchRouteWs*() =
     if router.httpWS.hasKey(requestPath):
       result.route = router.httpWS[requestPath]
     else:
-      new(result.params)
-      for k in router.httpWS.keys:
-        let someRegexMatch = requestPath.match(re(k))
+      for k, r in router.httpWS:
+        let someRegexMatch = requestPath.match(r.regexPath)
         if someRegexMatch.isSome():
-          result.route = router.httpWS[k]
+          result.route = r # found a matching WebSocket route
           let pattern = someRegexMatch.get().captures()
-          for key in RegexMatch(pattern).pattern.captureNameId.keys:
-            result.params[key] = pattern[key]
+          if RegexMatch(pattern).pattern.captureNameId.len > 0:
+            new(result.params)
+            for key in RegexMatch(pattern).pattern.captureNameId.keys:
+              result.params[key] = pattern[key]
           break # stop at the first match
 
 proc checkExists*(router: var HttpRouterInstance,

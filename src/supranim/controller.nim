@@ -12,17 +12,15 @@ import std/[macros, macrocache, asyncdispatch, strutils,
 import pkg/jsony
 import pkg/libsodium/[sodium, sodium_sizes]
 
-import ./http/[request, response, router]
+import ./core/[request, response, router]
 import ./support/cookie
 
 from ./core/application import appInstance
 from ./network/http/webserver import streamFile
 
-export jsony, uri
-export request, response, tables
-export asyncdispatch, options
-
-export streamFile
+export jsony, uri, request, response,
+        tables, asyncdispatch, options,
+        streamFile
 
 let keypair* = crypto_box_keypair()
 
@@ -160,9 +158,8 @@ template ctrl*(name, body: untyped) =
   newController(name, body)
 
 macro go*(id: untyped, params: typed) =
-  ## Redirects to a specific GET route
-  ## using the controller identifier. This macro adds
-  ## support for redirecting with query parameters.
+  ## Redirects to a specific GET route using the controller identifier.
+  ## This macro adds support for redirecting with query parameters.
   if queuedRoutes.hasKey(id.strVal):
     let
       route = queuedRoutes[id.strVal]
@@ -183,8 +180,7 @@ macro go*(id: untyped, params: typed) =
   error("Unknown handle name " & id.strVal, id)
 
 macro go*(id: untyped) =
-  ## Redirects to a specific GET route
-  ## using the controller identifier. 
+  ## Redirects to a specific GET route using the controller identifier. 
   expectKind(id, nnkIdent)
   if queuedRoutes.hasKey(id.strVal):
     let

@@ -13,7 +13,7 @@ import std/[tables, dynlib, times, macros, macrocache,
 import pkg/threading/[rwlock, channels]
 import pkg/[#[taskman,]# semver]
 
-import supranim/router
+import supranim/http/router
 import supranim/support/nanoid
 import supranim/http/autolink
 

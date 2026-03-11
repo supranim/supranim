@@ -12,8 +12,7 @@ import pkg/[nyml, kapsis, #[cbor_serialization]#]
 import pkg/threading/[once, rwlock]
 import pkg/libevent/bindings/[http, buffer, event]
 
-import ./[config, paths, plugins]
-import ../http/[request, response, router]
+import ./[config, paths, request, response, router]
 
 # import ../network/udpserver
 import ../support/uuid
@@ -103,7 +102,7 @@ proc config*(app: Application, key: string): JsonNode =
 #
 template initHttpRouter* =
   App.key = uuid4()
-  macro initHttpRouter() =
+  macro initHttpRouterMacro() =
     result = newStmtList()
     var registerRoutes = newStmtList()
     for k, ctrl in queuedRoutes:
@@ -116,8 +115,12 @@ template initHttpRouter* =
           nnkPragmaBlock.newTree(
             nnkPragma.newTree(ident"gcsafe"),
             nnkStmtList.newTree(
+              # newAssignment(
+              #   newDotExpr(ident"App", ident"router"),
+              #   newCall(ident"newHttpRouter")
+              # ),
               newAssignment(
-                newDotExpr(ident"App", ident"router"),
+                ident"Router",
                 newCall(ident"newHttpRouter")
               ),
               registerRoutes
@@ -128,8 +131,7 @@ template initHttpRouter* =
         #   ident "thread"
         # )
       )
-    add result, newCall(ident"initRouter")
-  initHttpRouter()
+  initHttpRouterMacro()
 
 when defined supraMicroservice:
   # Supranim's microservice architecture
@@ -154,7 +156,7 @@ when defined supraMicroservice:
         app.pluginmanager.autoloadModule(path, rootPath)
       if not module.isNil:
         for route in module[].routes[].routes:
-          app.router.registerRoute((route[1], route[2]), route[3], module[].controllers[route[0]])
+          Router.registerRoute((route[1], route[2]), route[3], module[].controllers[route[0]])
   
   # proc controllers*(app: ApplicationObject, key: string): PluggableController =
   #   ## Retrieves a Pluggable Controller by `key`. If not found
@@ -227,22 +229,27 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
   result = newStmtList()
   add result, quote do:
     import std/[httpcore, macros, macrocache, options]
-    import supranim/http/[request, response]
+    import pkg/supranim/core/[request, response]
 
   add result, newCall(ident"initApplication")
   if not skipLocalConfig:
+    # Some Supranim-based apps may want to skip the loading of local configuration files
+    # when the structure of the application is different from the default one.
+    # In such cases, the `skipLocalConfig` parameter can be set to `true` to
+    # skip the loading of local config files.
     when not compileOption("app", "lib"):
       # Application Initialization via Kapsis CLI
       loadEnvStatic() # read `.env.yml` config file
-
       add result, quote do:
         App.configs = newOrderedTable[string, Document]()
-        for yamlFilePath in walkPattern(configPath / "*.yml"):
-          let configFile = yamlFilePath.splitFile
-          try:
-            App.configs[configFile.name] = yaml(yamlFilePath.readFile).toJson
-          except YAMLException:
-            displayError("Invalid YAML configuration: " & yamlFilePath)
+        for path in walkFiles(App.applicationPaths.resolve("config", "*")):
+          let p = path.splitFile
+          if p.ext in [".yml", ".yaml"]:
+            let configFile = path.splitFile
+            try:
+              App.configs[p.name] = yaml(readFile(path)).toJson
+            except YAMLException:
+              displayError("Invalid YAML configuration: " & path, quitProcess = true)
   if initBody != nil:
     add result, quote do:
       `initBody`
@@ -258,8 +265,8 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
 
   when defined supraMicroservice:
     add result, quote do:
-      app.router.errorHandler(Http404, DefaultHttpError)
-      app.router.errorHandler(Http500, DefaultHttpError)
+      Router.errorHandler(Http404, DefaultHttpError)
+      Router.errorHandler(Http500, DefaultHttpError)
       app.enablePluginManager()
   else:
     add result, loadEventListeners()
@@ -277,10 +284,10 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
     # initialize the HTTP Router
     add result, quote do:
       initHttpRouter()
-
       proc startupCallback() {.gcsafe.} =
         {.gcsafe.}:
-          App.router.errorHandler(Http404, get4xx)
+          initRouter()
+          Router.errorHandler(Http404, get4xx)
     
     # add the service providers
     add result, serviceProviders
@@ -306,8 +313,17 @@ template initStartCommand*(v: Values, createDirs = true) =
   let path = $(v.get("directory").getPath)
   if App.applicationPaths.init(path, createDirs):
     # try to initialize the application
+    let runtimePath = App.applicationPaths.getInstallationPath()
     display(span("⚡️ Start Supranim application"))
-    display(span"📂 Installation path:", span(App.applicationPaths.getInstallationPath))
+    display(span"📂 Installation path:", span(runtimePath))
+    if not dirExists(runtimePath / "config"):
+      # create runtime config directory and copy default config files.
+      createDir(runtimePath / "config")
+      for file in walkFiles(paths.configPath / "*"):
+        let f = file.splitFile
+        if f.ext in [".yml", ".yaml"]:
+          let dest = runtimePath / "config" / f.name & f.ext
+          if not fileExists(dest): copyFile(file, dest)
     appInitialized = true
 
 template cli*(app: Application, cliCommands) {.dirty.} =
@@ -338,7 +354,7 @@ template services*(app: Application, servicesStmt) {.inject.} =
         nnkInfix.newTree(
           ident"/",
           ident"core",
-          ident "servicemanager"
+          ident "services"
         )
       )
     )

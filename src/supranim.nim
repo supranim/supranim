@@ -7,7 +7,7 @@
 #
 
 import std/[options, asyncdispatch, asynchttpserver,
-      httpcore, osproc, os, strutils, sequtils,
+      httpcore, osproc, os, strutils, sequtils, critbits,
       posix_utils, uri, macros, macrocache, times]
 
 from std/net import Port, `$`
@@ -15,18 +15,16 @@ from std/nativesockets import Domain
 
 import pkg/kapsis/cli
 
-import ./supranim/core/utils
-import ./supranim/core/application
+import ./supranim/core/[application, router, fileserver, utils]
 import ./supranim/controller
-
 import ./supranim/network/http/webserver
 import ./supranim/network/websocket
-import ./supranim/http/[router, fileserver]
 import ./supranim/service/events
 
 export application, webserver, websocket,
-              router, fileserver, strutils
+        router, fileserver, strutils
 
+export events, countProcessors
 export Domain, Port, `$`, releaseUnusedMemory
 
 macro runBaseMiddlewares*(req, res) =
@@ -46,7 +44,8 @@ macro runBaseMiddlewares*(req, res) =
             ),
             nnkOfBranch.newTree(
               ident("Http200"),
-              newStmtList().add(nnkCommand.newTree(ident("echo"), newLit("x")))
+              newStmtList().add(nnkDiscardStmt.newTree(newEmptyNode()))
+
             ),
             nnkElse.newTree(
               newStmtList().add(nnkDiscardStmt.newTree(newEmptyNode()))
@@ -59,7 +58,8 @@ macro runBaseMiddlewares*(req, res) =
 # Httpbeast Wrapper
 #
 template getBaseMiddlewares*(req, res) =
-  runBaseMiddlewares(req, res)
+  when not defined httpbench:
+    runBaseMiddlewares(req, res)
 
 template run*(app: Application, optionalBlock: untyped) {.dirty.} =
   ## Runs the Supranim application server.
@@ -68,9 +68,9 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
   block:
     template invoke4xxHandler(path, req, res) =
       when defined supraMicroservice:
-        app.router.call4xx(req.addr, res.addr)
+        Router.call4xx(req.addr, res.addr)
       else:
-        app.router.call4xx(req, res)
+        Router.call4xx(req, res)
       req.resp(Http404, res.getBody, res.getHeaders)
       event().emit("http.error", some(@[path, $Http404]))
       
@@ -81,16 +81,20 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
       # Bootstrap Supranim from a web-based application.
       proc onRequest(req: var webserver.Request) {.gcsafe.} =
         {.gcsafe.}:
+          # req.send(Http200, "", newHttpHeaders()) # send 100 Continue response to the client
+          # return
           var res = Response(headers: newHttpHeaders())
           getBaseMiddlewares(req, res)
           let
             path = req.getUriPath()
             httpMethod = req.getHttpMethod()
-            runtimeCheck =
-              app.router.checkExists(path, httpMethod)
+            runtimeCheck = Router.checkExists(path, httpMethod)
+          # echo path
+          # echo runtimeCheck.exists
           case runtimeCheck.exists
           of true:
-            req.setParams(runtimeCheck.params)
+            if runtimeCheck.params != nil: 
+              req.setParams(runtimeCheck.params)
             let middlewareStatus: HttpCode =
               runtimeCheck.route.resolveMiddleware(req, res)
             case middlewareStatus
@@ -134,10 +138,10 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
           of false:
             when defined webApp:
               when defined supraFileserver:
-                # useful when the supranim application is running
-                # without a reverse proxy in front of it, for example in development.
-                # in production it's recommended to serve static assets from a CDN or
-                # a reverse proxy like Nginx
+                # useful when the supranim application is running without a reverse
+                # proxy in front of it, for example in development.
+                # in production it's recommended to use a reverse proxy like Nginx,
+                # Caddy, or Traefik to serve static assets and handle SSL termination.
                 var hasFoundResource: bool
                 if app.assetsHandler != nil:
                   app.assetsHandler(req, res, hasFoundResource)
@@ -150,14 +154,20 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                 invoke4xxHandler(path, req, res)
             else:
               invoke4xxHandler(path, req, res)
-          # discard releaseUnusedMemory() # free up memory after each request
 
       # Start the HTTP server
-      let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)
+      # let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)
+
       event().emit("app.startup")
-      var server = newWebServer(Port(app.config("server.port").getInt))
+      var server = newWebServer(Port(app.config("server.port").getInt), true)
+      
+      # when provided, the optional block can be used to inject
+      # additional logic during the server startup process
       optionalBlock
-      server.start(onRequest, startupCallback)
+      
+      # Starts the actual server loop, this will block
+      # the main thread and keep the server running until it's stopped.
+      server.start(onRequest, startupCallback, threads = countProcessors())
 
 template run*(app: Application) =
   ## Runs the Supranim application server without an optional block.

@@ -39,7 +39,7 @@ const
 type
   ApplicationPaths* = object
     installPath: string
-      # absolute path to the installation directory
+      # The absolute path to the application runtime installation directory
       
 template p*(x: varargs[string]): string =
   path.installPath / x.join("/")

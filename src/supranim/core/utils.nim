@@ -10,6 +10,9 @@
 # Cross-platform: Linux (glibc) + macOS (libmalloc)
 # todo windows?
 
+const
+  MaxReqResSize* = 1_048_576 # 1MB - todo expose to config?
+
 when defined(macosx):
   type
     MallocZoneT* = object ## Opaque; libmalloc internal
@@ -50,3 +53,5 @@ else:
 template freemem*(x: untyped) =
   {.gcsafe.}:
     discard releaseUnusedMemory()
+
+  

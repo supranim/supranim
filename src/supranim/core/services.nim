@@ -13,10 +13,8 @@ import pkg/checksums/md5
 import pkg/threading/once
 import pkg/kapsis/cli
 
-import pkg/supranim/application
-import pkg/supranim/[router, controller]
-import pkg/supranim/core/paths
-import pkg/supranim/http/autolink
+import pkg/supranim/[application, controller]
+import pkg/supranim/core/[paths, autolink, router]
 
 from std/net import Port, `$`
 from std/httpcore import HttpCode, HttpMethod

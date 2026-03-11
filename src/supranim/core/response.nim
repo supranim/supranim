@@ -69,9 +69,9 @@ proc resp*(req: Request, code: HttpCode,
   ## Responds with the specified HttpCode and body.
   var serverDate = now().utc().format("ddd, dd MMM yyyy HH:mm:ss 'GMT'")
   let bodyLen = $body.len
-  var headers = headers
-  if headers == nil:
-    headers = HttpHeaders()
+  var headers =
+    if headers != nil: headers
+    else: newHttpHeaders()
   headers.add("Content-Length", $bodyLen)
   headers.add("Date", $serverDate)
   req.send(code.int, body, headers)

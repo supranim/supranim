@@ -7,7 +7,7 @@
 #
 
 import std/[os, posix, tables, httpcore, options,
-          uri, strutils, strscans, sequtils]
+          uri, strutils, strscans, sequtils, atomics]
 
 import pkg/libevent/bindings/[http, event, buffer, threaded, listener]
 export evhttp_request, threaded
@@ -31,6 +31,15 @@ import ../../support/http
 """.}
 
 from std/net import Port, `$`
+
+## This module implements a high-performance HTTP server using the Libevent library.
+## 
+## The server is designed to be used in a non-blocking, event-driven manner, allowing for
+## high concurrency and efficient resource usage. It also includes support for HTTP Range requests
+## when streaming files, enabling partial content delivery for large files.
+## 
+## The API is flexible and can be used for simple use cases with a single request handler,
+## or more complex scenarios with multiple callbacks for different paths.
 
 type
   WebServer* = ref object
@@ -75,8 +84,63 @@ else:
     OnRequest* = proc(req: var Request) {.nimcall.}
       ## Callback type for handling HTTP requests.
 
-proc newWebServer*(port: Port = Port(8080)): WebServer =
+type
+  WorkerCtx = object
+    # Context passed to worker threads in pool mode
+    port: Port
+      # The port the worker should listen on
+    listenFd: cint
+      # The shared listening socket file descriptor
+    when not defined(supranimUseGlobalOnRequest):
+      handler: OnRequest
+        # The request handler for this worker (if not using global handler)
+
+var gLibeventThreadingInit: Atomic[bool]
+proc ensureLibeventThreading() =
+  # Must be called before creating any event_base in multithreaded mode.
+  if not gLibeventThreadingInit.load(moAcquire):
+    doAssert evthread_use_pthreads() == 0, "evthread_use_pthreads failed"
+    gLibeventThreadingInit.store(true, moRelease)
+
+proc applyAllowedMethods(httpServer: ptr evhttp) =
+  let allowedMethods = (uint16(EVHTTP_REQ_GET) or uint16(EVHTTP_REQ_POST) or
+    uint16(EVHTTP_REQ_HEAD) or uint16(EVHTTP_REQ_PUT) or
+    uint16(EVHTTP_REQ_DELETE) or uint16(EVHTTP_REQ_OPTIONS) or
+    uint16(EVHTTP_REQ_PATCH) or uint16(EVHTTP_REQ_TRACE) or
+    uint16(EVHTTP_REQ_CONNECT))
+  evhttp_set_allowed_methods(httpServer, allowedMethods)
+
+proc noopListenerCb(listener: ptr evconnlistener, fd: evutil_socket_t,
+                     res: ptr SockAddr, socklen: cint, user_arg: pointer) {.cdecl.} = discard
+
+proc newReusePortListener(base: ptr event_base,
+          httpServer: ptr evhttp, port: Port): ptr evconnlistener =
+  var sin: Sockaddr_in
+  zeroMem(addr sin, sizeof(sin))
+  sin.sin_family = typeof(sin.sin_family)(AF_INET)
+  sin.sin_port = htons(port.uint16)
+  sin.sin_addr.s_addr = htonl(INADDR_ANY.uint32)
+
+  let flags =
+    LEV_OPT_CLOSE_ON_FREE or
+    LEV_OPT_REUSEABLE or
+    LEV_OPT_REUSEABLE_PORT
+
+  result = evconnlistener_new_bind(
+    base,
+    noopListenerCb, nil,   # <-- must not be nil
+    flags,
+    -1,
+    cast[ptr SockAddr](addr sin),
+    cint(sizeof(sin))
+  )
+  doAssert result != nil, "evconnlistener_new_bind failed"
+  doAssert evhttp_bind_listener(httpServer, result) != nil, "evhttp_bind_listener failed"
+
+proc newWebServer*(port: Port = Port(8080), enableThreading: static bool = false): WebServer =
   ## Creates a new WebServer instance.
+  when enableThreading == true:
+    ensureLibeventThreading()
   new(result)
   result.base = event_base_new()
   discard evthread_make_base_notifiable(result.base)
@@ -85,32 +149,26 @@ proc newWebServer*(port: Port = Port(8080)): WebServer =
   # Create HTTP server
   result.httpServer = evhttp_new(result.base)
   assert result.httpServer != nil
-
-  # add allowed methods to evhttp to ensure it
-  # properly handles them and doesn't reject with 405
-  let allowedMethods = (uint16(EVHTTP_REQ_GET) or uint16(EVHTTP_REQ_POST) or
-    uint16(EVHTTP_REQ_HEAD) or uint16(EVHTTP_REQ_PUT) or
-    uint16(EVHTTP_REQ_DELETE) or uint16(EVHTTP_REQ_OPTIONS) or
-    uint16(EVHTTP_REQ_PATCH) or uint16(EVHTTP_REQ_TRACE) or
-    uint16(EVHTTP_REQ_CONNECT))
-  evhttp_set_allowed_methods(result.httpServer, allowedMethods)
+  applyAllowedMethods(result.httpServer)
   result.port = port
 
 when defined supranimUseGlobalOnRequest:
-  var appOnRequest: OnRequest # global request handler
+  var appOnRequest {.global.}: OnRequest # global request handler
 
 proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil)
 
 proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
   # initialize Request object
+  let host = evhttp_request_get_host(raw)
   var req = Request(
     raw: raw,
     clientIp: (
-      if evhttp_request_get_host(raw) != nil: $evhttp_request_get_host(raw)
+      if host != nil: $evhttp_request_get_host(raw)
       else: "unknown"
     ),
     httpMethod: evhttp_request_get_command(raw)
   )
+
   # parse the path and URI
   let evUri: ptr evhttp_uri = evhttp_request_get_evhttp_uri(raw)
   if evUri != nil:
@@ -122,16 +180,86 @@ proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
       req.send(301, "", headers)
       return
     req.path = normPath
-    req.uri = uri.parseUri(req.path)
+    req.uri = uri.parseUri(normPath)
     req.uri.scheme = $evhttp_uri_get_scheme(evUri)
     req.uri.query = $evhttp_uri_get_query(evUri)
     req.uri.anchor = $evhttp_uri_get_fragment(evUri)
+  
   # Call the user-defined request handler
   when defined supranimUseGlobalOnRequest:
-    appOnRequest(req) # use global handler
+    if likely(appOnRequest != nil):
+      appOnRequest(req)
+    else:
+      req.send(500, "No request handler")
   else:
     let handler = cast[OnRequest](arg)
-    if handler != nil: handler(req)
+    if likely(handler != nil):
+      handler(req)
+    else: req.send(500, "No request handler")
+
+proc bindSharedSocket(port: Port): cint =
+  let fd = socket(AF_INET, SOCK_STREAM, 0)
+  doAssert fd.int >= 0, "socket() failed"
+
+  var one: cint = 1
+  doAssert setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, addr one, SockLen(sizeof(one))) == 0,
+    "setsockopt(SO_REUSEADDR) failed"
+
+  var sin: Sockaddr_in
+  zeroMem(addr sin, sizeof(sin))
+  sin.sin_family = typeof(sin.sin_family)(AF_INET)
+  sin.sin_port = htons(port.uint16)
+  sin.sin_addr.s_addr = htonl(INADDR_ANY.uint32)
+
+  doAssert bindSocket(fd, cast[ptr SockAddr](addr sin), SockLen(sizeof(sin))) == 0, "bind() failed"
+  doAssert listen(fd, 10240) == 0, "listen() failed"
+
+  let flags = fcntl(fd, F_GETFL, 0)
+  doAssert flags >= 0, "fcntl(F_GETFL) failed"
+  doAssert fcntl(fd, F_SETFL, flags or O_NONBLOCK) == 0, "fcntl(F_SETFL,O_NONBLOCK) failed"
+
+  result = fd.cint
+
+proc webWorker(arg: (ptr WorkerCtx, StartupCallback)) {.thread.} =
+  # Worker thread entry point. Each worker creates its own event base and HTTP server,
+  # but they all share the same listening socket for accepting connections.
+  #
+  # This allows us to handle requests concurrently across multiple threads while still
+  # using the efficient event-driven model of libevent.
+  # 
+  # Basically, we're creating a pool of worker threads that all listen on the same port
+  # and libevent will distribute incoming connections among them. Each worker thread runs its own
+  # event loop and handles requests independently, allowing us to take advantage of multiple CPU cores
+  let (ctxPtr, startupCallback) = arg
+  let ctx = ctxPtr[]
+
+  var base = event_base_new()
+  doAssert base != nil
+  discard evthread_make_base_notifiable(base)
+
+  var httpServer = evhttp_new(base)
+  doAssert httpServer != nil
+
+  # Set the same allowed methods for each worker's HTTP server
+  applyAllowedMethods(httpServer)
+  doAssert evhttp_accept_socket(httpServer, ctx.listenFd) == 0, "evhttp_accept_socket failed"
+  
+  # the startup callback contains threadvar initialization
+  # code that needs to run in the context of each worker thread
+  if startupCallback != nil:
+    startupCallback()
+
+  when defined(supranimUseGlobalOnRequest):
+    evhttp_set_gencb(httpServer, initialOnRequest, nil)
+  else:
+    evhttp_set_gencb(httpServer, initialOnRequest, cast[pointer](ctx.handler))
+  
+  # Start the event loop for this worker thread
+  discard event_base_dispatch(base)
+
+  evhttp_free(httpServer)
+  event_base_free(base)
+  dealloc(ctxPtr)
 
 proc start*(server: var WebServer) =
   ## Start the web server with default no-op request handler.
@@ -143,22 +271,70 @@ proc start*(server: var WebServer, onRequest: OnRequest,
               startupCallback: StartupCallback = nil) =
   ## Starts the web server event loop.
   assert server.httpServer != nil # ensure server is initialized
-  assert evhttp_bind_socket(server.httpServer, "0.0.0.0", server.port.uint16) == 0
-  
+
   if startupCallback != nil:
     startupCallback() # TODO move to initialRequest?
-  # Set the global request handler
-  when defined supranimUseGlobalOnRequest:
+
+  assert server.httpServer != nil
+  assert evhttp_bind_socket(server.httpServer, "0.0.0.0", server.port.uint16) == 0
+  when defined(supranimUseGlobalOnRequest):
     appOnRequest = onRequest
     evhttp_set_gencb(server.httpServer, initialOnRequest, nil)
   else:
     evhttp_set_gencb(server.httpServer, initialOnRequest, cast[pointer](onRequest))
   assert event_base_dispatch(server.base) > -1
-
-  # cleanup after event loop ends
   evhttp_free(server.httpServer)
   event_base_free(server.base)
 
+proc start*(server: var WebServer, onRequest: OnRequest,
+              startupCallback: StartupCallback,
+              threads: int) =
+  ## Starts the web server event loop in a thread pool mode for handling
+  ## requests concurrently. This is suitable for production use to take
+  ## advantage of multiple CPU cores and handle high traffic efficiently.
+  assert server.httpServer != nil
+  when not compileOption("threads"):
+    # Nim 2.x enables threads by default, but if for some reason
+    # threads are not enabled we cannot run in pool mode
+    {.error: "Mutli-threaded Supranim requires threads support. Use `--threads:on`".}
+
+  ensureLibeventThreading()
+  if server.httpServer != nil:
+    evhttp_free(server.httpServer)
+    server.httpServer = nil
+  if server.base != nil:
+    event_base_free(server.base)
+    server.base = nil
+
+  let sharedFd = bindSharedSocket(server.port)
+  when defined(supranimUseGlobalOnRequest):
+    appOnRequest = onRequest
+    
+  var workers = newSeq[Thread[(ptr WorkerCtx, StartupCallback)]](threads - 1)
+  for i in 0 ..< workers.len:
+    let ctx = cast[ptr WorkerCtx](alloc0(sizeof(WorkerCtx)))
+    ctx.port = server.port
+    ctx.listenFd = sharedFd
+    when not defined(supranimUseGlobalOnRequest):
+      ctx.handler = onRequest
+    createThread(workers[i], webWorker, (ctx, startupCallback))
+
+  let mainCtx = cast[ptr WorkerCtx](alloc0(sizeof(WorkerCtx)))
+  mainCtx.port = server.port
+  mainCtx.listenFd = sharedFd
+  when not defined(supranimUseGlobalOnRequest):
+    mainCtx.handler = onRequest
+
+  # start a web worker in the main thread
+  webWorker((mainCtx, startupCallback))
+  
+  for t in workers:
+    joinThread(t)
+  discard close(sharedFd)
+
+#
+# High-level API for handling requests and sending responses
+#
 proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response.
   if httpHeaders != nil:
@@ -170,6 +346,17 @@ proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil
   assert buf != nil # should never be nil
   discard evbuffer_add(buf, body.cstring, body.len.csize_t)
   evhttp_send_reply(req.raw, code.cint, "", buf)
+
+proc send*(req: Request, code: int, httpHeaders: HttpHeaders = nil) =
+  ## Sends an HTTP response with no body.
+  if httpHeaders != nil:
+    let headers = evhttp_request_get_output_headers(req.raw)
+    evhttp_clear_headers(headers)
+    for k, v in httpHeaders:
+      assert evhttp_add_header(headers, k.cstring, v.cstring) == 0
+  let buf = evhttp_request_get_output_buffer(req.raw)
+  assert buf != nil # should never be nil
+  evhttp_send_reply(req.raw, code.cint, nil, buf)
 
 proc send*(req: Request, code: HttpCode, body: string, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response using HttpCode enum.
@@ -190,9 +377,6 @@ proc endChunk*(req: Request) =
 
 template withChunks*(reqInstance: Request, httpHeaders: HttpHeaders, body) {.inject.} =
   ## Enables chunked transfer encoding for the response.
-  ## This template wraps the body of code that sends chunks.
-  ## Once the body of code that sends chunks.
-  ## Once the body is done executing it finalizes the chunked response.
   if httpHeaders != nil:
     let headers = evhttp_request_get_output_headers(reqInstance.raw)
     for k, v in httpHeaders:
@@ -258,7 +442,6 @@ proc getHeaders*(req: var Request): Option[HttpHeaders] =
     evhttp_request_get_input_headers(req.raw),
     collect, addr(headers)
   )
-
   if headers.len > 0:
     req.headers = some(newHttpHeaders(headers))
   reset(headers)
@@ -351,9 +534,11 @@ proc streamFileChunkCb(conn: ptr evhttp_connection, ctxPtr: pointer) {.cdecl.} =
     discard close(ctx.fd)
     dealloc(ctx)
     return
+
   let buf = evhttp_request_get_output_buffer(ctx.req)
   discard evbuffer_add_file_segment(buf, seg, 0, thisChunk)
   ctx.offset += thisChunk
+  
   # Schedule next chunk after this one is sent
   evhttp_send_reply_chunk_with_cb(ctx.req, buf, streamFileChunkCb, ctx)
   evbuffer_file_segment_free(seg)
@@ -536,14 +721,30 @@ proc runServer*(onRequest: OnRequest,
 
 proc addEvent*(server: WebServer, callback: proc(fd: cint, events: cshort, arg: pointer){.cdecl.}) =
   ## Adds a custom event to the server's event loop.
+  ## 
+  ## This allows you to integrate custom file descriptor
+  ## events (e.g. for WebSockets or timers) into the same event loop as
+  ## the HTTP server.
   let ev = event_new(server.base, -1, EV_PERSIST, callback, nil)
   assert ev != nil
   var timeout: event.Timeval
   timeout.tv_sec = 0
-  timeout.tv_usec = 30000 # 30ms
+  timeout.tv_usec = 30000 # 30ms timeout to prevent hanging if something goes wrong
   assert event_add(ev, addr(timeout)) == 0
 
 proc addCallback*(server: WebServer, path: string,
         callback: proc(req: ptr evhttp_request, arg: pointer){.cdecl.}) =
-  ## Adds a callback for a specific path.
+  ## Adds a callback for a specific path. This allows
+  ## you to define custom handler functions for different routes
+  ## 
+  ## Note: This is a lower-level API. For more complex routing consider
+  ## using the Router service which provides higher-level abstractions.
   discard evhttp_set_cb(server.httpServer, path.cstring, callback, nil)
+
+proc addCallback*(httpServer: ptr evhttp, path: string,
+        callback: proc(req: ptr evhttp_request, arg: pointer) {.cdecl.}) =
+  ## Adds a callback for a specific path directly to an evhttp server.
+  ## 
+  ## This is a lower-level API. For more complex routing consider
+  ## using the Router service which provides higher-level abstractions
+  discard evhttp_set_cb(httpServer, path.cstring, callback, nil)

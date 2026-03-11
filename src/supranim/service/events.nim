@@ -4,7 +4,7 @@
 #   (c) 2025 MIT License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 
-import pkg/supranim/core/servicemanager
+import pkg/supranim/core/services
 
 import pkg/[emitter, libevent/bindings/threaded]
 export emitter

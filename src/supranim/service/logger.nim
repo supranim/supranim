@@ -4,7 +4,7 @@
 #   (c) 2025 MIT License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 
-import pkg/supranim/core/servicemanager
+import pkg/supranim/core/services
 
 # initService Logger[Global]:
 #   ## A thread-based web-service for handling

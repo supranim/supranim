@@ -1,6 +1,6 @@
 import std/[strutils, tables, times, macros, os, macrocache]
 
-import pkg/supranim/core/servicemanager
+import pkg/supranim/core/services
 import pkg/supranim/core/paths
 
 ## This service provider implements a static assets bundler,
