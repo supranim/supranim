@@ -16,7 +16,7 @@ from std/httpcore import HttpCode,
 export HttpCode, Http200, Http204, Http301,
     Http302, Http403, Http404, Http500, Http501
 
-import ./http/[request, response]
+import ./core/[request, response]
 export request, response
 
 macro newAfterware*(name, body: untyped) =
