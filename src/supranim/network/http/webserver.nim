@@ -9,6 +9,7 @@
 import std/[os, posix, tables, httpcore, options,
           uri, strutils, strscans, sequtils, atomics]
 
+import pkg/threading/rwlock
 import pkg/libevent/bindings/[http, event, buffer, threaded, listener]
 export evhttp_request, threaded
 
@@ -50,6 +51,12 @@ type
       ## The underlying evhttp server.
     port*: Port
       ## The port the server listens on.
+    otherOnRequestCallbacks*: Table[string, OnRequestLowLevel]
+      ## Store other path-specific callbacks. This table is used to inject
+      ## low-level callbacks for specific paths. It works in both single-threaded and multi-threaded modes.
+    enableMultiThreading*: bool
+      # Whether the server is running in multi-threaded mode. This affects how
+      # callbacks are stored and invoked.
 
   Request* = object
     ## Represents an HTTP request.
@@ -71,9 +78,14 @@ type
       ## The request body (lazily initialized).
     routeParams*: TableRef[string, string]
       ## The route parameters extracted from the URL.
+  
+  OnRequestLowLevel* = proc(req: ptr evhttp_request, arg: pointer) {.cdecl.}
+    ## Low-level callback type for handling HTTP requests directly with evhttp_request.
 
   StartupCallback* = proc() {.gcsafe.}
     ## Callback type for server startup (optional).
+
+var webWorkerLocker = createRwLock()
 
 when defined supranimUseGlobalOnRequest:
   type
@@ -94,6 +106,15 @@ type
     when not defined(supranimUseGlobalOnRequest):
       handler: OnRequest
         # The request handler for this worker (if not using global handler)
+    otherOnRequestCallbacks: Table[string, OnRequestLowLevel]
+      # When using multi-threaded mode, we need to copy
+      # the path-specific callbacks to each worker's context
+
+#
+# fwd declarations
+#
+proc addCallback*(server: WebServer, path: string, callback: OnRequestLowLevel)
+proc addCallback*(httpServer: ptr evhttp, path: string, callback: OnRequestLowLevel)
 
 var gLibeventThreadingInit: Atomic[bool]
 proc ensureLibeventThreading() =
@@ -137,10 +158,8 @@ proc newReusePortListener(base: ptr event_base,
   doAssert result != nil, "evconnlistener_new_bind failed"
   doAssert evhttp_bind_listener(httpServer, result) != nil, "evhttp_bind_listener failed"
 
-proc newWebServer*(port: Port = Port(8080), enableThreading: static bool = false): WebServer =
+proc newWebServer*(port: Port = Port(8080)): WebServer =
   ## Creates a new WebServer instance.
-  when enableThreading == true:
-    ensureLibeventThreading()
   new(result)
   result.base = event_base_new()
   discard evthread_make_base_notifiable(result.base)
@@ -151,6 +170,25 @@ proc newWebServer*(port: Port = Port(8080), enableThreading: static bool = false
   assert result.httpServer != nil
   applyAllowedMethods(result.httpServer)
   result.port = port
+
+proc newWebServer*(port: Port = Port(8080), enableMultiThreading: bool): WebServer =
+  ## Creates a new WebServer instance with multi-threading support.
+  ## When `enableMultiThreading` is true, the server will be started in a thread pool mode
+  ## which allows handling multiple requests concurrently across multiple CPU cores.
+  ## 
+  ## This is recommended for production use. For development, you can use the
+  ## single-threaded version for simplicity.
+  ensureLibeventThreading()
+  new(result)
+  
+  # `enableMultiThreading` is just a marker here
+  # that will prevent initialize the default `evhttp` server.
+  # the actual multi-threaded behavior is determined by
+  # which `start` proc is called.
+  result.enableMultiThreading = true
+  result.port = port
+  # Note: We do not create the listener here because in multi-threaded
+  # mode we need to share the listening socket among worker threads.
 
 when defined supranimUseGlobalOnRequest:
   var appOnRequest {.global.}: OnRequest # global request handler
@@ -254,6 +292,13 @@ proc webWorker(arg: (ptr WorkerCtx, StartupCallback)) {.thread.} =
   else:
     evhttp_set_gencb(httpServer, initialOnRequest, cast[pointer](ctx.handler))
   
+  # register any additional path-specific callbacks for this worker
+  readWith webWorkerLocker:
+    # not sure if we need to lock here since the server should
+    # not be accepting requests yet, but just to be safe
+    for path, callback in ctx.otherOnRequestCallbacks:
+      discard evhttp_set_cb(httpServer, path.cstring, callback, nil)
+
   # Start the event loop for this worker thread
   discard event_base_dispatch(base)
 
@@ -292,20 +337,14 @@ proc start*(server: var WebServer, onRequest: OnRequest,
   ## Starts the web server event loop in a thread pool mode for handling
   ## requests concurrently. This is suitable for production use to take
   ## advantage of multiple CPU cores and handle high traffic efficiently.
-  assert server.httpServer != nil
+  assert server.httpServer == nil, 
+    "Use newWebServer(port, enableMultiThreading=true) to create a server that supports multi-threading"
   when not compileOption("threads"):
     # Nim 2.x enables threads by default, but if for some reason
     # threads are not enabled we cannot run in pool mode
     {.error: "Mutli-threaded Supranim requires threads support. Use `--threads:on`".}
 
   ensureLibeventThreading()
-  if server.httpServer != nil:
-    evhttp_free(server.httpServer)
-    server.httpServer = nil
-  if server.base != nil:
-    event_base_free(server.base)
-    server.base = nil
-
   let sharedFd = bindSharedSocket(server.port)
   when defined(supranimUseGlobalOnRequest):
     appOnRequest = onRequest
@@ -315,6 +354,7 @@ proc start*(server: var WebServer, onRequest: OnRequest,
     let ctx = cast[ptr WorkerCtx](alloc0(sizeof(WorkerCtx)))
     ctx.port = server.port
     ctx.listenFd = sharedFd
+    ctx.otherOnRequestCallbacks = server.otherOnRequestCallbacks
     when not defined(supranimUseGlobalOnRequest):
       ctx.handler = onRequest
     createThread(workers[i], webWorker, (ctx, startupCallback))
@@ -324,6 +364,7 @@ proc start*(server: var WebServer, onRequest: OnRequest,
   mainCtx.listenFd = sharedFd
   when not defined(supranimUseGlobalOnRequest):
     mainCtx.handler = onRequest
+    mainCtx.otherOnRequestCallbacks = move server.otherOnRequestCallbacks
 
   # start a web worker in the main thread
   webWorker((mainCtx, startupCallback))
@@ -332,30 +373,45 @@ proc start*(server: var WebServer, onRequest: OnRequest,
     joinThread(t)
   discard close(sharedFd)
 
+proc setOutHeader(headers: ptr evkeyvalq, name, value: string) =
+  discard evhttp_remove_header(headers, name.cstring) # ignore if absent
+  assert evhttp_add_header(headers, name.cstring, value.cstring) == 0
+
 #
 # High-level API for handling requests and sending responses
 #
 proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response.
+  let headers = evhttp_request_get_output_headers(req.raw)
+
   if httpHeaders != nil:
-    let headers = evhttp_request_get_output_headers(req.raw)
-    evhttp_clear_headers(headers)
+    # Do not clear all headers; just overlay user headers
     for k, v in httpHeaders:
-      assert evhttp_add_header(headers, k.cstring, v.cstring) == 0
+      setOutHeader(headers, k, v)
+
+  # Make response framing explicit for keep-alive reuse
+  setOutHeader(headers, "Content-Length", $body.len)
+  setOutHeader(headers, "Connection", "keep-alive")
+
   let buf = evhttp_request_get_output_buffer(req.raw)
-  assert buf != nil # should never be nil
+  assert buf != nil
   discard evbuffer_add(buf, body.cstring, body.len.csize_t)
   evhttp_send_reply(req.raw, code.cint, "", buf)
 
 proc send*(req: Request, code: int, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response with no body.
+  let headers = evhttp_request_get_output_headers(req.raw)
+
   if httpHeaders != nil:
-    let headers = evhttp_request_get_output_headers(req.raw)
-    evhttp_clear_headers(headers)
     for k, v in httpHeaders:
-      assert evhttp_add_header(headers, k.cstring, v.cstring) == 0
+      setOutHeader(headers, k, v)
+
+  setOutHeader(headers, "Content-Length", "0")
+  setOutHeader(headers, "Connection", "keep-alive")
+
   let buf = evhttp_request_get_output_buffer(req.raw)
-  assert buf != nil # should never be nil
+  assert buf != nil
+  discard evbuffer_add(buf, cstring(""), 0.csize_t)
   evhttp_send_reply(req.raw, code.cint, nil, buf)
 
 proc send*(req: Request, code: HttpCode, body: string, httpHeaders: HttpHeaders = nil) =
@@ -445,7 +501,6 @@ proc getHeaders*(req: var Request): Option[HttpHeaders] =
   if headers.len > 0:
     req.headers = some(newHttpHeaders(headers))
   reset(headers)
-
   return req.headers
 
 proc getHeader*(req: var Request, key: string): Option[string] =
@@ -733,7 +788,7 @@ proc addEvent*(server: WebServer, callback: proc(fd: cint, events: cshort, arg: 
   assert event_add(ev, addr(timeout)) == 0
 
 proc addCallback*(server: WebServer, path: string,
-        callback: proc(req: ptr evhttp_request, arg: pointer){.cdecl.}) =
+    callback: OnRequestLowLevel) =
   ## Adds a callback for a specific path. This allows
   ## you to define custom handler functions for different routes
   ## 
@@ -742,9 +797,20 @@ proc addCallback*(server: WebServer, path: string,
   discard evhttp_set_cb(server.httpServer, path.cstring, callback, nil)
 
 proc addCallback*(httpServer: ptr evhttp, path: string,
-        callback: proc(req: ptr evhttp_request, arg: pointer) {.cdecl.}) =
+    callback: OnRequestLowLevel) =
   ## Adds a callback for a specific path directly to an evhttp server.
   ## 
   ## This is a lower-level API. For more complex routing consider
   ## using the Router service which provides higher-level abstractions
   discard evhttp_set_cb(httpServer, path.cstring, callback, nil)
+
+proc registerCallback*(server: WebServer, path: string, callback: OnRequestLowLevel) =
+  ## Registers a callback to WebServer
+  if not server.enableMultiThreading:
+    # In single-threaded mode we can directly add the callback to the server's evhttp instance
+    server.addCallback(path, callback)
+  else:
+    # In multi-threaded mode we need to add the callback to
+    # each worker's evhttp, so we'll store the callback
+    # to WebServer
+    server.otherOnRequestCallbacks[path] = callback

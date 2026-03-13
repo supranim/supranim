@@ -14,6 +14,7 @@ from std/net import Port, `$`
 from std/nativesockets import Domain
 
 import pkg/kapsis/framework
+import pkg/kapsis/interactive/prompts
 
 import ./supranim/core/[application, router, fileserver, utils]
 import ./supranim/controller
@@ -22,7 +23,8 @@ import ./supranim/network/websocket
 import ./supranim/service/events
 
 export application, webserver, websocket,
-        router, fileserver, strutils
+        router, fileserver, strutils,
+        prompts
 
 export events, countProcessors
 export Domain, Port, `$`, releaseUnusedMemory
