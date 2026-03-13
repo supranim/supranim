@@ -383,36 +383,25 @@ proc setOutHeader(headers: ptr evkeyvalq, name, value: string) =
 proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response.
   let headers = evhttp_request_get_output_headers(req.raw)
-
-  if httpHeaders != nil:
-    # Do not clear all headers; just overlay user headers
+  if headers != nil and httpHeaders != nil:
     for k, v in httpHeaders:
       setOutHeader(headers, k, v)
 
-  # Make response framing explicit for keep-alive reuse
-  setOutHeader(headers, "Content-Length", $body.len)
-  setOutHeader(headers, "Connection", "keep-alive")
-
   let buf = evhttp_request_get_output_buffer(req.raw)
   assert buf != nil
-  discard evbuffer_add(buf, body.cstring, body.len.csize_t)
-  evhttp_send_reply(req.raw, code.cint, "", buf)
+
+  # ensure clean buffer per request
+  discard evbuffer_drain(buf, evbuffer_get_length(buf))
+
+  if body.len > 0:
+    discard evbuffer_add(buf, body.cstring, body.len.csize_t)
+
+  # libevent computes framing from buf.
+  evhttp_send_reply(req.raw, code.cint, nil, buf)
 
 proc send*(req: Request, code: int, httpHeaders: HttpHeaders = nil) =
-  ## Sends an HTTP response with no body.
-  let headers = evhttp_request_get_output_headers(req.raw)
-
-  if httpHeaders != nil:
-    for k, v in httpHeaders:
-      setOutHeader(headers, k, v)
-
-  setOutHeader(headers, "Content-Length", "0")
-  setOutHeader(headers, "Connection", "keep-alive")
-
-  let buf = evhttp_request_get_output_buffer(req.raw)
-  assert buf != nil
-  discard evbuffer_add(buf, cstring(""), 0.csize_t)
-  evhttp_send_reply(req.raw, code.cint, nil, buf)
+  # Route all no-body replies through the same framing path
+  send(req, code, "", httpHeaders)
 
 proc send*(req: Request, code: HttpCode, body: string, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response using HttpCode enum.
