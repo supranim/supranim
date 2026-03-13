@@ -13,7 +13,7 @@ import std/[options, asyncdispatch, asynchttpserver,
 from std/net import Port, `$`
 from std/nativesockets import Domain
 
-import pkg/kapsis/cli
+import pkg/kapsis/framework
 
 import ./supranim/core/[application, router, fileserver, utils]
 import ./supranim/controller

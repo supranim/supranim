@@ -342,7 +342,8 @@ else:
   # PluginManager API
   #
   import std/[os, strutils, sequtils, json]
-  import pkg/[jsony, kapsis/cli]
+  import pkg/jsony
+  import pkg/kapsis/interactive/prompts
 
   type
     LoadPluginHandle* = proc: ptr Plugin {.gcsafe, nimcall.}

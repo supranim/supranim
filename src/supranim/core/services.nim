@@ -11,7 +11,7 @@ import std/[os, macros, macrocache, tables, sequtils,
 
 import pkg/checksums/md5
 import pkg/threading/once
-import pkg/kapsis/cli
+import pkg/kapsis/framework
 
 import pkg/supranim/[application, controller]
 import pkg/supranim/core/[paths, autolink, router]

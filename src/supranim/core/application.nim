@@ -11,6 +11,7 @@ import std/[macros, os, net, tables, strutils,
 import pkg/[nyml, kapsis, #[cbor_serialization]#]
 import pkg/threading/[once, rwlock]
 import pkg/libevent/bindings/[http, buffer, event]
+import pkg/kapsis/interactive/prompts
 
 import ./[config, paths, request, response, router]
 
@@ -19,7 +20,6 @@ import ../support/uuid
 
 export json, nyml, paths, macros
 export supranimServer
-
 
 type
   JsonString* = string  # an alias for JSON string
@@ -231,6 +231,9 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
     import std/[httpcore, macros, macrocache, options]
     import pkg/supranim/core/[request, response]
 
+    import pkg/kapsis/[framework, runtime, types]
+    import pkg/kapsis/interactive/prompts
+
   add result, newCall(ident"initApplication")
   if not skipLocalConfig:
     # Some Supranim-based apps may want to skip the loading of local configuration files
@@ -331,17 +334,18 @@ template cli*(app: Application, cliCommands) {.dirty.} =
   macro registerCommands(cliCmds) =
     result = newStmtList()
     when not compileOption("app", "lib"):
-      var cliCommandsStmt = newStmtList()
-      cliCommandsStmt.add(
-        newCall(ident"commands", cliCmds) # add the commands block
+      # register CLI commands only if the application is not built as a library
+      var cliCommandsStmt = nnkStmtList.newTree(
+        nnkCall.newTree(
+          newIdentNode("initKapsis"),
+          nnkStmtList.newTree(
+            nnkCall.newTree(newIdentNode("commands"), cliCmds)
+          )
+        )
       )
       add result, quote do:
-        import pkg/kapsis
-        import pkg/kapsis/[cli, runtime]
-        kapsis.settings(exitAfterCallback = false)
-        `cliCommandsStmt`
-        # exit if not initialized
-        if not appInitialized: quit()
+        `cliCommandsStmt` # inject the CLI commands into the application
+        if not appInitialized: quit() # prevent the application from running if it has not been initialized via CLI
   registerCommands(cliCommands)
 
 template services*(app: Application, servicesStmt) {.inject.} =
