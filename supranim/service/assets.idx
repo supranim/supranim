@@ -1,8 +1,8 @@
 nimTitle	assets	supranim/service/assets.html	module supranim/service/assets		0
 nim	StaticAssetsError	supranim/service/assets.html#StaticAssetsError	object StaticAssetsError		31
 nim	isPlainText	supranim/service/assets.html#isPlainText,openArray[uint8],int	proc isPlainText(data: openArray[uint8]; sampleSize = 8192): bool		33
-nim	OnInitSingletonCallback`gensym0`gensym10	supranim/service/assets.html#OnInitSingletonCallback`gensym0`gensym10	type OnInitSingletonCallback`gensym0`gensym10		388
-nim	getAssetsInstance	supranim/service/assets.html#getAssetsInstance,OnInitSingletonCallback`gensym0`gensym10,staticbool	proc getAssetsInstance(onceCb`gensym0`gensym10: OnInitSingletonCallback`gensym0`gensym10 = nil;\n                  initShared`gensym0`gensym10: static bool = true): ptr Assets		386
+nim	OnInitSingletonCallback`gensym0`gensym10	supranim/service/assets.html#OnInitSingletonCallback`gensym0`gensym10	type OnInitSingletonCallback`gensym0`gensym10		393
+nim	getAssetsInstance	supranim/service/assets.html#getAssetsInstance,OnInitSingletonCallback`gensym0`gensym10,staticbool	proc getAssetsInstance(onceCb`gensym0`gensym10: OnInitSingletonCallback`gensym0`gensym10 = nil;\n                  initShared`gensym0`gensym10: static bool = true): ptr Assets		391
 nim	staticAssets	supranim/service/assets.html#staticAssets	proc staticAssets(): ptr Assets		49
 nim	hasAsset	supranim/service/assets.html#hasAsset,ptr.Assets,string	proc hasAsset(sta: ptr Assets; key: string): bool		53
 nim	get	supranim/service/assets.html#get,ptr.Assets,string	proc get(sta: ptr Assets; key: string): lent seq[uint8]		57
