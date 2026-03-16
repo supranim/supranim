@@ -60,13 +60,9 @@
           </ul></dd>
 <dt><a name="addCallback" href="#addCallback"><span>addCallback:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="webserver: proc addCallback(httpServer: ptr evhttp; path: string;
-            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})" href="supranim/network/http/webserver.html#addCallback%2Cptr.evhttp%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29">webserver: proc addCallback(httpServer: ptr evhttp; path: string;
-            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})</a></li>
+          data-doc-search-tag="webserver: proc addCallback(httpServer: ptr evhttp; path: string; callback: OnRequestLowLevel)" href="supranim/network/http/webserver.html#addCallback%2Cptr.evhttp%2Cstring%2COnRequestLowLevel">webserver: proc addCallback(httpServer: ptr evhttp; path: string; callback: OnRequestLowLevel)</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="webserver: proc addCallback(server: WebServer; path: string;
-            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})" href="supranim/network/http/webserver.html#addCallback%2CWebServer%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29">webserver: proc addCallback(server: WebServer; path: string;
-            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})</a></li>
+          data-doc-search-tag="webserver: proc addCallback(server: WebServer; path: string; callback: OnRequestLowLevel)" href="supranim/network/http/webserver.html#addCallback%2CWebServer%2Cstring%2COnRequestLowLevel">webserver: proc addCallback(server: WebServer; path: string; callback: OnRequestLowLevel)</a></li>
           </ul></dd>
 <dt><a name="addEvent" href="#addEvent"><span>addEvent:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -830,7 +826,9 @@
           </ul></dd>
 <dt><a name="newWebServer" href="#newWebServer"><span>newWebServer:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="webserver: proc newWebServer(port: Port = Port(8080); enableThreading: static bool = false): WebServer" href="supranim/network/http/webserver.html#newWebServer%2CPort%2Cstaticbool">webserver: proc newWebServer(port: Port = Port(8080); enableThreading: static bool = false): WebServer</a></li>
+          data-doc-search-tag="webserver: proc newWebServer(port: Port = Port(8080)): WebServer" href="supranim/network/http/webserver.html#newWebServer%2CPort">webserver: proc newWebServer(port: Port = Port(8080)): WebServer</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc newWebServer(port: Port = Port(8080); enableMultiThreading: bool): WebServer" href="supranim/network/http/webserver.html#newWebServer%2CPort%2Cbool">webserver: proc newWebServer(port: Port = Port(8080); enableMultiThreading: bool): WebServer</a></li>
           </ul></dd>
 <dt><a name="normalizePath" href="#normalizePath"><span>normalizePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -847,6 +845,10 @@
 <dt><a name="OnRequest" href="#OnRequest"><span>OnRequest:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="webserver: type OnRequest" href="supranim/network/http/webserver.html#OnRequest">webserver: type OnRequest</a></li>
+          </ul></dd>
+<dt><a name="OnRequestLowLevel" href="#OnRequestLowLevel"><span>OnRequestLowLevel:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: type OnRequestLowLevel" href="supranim/network/http/webserver.html#OnRequestLowLevel">webserver: type OnRequestLowLevel</a></li>
           </ul></dd>
 <dt><a name="OpenCb" href="#OpenCb"><span>OpenCb:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -985,6 +987,10 @@
 <dt><a name="redirectUri" href="#redirectUri"><span>redirectUri:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)" href="supranim/core/response.html#redirectUri%2CRequest%2CResponse%2Cstring">response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)</a></li>
+          </ul></dd>
+<dt><a name="registerCallback" href="#registerCallback"><span>registerCallback:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc registerCallback(server: WebServer; path: string; callback: OnRequestLowLevel)" href="supranim/network/http/webserver.html#registerCallback%2CWebServer%2Cstring%2COnRequestLowLevel">webserver: proc registerCallback(server: WebServer; path: string; callback: OnRequestLowLevel)</a></li>
           </ul></dd>
 <dt><a name="registerRoute" href="#registerRoute"><span>registerRoute:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1402,7 +1408,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-11 12:26:39 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-16 17:04:40 UTC</small>
       </div>
     </div>
   </div>

@@ -60,6 +60,7 @@
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#BodyStream" title="BodyStream = object">BodyStream</a></li>
 <li><a class="reference" href="#OnRequest" title="OnRequest = proc (req: var Request) {.nimcall.}">OnRequest</a></li>
+<li><a class="reference" href="#OnRequestLowLevel" title="OnRequestLowLevel = proc (req: ptr evhttp_request; arg: pointer) {.cdecl.}">OnRequestLowLevel</a></li>
 <li><a class="reference" href="#Request" title="Request = object
   httpMethod*: EvhttpCmdType ## The HTTP method (GET, POST, etc.).
   raw*: ptr evhttp_request   ## The underlying evhttp_request pointer.
@@ -73,7 +74,10 @@
 <li><a class="reference" href="#WebServer" title="WebServer = ref object
   base*: ptr event_base      ## The underlying event base.
   httpServer*: ptr evhttp    ## The underlying evhttp server.
-  port*: Port                ## The port the server listens on.">WebServer</a></li>
+  port*: Port                ## The port the server listens on.
+  otherOnRequestCallbacks*: Table[string, OnRequestLowLevel] ## Store other path-specific callbacks. This table is used to inject
+                                                             ## low-level callbacks for specific paths. It works in both single-threaded and multi-threaded modes.
+  enableMultiThreading*: bool">WebServer</a></li>
 
     </ul>
   </details>
@@ -83,12 +87,8 @@
     <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
     <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">addCallback
-  <li><a class="reference" href="#addCallback%2Cptr.evhttp%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29" title="addCallback(httpServer: ptr evhttp; path: string;
-            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})">addCallback(httpServer: ptr evhttp; path: string;
-            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})</a></li>
-<li><a class="reference" href="#addCallback%2CWebServer%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29" title="addCallback(server: WebServer; path: string;
-            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})">addCallback(server: WebServer; path: string;
-            callback: proc (req: ptr evhttp_request; arg: pointer) {.cdecl.})</a></li>
+  <li><a class="reference" href="#addCallback%2Cptr.evhttp%2Cstring%2COnRequestLowLevel" title="addCallback(httpServer: ptr evhttp; path: string; callback: OnRequestLowLevel)">addCallback(httpServer: ptr evhttp; path: string; callback: OnRequestLowLevel)</a></li>
+<li><a class="reference" href="#addCallback%2CWebServer%2Cstring%2COnRequestLowLevel" title="addCallback(server: WebServer; path: string; callback: OnRequestLowLevel)">addCallback(server: WebServer; path: string; callback: OnRequestLowLevel)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">addEvent
@@ -150,7 +150,8 @@
 
 </ul>
 <ul class="simple nested-toc-section">newWebServer
-  <li><a class="reference" href="#newWebServer%2CPort%2Cstaticbool" title="newWebServer(port: Port = Port(8080); enableThreading: static bool = false): WebServer">newWebServer(port: Port = Port(8080); enableThreading: static bool = false): WebServer</a></li>
+  <li><a class="reference" href="#newWebServer%2CPort" title="newWebServer(port: Port = Port(8080)): WebServer">newWebServer(port: Port = Port(8080)): WebServer</a></li>
+<li><a class="reference" href="#newWebServer%2CPort%2Cbool" title="newWebServer(port: Port = Port(8080); enableMultiThreading: bool): WebServer">newWebServer(port: Port = Port(8080); enableMultiThreading: bool): WebServer</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">peekChunk
@@ -159,6 +160,10 @@
 </ul>
 <ul class="simple nested-toc-section">readChunk
   <li><a class="reference" href="#readChunk%2CBodyStream%2Cint" title="readChunk(stream: var BodyStream; maxLen: int): string">readChunk(stream: var BodyStream; maxLen: int): string</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">registerCallback
+  <li><a class="reference" href="#registerCallback%2CWebServer%2Cstring%2COnRequestLowLevel" title="registerCallback(server: WebServer; path: string; callback: OnRequestLowLevel)">registerCallback(server: WebServer; path: string; callback: OnRequestLowLevel)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">removeHeader
@@ -261,6 +266,14 @@
     
   </dd>
 </div>
+<div id="OnRequestLowLevel">
+  <dt><pre><a href="webserver.html#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span>.}</pre></dt>
+  <dd>
+    
+    Low-level callback type for handling HTTP requests directly with evhttp_request.
+    
+  </dd>
+</div>
 <div id="Request">
   <dt><pre><a href="webserver.html#Request"><span class="Identifier">Request</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">httpMethod</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">EvhttpCmdType</span> <span class="Comment">## The HTTP method (GET, POST, etc.).</span>
@@ -289,7 +302,10 @@
   <dt><pre><a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">base</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">event_base</span>      <span class="Comment">## The underlying event base.</span>
   <span class="Identifier">httpServer</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp</span>    <span class="Comment">## The underlying evhttp server.</span>
-  <span class="Identifier">port</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Port</span>                <span class="Comment">## The port the server listens on.</span></pre></dt>
+  <span class="Identifier">port</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Port</span>                <span class="Comment">## The port the server listens on.</span>
+  <span class="Identifier">otherOnRequestCallbacks</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="webserver.html#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a><span class="Other">]</span> <span class="Comment">## Store other path-specific callbacks. This table is used to inject</span>
+                                                             <span class="Comment">## low-level callbacks for specific paths. It works in both single-threaded and multi-threaded modes.</span>
+  <span class="Identifier">enableMultiThreading</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
   <dd>
     
     Represents an HTTP server.
@@ -303,27 +319,22 @@
   <h1><a class="toc-backref" href="#12">Procs</a></h1>
   <dl class="item">
     <div id="addCallback-procs-all">
-  <div id="addCallback,ptr.evhttp,string,proc(ptr.evhttp_request,pointer)">
-  <dt><pre><span class="Keyword">proc</span> <a href="#addCallback%2Cptr.evhttp%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29"><span class="Identifier">addCallback</span></a><span class="Other">(</span><span class="Identifier">httpServer</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp</span><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span>
-    <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span>.}<span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <div id="addCallback,ptr.evhttp,string,OnRequestLowLevel">
+  <dt><pre><span class="Keyword">proc</span> <a href="#addCallback%2Cptr.evhttp%2Cstring%2COnRequestLowLevel"><span class="Identifier">addCallback</span></a><span class="Other">(</span><span class="Identifier">httpServer</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp</span><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                 <span class="Identifier">callback</span><span class="Other">:</span> <a href="webserver.html#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    <p>Adds a callback for a specific path directly to an evhttp server.</p>
-<p>This is a lower-level API. For more complex routing consider using the Router service which provides higher-level abstractions</p>
-
+    
     
   </dd>
 </div>
-<div id="addCallback,WebServer,string,proc(ptr.evhttp_request,pointer)">
-  <dt><pre><span class="Keyword">proc</span> <a href="#addCallback%2CWebServer%2Cstring%2Cproc%28ptr.evhttp_request%2Cpointer%29"><span class="Identifier">addCallback</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span>
-    <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span>.}<span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<div id="addCallback,WebServer,string,OnRequestLowLevel">
+  <dt><pre><span class="Keyword">proc</span> <a href="#addCallback%2CWebServer%2Cstring%2COnRequestLowLevel"><span class="Identifier">addCallback</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <a href="webserver.html#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    <p>Adds a callback for a specific path. This allows you to define custom handler functions for different routes</p>
-<p>Note: This is a lower-level API. For more complex routing consider using the Router service which provides higher-level abstractions.</p>
-
+    
     
   </dd>
 </div>
@@ -496,11 +507,23 @@
 
 </div>
 <div id="newWebServer-procs-all">
-  <div id="newWebServer,Port,staticbool">
-  <dt><pre><span class="Keyword">proc</span> <a href="#newWebServer%2CPort%2Cstaticbool"><span class="Identifier">newWebServer</span></a><span class="Other">(</span><span class="Identifier">port</span><span class="Other">:</span> <span class="Identifier">Port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">8080</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">enableThreading</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">bool</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a></pre></dt>
+  <div id="newWebServer,Port">
+  <dt><pre><span class="Keyword">proc</span> <a href="#newWebServer%2CPort"><span class="Identifier">newWebServer</span></a><span class="Other">(</span><span class="Identifier">port</span><span class="Other">:</span> <span class="Identifier">Port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">8080</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Creates a new WebServer instance.
+    
+  </dd>
+</div>
+<div id="newWebServer,Port,bool">
+  <dt><pre><span class="Keyword">proc</span> <a href="#newWebServer%2CPort%2Cbool"><span class="Identifier">newWebServer</span></a><span class="Other">(</span><span class="Identifier">port</span><span class="Other">:</span> <span class="Identifier">Port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">8080</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">enableMultiThreading</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    <p>Creates a new WebServer instance with multi-threading support. When <tt class="docutils literal"><span class="pre"><span class="Identifier">enableMultiThreading</span></span></tt> is true, the server will be started in a thread pool mode which allows handling multiple requests concurrently across multiple CPU cores.</p>
+<p>This is recommended for production use. For development, you can use the single-threaded version for simplicity.</p>
+
     
   </dd>
 </div>
@@ -525,6 +548,19 @@
   <dd>
     
     Reads up to maxLen bytes from the stream. Returns empty string when no more data is available.
+    
+  </dd>
+</div>
+
+</div>
+<div id="registerCallback-procs-all">
+  <div id="registerCallback,WebServer,string,OnRequestLowLevel">
+  <dt><pre><span class="Keyword">proc</span> <a href="#registerCallback%2CWebServer%2Cstring%2COnRequestLowLevel"><span class="Identifier">registerCallback</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                      <span class="Identifier">callback</span><span class="Other">:</span> <a href="webserver.html#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Registers a callback to WebServer
     
   </dd>
 </div>
@@ -579,7 +615,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Sends an HTTP response with no body.
+    
     
   </dd>
 </div>
@@ -716,7 +752,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-11 12:26:39 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-16 17:04:39 UTC</small>
       </div>
     </div>
   </div>

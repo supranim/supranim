@@ -12,11 +12,11 @@ nim	config	supranim/core/application.html#config,Application,string	proc config(
 nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		103
 nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		188
 nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		227
-nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		308
-nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		310
-nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		329
-nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		347
-nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		369
-nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): Port		373
-nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): Uuid		377
-nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): string		381
+nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		311
+nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		313
+nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		332
+nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		351
+nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		373
+nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): Port		377
+nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): Uuid		381
+nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): string		385
