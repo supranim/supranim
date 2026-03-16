@@ -2,7 +2,7 @@
 # Supranim is a full-featured web framework for building
 # web apps & microservices in Nim.
 # 
-#   (c) 2026 LGPL-v2-or-later License | Made by Humans from OpenPeeps
+#   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
 
@@ -150,12 +150,9 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                 else:
                   if startsWith(path, "/assets"): # TODO expose `/assets` route for customization
                     req.sendAssets(path, res.getHeaders(), hasFoundResource)
-                if not hasFoundResource:
-                  invoke4xxHandler(path, req, res)
-              else:
-                invoke4xxHandler(path, req, res)
-            else:
-              invoke4xxHandler(path, req, res)
+                if not hasFoundResource: invoke4xxHandler(path, req, res)
+              else: invoke4xxHandler(path, req, res)
+            else: invoke4xxHandler(path, req, res)
 
       # Start the HTTP server
       # let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)

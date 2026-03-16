@@ -2,7 +2,7 @@
 # Supranim is a full-featured web framework for building
 # web apps & microservices in Nim.
 # 
-#   (c) 2026 LGPL-v2-or-later License | Made by Humans from OpenPeeps
+#   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
 
@@ -72,7 +72,6 @@ proc resp*(req: Request, code: HttpCode,
   var headers =
     if headers != nil: headers
     else: newHttpHeaders()
-  headers.add("Content-Length", $bodyLen)
   headers.add("Date", $serverDate)
   req.send(code.int, body, headers)
 

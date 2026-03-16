@@ -2,7 +2,7 @@
 # Supranim is a full-featured web framework for building
 # web apps & microservices in Nim.
 # 
-#   (c) 2026 LGPL-v2-or-later License | Made by Humans from OpenPeeps
+#   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
 
@@ -386,13 +386,10 @@ proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil
   if headers != nil and httpHeaders != nil:
     for k, v in httpHeaders:
       setOutHeader(headers, k, v)
-
   let buf = evhttp_request_get_output_buffer(req.raw)
   assert buf != nil
-
   # ensure clean buffer per request
   discard evbuffer_drain(buf, evbuffer_get_length(buf))
-
   if body.len > 0:
     discard evbuffer_add(buf, body.cstring, body.len.csize_t)
 

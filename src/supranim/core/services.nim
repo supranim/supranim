@@ -2,7 +2,7 @@
 # Supranim is a full-featured web framework for building
 # web apps & microservices in Nim.
 # 
-#   (c) 2026 LGPL-v2-or-later License | Made by Humans from OpenPeeps
+#   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
 
@@ -12,6 +12,7 @@ import std/[os, macros, macrocache, tables, sequtils,
 import pkg/checksums/md5
 import pkg/threading/once
 import pkg/kapsis/framework
+import pkg/kapsis/interactive/prompts
 
 import pkg/supranim/[application, controller]
 import pkg/supranim/core/[paths, autolink, router]
@@ -273,8 +274,12 @@ template initService*(id, config: untyped) =
         # Required modules for Service Provider
         import std/[asyncdispatch, httpcore, options,
                 critbits, json, strutils, sequtils, uri]
-        import pkg/supranim/http/[webserver, request, router, response]
+        
         import pkg/jsony
+        
+        import pkg/supranim/network/http/webserver
+        import pkg/supranim/core/[request, router, response]
+        
         from std/net import Port
 
         type
@@ -501,7 +506,7 @@ template initService*(id, config: untyped) =
           # standalone service using the built-in web server
           var p = initOptParser(commandLineParams())
           p.next() # skip the binary name
-          var port = Port(0)
+          var port = Port(8000) # default port
           for kind, key, val in p.getOpt():
             case kind
             of cmdShortOption, cmdLongOption:
