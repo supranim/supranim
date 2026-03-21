@@ -87,6 +87,10 @@ proc appInstance*: Application =
   initApplication()
   result = App
 
+proc paths*(app: Application): ApplicationPaths =
+  ## Returns the application paths
+  result = app.applicationPaths
+
 #
 # Config API
 #
