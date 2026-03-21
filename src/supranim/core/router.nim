@@ -90,30 +90,28 @@ var
 #
 proc newHttpRouter*: HttpRouterInstance = HttpRouterInstance()
 
-proc newHttpRoute(path: string,
-  httpMethod: HttpMethod, callback: Callable
-): HttpRoute =
+proc newHttpRoute(autolinked: (string, string), httpMethod: HttpMethod, callback: Callable): HttpRoute =
   # Create a new `HttpRoute`
   result = HttpRoute(
-    path: path,
+    path: autolinked[1],
     httpMethod: httpMethod,
     callback: callback,
   )
 
-proc newHttpRoute(path: string,
+proc newHttpRoute(autolinked: (string, string),
     httpMethod: HttpMethod, callback: Callable,
     middlewares: seq[Middleware],
     afterwares: seq[Afterware]
 ): HttpRoute =
   # Create a new `HttpRoute`
   result = HttpRoute(
-    path: path,
+    path: autolinked[1],
     httpMethod: httpMethod,
     callback: callback,
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
-  result.regexPath = re(path)
+  result.regexPath = re(autolinked[0])
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
 
@@ -143,14 +141,14 @@ proc registerRoute*(router: var HttpRouterInstance,
   isWebSocket = false
 ) =
   ## Register a new `Route`
-  let path = autolinked[0]
+  let path = autolinked[1] # the original path string used to define the route
   if isWebSocket:
     let routeObject = newWsRoute(path, HttpGet, callback, middlewares, afterwares)
     if not router.httpWS.hasKey(path):
       router.httpWS[path] = routeObject
   else:
     let routeObject =
-      newHttpRoute(path, httpMethod, callback, middlewares, afterwares)
+      newHttpRoute(autolinked, httpMethod, callback, middlewares, afterwares)
     case httpMethod
     of HttpGet:
       if not router.httpGet.hasKey(path):
@@ -201,7 +199,6 @@ proc parseRouteNode*(verb, routePath: string,
     queuedRoutes[autolinked.handleName] =
       newCall(
         ident"registerRoute",
-        # newDotExpr(ident"App", ident"router"), # must match the singleton
         ident"Router",
         nnkTupleConstr.newTree(
           newLit(autolinked[1]),
@@ -342,28 +339,33 @@ group "/account":
                   add middlewares
                 else: discard # todo error
                 for r in y[1]:
-                  case r[0].kind
-                  of nnkIdent:
-                    parseRouteNode(r[0].strVal,
-                      preparePath(r[1].strVal, x[1].strVal),
-                      middlewares, afterwares
-                    )
-                  of nnkBracketExpr:
-                    for v in r[0]:
-                      parseRouteNode(v.strVal,
+                  if r.kind == nnkInfix and r[1].kind == nnkTupleConstr:
+                    # parse same route definition for multiple HTTP methods
+                    for tVerb in r[1]:
+                      parseRouteNode(tVerb.strVal,
+                        preparePath(r[2].strVal, x[1].strVal),
+                        middlewares, afterwares
+                      )
+                  else:
+                    if r[0].kind == nnkIdent:
+                      parseRouteNode(r[0].strVal,
                         preparePath(r[1].strVal, x[1].strVal),
                         middlewares, afterwares
                       )
-                  else: discard # todo error
-            elif y.kind == nnkInfix and y[1].kind == nnkTupleConstr:
-              # parse same route definition for multiple HTTP methods
-              for tVerb in y[1]:
-                parseRouteNode(tVerb.strVal,
-                  preparePath(y[2].strVal, x[1].strVal),
-                  middlewares, afterwares
-                )
+                    elif r[0].kind == nnkBracketExpr:
+                      for v in r[0]:
+                        parseRouteNode(v.strVal,
+                          preparePath(r[1].strVal, x[1].strVal),
+                          middlewares, afterwares
+                        )
             else:
-              error("Invalid route", y) 
+              if y.kind == nnkInfix and y[1].kind == nnkTupleConstr:
+                # parse same route definition for multiple HTTP methods
+                for tVerb in y[1]:
+                  parseRouteNode(tVerb.strVal,
+                    preparePath(y[2].strVal, x[1].strVal),
+                    middlewares, afterwares
+                  )
         elif httpMethodName.strVal in httpMethods:
           let routeStmtHandle =
             if x.len == 3: x[2]
@@ -388,6 +390,28 @@ group "/account":
                 middlewares, afterwares, routeStmtHandle)
         else:
           error("Invalid HTTP method `" & httpMethodName.strVal & "`", httpMethodName)
+    of nnkInfix:
+      if x[1].kind == nnkTupleConstr:
+        # parse same route definition for multiple HTTP methods
+        var middlewares, afterwares = newNimNode(nnkBracket)
+        for tVerb in x[1]:
+          if x[2].kind == nnkPragmaExpr:
+            let path = x[2][0].strVal
+            x[2][1].expectKind(nnkPragma)
+            x[2][1][0].expectKind(nnkExprColonExpr)
+            x[2][1][0][0].expectKind(nnkIdent)
+            if x[2][1][0][0].eqIdent"middleware":
+              for m in x[2][1][0][1]:
+                add middlewares, m
+            elif x[2][1][0][0].eqIdent"afterware":
+              for m in x[2][1][0][1]:
+                add afterwares, m
+            else: discard # todo error
+            parseRouteNode(tVerb.strVal,
+              preparePath(x[2][0].strVal), middlewares, afterwares)
+          else:
+            parseRouteNode(tVerb.strVal,
+              preparePath(x[2].strVal), middlewares, afterwares)
     of nnkPragmaBlock:
       echo x.repr
     else: discard # todo error?
@@ -493,7 +517,7 @@ proc resolveAfterware*(route: HttpRoute,
 #
 proc errorHandler*(router: var HttpRouterInstance,
     code: HttpCode, callback: Callable) =
-  let httpRoute = newHttpRoute("4xx", HttpGet, callback)
+  let httpRoute = newHttpRoute(("", "4xx"), HttpGet, callback)
   case code
   of Http400, Http404:
     router.httpErrors["4xx"] = httpRoute
