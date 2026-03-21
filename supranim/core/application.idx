@@ -8,15 +8,16 @@ nim	App	supranim/core/application.html#App	var App		72
 nim	Application	supranim/core/application.html#Application	type Application		76
 nim	initApplication	supranim/core/application.html#initApplication	proc initApplication()		79
 nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		84
-nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): JsonNode		93
-nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		103
-nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		188
-nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		227
-nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		311
-nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		313
-nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		332
-nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		351
-nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		373
-nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): Port		377
-nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): Uuid		381
-nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): string		385
+nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Application): ApplicationPaths		90
+nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): JsonNode		97
+nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		107
+nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		192
+nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		231
+nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		315
+nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		317
+nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		336
+nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		355
+nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		377
+nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): Port		381
+nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): Uuid		385
+nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): string		389
