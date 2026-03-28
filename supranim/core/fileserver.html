@@ -65,6 +65,10 @@
            hasFoundResource: var bool)</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">sendDownloadable
+  <li><a class="reference" href="#sendDownloadable%2CRequest%2Cstring%2CHttpHeaders" title="sendDownloadable(req: var Request; filepath: string; headers: HttpHeaders)">sendDownloadable(req: var Request; filepath: string; headers: HttpHeaders)</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">sendEmbeddedAsset
   <li><a class="reference" href="#sendEmbeddedAsset%2CRequest%2Cstring%2CHttpHeaders%2Cbool" title="sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;
                   hasFoundResource: var bool)">sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;
@@ -116,6 +120,19 @@
 </div>
 
 </div>
+<div id="sendDownloadable-procs-all">
+  <div id="sendDownloadable,Request,string,HttpHeaders">
+  <dt><pre><span class="Keyword">proc</span> <a href="#sendDownloadable%2CRequest%2Cstring%2CHttpHeaders"><span class="Identifier">sendDownloadable</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">filepath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">headers</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Serves a file as a downloadable attachment, prompting the user to save it.
+    
+  </dd>
+</div>
+
+</div>
 <div id="sendEmbeddedAsset-procs-all">
   <div id="sendEmbeddedAsset,Request,string,HttpHeaders,bool">
   <dt><pre><span class="Keyword">proc</span> <a href="#sendEmbeddedAsset%2CRequest%2Cstring%2CHttpHeaders%2Cbool"><span class="Identifier">sendEmbeddedAsset</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">headers</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">;</span>
@@ -139,7 +156,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-21 19:12:15 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-28 21:24:38 UTC</small>
       </div>
     </div>
   </div>

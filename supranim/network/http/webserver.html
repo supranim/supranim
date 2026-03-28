@@ -109,6 +109,10 @@
   <li><a class="reference" href="#drainChunk%2CBodyStream%2Cint" title="drainChunk(stream: var BodyStream; len: int)">drainChunk(stream: var BodyStream; len: int)</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">dropRequest
+  <li><a class="reference" href="#dropRequest%2CRequest" title="dropRequest(req: var Request)">dropRequest(req: var Request)</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">endChunk
   <li><a class="reference" href="#endChunk%2CRequest" title="endChunk(req: Request)">endChunk(req: Request)</a></li>
 
@@ -385,6 +389,17 @@
   <dd>
     
     Removes len bytes from the buffer (after processing a peeked chunk).
+    
+  </dd>
+</div>
+
+</div>
+<div id="dropRequest-procs-all">
+  <div id="dropRequest,Request">
+  <dt><pre><span class="Keyword">proc</span> <a href="#dropRequest%2CRequest"><span class="Identifier">dropRequest</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Drop the request by closing the connection without sending a response. This can be used in cases where you want to silently ignore a request without responding
     
   </dd>
 </div>
@@ -752,7 +767,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-21 19:12:15 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-03-28 21:24:38 UTC</small>
       </div>
     </div>
   </div>
