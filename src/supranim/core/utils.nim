@@ -21,16 +21,15 @@ when defined(macosx):
   proc malloc_default_zone*(): MallocZone
     {.cdecl, importc: "malloc_default_zone", header: "<malloc/malloc.h>".}
 
-  # size_t malloc_zone_pressure_relief(malloc_zone_t *, size_t goal);
-  # Returns number of bytes released (0 if none).
   proc malloc_zone_pressure_relief*(zone: MallocZone; goal: csize_t): csize_t
     {.cdecl, importc: "malloc_zone_pressure_relief", header: "<malloc/malloc.h>".}
 
-  ## Portable shim: behave *like* malloc_trim(pad). Returns true if any
-  ## bytes were released to the OS.
+  ## macOS note:
+  ## malloc_zone_pressure_relief may return 0 even when pages are actually reclaimed.
+  ## So this shim reports whether trim was attempted.
   proc malloc_trim*(pad: csize_t = 0): bool =
-    let released = malloc_zone_pressure_relief(malloc_default_zone(), pad)
-    result = released > 0
+    discard malloc_zone_pressure_relief(malloc_default_zone(), pad)
+    result = true
 
   proc releaseUnusedMemory*(): bool =
     malloc_trim(0)
