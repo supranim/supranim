@@ -34,32 +34,28 @@ macro runBaseMiddlewares*(req, res) =
   ## for the application
   result = newStmtList()
   for mKey, mProc in baseMiddlewares:
-    add result,
-      nnkBlockStmt.newTree(
-        newEmptyNode(),
-        nnkStmtList.newTree(
-          nnkCaseStmt.newTree(
-            newCall(
-              ident(mKey),
-              req,
-              res
-            ),
-            nnkOfBranch.newTree(
-              ident("Http200"),
-              newStmtList().add(nnkDiscardStmt.newTree(newEmptyNode()))
+    var baseMiddlewareCall = ident(mKey)
+    add result, quote do:
+      if unlikely(req.raw == nil):
+        # this means that the request has been dropped by
+        # a base middleware and we should not continue processing it.
+        return
 
-            ),
-            nnkElse.newTree(
-              newStmtList().add(nnkDiscardStmt.newTree(newEmptyNode()))
-            )
-          )
-        )
-      )
+      if `baseMiddlewareCall`(req, res) == false:
+        # if a base middleware returns false, it means that
+        # the response has been sent or the request has been dropped
+        # and we should not continue processing the request
+        # or run any more base middlewares.
+        return
 
 #
 # Httpbeast Wrapper
 #
-template getBaseMiddlewares*(req, res) =
+template getBaseMiddlewares*(req, res) {.dirty.} =
+  if unlikely(req.raw == nil):
+    # this means that the request has been dropped by a base middleware
+    # and we should not continue processing it.
+    return
   when not defined httpbench:
     runBaseMiddlewares(req, res)
 

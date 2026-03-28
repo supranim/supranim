@@ -11,7 +11,8 @@ import std/[os, posix, tables, httpcore, options,
 
 import pkg/threading/rwlock
 import pkg/libevent/bindings/[http, event, buffer, threaded, listener]
-export evhttp_request, threaded
+
+export evhttp_request, threaded, evhttp_request_get_connection
 
 import ../../support/http
 
@@ -453,6 +454,14 @@ proc getBody*(req: var Request): Option[string] =
       discard evbuffer_copyout(buf, addr(data[0]), len.csize_t)
       req.body = some(data)
   return req.body
+
+proc dropRequest*(req: var Request) =
+  ## Drop the request by closing the connection without sending a response.
+  ## This can be used in cases where you want to silently ignore a request without responding
+  let conn = evhttp_request_get_connection(req.raw)
+  if conn != nil:
+    evhttp_connection_free(conn)
+    req.raw = nil # mark as dropped
 
 #
 # Header high-level bindings

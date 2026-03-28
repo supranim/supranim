@@ -20,9 +20,10 @@ import ./core/[request, response]
 
 from ./core/router import baseMiddlewares
 from ./controller import getClientId, getSessionCookie
+from ./network/http/webserver import dropRequest
 
 export request, response, resp, json
-export getClientId, getSessionCookie
+export getClientId, getSessionCookie, dropRequest
 
 macro newBaseMiddleware*(name: untyped, body: untyped) =
   ## A macro that generates new middleware procedure
@@ -34,7 +35,7 @@ macro newBaseMiddleware*(name: untyped, body: untyped) =
     newProc(
       name = nnkPostfix.newTree(ident("*"), name),
       params = [
-        ident "HttpCode",
+        ident "bool",
         newIdentDefs(ident"req", nnkVarTy.newTree(ident"Request")),
         newIdentDefs(ident"res", nnkVarTy.newTree(ident "Response"))
       ],
