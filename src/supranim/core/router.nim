@@ -275,6 +275,148 @@ proc preparePath*(path: string, prefix = ""): string {.compileTime.} =
   if result.len > 1 and result[^1] == '/':
     return result[0..^2]
 
+proc toBracketNode(nodes: seq[NimNode]): NimNode {.compileTime.} =
+  result = newNimNode(nnkBracket)
+  for n in nodes:
+    result.add n
+
+proc addPragmaValues(target: var seq[NimNode], value: NimNode) {.compileTime.} =
+  case value.kind
+  of nnkBracket, nnkTupleConstr:
+    for v in value: target.add v
+  of nnkPrefix:
+    # supports: @[a, b, c]
+    if value.len == 2 and value[0].kind == nnkIdent and value[0].eqIdent("@") and value[1].kind == nnkBracket:
+      for v in value[1]: target.add v
+    else:
+      error("Invalid middleware/afterware value", value)
+  of nnkIdent, nnkSym, nnkDotExpr, nnkCall:
+    target.add value
+  else:
+    error("Invalid middleware/afterware value", value)
+
+proc collectScopePragmas(
+  pragmaNode: NimNode,
+  middlewares, afterwares: var seq[NimNode]
+) {.compileTime.} =
+  pragmaNode.expectKind(nnkPragma)
+  for p in pragmaNode:
+    p.expectKind(nnkExprColonExpr)
+    p[0].expectKind(nnkIdent)
+    if p[0].eqIdent("middleware"):
+      addPragmaValues(middlewares, p[1])
+    elif p[0].eqIdent("afterware"):
+      addPragmaValues(afterwares, p[1])
+
+proc parseRoutePathExpr(
+  pathExpr: NimNode,
+  middlewares, afterwares: var seq[NimNode]
+): string {.compileTime.} =
+  case pathExpr.kind
+  of nnkStrLit:
+    result = pathExpr.strVal
+  of nnkPragmaExpr:
+    pathExpr[0].expectKind(nnkStrLit)
+    result = pathExpr[0].strVal
+    collectScopePragmas(pathExpr[1], middlewares, afterwares)
+  else:
+    error("Invalid route path expression", pathExpr)
+
+proc collectHttpMethodNodes(methodExpr: NimNode): seq[NimNode] {.compileTime.} =
+  case methodExpr.kind
+  of nnkBracketExpr, nnkTupleConstr:
+    for m in methodExpr: result.add m
+  else:
+    result.add methodExpr
+
+proc emitParsedRoute(
+  methodNode, pathExpr: NimNode,
+  prefix: string,
+  inheritedMiddlewares, inheritedAfterwares: seq[NimNode],
+  closureHandle: NimNode = nil
+) {.compileTime.} =
+  let verb = methodNode.strVal
+  if verb notin httpMethods:
+    error("Invalid HTTP method `" & verb & "`", methodNode)
+
+  var mws = inheritedMiddlewares
+  var aws = inheritedAfterwares
+  let routePath = parseRoutePathExpr(pathExpr, mws, aws)
+
+  var mwsNode = toBracketNode(mws)
+  var awsNode = toBracketNode(aws)
+
+  parseRouteNode(
+    verb,
+    preparePath(routePath, prefix),
+    mwsNode,
+    awsNode,
+    closureHandle
+  )
+
+proc parseRoutesScope(
+  scopeNode: NimNode,
+  prefix: string,
+  inheritedMiddlewares, inheritedAfterwares: seq[NimNode]
+) {.compileTime.}
+
+proc parseCommandLike(
+  x: NimNode,
+  prefix: string,
+  inheritedMiddlewares, inheritedAfterwares: seq[NimNode]
+) {.compileTime.} =
+  if x.len < 2:
+    return
+
+  if x[0].kind == nnkIdent and x[0].eqIdent("group"):
+    x[1].expectKind(nnkStrLit)
+    x[2].expectKind(nnkStmtList)
+    let nextPrefix = preparePath(x[1].strVal, prefix)
+    parseRoutesScope(x[2], nextPrefix, inheritedMiddlewares, inheritedAfterwares)
+    return
+
+  let routeStmtHandle = if x.len == 3: x[2] else: nil
+  for m in collectHttpMethodNodes(x[0]):
+    emitParsedRoute(
+      m,
+      x[1],
+      prefix,
+      inheritedMiddlewares,
+      inheritedAfterwares,
+      routeStmtHandle
+    )
+
+proc parseRoutesScope(
+  scopeNode: NimNode,
+  prefix: string,
+  inheritedMiddlewares, inheritedAfterwares: seq[NimNode]
+) {.compileTime.} =
+  for x in scopeNode:
+    case x.kind
+    of nnkCommand, nnkCall:
+      parseCommandLike(x, prefix, inheritedMiddlewares, inheritedAfterwares)
+
+    of nnkInfix:
+      # (get, post) -> "/path" {.middleware: [x].}
+      if x.len == 3 and x[0].kind == nnkIdent and x[0].eqIdent("->") and x[1].kind == nnkTupleConstr:
+        for tVerb in x[1]:
+          emitParsedRoute(
+            tVerb,
+            x[2],
+            prefix,
+            inheritedMiddlewares,
+            inheritedAfterwares
+          )
+    of nnkPragmaBlock:
+      var scopedMiddlewares = inheritedMiddlewares
+      var scopedAfterwares = inheritedAfterwares
+      collectScopePragmas(x[0], scopedMiddlewares, scopedAfterwares)
+      x[1].expectKind(nnkStmtList)
+      parseRoutesScope(x[1], prefix, scopedMiddlewares, scopedAfterwares)
+
+    else:
+      discard
+
 macro routes*(body: untyped): untyped =
   ##[
     Register routes at compile-time under the `routes` macro.
@@ -303,118 +445,8 @@ group "/account":
     post "/profile" # POST /account/profile
     ```
   ]## 
-  for x in body:
-    case x.kind:
-    of nnkCommand:
-      var httpMethodNames: seq[NimNode]
-      if x[0].kind == nnkBracketExpr:
-        for verb in x[0]:
-          add httpMethodNames, verb
-      else:
-        httpMethodNames = @[x[0]]
-      for httpMethodName in httpMethodNames:
-        var middlewares, afterwares = newNimNode(nnkBracket)
-        if httpMethodName.eqIdent("group"):
-          x[1].expectKind(nnkStrLit)
-          x[2].expectKind(nnkStmtList)
-          for y in x[2]:
-            case y.kind
-            of nnkCommand, nnkCall:
-              # parse prefixed routes
-              parseRouteNode(y[0].strVal,
-                preparePath(y[1].strVal, x[1].strVal),
-                middlewares, afterwares
-              )
-            of nnkPragmaBlock:
-              # The allowed pragma block `{.middleware: [some, auth, handles].}`
-              # that registers one or more middlewares for a group of routes
-              expectKind(y[0][0], nnkExprColonExpr)
-              expectKind(y[1], nnkStmtList)
-              if y[0][0][0].eqIdent("middleware"):
-                case y[0][0][1].kind
-                of nnkBracket:
-                  for m in y[0][0][1]:
-                    add middlewares, m
-                of nnkIdent:
-                  add middlewares
-                else: discard # todo error
-                for r in y[1]:
-                  if r.kind == nnkInfix and r[1].kind == nnkTupleConstr:
-                    # parse same route definition for multiple HTTP methods
-                    for tVerb in r[1]:
-                      parseRouteNode(tVerb.strVal,
-                        preparePath(r[2].strVal, x[1].strVal),
-                        middlewares, afterwares
-                      )
-                  else:
-                    if r[0].kind == nnkIdent:
-                      parseRouteNode(r[0].strVal,
-                        preparePath(r[1].strVal, x[1].strVal),
-                        middlewares, afterwares
-                      )
-                    elif r[0].kind == nnkBracketExpr:
-                      for v in r[0]:
-                        parseRouteNode(v.strVal,
-                          preparePath(r[1].strVal, x[1].strVal),
-                          middlewares, afterwares
-                        )
-            else:
-              if y.kind == nnkInfix and y[1].kind == nnkTupleConstr:
-                # parse same route definition for multiple HTTP methods
-                for tVerb in y[1]:
-                  parseRouteNode(tVerb.strVal,
-                    preparePath(y[2].strVal, x[1].strVal),
-                    middlewares, afterwares
-                  )
-        elif httpMethodName.strVal in httpMethods:
-          let routeStmtHandle =
-            if x.len == 3: x[2]
-            else: nil
-          var path: string
-          case x[1].kind
-          of nnkStrLit:
-            path = x[1].strVal
-          of nnkPragmaExpr:
-            path = x[1][0].strVal
-            x[1][1].expectKind(nnkPragma)
-            x[1][1][0].expectKind(nnkExprColonExpr)
-            x[1][1][0][0].expectKind(nnkIdent)
-            if x[1][1][0][0].eqIdent"middleware":
-              for m in x[1][1][0][1]:
-                add middlewares, m
-            elif x[1][1][0][0].eqIdent"afterware":
-              for m in x[1][1][0][1]:
-                add afterwares, m
-          else: error("Invalid route", x[1])
-          parseRouteNode(httpMethodName.strVal, path.preparePath(),
-                middlewares, afterwares, routeStmtHandle)
-        else:
-          error("Invalid HTTP method `" & httpMethodName.strVal & "`", httpMethodName)
-    of nnkInfix:
-      if x[1].kind == nnkTupleConstr:
-        # parse same route definition for multiple HTTP methods
-        var middlewares, afterwares = newNimNode(nnkBracket)
-        for tVerb in x[1]:
-          if x[2].kind == nnkPragmaExpr:
-            let path = x[2][0].strVal
-            x[2][1].expectKind(nnkPragma)
-            x[2][1][0].expectKind(nnkExprColonExpr)
-            x[2][1][0][0].expectKind(nnkIdent)
-            if x[2][1][0][0].eqIdent"middleware":
-              for m in x[2][1][0][1]:
-                add middlewares, m
-            elif x[2][1][0][0].eqIdent"afterware":
-              for m in x[2][1][0][1]:
-                add afterwares, m
-            else: discard # todo error
-            parseRouteNode(tVerb.strVal,
-              preparePath(x[2][0].strVal), middlewares, afterwares)
-          else:
-            parseRouteNode(tVerb.strVal,
-              preparePath(x[2].strVal), middlewares, afterwares)
-    of nnkPragmaBlock:
-      echo x.repr
-    else: discard # todo error?
+  parseRoutesScope(body, "", @[], @[])
+  result = newStmtList()
 
 macro searchRoute(httpMethod: static string) =
   result = newstmtList()
