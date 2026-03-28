@@ -12,15 +12,16 @@ import std/[macros, macrocache, asyncdispatch, strutils,
 import pkg/jsony
 import pkg/libsodium/[sodium, sodium_sizes]
 
-import ./core/[request, response, router]
+import ./core/[request, response, router, fileserver]
 import ./support/cookie
 
 from ./core/application import appInstance
 from ./network/http/webserver import streamFile
 
-export jsony, uri, request, response,
-        tables, asyncdispatch, options,
-        streamFile
+export jsony, uri, request, response, tables, asyncdispatch,
+          options, streamFile
+
+export fileserver # for some reason nim compiler can't find this
 
 let keypair* = crypto_box_keypair()
 

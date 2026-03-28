@@ -48,8 +48,6 @@ proc sendAssets*(req: var Request, basePath, path: string,
     let ext = reqPath.splitFile.ext
     let typ = mimedb.getMimeType(ext[1..^1]).get("application/octet-stream")
     if headers.hasKey("Content-Type"):
-      # if content type already set, will override it
-      # to avoid issues with wrong mime types
       headers["Content-Type"] = typ
     else:
       headers.add("Content-Type", typ)
@@ -57,3 +55,18 @@ proc sendAssets*(req: var Request, basePath, path: string,
       headers["Access-Control-Allow-Origin"] = "*"
     req.sendFile(basePath / reqPath, headers)
     result = true
+
+proc sendDownloadable*(req: var Request, filepath: string,
+              headers: HttpHeaders) =
+  ## Serves a file as a downloadable attachment, prompting the user to save it.
+  if likely(fileExists(filepath)):
+    let splitPath = filepath.splitFile
+    let ext = splitPath.ext
+    let name = splitPath.name
+    let typ = mimedb.getMimeType(ext[1..^1]).get("application/octet-stream")
+    headers["Content-Disposition"] = "attachment; filename=\"" & name & ext & "\""
+    if headers.hasKey("Content-Type"):
+      headers["Content-Type"] = typ
+    else:
+      headers.add("Content-Type", typ)
+    req.sendFile(filepath, headers)
