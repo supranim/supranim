@@ -246,7 +246,7 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
     # skip the loading of local config files.
     when not compileOption("app", "lib"):
       # Application Initialization via Kapsis CLI
-      loadEnvStatic() # read `.env.yml` config file
+      loadEnv() # read `.env.yml` config file
       add result, quote do:
         App.configs = newOrderedTable[string, Document]()
         for path in walkFiles(App.applicationPaths.resolve("config", "*")):

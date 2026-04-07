@@ -19,8 +19,7 @@ const
   masks = [15, 31, 63, 127, 255]
   defaultAlphabet* = "_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-proc generate*(alphabet: string = defaultAlphabet,
-                size: int = 21): string =
+proc generate*(alphabet: string = defaultAlphabet, size: int = 21): string =
   ## Generates a unique ID using the specified alphabet and size.
   if alphabet == "" or size < 1:
     return # invalid parameters

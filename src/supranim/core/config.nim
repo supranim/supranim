@@ -11,16 +11,20 @@ import pkg/nyml
 
 import ./paths
 
+type
+  SupranimEnvLoader* = object of CatchableError
+
 const
   supranimServer* {.strdefine.} = "httpbeast"
     # Choose a preferred web server. Possible values:
     # `httpbeast`, `mummy`, `experimental`
 
-macro loadEnvStatic* =
+proc loadEnv* =
+  ## Loads environment variables from the `.env.yml` file in the project root directory.
   if not fileExists(rootPath / ".env.yml"):
-    return
+    raise newException(SupranimEnvLoader, "Configuration file '.env.yml' not found in project root directory.")
   let
-    envContents = staticRead(rootPath / ".env.yml")
+    envContents = readFile(rootPath / ".env.yml")
     ymlEnv = yaml(envContents).toJson
   when not defined release:
     let
@@ -34,10 +38,7 @@ macro loadEnvStatic* =
       dbName = ymlEnv.get("database.prod.name").getStr
       dbPassword = ymlEnv.get("database.prod.password").getStr
       dbPort = ymlEnv.get("database.prod.port").getStr
-  result = newStmtList()
-  add result, quote do:
-    putEnv("database.user", `dbUser`)
-    putEnv("database.name", `dbName`)
-    putEnv("database.password", `dbPassword`)
-    putEnv("database.port", `dbPort`)
-  
+  putEnv("database.user", dbUser)
+  putEnv("database.name", dbName)
+  putEnv("database.password", dbPassword)
+  putEnv("database.port", dbPort)

@@ -5,34 +5,16 @@
 #   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
-
-import pkg/valido
-import pkg/libsodium/[sodium, sodium_sizes]
-
-export bin2hex
-
-proc hashPassword*(pw: string): string =
-  ## Hashes the password using libsodium.
-  crypto_pwhash_str(pw)
-
-proc checkPassword*(pw, hash: string): bool =
-  ## Checks if the password matches the hash.
-  crypto_pwhash_str_verify(hash, pw)
-
-proc verifyPassword*(pw, hash: string): bool {.inline.} =
-  ## An alias for `checkPassword`
-  checkPassword(pw, hash)
+import pkg/e2ee
+export e2ee
 
 proc boxKeys*: (string, string) =
-  ## Generates a new keypair
-  let (pk, sk) = crypto_box_keypair()
-  result = (pk.bin2hex, sk.bin2hex)
+  ## Generates a new X25519 keypair (private, public), both as hex strings
+  let secret = randomBytes[32]()
+  let (sk, pk) = x25519KeyPair(secret)
+  result = (pk.toHex, sk.toHex)
 
-proc boxRandomBytes*: string =
-  randombytes(crypto_box_NONCEBYTES())
-
-proc boxEncrypt*(msg, pk, sk: string): string =
-  ## Encrypts a message using the public key
-  ## and the secret key.
-  let nonce = boxRandomBytes()
-  return crypto_box_easy(msg, nonce, pk, sk).bin2hex
+proc signKeys*: (string, string) =
+  ## Generates a new Ed25519 signing keypair (public, secret), both as hex strings
+  let kp = generateSigningKeyPair()
+  result = (publicKeyToHex(kp.publicKey), secretKeyToHex(kp.secretKey))
