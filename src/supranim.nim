@@ -87,12 +87,12 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
             path = req.getUriPath()
             httpMethod = req.getHttpMethod()
             runtimeCheck = Router.checkExists(path, httpMethod)
-          # echo path
-          # echo runtimeCheck.exists
+
+          # The `checkExists` method of the Router service checks if there is
+          # a route that matches the incoming request's path and HTTP method.
           case runtimeCheck.exists
           of true:
-            if runtimeCheck.params != nil: 
-              req.setParams(runtimeCheck.params)
+            req.setParams(runtimeCheck.params)
             let middlewareStatus: HttpCode =
               runtimeCheck.route.resolveMiddleware(req, res)
             case middlewareStatus
@@ -102,7 +102,6 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                 case httpMethod
                 of HttpGet:
                   when defined supraMicroservice:
-                    # App.controllers("getTestpage").exec(req.addr, res.addr)
                     runtimeCheck.route.callback(req.addr, res.addr)
                   else:
                     runtimeCheck.route.callback(req, res)
@@ -114,7 +113,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                   # resolve afterwares
                   discard runtimeCheck.route.resolveAfterware(req, res)
                   
-                  if not res.isStreaming:
+                  if not res.isStreaming and req.responseSent == false:
                     # when `isStreaming` is true the response is being streamed
                     # otherwise we send the full response here
                     req.resp(res.getCode, res.getBody, res.getHeaders)
@@ -154,7 +153,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
       # let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)
 
       event().emit("app.startup")
-      var server = newWebServer(Port(app.config("server.port").getInt), true)
+      app.server = newWebServer(Port(app.config("server.port").getInt), true)
       
       # when provided, the optional block can be used to inject
       # additional logic during the server startup process
@@ -162,7 +161,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
       
       # Starts the actual server loop, this will block
       # the main thread and keep the server running until it's stopped.
-      server.start(onRequest, startupCallback, threads = countProcessors())
+      app.server.start(onRequest, startupCallback, threads = countProcessors())
 
 template run*(app: Application) =
   ## Runs the Supranim application server without an optional block.

@@ -58,6 +58,9 @@ type
     enableMultiThreading*: bool
       # Whether the server is running in multi-threaded mode. This affects how
       # callbacks are stored and invoked.
+    workerHttpServers*: seq[ptr evhttp]
+      # In multi-threaded mode, we need to keep track of each worker's HTTP server
+      # so that we can register callbacks on them when new callbacks are added at runtime.
 
   Request* = object
     ## Represents an HTTP request.
@@ -77,8 +80,11 @@ type
       ## The request headers (lazily initialized).
     body*: Option[string]
       ## The request body (lazily initialized).
-    routeParams*: TableRef[string, string]
+    routeParams*: Table[string, string]
       ## The route parameters extracted from the URL.
+    responseSent*: bool
+      ## Whether a response has already been sent for this request.
+      ## This is used to prevent multiple responses.
   
   OnRequestLowLevel* = proc(req: ptr evhttp_request, arg: pointer) {.cdecl.}
     ## Low-level callback type for handling HTTP requests directly with evhttp_request.
@@ -87,6 +93,11 @@ type
     ## Callback type for server startup (optional).
 
 var webWorkerLocker = createRwLock()
+var runtimeLowLevelCallbacks = initTable[string, OnRequestLowLevel]()
+
+proc normalizeCallbackPath(path: string): string {.inline.} =
+  let p = if path.len == 0: "/" else: path
+  normalizePath(p)
 
 when defined supranimUseGlobalOnRequest:
   type
@@ -194,10 +205,27 @@ proc newWebServer*(port: Port = Port(8080), enableMultiThreading: bool): WebServ
 when defined supranimUseGlobalOnRequest:
   var appOnRequest {.global.}: OnRequest # global request handler
 
-proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil)
+# forward decl
+proc send*(req: var Request, code: int, body: string, httpHeaders: HttpHeaders = nil)
 
 proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
-  # initialize Request object
+  # This is the initial request handler that is registered
+  # with libevent. It is responsible for parsing the incoming request,
+  # checking if there are any low-level callbacks registered for the request path,
+  # and then invoking the appropriate callback (either low-level or high-level).
+  let uriRaw = $evhttp_request_get_uri(raw)
+  let pathOnly =
+    if uriRaw.len == 0: "/"
+    else: uriRaw.split('?', 1)[0]
+  let normPath = normalizeCallbackPath(pathOnly)
+
+  readWith webWorkerLocker:
+    if runtimeLowLevelCallbacks.hasKey(normPath):
+      let cb = runtimeLowLevelCallbacks[normPath]
+      if cb != nil:
+        cb(raw, nil)
+        return
+  
   let host = evhttp_request_get_host(raw)
   var req = Request(
     raw: raw,
@@ -363,9 +391,9 @@ proc start*(server: var WebServer, onRequest: OnRequest,
   let mainCtx = cast[ptr WorkerCtx](alloc0(sizeof(WorkerCtx)))
   mainCtx.port = server.port
   mainCtx.listenFd = sharedFd
+  mainCtx.otherOnRequestCallbacks = move server.otherOnRequestCallbacks
   when not defined(supranimUseGlobalOnRequest):
     mainCtx.handler = onRequest
-    mainCtx.otherOnRequestCallbacks = move server.otherOnRequestCallbacks
 
   # start a web worker in the main thread
   webWorker((mainCtx, startupCallback))
@@ -378,16 +406,13 @@ proc setOutHeader(headers: ptr evkeyvalq, name, value: string) =
   discard evhttp_remove_header(headers, name.cstring) # ignore if absent
   assert evhttp_add_header(headers, name.cstring, value.cstring) == 0
 
-#
-# High-level API for handling requests and sending responses
-#
-proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil) =
-  ## Sends an HTTP response.
-  let headers = evhttp_request_get_output_headers(req.raw)
+proc send*(req: ptr evhttp_request, code: int, body: string, httpHeaders: HttpHeaders = nil) =
+  ## Sends an HTTP response directly using evhttp_request.
+  let headers = evhttp_request_get_output_headers(req)
   if headers != nil and httpHeaders != nil:
     for k, v in httpHeaders:
       setOutHeader(headers, k, v)
-  let buf = evhttp_request_get_output_buffer(req.raw)
+  let buf = evhttp_request_get_output_buffer(req)
   assert buf != nil
   # ensure clean buffer per request
   discard evbuffer_drain(buf, evbuffer_get_length(buf))
@@ -395,13 +420,21 @@ proc send*(req: Request, code: int, body: string, httpHeaders: HttpHeaders = nil
     discard evbuffer_add(buf, body.cstring, body.len.csize_t)
 
   # libevent computes framing from buf.
-  evhttp_send_reply(req.raw, code.cint, nil, buf)
+  evhttp_send_reply(req, code.cint, nil, buf)
 
-proc send*(req: Request, code: int, httpHeaders: HttpHeaders = nil) =
+#
+# High-level API for handling requests and sending responses
+#
+proc send*(req: var Request, code: int, body: string, httpHeaders: HttpHeaders = nil) =
+  ## Sends an HTTP response.
+  req.raw.send(code, body, httpHeaders)
+  req.responseSent = true
+
+proc send*(req: var Request, code: int, httpHeaders: HttpHeaders = nil) =
   # Route all no-body replies through the same framing path
   send(req, code, "", httpHeaders)
 
-proc send*(req: Request, code: HttpCode, body: string, httpHeaders: HttpHeaders = nil) =
+proc send*(req: var Request, code: HttpCode, body: string, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response using HttpCode enum.
   req.send(code.int, body, httpHeaders)
 
@@ -689,7 +722,7 @@ proc streamFile*(req: var Request, filePath: string, resHeaders: HttpHeaders = n
   ctx[].chunkSize = 1_048_576 # 1MB # TODO make configurable
   streamFileChunkCb(nil, ctx)
 
-proc sendFile*(req: Request, filePath: string, resHeaders: HttpHeaders) =
+proc sendFile*(req: var Request, filePath: string, resHeaders: HttpHeaders) =
   ## Sends a file as a single chunk using zero-copy.
   ## Note: Does not check for file type. Ensure to
   ## set the correct `Content-Type` header.
@@ -711,7 +744,7 @@ proc sendFile*(req: Request, filePath: string, resHeaders: HttpHeaders) =
   discard evbuffer_add_file(buf, fd, 0, fileSize)
   evhttp_send_reply(req.raw, 200, "", buf)
 
-proc sendFile*(req: Request, bytes: seq[uint8], resHeaders: HttpHeaders) =
+proc sendFile*(req: var Request, bytes: seq[uint8], resHeaders: HttpHeaders) =
   ## Sends a byte sequence as a file response.
   ## Note: This is not zero-copy and is suitable for smaller files.
   assert resHeaders.hasKey("Content-Type"), "Content-Type header must be set"
@@ -801,11 +834,28 @@ proc addCallback*(httpServer: ptr evhttp, path: string,
 
 proc registerCallback*(server: WebServer, path: string, callback: OnRequestLowLevel) =
   ## Registers a callback to WebServer
+  let normalized = normalizeCallbackPath(path)
+
+  writeWith webWorkerLocker:
+    runtimeLowLevelCallbacks[normalized] = callback
+    if server.enableMultiThreading:
+      # keep desired routes for future workers/restarts
+      server.otherOnRequestCallbacks[normalized] = callback
+
   if not server.enableMultiThreading:
-    # In single-threaded mode we can directly add the callback to the server's evhttp instance
-    server.addCallback(path, callback)
-  else:
-    # In multi-threaded mode we need to add the callback to
-    # each worker's evhttp, so we'll store the callback
-    # to WebServer
-    server.otherOnRequestCallbacks[path] = callback
+    # optional in single-thread mode; generic dispatch already works
+    server.addCallback(normalized, callback)
+
+proc unregisterCallback*(server: WebServer, path: string) =
+  ## Unregister callback safely in both single and multi-thread modes
+  let normalized = normalizeCallbackPath(path)
+
+  writeWith webWorkerLocker:
+    if runtimeLowLevelCallbacks.hasKey(normalized):
+      runtimeLowLevelCallbacks.del(normalized)
+    if server.otherOnRequestCallbacks.hasKey(normalized):
+      server.otherOnRequestCallbacks.del(normalized)
+
+  if not server.enableMultiThreading and server.httpServer != nil:
+    # clear direct libevent route if it was installed
+    discard evhttp_set_cb(server.httpServer, normalized.cstring, nil, nil)

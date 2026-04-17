@@ -7,23 +7,18 @@
 #
 
 import std/[macros, macrocache, asyncdispatch, strutils,
-        tables, httpcore, uri, sequtils, options, json]
+        tables, httpcore, uri, sequtils, options]
 
-import pkg/jsony
-import pkg/libsodium/[sodium, sodium_sizes]
-
+import pkg/openparser/json
 import ./core/[request, response, router, fileserver]
 import ./support/cookie
 
 from ./core/application import appInstance
 from ./network/http/webserver import streamFile
 
-export jsony, uri, request, response, tables, asyncdispatch,
-          options, streamFile
-
-export fileserver # for some reason nim compiler can't find this
-
-let keypair* = crypto_box_keypair()
+export json, uri, request, response, tables,
+        asyncdispatch, options, streamFile
+export fileserver
 
 type
   BodyData* = TableRef[string, string]
@@ -32,11 +27,11 @@ type
 #
 # Request - High-level API
 #
-proc setParams*(req: var Request, params: TableRef[string, string]) =
+proc setParams*(req: var Request, params: sink Table[string, string]) =
   ## Sets the route parameters in `Request`
-  req.routeParams = params
+  req.routeParams = ensureMove(params)
 
-proc params*(req: Request): TableRef[string, string] =
+proc params*(req: Request): lent Table[string, string] =
   ## Returns the route parameters from `Request`
   req.routeParams
 
@@ -54,7 +49,7 @@ proc getFieldsJson*(req: Request): JsonNode =
   try:
     # result = fromJson(req.root.body.get())
     discard
-  except jsony.JsonError:
+  except json.OpenParserJsonError:
     discard
 
 proc getSomeBodyData*(req: var Request): SomeBodyData =
@@ -80,13 +75,13 @@ proc getBodyDataJson*(req: var Request): SomeBodyData =
   # if req.BodyData.isNone():
   #   try:
   #     var res = BodyData()
-  #     let jsondata = jsony.fromJson(req.root.body.get())
+  #     let jsondata = json.fromJson(req.root.body.get())
   #     if likely(jsondata != nil):
   #       for k, v in jsondata:
   #         res[k] = v.getStr()
   #     req.BodyData = some(res)
   #     return req.BodyData
-  #   except jsony.JsonError: discard
+  #   except json.JsonError: discard
   discard
 
 proc getFieldsTable*(req: var Request): SomeBodyData {.inline.} =
@@ -99,11 +94,11 @@ proc getFieldsTableJson*(req: var Request): SomeBodyData {.inline.} =
 
 proc getBodyData*[T: BodyData|JsonNode](req: var Request, dataType: typedesc[T]): Option[T] =
   ## Returns the body data from `Request` as `JsonNode`
-  # result = jsony.fromJson(req.getRequestBody())
+  # result = json.fromJson(req.getRequestBody())
   when T is BodyData:
     result = req.getSomeBodyData()
   elif T is JsonNode:
-    return some(jsony.fromJson(req.getBody.get()))
+    return some(json.fromJson(req.getBody.get()))
 
 proc getQueryTable*(req: var Request): TableRef[string, string] {.inline.} =
   ## Retrieve query parameters as a table
@@ -127,6 +122,9 @@ proc getSessionCookie*(req: var Request): ref Cookie =
 #
 # Controller Compile utils
 macro newController*(name, body: untyped) =
+  ## Defines a new controller procedure with the given name and body.
+  ## The generated procedure is marked as `gcsafe` to allow it to be
+  ## called from a GC-safe context.
   expectKind name, nnkIdent
   result =
     newProc(
@@ -156,6 +154,7 @@ macro newController*(name, body: untyped) =
     )
 
 template ctrl*(name, body: untyped) =
+  ## An alias for `newController` macro to define controller handlers
   newController(name, body)
 
 macro go*(id: untyped, params: typed) =

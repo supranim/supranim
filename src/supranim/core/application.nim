@@ -8,18 +8,19 @@
 import std/[macros, os, net, tables, strutils,
           json, hashes, macrocache, posix]
 
-import pkg/[nyml, kapsis, #[cbor_serialization]#]
 import pkg/threading/[once, rwlock]
 import pkg/libevent/bindings/[http, buffer, event]
+
+import pkg/[nyml, kapsis]
 import pkg/kapsis/interactive/prompts
 
+import ../network/http/webserver
 import ./[config, paths, request, response, router]
 
-# import ../network/udpserver
 import ../support/uuid
 
 export json, nyml, paths, macros
-export supranimServer
+export supranimServer, registerCallback, unregisterCallback
 
 type
   JsonString* = string  # an alias for JSON string
@@ -42,26 +43,18 @@ type
       ## The address the application binds to
     configs*: OrderedTableRef[string, nyml.Document]
       ## A table of configuration documents
-    # services*: ApplicationServices
-      # A table of service providers
-    router*: HttpRouterInstance
-      ## The main HTTP router instance
-    # udp*: ApplicationUDP
     applicationPaths* : ApplicationPaths
       ## The application paths 
     assetsHandler*: ApplicationAssetsHandler
       ## Custom handler for serving static assets. If not defined,
       ## static assets will be served from the `assets/` directory in
       ## the application root. In development this is convenient, but
+    server*: WebServer
+      ## The web server instance that handles incoming HTTP requests.
+      ## This is initialized when the application starts.
 
   AppConfigDefect* = object of CatchableError
   
-#
-# ApplicationObject Crypto
-#
-import pkg/libsodium/[sodium, sodium_sizes]
-export bin2hex, hex2bin
-
 proc info*(str: string, indentSize = 0) =
   echo indent(str, indentSize)
 

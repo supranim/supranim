@@ -6,8 +6,8 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
-import std/[httpcore, strutils, htmlgen, json, times, options]
-import pkg/jsony
+import std/[httpcore, strutils, htmlgen, times, options]
+import pkg/openparser/json # std/json is exported from here
 
 import ../support/uuid
 
@@ -64,7 +64,7 @@ proc toString*(headers: HttpHeaders): string =
     str.add(h.key & ":" & indent(h.value, 1))
   result &= str.join("\n")
 
-proc resp*(req: Request, code: HttpCode,
+proc resp*(req: var Request, code: HttpCode,
         body: sink string, headers: HttpHeaders = nil) =
   ## Responds with the specified HttpCode and body.
   var serverDate = now().utc().format("ddd, dd MMM yyyy HH:mm:ss 'GMT'")
@@ -74,6 +74,7 @@ proc resp*(req: Request, code: HttpCode,
     else: newHttpHeaders()
   headers.add("Date", $serverDate)
   req.send(code.int, body, headers)
+  req.responseSent = true
 
 #
 # Response Headers
@@ -90,7 +91,7 @@ proc addHeader*(res: var Response, key, value: string) =
 proc getHeaders*(res: var Response): HttpHeaders =
   result = res.headers
 
-proc redirectUri*(req: Request, res: var Response, target: string, code = Http303) =
+proc redirectUri*(req: var Request, res: var Response, target: string, code = Http303) =
   res.addHeader("Location", target)
   req.resp(code, emptyResponseBody, res.headers)
 
@@ -135,11 +136,11 @@ template json*(body: typed, code: HttpCode = Http200): untyped =
   when compileOption("app", "lib"):
     res[].setCode(code)
     res[].addHeader("Content-Type", $contentTypeJson)
-    res[].setBody(jsony.toJson(body))
+    res[].setBody(json.toJson(body))
   else:
     res.setCode(code)
     res.addHeader("Content-Type", $contentTypeJson)
-    res.setBody(jsony.toJson(body))
+    res.setBody(json.toJson(body))
   return # blocks code execution
 
 template sendJson*(body: typed, code: HttpCode = Http200): untyped =
@@ -151,12 +152,13 @@ template sendJson*(body: typed, code: HttpCode = Http200): untyped =
   when compileOption("app", "lib"):
     res[].setCode(code)
     res[].addHeader("Content-Type", $contentTypeJson)
-    res[].setBody(jsony.toJson(body))
+    res[].setBody(json.toJson(body))
   else:
     res.setCode(code)
     res.addHeader("Content-Type", $contentTypeJson)
-    res.setBody(jsony.toJson(body))
+    res.setBody(json.toJson(body))
   req.send(res.getCode().int, res.getBody(), res.getHeaders())
+  req.responseSent = true
   return # blocks code execution
 
 template respond*(body: string, contentType: string = getContentType()): untyped {.dirty.} =

@@ -19,6 +19,8 @@ type
     (
       when defined supraMicroservice:
         proc(req: ptr Request, res: ptr Response): void {.nimcall, gcsafe.}
+      elif compileOption("app", "lib"):
+        proc(req: ptr Request, res: ptr Response): void {.cdecl, gcsafe.}
       else:
         proc(req: var Request, res: var Response): void {.nimcall, gcsafe.}
     )
@@ -67,11 +69,12 @@ var Router* {.threadvar.}: HttpRouterInstance
 
 const
   # Register default HTTP Error Handles
-  # let browsers use their default screen without providing
-  # a specific body
   DefaultHttpError*: Callable =
     when defined supraMicroservice:
       proc(req: ptr Request, res: ptr Response) =
+        discard
+    elif compileOption("app", "lib"):
+      proc(req: ptr Request, res: ptr Response) {.cdecl.} =
         discard
     else:
       proc(req: var Request, res: var Response) =
@@ -461,7 +464,7 @@ macro searchRoute(httpMethod: static string) =
           result.route = r # found a matching route
           let pattern = someRegexMatch.get().captures()
           if RegexMatch(pattern).pattern.captureNameId.len > 0:
-            new(result.params)
+            # new(result.params)
             for key in RegexMatch(pattern).pattern.captureNameId.keys:
               result.params[key] = pattern[key]
           break # stop at the first match
@@ -479,14 +482,14 @@ macro searchRouteWs*() =
           result.route = r # found a matching WebSocket route
           let pattern = someRegexMatch.get().captures()
           if RegexMatch(pattern).pattern.captureNameId.len > 0:
-            new(result.params)
+            # new(result.params)
             for key in RegexMatch(pattern).pattern.captureNameId.keys:
               result.params[key] = pattern[key]
           break # stop at the first match
 
 proc checkExists*(router: var HttpRouterInstance,
     requestPath: string, httpMethod: HttpMethod
-  ): tuple[exists: bool, route: HttpRoute, params: TableRef[string, string]] =
+  ): tuple[exists: bool, route: HttpRoute, params: Table[string, string]] =
   case httpMethod
     of HttpGet:     searchRoute("httpGet")
     of HttpPost:    searchRoute("httpPost")
@@ -501,7 +504,7 @@ proc checkExists*(router: var HttpRouterInstance,
     likely(result.route != nil)
 
 proc checkWsExists*(router: var HttpRouterInstance, requestPath: string
-    ): tuple[exists: bool, route: HttpRouteWs, params: TableRef[string, string]] =
+    ): tuple[exists: bool, route: HttpRouteWs, params: Table[string, string]] =
   searchRouteWs()
   result.exists = likely(result.route != nil)
 
@@ -558,6 +561,11 @@ proc errorHandler*(router: var HttpRouterInstance,
 when defined supraMicroservice:
   proc call4xx*(router: var HttpRouterInstance,
                 req: ptr Request, res: ptr Response) {.discardable.} =
+    ## Run the `4xx` callback
+    router.httpErrors["4xx"].callback(req, res)
+elif compileOption("app", "lib"):
+  proc call4xx*(router: var HttpRouterInstance,
+                req: ptr Request, res: ptr Response) {.cdecl, discardable.} =
     ## Run the `4xx` callback
     router.httpErrors["4xx"].callback(req, res)
 else:
