@@ -3,19 +3,19 @@ nim	Response	supranim/core/response.html#Response	object Response		18
 nim	getContentType	supranim/core/response.html#getContentType	proc getContentType(): string		32
 nim	getDefault	supranim/core/response.html#getDefault,HttpCode	proc getDefault(code: HttpCode): string		49
 nim	toString	supranim/core/response.html#toString,HttpHeaders	proc toString(headers: HttpHeaders): string		60
-nim	resp	supranim/core/response.html#resp,Request,HttpCode,sinkstring,HttpHeaders	proc resp(req: Request; code: HttpCode; body: sink string; headers: HttpHeaders = nil)		67
-nim	emptyResponseBody	supranim/core/response.html#emptyResponseBody	const emptyResponseBody		81
-nim	addHeader	supranim/core/response.html#addHeader,Response,string,string	proc addHeader(res: var Response; key, value: string)		83
-nim	getHeaders	supranim/core/response.html#getHeaders,Response	proc getHeaders(res: var Response): HttpHeaders		90
-nim	redirectUri	supranim/core/response.html#redirectUri,Request,Response,string	proc redirectUri(req: Request; res: var Response; target: string; code = Http303)		93
-nim	redirect	supranim/core/response.html#redirect.t,string	template redirect(target: string; code = Http303)		97
-nim	redirect301	supranim/core/response.html#redirect301.t,string	template redirect301(target: string)		105
-nim	getCode	supranim/core/response.html#getCode,Response	proc getCode(res: Response): HttpCode		113
-nim	setCode	supranim/core/response.html#setCode,Response,HttpCode	proc setCode(res: var Response; code: HttpCode)		116
-nim	getBody	supranim/core/response.html#getBody,Response	proc getBody(res: Response): lent string		120
-nim	setBody	supranim/core/response.html#setBody,Response,sinkstring	proc setBody(res: var Response; body: sink string)		124
-nim	json	supranim/core/response.html#json.t,typed,HttpCode	template json(body: typed; code: HttpCode = Http200): untyped		128
-nim	sendJson	supranim/core/response.html#sendJson.t,typed,HttpCode	template sendJson(body: typed; code: HttpCode = Http200): untyped		145
-nim	respond	supranim/core/response.html#respond.t,string,string	template respond(body: string; contentType: string = getContentType()): untyped		162
-nim	respond	supranim/core/response.html#respond.t,HttpCode,string,string	template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped		174
-nimgrp	respond	supranim/core/response.html#respond-templates-all	template		162
+nim	resp	supranim/core/response.html#resp,Request,HttpCode,sinkstring,HttpHeaders	proc resp(req: var Request; code: HttpCode; body: sink string;\n     headers: HttpHeaders = nil)		67
+nim	emptyResponseBody	supranim/core/response.html#emptyResponseBody	const emptyResponseBody		82
+nim	addHeader	supranim/core/response.html#addHeader,Response,string,string	proc addHeader(res: var Response; key, value: string)		84
+nim	getHeaders	supranim/core/response.html#getHeaders,Response	proc getHeaders(res: var Response): HttpHeaders		91
+nim	redirectUri	supranim/core/response.html#redirectUri,Request,Response,string	proc redirectUri(req: var Request; res: var Response; target: string; code = Http303)		94
+nim	redirect	supranim/core/response.html#redirect.t,string	template redirect(target: string; code = Http303)		98
+nim	redirect301	supranim/core/response.html#redirect301.t,string	template redirect301(target: string)		106
+nim	getCode	supranim/core/response.html#getCode,Response	proc getCode(res: Response): HttpCode		114
+nim	setCode	supranim/core/response.html#setCode,Response,HttpCode	proc setCode(res: var Response; code: HttpCode)		117
+nim	getBody	supranim/core/response.html#getBody,Response	proc getBody(res: Response): lent string		121
+nim	setBody	supranim/core/response.html#setBody,Response,sinkstring	proc setBody(res: var Response; body: sink string)		125
+nim	json	supranim/core/response.html#json.t,typed,HttpCode	template json(body: typed; code: HttpCode = Http200): untyped		129
+nim	sendJson	supranim/core/response.html#sendJson.t,typed,HttpCode	template sendJson(body: typed; code: HttpCode = Http200): untyped		146
+nim	respond	supranim/core/response.html#respond.t,string,string	template respond(body: string; contentType: string = getContentType()): untyped		164
+nim	respond	supranim/core/response.html#respond.t,HttpCode,string,string	template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped		176
+nimgrp	respond	supranim/core/response.html#respond-templates-all	template		164

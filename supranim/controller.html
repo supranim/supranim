@@ -66,15 +66,6 @@
 </li>
 <li>
   <details open>
-    <summary><a class="reference reference-toplevel" href="#9" id="59">Lets</a></summary>
-    <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#keypair" title="keypair = crypto_box_keypair()">keypair</a></li>
-
-    </ul>
-  </details>
-</li>
-<li>
-  <details open>
     <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
     <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">getBodyData
@@ -124,11 +115,11 @@
 
 </ul>
 <ul class="simple nested-toc-section">params
-  <li><a class="reference" href="#params%2CRequest" title="params(req: Request): TableRef[string, string]">params(req: Request): TableRef[string, string]</a></li>
+  <li><a class="reference" href="#params%2CRequest" title="params(req: Request): lent Table[string, string]">params(req: Request): lent Table[string, string]</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">setParams
-  <li><a class="reference" href="#setParams%2CRequest%2CTableRef%5Bstring%2Cstring%5D" title="setParams(req: var Request; params: TableRef[string, string])">setParams(req: var Request; params: TableRef[string, string])</a></li>
+  <li><a class="reference" href="#setParams%2CRequest%2CsinkTable%5Bstring%2Cstring%5D" title="setParams(req: var Request; params: sink Table[string, string])">setParams(req: var Request; params: sink Table[string, string])</a></li>
 
 </ul>
 
@@ -207,20 +198,6 @@
 </div>
 <div id="SomeBodyData">
   <dt><pre><a href="controller.html#SomeBodyData"><span class="Identifier">SomeBodyData</span></a> <span class="Other">=</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="controller.html#BodyData"><span class="Identifier">BodyData</span></a><span class="Other">]</span></pre></dt>
-  <dd>
-    
-    
-    
-  </dd>
-</div>
-
-  </dl>
-</div>
-<div class="section" id="9">
-  <h1><a class="toc-backref" href="#9">Lets</a></h1>
-  <dl class="item">
-    <div id="keypair">
-  <dt><pre><a href="controller.html#keypair"><span class="Identifier">keypair</span></a> <span class="Other">=</span> <span class="Identifier">crypto_box_keypair</span><span class="Other">(</span><span class="Other">)</span></pre></dt>
   <dd>
     
     
@@ -370,20 +347,20 @@
 </div>
 <div id="params-procs-all">
   <div id="params,Request">
-  <dt><pre><span class="Keyword">proc</span> <a href="#params%2CRequest"><span class="Identifier">params</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#params%2CRequest"><span class="Identifier">params</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Returns the route parameters from <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt>
+    
     
   </dd>
 </div>
 
 </div>
 <div id="setParams-procs-all">
-  <div id="setParams,Request,TableRef[string,string]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#setParams%2CRequest%2CTableRef%5Bstring%2Cstring%5D"><span class="Identifier">setParams</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">params</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <div id="setParams,Request,sinkTable[string,string]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#setParams%2CRequest%2CsinkTable%5Bstring%2Cstring%5D"><span class="Identifier">setParams</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">params</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Sets the route parameters in <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt>
@@ -422,7 +399,7 @@
   <dt><pre><span class="Keyword">macro</span> <a href="#newController.m%2Cuntyped%2Cuntyped"><span class="Identifier">newController</span></a><span class="Other">(</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span></pre></dt>
   <dd>
     
-    
+    Defines a new controller procedure with the given name and body. The generated procedure is marked as <tt class="docutils literal"><span class="pre"><span class="Identifier">gcsafe</span></span></tt> to allow it to be called from a GC-safe context.
     
   </dd>
 </div>
@@ -439,7 +416,7 @@
   <dt><pre><span class="Keyword">template</span> <a href="#ctrl.t%2Cuntyped%2Cuntyped"><span class="Identifier">ctrl</span></a><span class="Other">(</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span></pre></dt>
   <dd>
     
-    
+    An alias for <tt class="docutils literal"><span class="pre"><span class="Identifier">newController</span></span></tt> macro to define controller handlers
     
   </dd>
 </div>
@@ -484,7 +461,7 @@
 <div class="section" id="19">
   <h1><a class="toc-backref" href="#19">Exports</a></h1>
   <dl class="item">
-    <a href="network/http/webserver.html#getHeader,Request,string"><span class="Identifier">getHeader</span></a>, <a href="network/http/webserver.html#findHeader,Request,string"><span class="Identifier">findHeader</span></a>, <a href="core/request.html#getUrl,Request"><span class="Identifier">getUrl</span></a>, <a href="network/http/webserver.html#getQuery,Request"><span class="Identifier">getQuery</span></a>, <a href="network/http/webserver.html#getIp,Request"><span class="Identifier">getIp</span></a>, <a href="network/http/webserver.html#send,Request,int,HttpHeaders"><span class="Identifier">send</span></a>, <a href="core/request.html#getUriPath,Request"><span class="Identifier">getUriPath</span></a>, <a href="core/request.html#getBrowserName,Request"><span class="Identifier">getBrowserName</span></a>, <a href="core/request.html#getPlatform,Request"><span class="Identifier">getPlatform</span></a>, <a href="core/request.html#getClientData,Request"><span class="Identifier">getClientData</span></a>, <a href="core/request.html#hasCookies,Request"><span class="Identifier">hasCookies</span></a>, <a href="network/http/webserver.html#send,Request,HttpCode,string,HttpHeaders"><span class="Identifier">send</span></a>, <a href="core/request.html#getCookies,Request"><span class="Identifier">getCookies</span></a>, <a href="network/http/webserver.html#send,Request,int,string,HttpHeaders"><span class="Identifier">send</span></a>, <a href="network/http/webserver.html#getBody,Request"><span class="Identifier">getBody</span></a>, <a href="support/cookie.html#$,ref.Cookie"><span class="Identifier">$</span></a>, <a href="core/request.html#getAgent,Request"><span class="Identifier">getAgent</span></a>, <a href="network/http/webserver.html#Request"><span class="Identifier">Request</span></a>, <a href="core/request.html#getHttpMethod,Request"><span class="Identifier">getHttpMethod</span></a>, <a href="network/http/webserver.html#getHeaders,Request"><span class="Identifier">getHeaders</span></a>, <a href="core/response.html#getDefault,HttpCode"><span class="Identifier">getDefault</span></a>, <a href="core/response.html#sendJson.t,typed,HttpCode"><span class="Identifier">sendJson</span></a>, <a href="core/response.html#getContentType"><span class="Identifier">getContentType</span></a>, <a href="core/response.html#emptyResponseBody"><span class="Identifier">emptyResponseBody</span></a>, <a href="core/response.html#getHeaders,Response"><span class="Identifier">getHeaders</span></a>, <a href="core/response.html#resp,Request,HttpCode,sinkstring,HttpHeaders"><span class="Identifier">resp</span></a>, <a href="core/response.html#redirect.t,string"><span class="Identifier">redirect</span></a>, <a href="core/response.html#json.t,typed,HttpCode"><span class="Identifier">json</span></a>, <a href="core/response.html#Response"><span class="Identifier">Response</span></a>, <a href="core/response.html#getBody,Response"><span class="Identifier">getBody</span></a>, <a href="core/response.html#redirect301.t,string"><span class="Identifier">redirect301</span></a>, <a href="core/response.html#toString,HttpHeaders"><span class="Identifier">toString</span></a>, <a href="core/response.html#respond.t,string,string"><span class="Identifier">respond</span></a>, <a href="core/response.html#setCode,Response,HttpCode"><span class="Identifier">setCode</span></a>, <a href="core/response.html#redirectUri,Request,Response,string"><span class="Identifier">redirectUri</span></a>, <a href="core/response.html#setBody,Response,sinkstring"><span class="Identifier">setBody</span></a>, <a href="core/response.html#addHeader,Response,string,string"><span class="Identifier">addHeader</span></a>, <a href="core/response.html#respond.t,HttpCode,string,string"><span class="Identifier">respond</span></a>, <a href="core/response.html#getCode,Response"><span class="Identifier">getCode</span></a>, <a href="network/http/webserver.html#streamFile,Request,string,HttpHeaders"><span class="Identifier">streamFile</span></a>
+    <a href="network/http/webserver.html#send,Request,int,HttpHeaders"><span class="Identifier">send</span></a>, <a href="core/request.html#getUriPath,Request"><span class="Identifier">getUriPath</span></a>, <a href="network/http/webserver.html#Request"><span class="Identifier">Request</span></a>, <a href="core/request.html#getCookies,Request"><span class="Identifier">getCookies</span></a>, <a href="network/http/webserver.html#getQuery,Request"><span class="Identifier">getQuery</span></a>, <a href="network/http/webserver.html#send,Request,HttpCode,string,HttpHeaders"><span class="Identifier">send</span></a>, <a href="core/request.html#getAgent,Request"><span class="Identifier">getAgent</span></a>, <a href="core/request.html#getUrl,Request"><span class="Identifier">getUrl</span></a>, <a href="core/request.html#hasCookies,Request"><span class="Identifier">hasCookies</span></a>, <a href="core/request.html#getClientData,Request"><span class="Identifier">getClientData</span></a>, <a href="network/http/webserver.html#getHeaders,Request"><span class="Identifier">getHeaders</span></a>, <a href="network/http/webserver.html#getHeader,Request,string"><span class="Identifier">getHeader</span></a>, <a href="network/http/webserver.html#send,Request,int,string,HttpHeaders"><span class="Identifier">send</span></a>, <a href="core/request.html#getHttpMethod,Request"><span class="Identifier">getHttpMethod</span></a>, <a href="core/request.html#getPlatform,Request"><span class="Identifier">getPlatform</span></a>, <a href="network/http/webserver.html#findHeader,Request,string"><span class="Identifier">findHeader</span></a>, <a href="network/http/webserver.html#getIp,Request"><span class="Identifier">getIp</span></a>, <a href="core/request.html#getBrowserName,Request"><span class="Identifier">getBrowserName</span></a>, <a href="support/cookie.html#$,ref.Cookie"><span class="Identifier">$</span></a>, <a href="network/http/webserver.html#getBody,Request"><span class="Identifier">getBody</span></a>, <a href="network/http/webserver.html#send,ptr.evhttp_request,int,string,HttpHeaders"><span class="Identifier">send</span></a>, <a href="core/response.html#getDefault,HttpCode"><span class="Identifier">getDefault</span></a>, <a href="core/response.html#sendJson.t,typed,HttpCode"><span class="Identifier">sendJson</span></a>, <a href="core/response.html#getContentType"><span class="Identifier">getContentType</span></a>, <a href="core/response.html#emptyResponseBody"><span class="Identifier">emptyResponseBody</span></a>, <a href="core/response.html#getHeaders,Response"><span class="Identifier">getHeaders</span></a>, <a href="core/response.html#resp,Request,HttpCode,sinkstring,HttpHeaders"><span class="Identifier">resp</span></a>, <a href="core/response.html#redirect.t,string"><span class="Identifier">redirect</span></a>, <a href="core/response.html#json.t,typed,HttpCode"><span class="Identifier">json</span></a>, <a href="core/response.html#Response"><span class="Identifier">Response</span></a>, <a href="core/response.html#getBody,Response"><span class="Identifier">getBody</span></a>, <a href="core/response.html#redirect301.t,string"><span class="Identifier">redirect301</span></a>, <a href="core/response.html#toString,HttpHeaders"><span class="Identifier">toString</span></a>, <a href="core/response.html#respond.t,string,string"><span class="Identifier">respond</span></a>, <a href="core/response.html#setCode,Response,HttpCode"><span class="Identifier">setCode</span></a>, <a href="core/response.html#redirectUri,Request,Response,string"><span class="Identifier">redirectUri</span></a>, <a href="core/response.html#setBody,Response,sinkstring"><span class="Identifier">setBody</span></a>, <a href="core/response.html#addHeader,Response,string,string"><span class="Identifier">addHeader</span></a>, <a href="core/response.html#respond.t,HttpCode,string,string"><span class="Identifier">respond</span></a>, <a href="core/response.html#getCode,Response"><span class="Identifier">getCode</span></a>, <a href="network/http/webserver.html#streamFile,Request,string,HttpHeaders"><span class="Identifier">streamFile</span></a>
   </dl>
 </div>
 
@@ -494,7 +471,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-07 07:22:07 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-17 19:26:16 UTC</small>
       </div>
     </div>
   </div>

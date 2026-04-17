@@ -182,15 +182,15 @@
 <li><a class="reference external"
           data-doc-search-tag="router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
             httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
-    params: TableRef[string, string]]" href="supranim/core/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
+    params: Table[string, string]]" href="supranim/core/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
             httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
-    params: TableRef[string, string]]</a></li>
+    params: Table[string, string]]</a></li>
           </ul></dd>
 <dt><a name="checkWsExists" href="#checkWsExists"><span>checkWsExists:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
-    exists: bool, route: HttpRouteWs, params: TableRef[string, string]]" href="supranim/core/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
-    exists: bool, route: HttpRouteWs, params: TableRef[string, string]]</a></li>
+    exists: bool, route: HttpRouteWs, params: Table[string, string]]" href="supranim/core/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
+    exists: bool, route: HttpRouteWs, params: Table[string, string]]</a></li>
           </ul></dd>
 <dt><a name="clearHeaders" href="#clearHeaders"><span>clearHeaders:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -716,10 +716,6 @@
 <li><a class="reference external"
           data-doc-search-tag="application: type JsonString" href="supranim/core/application.html#JsonString">application: type JsonString</a></li>
           </ul></dd>
-<dt><a name="keypair" href="#keypair"><span>keypair:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="controller: let keypair" href="supranim/controller.html#keypair">controller: let keypair</a></li>
-          </ul></dd>
 <dt><a name="lastModified" href="#lastModified"><span>lastModified:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="httpclient: proc lastModified(response: Response | AsyncResponse): DateTime" href="supranim/support/httpclient.html#lastModified">httpclient: proc lastModified(response: Response | AsyncResponse): DateTime</a></li>
@@ -864,7 +860,7 @@
           </ul></dd>
 <dt><a name="params" href="#params"><span>params:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="controller: proc params(req: Request): TableRef[string, string]" href="supranim/controller.html#params%2CRequest">controller: proc params(req: Request): TableRef[string, string]</a></li>
+          data-doc-search-tag="controller: proc params(req: Request): lent Table[string, string]" href="supranim/controller.html#params%2CRequest">controller: proc params(req: Request): lent Table[string, string]</a></li>
           </ul></dd>
 <dt><a name="parseCookies" href="#parseCookies"><span>parseCookies:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -994,7 +990,7 @@
           </ul></dd>
 <dt><a name="redirectUri" href="#redirectUri"><span>redirectUri:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)" href="supranim/core/response.html#redirectUri%2CRequest%2CResponse%2Cstring">response: proc redirectUri(req: Request; res: var Response; target: string; code = Http303)</a></li>
+          data-doc-search-tag="response: proc redirectUri(req: var Request; res: var Response; target: string; code = Http303)" href="supranim/core/response.html#redirectUri%2CRequest%2CResponse%2Cstring">response: proc redirectUri(req: var Request; res: var Response; target: string; code = Http303)</a></li>
           </ul></dd>
 <dt><a name="registerCallback" href="#registerCallback"><span>registerCallback:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1052,7 +1048,9 @@
           </ul></dd>
 <dt><a name="resp" href="#resp"><span>resp:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: proc resp(req: Request; code: HttpCode; body: sink string; headers: HttpHeaders = nil)" href="supranim/core/response.html#resp%2CRequest%2CHttpCode%2Csinkstring%2CHttpHeaders">response: proc resp(req: Request; code: HttpCode; body: sink string; headers: HttpHeaders = nil)</a></li>
+          data-doc-search-tag="response: proc resp(req: var Request; code: HttpCode; body: sink string;
+     headers: HttpHeaders = nil)" href="supranim/core/response.html#resp%2CRequest%2CHttpCode%2Csinkstring%2CHttpHeaders">response: proc resp(req: var Request; code: HttpCode; body: sink string;
+     headers: HttpHeaders = nil)</a></li>
           </ul></dd>
 <dt><a name="respond" href="#respond"><span>respond:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1126,11 +1124,17 @@
           </ul></dd>
 <dt><a name="send" href="#send"><span>send:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="webserver: proc send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders">webserver: proc send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)</a></li>
+          data-doc-search-tag="webserver: proc send(req: ptr evhttp_request; code: int; body: string;
+     httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2Cptr.evhttp_request%2Cint%2Cstring%2CHttpHeaders">webserver: proc send(req: ptr evhttp_request; code: int; body: string;
+     httpHeaders: HttpHeaders = nil)</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="webserver: proc send(req: Request; code: int; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2Cint%2CHttpHeaders">webserver: proc send(req: Request; code: int; httpHeaders: HttpHeaders = nil)</a></li>
+          data-doc-search-tag="webserver: proc send(req: var Request; code: HttpCode; body: string;
+     httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders">webserver: proc send(req: var Request; code: HttpCode; body: string;
+     httpHeaders: HttpHeaders = nil)</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="webserver: proc send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2Cint%2Cstring%2CHttpHeaders">webserver: proc send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)</a></li>
+          data-doc-search-tag="webserver: proc send(req: var Request; code: int; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2Cint%2CHttpHeaders">webserver: proc send(req: var Request; code: int; httpHeaders: HttpHeaders = nil)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc send(req: var Request; code: int; body: string; httpHeaders: HttpHeaders = nil)" href="supranim/network/http/webserver.html#send%2CRequest%2Cint%2Cstring%2CHttpHeaders">webserver: proc send(req: var Request; code: int; body: string; httpHeaders: HttpHeaders = nil)</a></li>
           </ul></dd>
 <dt><a name="sendAssets" href="#sendAssets"><span>sendAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1162,9 +1166,9 @@
           </ul></dd>
 <dt><a name="sendFile" href="#sendFile"><span>sendFile:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="webserver: proc sendFile(req: Request; bytes: seq[uint8]; resHeaders: HttpHeaders)" href="supranim/network/http/webserver.html#sendFile%2CRequest%2Cseq%5Buint8%5D%2CHttpHeaders">webserver: proc sendFile(req: Request; bytes: seq[uint8]; resHeaders: HttpHeaders)</a></li>
+          data-doc-search-tag="webserver: proc sendFile(req: var Request; bytes: seq[uint8]; resHeaders: HttpHeaders)" href="supranim/network/http/webserver.html#sendFile%2CRequest%2Cseq%5Buint8%5D%2CHttpHeaders">webserver: proc sendFile(req: var Request; bytes: seq[uint8]; resHeaders: HttpHeaders)</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="webserver: proc sendFile(req: Request; filePath: string; resHeaders: HttpHeaders)" href="supranim/network/http/webserver.html#sendFile%2CRequest%2Cstring%2CHttpHeaders">webserver: proc sendFile(req: Request; filePath: string; resHeaders: HttpHeaders)</a></li>
+          data-doc-search-tag="webserver: proc sendFile(req: var Request; filePath: string; resHeaders: HttpHeaders)" href="supranim/network/http/webserver.html#sendFile%2CRequest%2Cstring%2CHttpHeaders">webserver: proc sendFile(req: var Request; filePath: string; resHeaders: HttpHeaders)</a></li>
           </ul></dd>
 <dt><a name="sendFrame" href="#sendFrame"><span>sendFrame:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1242,7 +1246,7 @@
           </ul></dd>
 <dt><a name="setParams" href="#setParams"><span>setParams:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="controller: proc setParams(req: var Request; params: TableRef[string, string])" href="supranim/controller.html#setParams%2CRequest%2CTableRef%5Bstring%2Cstring%5D">controller: proc setParams(req: var Request; params: TableRef[string, string])</a></li>
+          data-doc-search-tag="controller: proc setParams(req: var Request; params: sink Table[string, string])" href="supranim/controller.html#setParams%2CRequest%2CsinkTable%5Bstring%2Cstring%5D">controller: proc setParams(req: var Request; params: sink Table[string, string])</a></li>
           </ul></dd>
 <dt><a name="Singleton" href="#Singleton"><span>Singleton:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1323,6 +1327,10 @@
 <dt><a name="UnixHttpClient" href="#UnixHttpClient"><span>UnixHttpClient:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="httpclient: type UnixHttpClient" href="supranim/support/httpclient.html#UnixHttpClient">httpclient: type UnixHttpClient</a></li>
+          </ul></dd>
+<dt><a name="unregisterCallback" href="#unregisterCallback"><span>unregisterCallback:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc unregisterCallback(server: WebServer; path: string)" href="supranim/network/http/webserver.html#unregisterCallback%2CWebServer%2Cstring">webserver: proc unregisterCallback(server: WebServer; path: string)</a></li>
           </ul></dd>
 <dt><a name="Uuid" href="#Uuid"><span>Uuid:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1424,7 +1432,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-07 07:22:07 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-17 19:26:16 UTC</small>
       </div>
     </div>
   </div>

@@ -69,7 +69,9 @@
   uriQuery*: Option[TableRef[string, string]] ## Lazily initialized query parameters from the URI.
   headers*: Option[HttpHeaders] ## The request headers (lazily initialized).
   body*: Option[string]      ## The request body (lazily initialized).
-  routeParams*: TableRef[string, string] ## The route parameters extracted from the URL.">Request</a></li>
+  routeParams*: Table[string, string] ## The route parameters extracted from the URL.
+  responseSent*: bool ## Whether a response has already been sent for this request.
+                      ## This is used to prevent multiple responses.">Request</a></li>
 <li><a class="reference" href="#StartupCallback" title="StartupCallback = proc () {.gcsafe.}">StartupCallback</a></li>
 <li><a class="reference" href="#WebServer" title="WebServer = ref object
   base*: ptr event_base      ## The underlying event base.
@@ -77,7 +79,8 @@
   port*: Port                ## The port the server listens on.
   otherOnRequestCallbacks*: Table[string, OnRequestLowLevel] ## Store other path-specific callbacks. This table is used to inject
                                                              ## low-level callbacks for specific paths. It works in both single-threaded and multi-threaded modes.
-  enableMultiThreading*: bool">WebServer</a></li>
+  enableMultiThreading*: bool
+  workerHttpServers*: seq[ptr evhttp]">WebServer</a></li>
 
     </ul>
   </details>
@@ -181,9 +184,14 @@
 
 </ul>
 <ul class="simple nested-toc-section">send
-  <li><a class="reference" href="#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders" title="send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)">send(req: Request; code: HttpCode; body: string; httpHeaders: HttpHeaders = nil)</a></li>
-<li><a class="reference" href="#send%2CRequest%2Cint%2Cstring%2CHttpHeaders" title="send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)">send(req: Request; code: int; body: string; httpHeaders: HttpHeaders = nil)</a></li>
-<li><a class="reference" href="#send%2CRequest%2Cint%2CHttpHeaders" title="send(req: Request; code: int; httpHeaders: HttpHeaders = nil)">send(req: Request; code: int; httpHeaders: HttpHeaders = nil)</a></li>
+  <li><a class="reference" href="#send%2Cptr.evhttp_request%2Cint%2Cstring%2CHttpHeaders" title="send(req: ptr evhttp_request; code: int; body: string;
+     httpHeaders: HttpHeaders = nil)">send(req: ptr evhttp_request; code: int; body: string;
+     httpHeaders: HttpHeaders = nil)</a></li>
+<li><a class="reference" href="#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders" title="send(req: var Request; code: HttpCode; body: string;
+     httpHeaders: HttpHeaders = nil)">send(req: var Request; code: HttpCode; body: string;
+     httpHeaders: HttpHeaders = nil)</a></li>
+<li><a class="reference" href="#send%2CRequest%2Cint%2Cstring%2CHttpHeaders" title="send(req: var Request; code: int; body: string; httpHeaders: HttpHeaders = nil)">send(req: var Request; code: int; body: string; httpHeaders: HttpHeaders = nil)</a></li>
+<li><a class="reference" href="#send%2CRequest%2Cint%2CHttpHeaders" title="send(req: var Request; code: int; httpHeaders: HttpHeaders = nil)">send(req: var Request; code: int; httpHeaders: HttpHeaders = nil)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">sendChunk
@@ -191,8 +199,8 @@
 
 </ul>
 <ul class="simple nested-toc-section">sendFile
-  <li><a class="reference" href="#sendFile%2CRequest%2Cseq%5Buint8%5D%2CHttpHeaders" title="sendFile(req: Request; bytes: seq[uint8]; resHeaders: HttpHeaders)">sendFile(req: Request; bytes: seq[uint8]; resHeaders: HttpHeaders)</a></li>
-<li><a class="reference" href="#sendFile%2CRequest%2Cstring%2CHttpHeaders" title="sendFile(req: Request; filePath: string; resHeaders: HttpHeaders)">sendFile(req: Request; filePath: string; resHeaders: HttpHeaders)</a></li>
+  <li><a class="reference" href="#sendFile%2CRequest%2Cseq%5Buint8%5D%2CHttpHeaders" title="sendFile(req: var Request; bytes: seq[uint8]; resHeaders: HttpHeaders)">sendFile(req: var Request; bytes: seq[uint8]; resHeaders: HttpHeaders)</a></li>
+<li><a class="reference" href="#sendFile%2CRequest%2Cstring%2CHttpHeaders" title="sendFile(req: var Request; filePath: string; resHeaders: HttpHeaders)">sendFile(req: var Request; filePath: string; resHeaders: HttpHeaders)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">start
@@ -215,6 +223,10 @@
 </ul>
 <ul class="simple nested-toc-section">streamFile
   <li><a class="reference" href="#streamFile%2CRequest%2Cstring%2CHttpHeaders" title="streamFile(req: var Request; filePath: string; resHeaders: HttpHeaders = nil)">streamFile(req: var Request; filePath: string; resHeaders: HttpHeaders = nil)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">unregisterCallback
+  <li><a class="reference" href="#unregisterCallback%2CWebServer%2Cstring" title="unregisterCallback(server: WebServer; path: string)">unregisterCallback(server: WebServer; path: string)</a></li>
 
 </ul>
 
@@ -287,7 +299,9 @@
   <span class="Identifier">uriQuery</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span> <span class="Comment">## Lazily initialized query parameters from the URI.</span>
   <span class="Identifier">headers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">HttpHeaders</span><span class="Other">]</span> <span class="Comment">## The request headers (lazily initialized).</span>
   <span class="Identifier">body</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>      <span class="Comment">## The request body (lazily initialized).</span>
-  <span class="Identifier">routeParams</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## The route parameters extracted from the URL.</span></pre></dt>
+  <span class="Identifier">routeParams</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## The route parameters extracted from the URL.</span>
+  <span class="Identifier">responseSent</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span> <span class="Comment">## Whether a response has already been sent for this request.</span>
+                      <span class="Comment">## This is used to prevent multiple responses.</span></pre></dt>
   <dd>
     
     Represents an HTTP request.
@@ -309,7 +323,8 @@
   <span class="Identifier">port</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Port</span>                <span class="Comment">## The port the server listens on.</span>
   <span class="Identifier">otherOnRequestCallbacks</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="webserver.html#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a><span class="Other">]</span> <span class="Comment">## Store other path-specific callbacks. This table is used to inject</span>
                                                              <span class="Comment">## low-level callbacks for specific paths. It works in both single-threaded and multi-threaded modes.</span>
-  <span class="Identifier">enableMultiThreading</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
+  <span class="Identifier">enableMultiThreading</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">workerHttpServers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Keyword">ptr</span> <span class="Identifier">evhttp</span><span class="Other">]</span></pre></dt>
   <dd>
     
     Represents an HTTP server.
@@ -607,8 +622,17 @@
 
 </div>
 <div id="send-procs-all">
-  <div id="send,Request,HttpCode,string,HttpHeaders">
-  <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+  <div id="send,ptr.evhttp_request,int,string,HttpHeaders">
+  <dt><pre><span class="Keyword">proc</span> <a href="#send%2Cptr.evhttp_request%2Cint%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+          <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Sends an HTTP response directly using evhttp_request.
+    
+  </dd>
+</div>
+<div id="send,Request,HttpCode,string,HttpHeaders">
+  <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
           <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -617,8 +641,8 @@
   </dd>
 </div>
 <div id="send,Request,int,string,HttpHeaders">
-  <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2Cint%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2Cint%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+          <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -626,8 +650,8 @@
   </dd>
 </div>
 <div id="send,Request,int,HttpHeaders">
-  <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2Cint%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2Cint%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -649,7 +673,7 @@
 </div>
 <div id="sendFile-procs-all">
   <div id="sendFile,Request,seq[uint8],HttpHeaders">
-  <dt><pre><span class="Keyword">proc</span> <a href="#sendFile%2CRequest%2Cseq%5Buint8%5D%2CHttpHeaders"><span class="Identifier">sendFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">bytes</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">uint8</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">)</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#sendFile%2CRequest%2Cseq%5Buint8%5D%2CHttpHeaders"><span class="Identifier">sendFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">bytes</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">uint8</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">)</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -658,7 +682,7 @@
   </dd>
 </div>
 <div id="sendFile,Request,string,HttpHeaders">
-  <dt><pre><span class="Keyword">proc</span> <a href="#sendFile%2CRequest%2Cstring%2CHttpHeaders"><span class="Identifier">sendFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">filePath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">)</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#sendFile%2CRequest%2Cstring%2CHttpHeaders"><span class="Identifier">sendFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">filePath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">)</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -739,6 +763,18 @@
 </div>
 
 </div>
+<div id="unregisterCallback-procs-all">
+  <div id="unregisterCallback,WebServer,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#unregisterCallback%2CWebServer%2Cstring"><span class="Identifier">unregisterCallback</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="webserver.html#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Unregister callback safely in both single and multi-thread modes
+    
+  </dd>
+</div>
+
+</div>
 
   </dl>
 </div>
@@ -767,7 +803,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-07 07:22:07 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-17 19:26:16 UTC</small>
       </div>
     </div>
   </div>
