@@ -37,7 +37,7 @@ const
   consolePath* = pluginsPath / "console"
 
 type
-  ApplicationPaths* = object
+  ApplicationPaths* = ref object
     installPath: string
       # The absolute path to the application runtime installation directory
       
@@ -58,7 +58,11 @@ proc init*(path: var ApplicationPaths, installPath: string, createDirs: bool): b
 
 proc getInstallationPath*(path: ApplicationPaths): string =
   ## Returns the installation directory path
-  path.installPath  
+  path.installPath
+
+# proc paths*(path: ptr ApplicationPaths): string =
+#   ## Returns the installation directory path
+#   path[].installPath
 
 proc resolve*(path: ApplicationPaths, dir: string, fpath = ""): string =
   ## Returns the absolute path of `dir` directory

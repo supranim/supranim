@@ -45,7 +45,7 @@ type
     configs*: OrderedTableRef[string, nyml.Document]
       ## A table of configuration documents
     applicationPaths* : ApplicationPaths
-      ## The application paths 
+      ## The application paths object that manages directory paths for the application
     assetsHandler*: ApplicationAssetsHandler
       ## Custom handler for serving static assets. If not defined,
       ## static assets will be served from the `assets/` directory in
@@ -77,6 +77,7 @@ proc initApplication* =
   ## Initialize the application and returns the singleton instance
   once(onceApp):
     App = createShared(ApplicationObject)
+    App[].applicationPaths = ApplicationPaths()
 
 proc appInstance*: Application =
   ## Returns the singleton application instance
