@@ -8,20 +8,20 @@ nim	info	supranim/core/application.html#info,string,int	proc info(str: string; i
 nim	App	supranim/core/application.html#App	var App		69
 nim	Application	supranim/core/application.html#Application	type Application		73
 nim	initApplication	supranim/core/application.html#initApplication	proc initApplication()		76
-nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		81
-nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Application): ApplicationPaths		87
-nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): JsonNode		94
-nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		104
-nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		189
-nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		228
-nim	SafeThreadVarSeq	supranim/core/application.html#SafeThreadVarSeq	const SafeThreadVarSeq		301
-nim	withThreadCallback	supranim/core/application.html#withThreadCallback.m,untyped,untyped	macro withThreadCallback(appInstance, callback: untyped)		306
-nim	injectSafeThreadCallbacks	supranim/core/application.html#injectSafeThreadCallbacks.m	macro injectSafeThreadCallbacks()		312
-nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		335
-nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		340
-nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		359
-nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		378
-nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		400
-nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		406
-nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		410
-nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		414
+nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		82
+nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Application): ApplicationPaths		88
+nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): JsonNode		95
+nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		105
+nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		190
+nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		229
+nim	SafeThreadVarSeq	supranim/core/application.html#SafeThreadVarSeq	const SafeThreadVarSeq		302
+nim	withThreadCallback	supranim/core/application.html#withThreadCallback.m,untyped,untyped	macro withThreadCallback(appInstance, callback: untyped)		307
+nim	injectSafeThreadCallbacks	supranim/core/application.html#injectSafeThreadCallbacks.m	macro injectSafeThreadCallbacks()		313
+nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		336
+nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		341
+nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		360
+nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		379
+nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		401
+nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		407
+nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		411
+nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		415

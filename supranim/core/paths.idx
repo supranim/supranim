@@ -15,8 +15,8 @@ nim	storagePath	supranim/core/paths.html#storagePath	const storagePath		30
 nim	pluginsPath	supranim/core/paths.html#pluginsPath	const pluginsPath		31
 nim	logsPath	supranim/core/paths.html#logsPath	const logsPath		32
 nim	consolePath	supranim/core/paths.html#consolePath	const consolePath		37
-nim	ApplicationPaths	supranim/core/paths.html#ApplicationPaths	object ApplicationPaths		40
+nim	ApplicationPaths	supranim/core/paths.html#ApplicationPaths	type ApplicationPaths		40
 nim	p	supranim/core/paths.html#p.t,varargs[string]	template p(x: varargs[string]): string		44
 nim	init	supranim/core/paths.html#init,ApplicationPaths,string,bool	proc init(path: var ApplicationPaths; installPath: string; createDirs: bool): bool		47
 nim	getInstallationPath	supranim/core/paths.html#getInstallationPath,ApplicationPaths	proc getInstallationPath(path: ApplicationPaths): string		59
-nim	resolve	supranim/core/paths.html#resolve,ApplicationPaths,string,string	proc resolve(path: ApplicationPaths; dir: string; fpath = ""): string		63
+nim	resolve	supranim/core/paths.html#resolve,ApplicationPaths,string,string	proc resolve(path: ApplicationPaths; dir: string; fpath = ""): string		67

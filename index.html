@@ -94,7 +94,9 @@
     
     <div id="tocRoot"></div>
     
-    <p class="module-desc"></p>
+    <p class="module-desc"><p>Supranim performs many automatic setups, from macro-based initializers to automatic discovery of service providers and other Nim modules.</p>
+<p>This file is the main entry point for the Supranim application and is responsible for bootstrapping the application, loading configurations, and starting the server. </p>
+</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
@@ -109,7 +111,7 @@
   <dt><pre><span class="Keyword">macro</span> <a href="#runBaseMiddlewares.m%2C%2C"><span class="Identifier">runBaseMiddlewares</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">,</span> <span class="Identifier">res</span><span class="Other">)</span></pre></dt>
   <dd>
     
-    This macro is used to run the base middlewares for the application
+    Executes the registered base middlewares in order. If any middleware returns false, it means that the request has been handled and we should not continue processing it.
     
   </dd>
 </div>
@@ -126,7 +128,7 @@
   <dt><pre><span class="Keyword">template</span> <a href="#getBaseMiddlewares.t%2C%2C"><span class="Identifier">getBaseMiddlewares</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">,</span> <span class="Identifier">res</span><span class="Other">)</span> {.<span class="Identifier">dirty</span>.}</pre></dt>
   <dd>
     
-    
+    Walk through the registered base middlewares and execute them in order.
     
   </dd>
 </div>
@@ -145,7 +147,11 @@
   <dt><pre><span class="Keyword">template</span> <a href="#run.t%2CApplication%2Cuntyped"><span class="Identifier">run</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="supranim/core/application.html#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">optionalBlock</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span> {.<span class="Identifier">dirty</span>.}</pre></dt>
   <dd>
     
-    Runs the Supranim application server. You can provide an optional block to customize the server startup process.
+    <p>Runs the Supranim application server</p>
+<p>This is the main entry point for starting the application. It sets up the HTTP server and defines the request handling logic, including routing and middleware execution.</p>
+<p>Optionally, you can provide an <tt class="docutils literal"><span class="pre"><span class="Identifier">optionalBlock</span></span></tt> of code that will be executed during the server startup process, allowing you to inject custom logic or perform additional setup before the server starts accepting requests.</p>
+<p>For low-level server control, check the code inside this template and the <tt class="docutils literal"><span class="pre"><span class="Identifier">onRequest</span></span></tt> procedure to see how requests are processed and how the server is started.</p>
+
     
   </dd>
 </div>
@@ -167,7 +173,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-18 10:08:42 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-18 13:34:21 UTC</small>
       </div>
     </div>
   </div>
