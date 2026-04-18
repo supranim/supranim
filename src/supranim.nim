@@ -1,10 +1,18 @@
 #
-# Supranim is a full-featured web framework for building
-# web apps & microservices in Nim.
+# Supranim is a high-performance web framework for building
+# web applications and microservices in Nim
 # 
 #   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
+
+## 
+## Supranim performs many automatic setups, from macro-based initializers to
+## automatic discovery of service providers and other Nim modules.
+## 
+## This file is the main entry point for the Supranim application and is responsible
+## for bootstrapping the application, loading configurations, and starting the server.
+## 
 
 import std/[options, asyncdispatch, asynchttpserver,
       httpcore, osproc, os, strutils, sequtils, critbits,
@@ -30,8 +38,8 @@ export events, countProcessors
 export Domain, Port, `$`, releaseUnusedMemory
 
 macro runBaseMiddlewares*(req, res) =
-  ## This macro is used to run the base middlewares
-  ## for the application
+  ## Executes the registered base middlewares in order. If any middleware returns false,
+  ## it means that the request has been handled and we should not continue processing it.
   result = newStmtList()
   for mKey, mProc in baseMiddlewares:
     var baseMiddlewareCall = ident(mKey)
@@ -52,6 +60,7 @@ macro runBaseMiddlewares*(req, res) =
 # Httpbeast Wrapper
 #
 template getBaseMiddlewares*(req, res) {.dirty.} =
+  ## Walk through the registered base middlewares and execute them in order.
   if unlikely(req.raw == nil):
     # this means that the request has been dropped by a base middleware
     # and we should not continue processing it.
@@ -60,9 +69,18 @@ template getBaseMiddlewares*(req, res) {.dirty.} =
     runBaseMiddlewares(req, res)
 
 template run*(app: Application, optionalBlock: untyped) {.dirty.} =
-  ## Runs the Supranim application server.
-  ## You can provide an optional block to customize
-  ## the server startup process.
+  ## Runs the Supranim application server
+  ## 
+  ## This is the main entry point for starting the application. It sets up the
+  ## HTTP server and defines the request handling logic, including routing and
+  ## middleware execution.
+  ## 
+  ## Optionally, you can provide an `optionalBlock` of code that will be executed during the server
+  ## startup process, allowing you to inject custom logic or perform additional setup before
+  ## the server starts accepting requests.
+  ## 
+  ## For low-level server control, check the code inside this template and the `onRequest` procedure
+  ## to see how requests are processed and how the server is started.
   block:
     template invoke4xxHandler(path, req, res) =
       when defined supraMicroservice:
