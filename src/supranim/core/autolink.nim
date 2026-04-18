@@ -85,9 +85,9 @@ proc autolinkController*(routePath: string,
     if v.pattern.reKey.len > 0:
       add pathRegExpr,
         if not v.pattern.isOptional:
-          "(?<" & v.str & ">" & RegexPatterns[v.pattern.reKey] & ")"
+          "(?P<" & v.str & ">" & RegexPatterns[v.pattern.reKey] & ")"
         else:
-          "(?<" & v.str & ">(" & RegexPatterns[v.pattern.reKey] & ")?)"
+          "(?P<" & v.str & ">(" & RegexPatterns[v.pattern.reKey] & ")?)"
       add ctrlName, capitalizeAscii(v.str)
       add routeParams, (v.str, v.pattern.isOptional)
     else:

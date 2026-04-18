@@ -74,7 +74,7 @@ type
       ## The request path.
     uri*: Uri
       ## The parsed URI object.
-    uriQuery*: Option[TableRef[string, string]]
+    uriQuery*: TableRef[string, string]
       ## Lazily initialized query parameters from the URI.
     headers*: Option[HttpHeaders]
       ## The request headers (lazily initialized).
@@ -128,12 +128,12 @@ type
 proc addCallback*(server: WebServer, path: string, callback: OnRequestLowLevel)
 proc addCallback*(httpServer: ptr evhttp, path: string, callback: OnRequestLowLevel)
 
-var gLibeventThreadingInit: Atomic[bool]
-proc ensureLibeventThreading() =
-  # Must be called before creating any event_base in multithreaded mode.
-  if not gLibeventThreadingInit.load(moAcquire):
-    doAssert evthread_use_pthreads() == 0, "evthread_use_pthreads failed"
-    gLibeventThreadingInit.store(true, moRelease)
+# var gLibeventThreadingInit: Atomic[bool]
+# proc ensureLibeventThreading() =
+#   # Must be called before creating any event_base in multithreaded mode.
+#   if not gLibeventThreadingInit.load(moAcquire):
+#     doAssert evthread_use_pthreads() == 0, "evthread_use_pthreads failed"
+#     gLibeventThreadingInit.store(true, moRelease)
 
 proc applyAllowedMethods(httpServer: ptr evhttp) =
   let allowedMethods = (uint16(EVHTTP_REQ_GET) or uint16(EVHTTP_REQ_POST) or
@@ -190,7 +190,7 @@ proc newWebServer*(port: Port = Port(8080), enableMultiThreading: bool): WebServ
   ## 
   ## This is recommended for production use. For development, you can use the
   ## single-threaded version for simplicity.
-  ensureLibeventThreading()
+  # ensureLibeventThreading()
   new(result)
   
   # `enableMultiThreading` is just a marker here
@@ -373,7 +373,7 @@ proc start*(server: var WebServer, onRequest: OnRequest,
     # threads are not enabled we cannot run in pool mode
     {.error: "Mutli-threaded Supranim requires threads support. Use `--threads:on`".}
 
-  ensureLibeventThreading()
+  # ensureLibeventThreading()
   let sharedFd = bindSharedSocket(server.port)
   when defined(supranimUseGlobalOnRequest):
     appOnRequest = onRequest
@@ -491,10 +491,11 @@ proc getBody*(req: var Request): Option[string] =
 proc dropRequest*(req: var Request) =
   ## Drop the request by closing the connection without sending a response.
   ## This can be used in cases where you want to silently ignore a request without responding
-  let conn = evhttp_request_get_connection(req.raw)
-  if conn != nil:
-    evhttp_connection_free(conn)
-    req.raw = nil # mark as dropped
+  # let conn = evhttp_request_get_connection(req.raw)
+  # if conn != nil:
+  # evhttp_connection_free(conn) # don't free the connection directly, just close the socket
+  req.raw = nil # mark as dropped
+  req.responseSent = true
 
 #
 # Header high-level bindings
@@ -578,19 +579,19 @@ proc getMethod*(req: var Request): HttpMethod =
     of EVHTTP_REQ_CONNECT: HttpMethod.HttpConnect
     of EVHTTP_REQ_PATCH: HttpMethod.HttpPatch
 
-proc getQuery*(req: var Request): Option[TableRef[string, string]] =
+proc getQuery*(req: var Request): TableRef[string, string] =
   ## Returns the parsed query parameters from the request URI
   ## as a Table. Lazily initializes on first access. Then caches
   ## them for future accesses.
-  if req.uriQuery.isSome:
+  if req.uriQuery != nil:
     return req.uriQuery
   let query = decodeQuery(req.uri.query).toSeq()
   var queryTable = newTable[string, string]()
   if query.len > 0:
     for q in query:
       queryTable[q[0]] = q[1]
-  result = some(queryTable)
-  req.uriQuery = result
+  result = queryTable
+  req.uriQuery = result # cache for future accesses
 
 type
   StreamFileCtx = object

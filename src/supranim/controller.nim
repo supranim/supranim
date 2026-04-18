@@ -29,7 +29,7 @@ type
 #
 proc setParams*(req: var Request, params: sink Table[string, string]) =
   ## Sets the route parameters in `Request`
-  req.routeParams = ensureMove(params)
+  req.routeParams = params
 
 proc params*(req: Request): lent Table[string, string] =
   ## Returns the route parameters from `Request`
@@ -102,7 +102,7 @@ proc getBodyData*[T: BodyData|JsonNode](req: var Request, dataType: typedesc[T])
 
 proc getQueryTable*(req: var Request): TableRef[string, string] {.inline.} =
   ## Retrieve query parameters as a table
-  result = req.getQuery().get()
+  result = req.getQuery()
 
 proc getClientId*(req: var Request): Option[string] =
   ## Returns the client-side `ssid` from `Request`

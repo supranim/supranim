@@ -6,8 +6,18 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
-import std/[httpcore, critbits, tables, nre, macros,
+## This module implements a simple HTTP router for the Supranim framework.
+## It allows defining routes with dynamic parameters via regex patterns,
+## supports route-specific middleware and afterware hooks, and provides
+## compile-time macros to register routes in a declarative way
+## 
+## The Router is using `pkg/regex` for dynamic route matching, which allows for powerful
+## parameter extraction and flexible route definitions.
+
+import std/[httpcore, critbits, tables, macros,
         macrocache, strutils, sequtils, enumutils]
+
+import pkg/regex
 
 import ./request, ./response
 import ./autolink
@@ -30,7 +40,7 @@ type
   HttpRoute* = ref object of RootObj
     path: string
       # The `path` is the original path string used to define the route.
-    regexPath: Regex
+    regexPath: Regex2
       # The `regexPath` is used to match dynamic routes with parameters.
     httpMethod: HttpMethod
     callback*: Callable
@@ -50,7 +60,7 @@ type
   HttpRouteWs* = ref object of HttpRoute
 
 
-  HttpRouterInstance* = object
+  HttpRouterInstance = ref object
     httpGet*, httpPost*, httpPut*, httpHead*,
       httpConnect*, httpDelete*, httpPatch*,
       httpTrace*, httpOptions*, httpErrors*: CritBitTree[HttpRoute]
@@ -58,7 +68,7 @@ type
 
   HttpRouterError* = object of CatchableError
 
-var Router* {.threadvar.}: HttpRouterInstance
+var Router*: HttpRouterInstance
   ## A thread local singleton instance of `HttpRouterInstance`
   ## that is used to register routes and error handlers.
   ## 
@@ -83,17 +93,36 @@ const
 #
 # Compile-time API
 #
-var queueRouter {.compileTime.} = HttpRouterInstance()
 var
   queuedRoutes* {.compileTime.} = CacheTable("QueuedRoutes")
+    ## A compile-time cache to store route definitions parsed from the `routes` macro.
+    ## Routes are stored in this cache until they are emitted as actual route registrations
   baseMiddlewares* {.compileTime.} = CacheTable("BaseMiddlewares")
+    ## A compile-time cache to store base middlewares defined at the application level.
+    ## Base middlewares are middlewares that run for every incoming request before any
+    ## route-specific middleware is executed.
 
 #
 # Public API
 #
-proc newHttpRouter*: HttpRouterInstance = HttpRouterInstance()
+proc newHttpRouter*: HttpRouterInstance =
+  ## Initializes a new `HttpRouterInstance`.
+  HttpRouterInstance(
+    httpGet: CritBitTree[HttpRoute](),
+    httpPost: CritBitTree[HttpRoute](),
+    httpPut: CritBitTree[HttpRoute](),
+    httpPatch: CritBitTree[HttpRoute](),
+    httpHead: CritBitTree[HttpRoute](),
+    httpDelete: CritBitTree[HttpRoute](),
+    httpTrace: CritBitTree[HttpRoute](),
+    httpOptions: CritBitTree[HttpRoute](),
+    httpConnect: CritBitTree[HttpRoute](),
+    httpWS: CritBitTree[HttpRouteWs](),
+    httpErrors: CritBitTree[HttpRoute]()
+  )
 
-proc newHttpRoute(autolinked: (string, string), httpMethod: HttpMethod, callback: Callable): HttpRoute =
+proc newHttpRoute(autolinked: (string, string),
+          httpMethod: HttpMethod, callback: Callable): HttpRoute =
   # Create a new `HttpRoute`
   result = HttpRoute(
     path: autolinked[1],
@@ -102,10 +131,8 @@ proc newHttpRoute(autolinked: (string, string), httpMethod: HttpMethod, callback
   )
 
 proc newHttpRoute(autolinked: (string, string),
-    httpMethod: HttpMethod, callback: Callable,
-    middlewares: seq[Middleware],
-    afterwares: seq[Afterware]
-): HttpRoute =
+                  httpMethod: HttpMethod, callback: Callable,
+                  middlewares: seq[Middleware], afterwares: seq[Afterware]): HttpRoute =
   # Create a new `HttpRoute`
   result = HttpRoute(
     path: autolinked[1],
@@ -114,16 +141,13 @@ proc newHttpRoute(autolinked: (string, string),
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
-  result.regexPath = re(autolinked[0])
+  result.regexPath = re2(autolinked[0])
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
 
 
-proc newWsRoute(path: string,
-    httpMethod: HttpMethod, callback: Callable,
-    middlewares: seq[Middleware],
-    afterwares: seq[Afterware]
-): HttpRouteWs =
+proc newWsRoute(path: string, httpMethod: HttpMethod, callback: Callable,
+                middlewares: seq[Middleware], afterwares: seq[Afterware]): HttpRouteWs =
   # Create a new `HttpRoute`
   result = HttpRouteWs(
     path: path,
@@ -143,7 +167,7 @@ proc registerRoute*(router: var HttpRouterInstance,
   afterwares: seq[Afterware] = @[],
   isWebSocket = false
 ) =
-  ## Register a new `Route`
+  ## Register a new `Route` in the `HttpRouterInstance` based on the given parameters
   let path = autolinked[1] # the original path string used to define the route
   if isWebSocket:
     let routeObject = newWsRoute(path, HttpGet, callback, middlewares, afterwares)
@@ -187,9 +211,9 @@ const httpMethods* = ["get", "post", "put", "patch", "head",
   # internally when defining a websocket route
 
 proc parseRouteNode*(verb, routePath: string,
-  middlewares, afterwares: var NimNode,
-  closureHandle: NimNode = nil
-) {.compileTime.} =
+                    middlewares, afterwares: var NimNode,
+                    closureHandle: NimNode = nil) {.compileTime.} =
+  ## Parse a route definition and store it in the `queuedRoutes` compile-time cache.
   let
     httpMethod =
       if verb != "ws":
@@ -202,6 +226,7 @@ proc parseRouteNode*(verb, routePath: string,
     queuedRoutes[autolinked.handleName] =
       newCall(
         ident"registerRoute",
+        # newDotExpr(ident"App", ident"router"),
         ident"Router",
         nnkTupleConstr.newTree(
           newLit(autolinked[1]),
@@ -262,6 +287,9 @@ proc parseRouteNode*(verb, routePath: string,
       )
 
 proc preparePath*(path: string, prefix = ""): string {.compileTime.} =
+  ## Prepares the route path by combining it with the given prefix and ensuring
+  ## that it is in the correct format for route matching. This includes handling
+  ## trailing slashes and ensuring that the path starts with a slash.
   if prefix.len > 0:
     result = prefix
     if path == "/" and prefix == path:
@@ -279,6 +307,8 @@ proc preparePath*(path: string, prefix = ""): string {.compileTime.} =
     return result[0..^2]
 
 proc toBracketNode(nodes: seq[NimNode]): NimNode {.compileTime.} =
+  # Utility function to convert a sequence of NimNodes into a 
+  # ingle NimNode with kind `nnkBracket`
   result = newNimNode(nnkBracket)
   for n in nodes:
     result.add n
@@ -298,10 +328,8 @@ proc addPragmaValues(target: var seq[NimNode], value: NimNode) {.compileTime.} =
   else:
     error("Invalid middleware/afterware value", value)
 
-proc collectScopePragmas(
-  pragmaNode: NimNode,
-  middlewares, afterwares: var seq[NimNode]
-) {.compileTime.} =
+proc collectScopePragmas(pragmaNode: NimNode, middlewares,
+                 afterwares: var seq[NimNode]) {.compileTime.} =
   pragmaNode.expectKind(nnkPragma)
   for p in pragmaNode:
     p.expectKind(nnkExprColonExpr)
@@ -311,10 +339,8 @@ proc collectScopePragmas(
     elif p[0].eqIdent("afterware"):
       addPragmaValues(afterwares, p[1])
 
-proc parseRoutePathExpr(
-  pathExpr: NimNode,
-  middlewares, afterwares: var seq[NimNode]
-): string {.compileTime.} =
+proc parseRoutePathExpr(pathExpr: NimNode, middlewares,
+                afterwares: var seq[NimNode]): string {.compileTime.} =
   case pathExpr.kind
   of nnkStrLit:
     result = pathExpr.strVal
@@ -357,19 +383,12 @@ proc emitParsedRoute(
     closureHandle
   )
 
-proc parseRoutesScope(
-  scopeNode: NimNode,
-  prefix: string,
-  inheritedMiddlewares, inheritedAfterwares: seq[NimNode]
-) {.compileTime.}
+proc parseRoutesScope(scopeNode: NimNode, prefix: string,
+              inheritedMiddlewares, inheritedAfterwares: seq[NimNode]) {.compileTime.}
 
-proc parseCommandLike(
-  x: NimNode,
-  prefix: string,
-  inheritedMiddlewares, inheritedAfterwares: seq[NimNode]
-) {.compileTime.} =
-  if x.len < 2:
-    return
+proc parseCommandLike(x: NimNode, prefix: string, inheritedMiddlewares,
+                    inheritedAfterwares: seq[NimNode]) {.compileTime.} =
+  if x.len < 2: return
 
   if x[0].kind == nnkIdent and x[0].eqIdent("group"):
     x[1].expectKind(nnkStrLit)
@@ -389,11 +408,8 @@ proc parseCommandLike(
       routeStmtHandle
     )
 
-proc parseRoutesScope(
-  scopeNode: NimNode,
-  prefix: string,
-  inheritedMiddlewares, inheritedAfterwares: seq[NimNode]
-) {.compileTime.} =
+proc parseRoutesScope(scopeNode: NimNode, prefix: string, inheritedMiddlewares,
+                    inheritedAfterwares: seq[NimNode]) {.compileTime.} =
   for x in scopeNode:
     case x.kind
     of nnkCommand, nnkCall:
@@ -459,15 +475,14 @@ macro searchRoute(httpMethod: static string) =
       result.route = router.`verb`[requestPath]
     else:
       for k, r in router.`verb`:
-        let someRegexMatch = requestPath.match(r.regexPath)
-        if someRegexMatch.isSome():
-          result.route = r # found a matching route
-          let pattern = someRegexMatch.get().captures()
-          if RegexMatch(pattern).pattern.captureNameId.len > 0:
-            # new(result.params)
-            for key in RegexMatch(pattern).pattern.captureNameId.keys:
-              result.params[key] = pattern[key]
-          break # stop at the first match
+        var m: RegexMatch2
+        if find(requestPath, r.regexPath, m):
+          result.route = r
+          for name in m.groupNames():
+            let g = m.group(name)
+            if g != reNonCapture:
+              result.params[name] = requestPath[g]
+          break
 
 macro searchRouteWs*() =
   ## Search for a WebSocket route
@@ -477,19 +492,21 @@ macro searchRouteWs*() =
       result.route = router.httpWS[requestPath]
     else:
       for k, r in router.httpWS:
-        let someRegexMatch = requestPath.match(r.regexPath)
-        if someRegexMatch.isSome():
-          result.route = r # found a matching WebSocket route
-          let pattern = someRegexMatch.get().captures()
-          if RegexMatch(pattern).pattern.captureNameId.len > 0:
-            # new(result.params)
-            for key in RegexMatch(pattern).pattern.captureNameId.keys:
-              result.params[key] = pattern[key]
-          break # stop at the first match
+        var m: RegexMatch2
+        if find(requestPath, r.regexPath, m):
+          result.route = r
+          for name in m.groupNames():
+            let g = m.group(name)
+            if g != reNonCapture:
+              result.params[name] = requestPath[g]
+          break
+
+type
+  RouteCheckResult* = tuple[exists: bool, route: HttpRoute, params: Table[string, string]]
 
 proc checkExists*(router: var HttpRouterInstance,
-    requestPath: string, httpMethod: HttpMethod
-  ): tuple[exists: bool, route: HttpRoute, params: Table[string, string]] =
+            requestPath: string, httpMethod: HttpMethod): RouteCheckResult =
+  ## Check if a route exists for the given request path and HTTP method
   case httpMethod
     of HttpGet:     searchRoute("httpGet")
     of HttpPost:    searchRoute("httpPost")
@@ -503,8 +520,8 @@ proc checkExists*(router: var HttpRouterInstance,
   result.exists =
     likely(result.route != nil)
 
-proc checkWsExists*(router: var HttpRouterInstance, requestPath: string
-    ): tuple[exists: bool, route: HttpRouteWs, params: Table[string, string]] =
+proc checkWsExists*(router: var HttpRouterInstance, requestPath: string): RouteCheckResult =
+  ## Check if a WebSocket route exists for the given request path
   searchRouteWs()
   result.exists = likely(result.route != nil)
 
@@ -552,6 +569,7 @@ proc resolveAfterware*(route: HttpRoute,
 #
 proc errorHandler*(router: var HttpRouterInstance,
     code: HttpCode, callback: Callable) =
+  ## Register an error handler for a specific HTTP status code
   let httpRoute = newHttpRoute(("", "4xx"), HttpGet, callback)
   case code
   of Http400, Http404:
@@ -575,4 +593,6 @@ else:
     router.httpErrors["4xx"].callback(req, res)
 
 template initRouterErrorHandlers* =
+  ## Initialize default error handlers for the router. This is called during
+  ## application startup to ensure that there is always a default error handler for HTTP 4xx errors
   Router.errorHandler(Http404, errors.get4xx)

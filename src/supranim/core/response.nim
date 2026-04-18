@@ -124,7 +124,7 @@ proc getBody*(res: Response): lent string =
 
 proc setBody*(res: var Response, body: sink string) =
   ## Set a string body to `res` Response
-  res.body = body
+  res.body =move body
 
 template json*(body: typed, code: HttpCode = Http200): untyped =
   ## Prepare a JSON response with the specified body and HttpCode.
@@ -161,7 +161,7 @@ template sendJson*(body: typed, code: HttpCode = Http200): untyped =
   req.responseSent = true
   return # blocks code execution
 
-template respond*(body: string, contentType: string = getContentType()): untyped {.dirty.} =
+template respond*(body: sink string, contentType: string = getContentType()): untyped {.dirty.} =
   ## Prepare a response with the specified body and content type.
   ## The actual sending of the response is handled in the main request handler.
   ## This template blocks code execution after setting up the response.
@@ -173,9 +173,10 @@ template respond*(body: string, contentType: string = getContentType()): untyped
     res.setBody(body)
   return
 
-template respond*(code: HttpCode, body: string,
-  contentType: string = getContentType()
-): untyped {.dirty.} =
+template respond*(code: HttpCode, body: sink string, contentType: string = getContentType()): untyped {.dirty.} =
+  ## Prepare a response with the specified HttpCode, body, and content type.
+  ## The actual sending of the response is handled in the main request handler.
+  ## This template blocks code execution after setting up the response.
   when compileOption("app", "lib"):
     res[].setCode(code)
     res[].addHeader("Content-Type", $contentType)

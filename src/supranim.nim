@@ -151,17 +151,21 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
 
       # Start the HTTP server
       # let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)
-
       event().emit("app.startup")
       app.server = newWebServer(Port(app.config("server.port").getInt), true)
       
       # when provided, the optional block can be used to inject
       # additional logic during the server startup process
       optionalBlock
+
+      injectSafeThreadCallbacks()
       
       # Starts the actual server loop, this will block
       # the main thread and keep the server running until it's stopped.
-      app.server.start(onRequest, startupCallback, threads = countProcessors())
+      when compiles(startupCallback()):
+        app.server.start(onRequest, startupCallback, threads = countProcessors())
+      else:
+        app.server.start(onRequest, nil, threads = countProcessors())
 
 template run*(app: Application) =
   ## Runs the Supranim application server without an optional block.

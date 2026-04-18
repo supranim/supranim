@@ -9,7 +9,8 @@
 import std/[tables, options, base64, sha1, strutils, sequtils]
 import pkg/libevent/bindings/[event, http, bufferevent, buffer]
 
-## This module provides WebSocket support using Libevent. 
+## This module provides WebSocket support using Libevent.
+## 
 ## It can be used to perform WebSocket upgrades in HTTP handlers and manage WebSocket connections
 ## with callbacks for open, message, close, and error events. The implementation handles WebSocket framing,
 ## including fragmentation and control frames, according to RFC6455.

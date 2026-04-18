@@ -33,6 +33,7 @@ type
   #     # A UDP socket for network communication
 
   ApplicationAssetsHandler* = proc (req: var Request, res: var Response, hasFoundResource: var bool) {.closure.}
+  ApplicationThreadCallback* = proc (app: ptr ApplicationObject) {.closure.}
 
   ApplicationObject = object
     key*: Uuid
@@ -52,6 +53,9 @@ type
     server*: WebServer
       ## The web server instance that handles incoming HTTP requests.
       ## This is initialized when the application starts.
+    # router*: HttpRouterInstance
+    #   ## The HTTP router instance that manages route registration and request handling.
+    #   ## This is initialized during application setup.
 
   AppConfigDefect* = object of CatchableError
   
@@ -222,7 +226,9 @@ else:
           add result, nnkImportStmt.newTree(newLit(fConsole))
 
 macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped = nil) =
-  ## Initializes Supranim application
+  ## Initializes Supranim application instance. This macro is responsible for
+  ## setting up the application, loading configurations, initializing services, and preparing the app to handle incoming requests.
+  ## The `initBody` parameter allows injection of custom initialization code during the application setup process.
   result = newStmtList()
   add result, quote do:
     import std/[httpcore, macros, macrocache, options]
@@ -250,6 +256,7 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
               App.configs[p.name] = yaml(readFile(path)).toJson
             except YAMLException:
               displayError("Invalid YAML configuration: " & path, quitProcess = true)
+  
   if initBody != nil:
     add result, quote do:
       `initBody`
@@ -281,31 +288,54 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
     # when found, will load console commands
     add result, loadConsole()
 
-    # initialize the HTTP Router
+    # inject the base middlewares and route handlers before 
+    # adding the service providers, so that they are available to all services.
     add result, quote do:
       initHttpRouter()
-      proc startupCallback() {.gcsafe.} =
-        {.gcsafe.}:
-          initRouter()
-          Router.errorHandler(Http404, get4xx)
-    
+      initRouter()
+      Router.errorHandler(Http404, get4xx)
+
     # add the service providers
     add result, serviceProviders
 
-# type
-#   AppConfig* = object
-#     release_unused_memory*: bool = false
-#       ## Release unused memory on each request/response cycle.
-#       ## This is useful for long-running applications
-#       ## that handle a lot of requests and want to
-#       ## keep memory usage low.
+const SafeThreadVarSeq* = CacheSeq"WithThreadCallbackStmt"
+  ## A macro cache sequence that stores thread-safe initializations that need to be executed
+  ## in the context of the application thread. This is used to ensure that certain operations that require
+  ## access to the application instance or its resources are performed in a thread-safe manner.
 
-# macro appConfig*(releaseUnusedMemory: static bool = false) =
-#   ## Macro to define compile-time configuration settings
-#   discard
+macro withThreadCallback*(appInstance, callback: untyped) =
+  ## Registers a callback to be executed in the context of
+  ## the application thread. This is useful for performing thread-safe
+  ## operations that require access to the application instance or its resources.
+  SafeThreadVarSeq.add(callback)
 
-var AppCommands = CacheTable"AppCommands"
+macro injectSafeThreadCallbacks*() =
+  ## Expands the registered thread callbacks into actual procedure calls
+  ## that will be executed in the application thread context.
+  var stmt = newStmtList()
+
+  # injects supranim threadvar router and error handlers
+  # stmt.add quote do:
+  #   initRouter()
+  #   Router.errorHandler(Http404, get4xx)
+
+  for callback in SafeThreadVarSeq:
+    stmt.add(callback)
+  
+  result = newProc(
+    name = ident("startupCallback"),
+    pragmas = nnkPragma.newTree(ident"thread"),
+    body = nnkPragmaBlock.newTree(
+      # marks the procedure as GC-safe to allow it to be called from a GC-safe context
+      nnkPragma.newTree(ident"gcsafe"),
+      stmt
+    )
+  )
+
 var appInitialized* = false
+  # This flag is used to track whether the application has been initialized via CLI.
+  # If the application is not initialized, it will not start
+  # the server and will exit instead to prevent unintended execution.
 
 template initStartCommand*(v: Values, createDirs = true) =
   ## Kapsis `init` command handler
@@ -327,7 +357,7 @@ template initStartCommand*(v: Values, createDirs = true) =
     appInitialized = true
 
 template cli*(app: Application, cliCommands) {.dirty.} =
-  ## Injects CLI commands into the application
+  ## Injects CLI commands into the application using Kapsis command framework
   macro registerCommands(cliCmds) =
     result = newStmtList()
     when not compileOption("app", "lib"):
@@ -368,17 +398,19 @@ template services*(app: Application, servicesStmt) {.inject.} =
   preloadServices(servicesStmt)
 
 template withAssetsHandler*(app: Application, handler: ApplicationAssetsHandler) =
-  ## Define a custom handler for serving static assets
+  ## Inject a custom assets handler into the application. This allows you to define
+  ## custom logic for serving static assets (CSS, JS, images, etc.) instead of using the
+  ## default static file serving from the `assets/` directory
   app[].assetsHandler = handler
 
-proc getPort*(app: Application): Port =
+proc getPort*(app: Application): lent Port =
   ## Get port number
   result = app.port
 
-proc getUuid*(app: Application): Uuid =
+proc getUuid*(app: Application): lent Uuid =
   ## Get ApplicationObject UUID
   result = app.key
 
-proc getAddress*(app: Application): string =
+proc getAddress*(app: Application): lent string =
   result = app.address
 
