@@ -16,6 +16,6 @@ nim	getBody	supranim/core/response.html#getBody,Response	proc getBody(res: Respo
 nim	setBody	supranim/core/response.html#setBody,Response,sinkstring	proc setBody(res: var Response; body: sink string)		125
 nim	json	supranim/core/response.html#json.t,typed,HttpCode	template json(body: typed; code: HttpCode = Http200): untyped		129
 nim	sendJson	supranim/core/response.html#sendJson.t,typed,HttpCode	template sendJson(body: typed; code: HttpCode = Http200): untyped		146
-nim	respond	supranim/core/response.html#respond.t,string,string	template respond(body: string; contentType: string = getContentType()): untyped		164
-nim	respond	supranim/core/response.html#respond.t,HttpCode,string,string	template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped		176
+nim	respond	supranim/core/response.html#respond.t,sinkstring,string	template respond(body: sink string; contentType: string = getContentType()): untyped		164
+nim	respond	supranim/core/response.html#respond.t,HttpCode,sinkstring,string	template respond(code: HttpCode; body: sink string;\n        contentType: string = getContentType()): untyped		176
 nimgrp	respond	supranim/core/response.html#respond-templates-all	template		164

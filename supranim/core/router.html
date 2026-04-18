@@ -80,14 +80,12 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   else:
     nil">HttpRoute</a></li>
 <li><a class="reference" href="#HttpRouterError" title="HttpRouterError = object of CatchableError">HttpRouterError</a></li>
-<li><a class="reference" href="#HttpRouterInstance" title="HttpRouterInstance = object
-  httpGet*, httpPost*, httpPut*, httpHead*, httpConnect*, httpDelete*,
-  httpPatch*, httpTrace*, httpOptions*, httpErrors*: CritBitTree[HttpRoute]
-  httpWS*: CritBitTree[HttpRouteWs]">HttpRouterInstance</a></li>
 <li><a class="reference" href="#HttpRouteType" title="HttpRouteType = enum
   StaticRoute, DynamicRoute">HttpRouteType</a></li>
 <li><a class="reference" href="#HttpRouteWs" title="HttpRouteWs = ref object of HttpRoute">HttpRouteWs</a></li>
 <li><a class="reference" href="#Middleware" title="Middleware = proc (req: var Request; res: var Response): HttpCode {.nimcall.}">Middleware</a></li>
+<li><a class="reference" href="#RouteCheckResult" title="RouteCheckResult = tuple[exists: bool, route: HttpRoute,
+                         params: Table[string, string]]">RouteCheckResult</a></li>
 
     </ul>
   </details>
@@ -98,7 +96,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#baseMiddlewares" title="baseMiddlewares {.compileTime.} = CacheTable(&quot;BaseMiddlewares&quot;)">baseMiddlewares</a></li>
 <li><a class="reference" href="#queuedRoutes" title="queuedRoutes {.compileTime.} = CacheTable(&quot;QueuedRoutes&quot;)">queuedRoutes</a></li>
-<li><a class="reference" href="#Router" title="Router {.threadvar.}: HttpRouterInstance">Router</a></li>
+<li><a class="reference" href="#Router" title="Router: HttpRouterInstance">Router</a></li>
 
     </ul>
   </details>
@@ -107,7 +105,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <details open>
     <summary><a class="reference reference-toplevel" href="#10" id="60">Consts</a></summary>
     <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#DefaultHttpError" title="DefaultHttpError: Callable = :anonymous_4043309134">DefaultHttpError</a></li>
+      <li><a class="reference" href="#DefaultHttpError" title="DefaultHttpError: Callable = :anonymous_4043309135">DefaultHttpError</a></li>
 <li><a class="reference" href="#httpMethods" title="httpMethods = [&quot;get&quot;, &quot;post&quot;, &quot;put&quot;, &quot;patch&quot;, &quot;head&quot;, &quot;delete&quot;, &quot;trace&quot;,
                &quot;options&quot;, &quot;connect&quot;, &quot;ws&quot;]">httpMethods</a></li>
 
@@ -124,16 +122,12 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </ul>
 <ul class="simple nested-toc-section">checkExists
   <li><a class="reference" href="#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod" title="checkExists(router: var HttpRouterInstance; requestPath: string;
-            httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
-    params: Table[string, string]]">checkExists(router: var HttpRouterInstance; requestPath: string;
-            httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
-    params: Table[string, string]]</a></li>
+            httpMethod: HttpMethod): RouteCheckResult">checkExists(router: var HttpRouterInstance; requestPath: string;
+            httpMethod: HttpMethod): RouteCheckResult</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">checkWsExists
-  <li><a class="reference" href="#checkWsExists%2CHttpRouterInstance%2Cstring" title="checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
-    exists: bool, route: HttpRouteWs, params: Table[string, string]]">checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
-    exists: bool, route: HttpRouteWs, params: Table[string, string]]</a></li>
+  <li><a class="reference" href="#checkWsExists%2CHttpRouterInstance%2Cstring" title="checkWsExists(router: var HttpRouterInstance; requestPath: string): RouteCheckResult">checkWsExists(router: var HttpRouterInstance; requestPath: string): RouteCheckResult</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">errorHandler
@@ -212,7 +206,9 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     
     <div id="tocRoot"></div>
     
-    <p class="module-desc"></p>
+    <p class="module-desc"><p>This module implements a simple HTTP router for the Supranim framework. It allows defining routes with dynamic parameters via regex patterns, supports route-specific middleware and afterware hooks, and provides compile-time macros to register routes in a declarative way</p>
+<p>The Router is using <tt class="docutils literal"><span class="pre"><span class="Identifier">pkg</span><span class="Operator">/</span><span class="Identifier">regex</span></span></tt> for dynamic route matching, which allows for powerful parameter extraction and flexible route definitions.</p>
+</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
@@ -272,17 +268,6 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     
   </dd>
 </div>
-<div id="HttpRouterInstance">
-  <dt><pre><a href="router.html#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">httpGet</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpPost</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpPut</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpHead</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpConnect</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpDelete</span><span class="Operator">*</span><span class="Other">,</span>
-  <span class="Identifier">httpPatch</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpTrace</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpOptions</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpErrors</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">CritBitTree</span><span class="Other">[</span><a href="router.html#HttpRoute"><span class="Identifier">HttpRoute</span></a><span class="Other">]</span>
-  <span class="Identifier">httpWS</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">CritBitTree</span><span class="Other">[</span><a href="router.html#HttpRouteWs"><span class="Identifier">HttpRouteWs</span></a><span class="Other">]</span></pre></dt>
-  <dd>
-    
-    
-    
-  </dd>
-</div>
 <div id="HttpRouteType">
   <dt><pre><a href="router.html#HttpRouteType"><span class="Identifier">HttpRouteType</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
   <span class="Identifier">StaticRoute</span><span class="Other">,</span> <span class="Identifier">DynamicRoute</span></pre></dt>
@@ -308,6 +293,15 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     
   </dd>
 </div>
+<div id="RouteCheckResult">
+  <dt><pre><a href="router.html#RouteCheckResult"><span class="Identifier">RouteCheckResult</span></a> <span class="Other">=</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">,</span> <span class="Identifier">route</span><span class="Other">:</span> <a href="router.html#HttpRoute"><span class="Identifier">HttpRoute</span></a><span class="Other">,</span>
+                         <span class="Identifier">params</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span></pre></dt>
+  <dd>
+    
+    
+    
+  </dd>
+</div>
 
   </dl>
 </div>
@@ -318,7 +312,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <dt><pre><a href="router.html#baseMiddlewares"><span class="Identifier">baseMiddlewares</span></a> {.<span class="Identifier">compileTime</span>.} <span class="Other">=</span> <span class="Identifier">CacheTable</span><span class="Other">(</span><span class="StringLit">&quot;BaseMiddlewares&quot;</span><span class="Other">)</span></pre></dt>
   <dd>
     
-    
+    A compile-time cache to store base middlewares defined at the application level. Base middlewares are middlewares that run for every incoming request before any route-specific middleware is executed.
     
   </dd>
 </div>
@@ -326,12 +320,12 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <dt><pre><a href="router.html#queuedRoutes"><span class="Identifier">queuedRoutes</span></a> {.<span class="Identifier">compileTime</span>.} <span class="Other">=</span> <span class="Identifier">CacheTable</span><span class="Other">(</span><span class="StringLit">&quot;QueuedRoutes&quot;</span><span class="Other">)</span></pre></dt>
   <dd>
     
-    
+    A compile-time cache to store route definitions parsed from the <tt class="docutils literal"><span class="pre"><span class="Identifier">routes</span></span></tt> macro. Routes are stored in this cache until they are emitted as actual route registrations
     
   </dd>
 </div>
 <div id="Router">
-  <dt><pre><a href="router.html#Router"><span class="Identifier">Router</span></a> {.<span class="Identifier">threadvar</span>.}<span class="Other">:</span> <a href="router.html#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a></pre></dt>
+  <dt><pre><a href="router.html#Router"><span class="Identifier">Router</span></a><span class="Other">:</span> <span class="Identifier">HttpRouterInstance</span></pre></dt>
   <dd>
     
     <p>A thread local singleton instance of <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpRouterInstance</span></span></tt> that is used to register routes and error handlers.</p>
@@ -347,7 +341,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <h1><a class="toc-backref" href="#10">Consts</a></h1>
   <dl class="item">
     <div id="DefaultHttpError">
-  <dt><pre><a href="router.html#DefaultHttpError"><span class="Identifier">DefaultHttpError</span></a><span class="Other">:</span> <a href="router.html#Callable"><span class="Identifier">Callable</span></a> <span class="Other">=</span> <span class="Operator">:anonymous_4043309134</span></pre></dt>
+  <dt><pre><a href="router.html#DefaultHttpError"><span class="Identifier">DefaultHttpError</span></a><span class="Other">:</span> <a href="router.html#Callable"><span class="Identifier">Callable</span></a> <span class="Other">=</span> <span class="Operator">:anonymous_4043309135</span></pre></dt>
   <dd>
     
     
@@ -371,7 +365,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <dl class="item">
     <div id="call4xx-procs-all">
   <div id="call4xx,HttpRouterInstance,Request,Response">
-  <dt><pre><span class="Keyword">proc</span> <a href="#call4xx%2CHttpRouterInstance%2CRequest%2CResponse"><span class="Identifier">call4xx</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="router.html#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">)</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#call4xx%2CHttpRouterInstance%2CRequest%2CResponse"><span class="Identifier">call4xx</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">HttpRouterInstance</span><span class="Other">;</span> <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">)</span> {.
     <span class="Identifier">discardable</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -383,13 +377,12 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </div>
 <div id="checkExists-procs-all">
   <div id="checkExists,HttpRouterInstance,string,HttpMethod">
-  <dt><pre><span class="Keyword">proc</span> <a href="#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod"><span class="Identifier">checkExists</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="router.html#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">requestPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                 <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">,</span> <span class="Identifier">route</span><span class="Other">:</span> <a href="router.html#HttpRoute"><span class="Identifier">HttpRoute</span></a><span class="Other">,</span>
-    <span class="Identifier">params</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span>
-    <span class="Identifier">RegexInternalError</span><span class="Other">,</span> <span class="Identifier">InvalidUnicodeError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod"><span class="Identifier">checkExists</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">HttpRouterInstance</span><span class="Other">;</span> <span class="Identifier">requestPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                 <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span><span class="Other">)</span><span class="Other">:</span> <a href="router.html#RouteCheckResult"><span class="Identifier">RouteCheckResult</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Check if a route exists for the given request path and HTTP method
     
   </dd>
 </div>
@@ -397,13 +390,11 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </div>
 <div id="checkWsExists-procs-all">
   <div id="checkWsExists,HttpRouterInstance,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#checkWsExists%2CHttpRouterInstance%2Cstring"><span class="Identifier">checkWsExists</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="router.html#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">requestPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span>
-    <span class="Identifier">exists</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">,</span> <span class="Identifier">route</span><span class="Other">:</span> <a href="router.html#HttpRouteWs"><span class="Identifier">HttpRouteWs</span></a><span class="Other">,</span> <span class="Identifier">params</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">RegexInternalError</span><span class="Other">,</span> <span class="Identifier">InvalidUnicodeError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#checkWsExists%2CHttpRouterInstance%2Cstring"><span class="Identifier">checkWsExists</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">HttpRouterInstance</span><span class="Other">;</span> <span class="Identifier">requestPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="router.html#RouteCheckResult"><span class="Identifier">RouteCheckResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Check if a WebSocket route exists for the given request path
     
   </dd>
 </div>
@@ -411,11 +402,11 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </div>
 <div id="errorHandler-procs-all">
   <div id="errorHandler,HttpRouterInstance,HttpCode,Callable">
-  <dt><pre><span class="Keyword">proc</span> <a href="#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable"><span class="Identifier">errorHandler</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="router.html#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable"><span class="Identifier">errorHandler</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">HttpRouterInstance</span><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span>
                   <span class="Identifier">callback</span><span class="Other">:</span> <a href="router.html#Callable"><span class="Identifier">Callable</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Register an error handler for a specific HTTP status code
     
   </dd>
 </div>
@@ -423,10 +414,10 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </div>
 <div id="newHttpRouter-procs-all">
   <div id="newHttpRouter">
-  <dt><pre><span class="Keyword">proc</span> <a href="#newHttpRouter"><span class="Identifier">newHttpRouter</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="router.html#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#newHttpRouter"><span class="Identifier">newHttpRouter</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">HttpRouterInstance</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Initializes a new <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpRouterInstance</span></span></tt>.
     
   </dd>
 </div>
@@ -440,7 +431,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Parse a route definition and store it in the <tt class="docutils literal"><span class="pre"><span class="Identifier">queuedRoutes</span></span></tt> compile-time cache.
     
   </dd>
 </div>
@@ -452,7 +443,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Prepares the route path by combining it with the given prefix and ensuring that it is in the correct format for route matching. This includes handling trailing slashes and ensuring that the path starts with a slash.
     
   </dd>
 </div>
@@ -460,15 +451,14 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </div>
 <div id="registerRoute-procs-all">
   <div id="registerRoute,HttpRouterInstance,sink,HttpMethod,Callable,seq[Middleware],seq[Afterware]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#registerRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D"><span class="Identifier">registerRoute</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="router.html#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#registerRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D"><span class="Identifier">registerRoute</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">HttpRouterInstance</span><span class="Other">;</span>
                    <span class="Identifier">autolinked</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span><span class="Other">;</span>
                    <span class="Identifier">callback</span><span class="Other">:</span> <a href="router.html#Callable"><span class="Identifier">Callable</span></a><span class="Other">;</span> <span class="Identifier">middlewares</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="router.html#Middleware"><span class="Identifier">Middleware</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
                    <span class="Identifier">afterwares</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="router.html#Afterware"><span class="Identifier">Afterware</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">isWebSocket</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">SyntaxError</span><span class="Other">,</span> <span class="Identifier">StudyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RegexError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Register a new <tt class="docutils literal"><span class="pre"><span class="Identifier">Route</span></span></tt>
+    Register a new <tt class="docutils literal"><span class="pre"><span class="Identifier">Route</span></span></tt> in the <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpRouterInstance</span></span></tt> based on the given parameters
     
   </dd>
 </div>
@@ -553,7 +543,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <dt><pre><span class="Keyword">template</span> <a href="#initRouterErrorHandlers.t"><span class="Identifier">initRouterErrorHandlers</span></a><span class="Other">(</span><span class="Other">)</span></pre></dt>
   <dd>
     
-    
+    Initialize default error handlers for the router. This is called during application startup to ensure that there is always a default error handler for HTTP 4xx errors
     
   </dd>
 </div>
@@ -569,7 +559,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-17 19:26:16 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-18 10:08:42 UTC</small>
       </div>
     </div>
   </div>

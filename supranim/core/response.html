@@ -149,8 +149,10 @@
 
 </ul>
 <ul class="simple nested-toc-section">respond
-  <li><a class="reference" href="#respond.t%2Cstring%2Cstring" title="respond(body: string; contentType: string = getContentType()): untyped">respond(body: string; contentType: string = getContentType()): untyped</a></li>
-<li><a class="reference" href="#respond.t%2CHttpCode%2Cstring%2Cstring" title="respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped">respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped</a></li>
+  <li><a class="reference" href="#respond.t%2Csinkstring%2Cstring" title="respond(body: sink string; contentType: string = getContentType()): untyped">respond(body: sink string; contentType: string = getContentType()): untyped</a></li>
+<li><a class="reference" href="#respond.t%2CHttpCode%2Csinkstring%2Cstring" title="respond(code: HttpCode; body: sink string;
+        contentType: string = getContentType()): untyped">respond(code: HttpCode; body: sink string;
+        contentType: string = getContentType()): untyped</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">sendJson
@@ -384,8 +386,8 @@
 
 </div>
 <div id="respond-templates-all">
-  <div id="respond.t,string,string">
-  <dt><pre><span class="Keyword">template</span> <a href="#respond.t%2Cstring%2Cstring"><span class="Identifier">respond</span></a><span class="Other">(</span><span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">contentType</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="Identifier">getContentType</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span> {.
+  <div id="respond.t,sinkstring,string">
+  <dt><pre><span class="Keyword">template</span> <a href="#respond.t%2Csinkstring%2Cstring"><span class="Identifier">respond</span></a><span class="Other">(</span><span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">contentType</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="Identifier">getContentType</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span> {.
     <span class="Identifier">dirty</span>.}</pre></dt>
   <dd>
     
@@ -393,12 +395,12 @@
     
   </dd>
 </div>
-<div id="respond.t,HttpCode,string,string">
-  <dt><pre><span class="Keyword">template</span> <a href="#respond.t%2CHttpCode%2Cstring%2Cstring"><span class="Identifier">respond</span></a><span class="Other">(</span><span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+<div id="respond.t,HttpCode,sinkstring,string">
+  <dt><pre><span class="Keyword">template</span> <a href="#respond.t%2CHttpCode%2Csinkstring%2Cstring"><span class="Identifier">respond</span></a><span class="Other">(</span><span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Identifier">string</span><span class="Other">;</span>
                  <span class="Identifier">contentType</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="Identifier">getContentType</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span> {.<span class="Identifier">dirty</span>.}</pre></dt>
   <dd>
     
-    
+    Prepare a response with the specified HttpCode, body, and content type. The actual sending of the response is handled in the main request handler. This template blocks code execution after setting up the response.
     
   </dd>
 </div>
@@ -427,7 +429,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-17 19:26:16 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-18 10:08:41 UTC</small>
       </div>
     </div>
   </div>

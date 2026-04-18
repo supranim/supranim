@@ -118,6 +118,10 @@
 <li><a class="reference external"
           data-doc-search-tag="paths: object ApplicationPaths" href="supranim/core/paths.html#ApplicationPaths">paths: object ApplicationPaths</a></li>
           </ul></dd>
+<dt><a name="ApplicationThreadCallback" href="#ApplicationThreadCallback"><span>ApplicationThreadCallback:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: type ApplicationThreadCallback" href="supranim/core/application.html#ApplicationThreadCallback">application: type ApplicationThreadCallback</a></li>
+          </ul></dd>
 <dt><a name="AssetsImportStmt" href="#AssetsImportStmt"><span>AssetsImportStmt:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="assets: const AssetsImportStmt" href="supranim/service/assets.html#AssetsImportStmt">assets: const AssetsImportStmt</a></li>
@@ -181,16 +185,12 @@
 <dt><a name="checkExists" href="#checkExists"><span>checkExists:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
-            httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
-    params: Table[string, string]]" href="supranim/core/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
-            httpMethod: HttpMethod): tuple[exists: bool, route: HttpRoute,
-    params: Table[string, string]]</a></li>
+            httpMethod: HttpMethod): RouteCheckResult" href="supranim/core/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
+            httpMethod: HttpMethod): RouteCheckResult</a></li>
           </ul></dd>
 <dt><a name="checkWsExists" href="#checkWsExists"><span>checkWsExists:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
-    exists: bool, route: HttpRouteWs, params: Table[string, string]]" href="supranim/core/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): tuple[
-    exists: bool, route: HttpRouteWs, params: Table[string, string]]</a></li>
+          data-doc-search-tag="router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): RouteCheckResult" href="supranim/core/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): RouteCheckResult</a></li>
           </ul></dd>
 <dt><a name="clearHeaders" href="#clearHeaders"><span>clearHeaders:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -362,7 +362,7 @@
           </ul></dd>
 <dt><a name="getAddress" href="#getAddress"><span>getAddress:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="application: proc getAddress(app: Application): string" href="supranim/core/application.html#getAddress%2CApplication">application: proc getAddress(app: Application): string</a></li>
+          data-doc-search-tag="application: proc getAddress(app: Application): lent string" href="supranim/core/application.html#getAddress%2CApplication">application: proc getAddress(app: Application): lent string</a></li>
           </ul></dd>
 <dt><a name="getAgent" href="#getAgent"><span>getAgent:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -502,11 +502,11 @@
           </ul></dd>
 <dt><a name="getPort" href="#getPort"><span>getPort:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="application: proc getPort(app: Application): Port" href="supranim/core/application.html#getPort%2CApplication">application: proc getPort(app: Application): Port</a></li>
+          data-doc-search-tag="application: proc getPort(app: Application): lent Port" href="supranim/core/application.html#getPort%2CApplication">application: proc getPort(app: Application): lent Port</a></li>
           </ul></dd>
 <dt><a name="getQuery" href="#getQuery"><span>getQuery:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="webserver: proc getQuery(req: var Request): Option[TableRef[string, string]]" href="supranim/network/http/webserver.html#getQuery%2CRequest">webserver: proc getQuery(req: var Request): Option[TableRef[string, string]]</a></li>
+          data-doc-search-tag="webserver: proc getQuery(req: var Request): TableRef[string, string]" href="supranim/network/http/webserver.html#getQuery%2CRequest">webserver: proc getQuery(req: var Request): TableRef[string, string]</a></li>
           </ul></dd>
 <dt><a name="getQueryTable" href="#getQueryTable"><span>getQueryTable:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -540,7 +540,7 @@
           </ul></dd>
 <dt><a name="getUuid" href="#getUuid"><span>getUuid:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="application: proc getUuid(app: Application): Uuid" href="supranim/core/application.html#getUuid%2CApplication">application: proc getUuid(app: Application): Uuid</a></li>
+          data-doc-search-tag="application: proc getUuid(app: Application): lent Uuid" href="supranim/core/application.html#getUuid%2CApplication">application: proc getUuid(app: Application): lent Uuid</a></li>
           </ul></dd>
 <dt><a name="getUuidBytes" href="#getUuidBytes"><span>getUuidBytes:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -624,10 +624,6 @@
 <li><a class="reference external"
           data-doc-search-tag="router: object HttpRouterError" href="supranim/core/router.html#HttpRouterError">router: object HttpRouterError</a></li>
           </ul></dd>
-<dt><a name="HttpRouterInstance" href="#HttpRouterInstance"><span>HttpRouterInstance:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="router: object HttpRouterInstance" href="supranim/core/router.html#HttpRouterInstance">router: object HttpRouterInstance</a></li>
-          </ul></dd>
 <dt><a name="HttpRoutes" href="#HttpRoutes"><span>HttpRoutes:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="services: type HttpRoutes" href="supranim/core/services.html#HttpRoutes">services: type HttpRoutes</a></li>
@@ -695,6 +691,10 @@
 <dt><a name="initStartCommand" href="#initStartCommand"><span>initStartCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: template initStartCommand(v: Values; createDirs = true)" href="supranim/core/application.html#initStartCommand.t%2CValues">application: template initStartCommand(v: Values; createDirs = true)</a></li>
+          </ul></dd>
+<dt><a name="injectSafeThreadCallbacks" href="#injectSafeThreadCallbacks"><span>injectSafeThreadCallbacks:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: macro injectSafeThreadCallbacks()" href="supranim/core/application.html#injectSafeThreadCallbacks.m">application: macro injectSafeThreadCallbacks()</a></li>
           </ul></dd>
 <dt><a name="isAuth" href="#isAuth"><span>isAuth:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1054,9 +1054,11 @@
           </ul></dd>
 <dt><a name="respond" href="#respond"><span>respond:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="response: template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped" href="supranim/core/response.html#respond.t%2CHttpCode%2Cstring%2Cstring">response: template respond(code: HttpCode; body: string; contentType: string = getContentType()): untyped</a></li>
+          data-doc-search-tag="response: template respond(code: HttpCode; body: sink string;
+        contentType: string = getContentType()): untyped" href="supranim/core/response.html#respond.t%2CHttpCode%2Csinkstring%2Cstring">response: template respond(code: HttpCode; body: sink string;
+        contentType: string = getContentType()): untyped</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="response: template respond(body: string; contentType: string = getContentType()): untyped" href="supranim/core/response.html#respond.t%2Cstring%2Cstring">response: template respond(body: string; contentType: string = getContentType()): untyped</a></li>
+          data-doc-search-tag="response: template respond(body: sink string; contentType: string = getContentType()): untyped" href="supranim/core/response.html#respond.t%2Csinkstring%2Cstring">response: template respond(body: sink string; contentType: string = getContentType()): untyped</a></li>
           </ul></dd>
 <dt><a name="Response" href="#Response"><span>Response:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1077,6 +1079,10 @@
 <dt><a name="rootPath" href="#rootPath"><span>rootPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="paths: const rootPath" href="supranim/core/paths.html#rootPath">paths: const rootPath</a></li>
+          </ul></dd>
+<dt><a name="RouteCheckResult" href="#RouteCheckResult"><span>RouteCheckResult:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: tuple RouteCheckResult" href="supranim/core/router.html#RouteCheckResult">router: tuple RouteCheckResult</a></li>
           </ul></dd>
 <dt><a name="RoutePattern" href="#RoutePattern"><span>RoutePattern:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1117,6 +1123,10 @@
 <dt><a name="runtimeConfigPath" href="#runtimeConfigPath"><span>runtimeConfigPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="paths: const runtimeConfigPath" href="supranim/core/paths.html#runtimeConfigPath">paths: const runtimeConfigPath</a></li>
+          </ul></dd>
+<dt><a name="SafeThreadVarSeq" href="#SafeThreadVarSeq"><span>SafeThreadVarSeq:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: const SafeThreadVarSeq" href="supranim/core/application.html#SafeThreadVarSeq">application: const SafeThreadVarSeq</a></li>
           </ul></dd>
 <dt><a name="searchRouteWs" href="#searchRouteWs"><span>searchRouteWs:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1400,6 +1410,10 @@
 <li><a class="reference external"
           data-doc-search-tag="http: proc withHeaders(H: typedesc[Http]; httpHeaders: openArray[tuple[key, val: string]]): Http" href="supranim/support/http.html#withHeaders%2Ctypedesc%5BHttp%5D%2CopenArray%5Btuple%5Bstring%2Cstring%5D%5D">http: proc withHeaders(H: typedesc[Http]; httpHeaders: openArray[tuple[key, val: string]]): Http</a></li>
           </ul></dd>
+<dt><a name="withThreadCallback" href="#withThreadCallback"><span>withThreadCallback:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: macro withThreadCallback(appInstance, callback: untyped)" href="supranim/core/application.html#withThreadCallback.m%2Cuntyped%2Cuntyped">application: macro withThreadCallback(appInstance, callback: untyped)</a></li>
+          </ul></dd>
 <dt><a name="withToken" href="#withToken"><span>withToken:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="http: proc withToken(H: Http; token: string): Http" href="supranim/support/http.html#withToken%2CHttp%2Cstring">http: proc withToken(H: Http; token: string): Http</a></li>
@@ -1432,7 +1446,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-17 19:26:16 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-18 10:08:42 UTC</small>
       </div>
     </div>
   </div>

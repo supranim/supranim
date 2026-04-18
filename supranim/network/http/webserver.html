@@ -66,7 +66,7 @@
   raw*: ptr evhttp_request   ## The underlying evhttp_request pointer.
   path*: string              ## The request path.
   uri*: Uri                  ## The parsed URI object.
-  uriQuery*: Option[TableRef[string, string]] ## Lazily initialized query parameters from the URI.
+  uriQuery*: TableRef[string, string] ## Lazily initialized query parameters from the URI.
   headers*: Option[HttpHeaders] ## The request headers (lazily initialized).
   body*: Option[string]      ## The request body (lazily initialized).
   routeParams*: Table[string, string] ## The route parameters extracted from the URL.
@@ -153,7 +153,7 @@
 
 </ul>
 <ul class="simple nested-toc-section">getQuery
-  <li><a class="reference" href="#getQuery%2CRequest" title="getQuery(req: var Request): Option[TableRef[string, string]]">getQuery(req: var Request): Option[TableRef[string, string]]</a></li>
+  <li><a class="reference" href="#getQuery%2CRequest" title="getQuery(req: var Request): TableRef[string, string]">getQuery(req: var Request): TableRef[string, string]</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">newWebServer
@@ -296,7 +296,7 @@
   <span class="Identifier">raw</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span>   <span class="Comment">## The underlying evhttp_request pointer.</span>
   <span class="Identifier">path</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>              <span class="Comment">## The request path.</span>
   <span class="Identifier">uri</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Uri</span>                  <span class="Comment">## The parsed URI object.</span>
-  <span class="Identifier">uriQuery</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span> <span class="Comment">## Lazily initialized query parameters from the URI.</span>
+  <span class="Identifier">uriQuery</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## Lazily initialized query parameters from the URI.</span>
   <span class="Identifier">headers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">HttpHeaders</span><span class="Other">]</span> <span class="Comment">## The request headers (lazily initialized).</span>
   <span class="Identifier">body</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>      <span class="Comment">## The request body (lazily initialized).</span>
   <span class="Identifier">routeParams</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## The route parameters extracted from the URL.</span>
@@ -526,7 +526,7 @@
 </div>
 <div id="getQuery-procs-all">
   <div id="getQuery,Request">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getQuery%2CRequest"><span class="Identifier">getQuery</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getQuery%2CRequest"><span class="Identifier">getQuery</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -803,7 +803,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-17 19:26:16 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-18 10:08:41 UTC</small>
       </div>
     </div>
   </div>
