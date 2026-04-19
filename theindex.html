@@ -25,7 +25,7 @@
   <div class="document" id="documentId">
     <div class="container">
       <h1 class="title">Index</h1>
-      Modules: <a href="index.html">supranim</a>, <a href="supranim/application.html">supranim/application</a>, <a href="supranim/controller.html">supranim/controller</a>, <a href="supranim/core/application.html">supranim/core/application</a>, <a href="supranim/core/autolink.html">supranim/core/autolink</a>, <a href="supranim/core/config.html">supranim/core/config</a>, <a href="supranim/core/fileserver.html">supranim/core/fileserver</a>, <a href="supranim/core/paths.html">supranim/core/paths</a>, <a href="supranim/core/request.html">supranim/core/request</a>, <a href="supranim/core/response.html">supranim/core/response</a>, <a href="supranim/core/router.html">supranim/core/router</a>, <a href="supranim/core/services.html">supranim/core/services</a>, <a href="supranim/core/utils.html">supranim/core/utils</a>, <a href="supranim/network/http/webserver.html">supranim/network/http/webserver</a>, <a href="supranim/network/websocket.html">supranim/network/websocket</a>, <a href="supranim/service/assets.html">supranim/service/assets</a>, <a href="supranim/service/events.html">supranim/service/events</a>, <a href="supranim/support/cookie.html">supranim/support/cookie</a>, <a href="supranim/support/http.html">supranim/support/http</a>, <a href="supranim/support/httpclient.html">supranim/support/httpclient</a>, <a href="supranim/support/uuid.html">supranim/support/uuid</a>.<br/><p /><h2>API symbols</h2>
+      Modules: <a href="index.html">supranim</a>, <a href="supranim/application.html">supranim/application</a>, <a href="supranim/controller.html">supranim/controller</a>, <a href="supranim/core/application.html">supranim/core/application</a>, <a href="supranim/core/autolink.html">supranim/core/autolink</a>, <a href="supranim/core/config.html">supranim/core/config</a>, <a href="supranim/core/fileserver.html">supranim/core/fileserver</a>, <a href="supranim/core/paths.html">supranim/core/paths</a>, <a href="supranim/core/request.html">supranim/core/request</a>, <a href="supranim/core/response.html">supranim/core/response</a>, <a href="supranim/core/router.html">supranim/core/router</a>, <a href="supranim/core/services.html">supranim/core/services</a>, <a href="supranim/core/utils.html">supranim/core/utils</a>, <a href="supranim/network/http/webserver.html">supranim/network/http/webserver</a>, <a href="supranim/network/websocket.html">supranim/network/websocket</a>, <a href="supranim/service/assets.html">supranim/service/assets</a>, <a href="supranim/service/events.html">supranim/service/events</a>, <a href="supranim/service/logger.html">supranim/service/logger</a>, <a href="supranim/support/cookie.html">supranim/support/cookie</a>, <a href="supranim/support/http.html">supranim/support/http</a>, <a href="supranim/support/httpclient.html">supranim/support/httpclient</a>, <a href="supranim/support/logit.html">supranim/support/logit</a>, <a href="supranim/support/uuid.html">supranim/support/uuid</a>.<br/><p /><h2>API symbols</h2>
 <dl><dt><a name="%60%24%24%60" href="#%60%24%24%60"><span>`$$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="uuid: proc `$$`(uuid: Uuid): string" href="supranim/support/uuid.html#%24%24%2CUuid">uuid: proc `$$`(uuid: Uuid): string</a></li>
@@ -35,6 +35,8 @@
           data-doc-search-tag="cookie: proc `$`(cookie: ref Cookie): string" href="supranim/support/cookie.html#%24%2Cref.Cookie">cookie: proc `$`(cookie: ref Cookie): string</a></li>
           <li><a class="reference external"
           data-doc-search-tag="httpclient: proc `$`(data: MultipartData): string" href="supranim/support/httpclient.html#%24%2CMultipartData">httpclient: proc `$`(data: MultipartData): string</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="logit: proc `$`(lvl: LogLevel): string" href="supranim/support/logit.html#%24%2CLogLevel">logit: proc `$`(lvl: LogLevel): string</a></li>
           <li><a class="reference external"
           data-doc-search-tag="uuid: proc `$`(uuid: Uuid): string" href="supranim/support/uuid.html#%24%2CUuid">uuid: proc `$`(uuid: Uuid): string</a></li>
           </ul></dd>
@@ -172,7 +174,7 @@
           </ul></dd>
 <dt><a name="call4xx" href="#call4xx"><span>call4xx:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc call4xx(router: var HttpRouterInstance; req: var Request; res: var Response)" href="supranim/core/router.html#call4xx%2CHttpRouterInstance%2CRequest%2CResponse">router: proc call4xx(router: var HttpRouterInstance; req: var Request; res: var Response)</a></li>
+          data-doc-search-tag="router: proc call4xx(router: HttpRouterInstance; req: var Request; res: var Response)" href="supranim/core/router.html#call4xx%2CHttpRouterInstance%2CRequest%2CResponse">router: proc call4xx(router: HttpRouterInstance; req: var Request; res: var Response)</a></li>
           </ul></dd>
 <dt><a name="Callable" href="#Callable"><span>Callable:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -184,13 +186,13 @@
           </ul></dd>
 <dt><a name="checkExists" href="#checkExists"><span>checkExists:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
-            httpMethod: HttpMethod): RouteCheckResult" href="supranim/core/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
+          data-doc-search-tag="router: proc checkExists(router: HttpRouterInstance; requestPath: string;
+            httpMethod: HttpMethod): RouteCheckResult" href="supranim/core/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: HttpRouterInstance; requestPath: string;
             httpMethod: HttpMethod): RouteCheckResult</a></li>
           </ul></dd>
 <dt><a name="checkWsExists" href="#checkWsExists"><span>checkWsExists:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): RouteCheckResult" href="supranim/core/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): RouteCheckResult</a></li>
+          data-doc-search-tag="router: proc checkWsExists(router: HttpRouterInstance; requestPath: string): RouteCheckResult" href="supranim/core/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: HttpRouterInstance; requestPath: string): RouteCheckResult</a></li>
           </ul></dd>
 <dt><a name="clearHeaders" href="#clearHeaders"><span>clearHeaders:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -256,6 +258,14 @@
 <li><a class="reference external"
           data-doc-search-tag="paths: const databasePath" href="supranim/core/paths.html#databasePath">paths: const databasePath</a></li>
           </ul></dd>
+<dt><a name="DEBUG" href="#DEBUG"><span>DEBUG:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: LogLevel.DEBUG" href="supranim/support/logit.html#DEBUG">logit: LogLevel.DEBUG</a></li>
+          </ul></dd>
+<dt><a name="debug" href="#debug"><span>debug:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: template debug(self: Logit; message = &quot;&quot;; autoNewLine = true)" href="supranim/support/logit.html#debug.t%2CLogit%2Cstring">logit: template debug(self: Logit; message = &quot;&quot;; autoNewLine = true)</a></li>
+          </ul></dd>
 <dt><a name="DefaultHttpError" href="#DefaultHttpError"><span>DefaultHttpError:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: const DefaultHttpError" href="supranim/core/router.html#DefaultHttpError">router: const DefaultHttpError</a></li>
@@ -310,13 +320,21 @@
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc endChunk(req: Request)" href="supranim/network/http/webserver.html#endChunk%2CRequest">webserver: proc endChunk(req: Request)</a></li>
           </ul></dd>
+<dt><a name="ERROR" href="#ERROR"><span>ERROR:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: LogLevel.ERROR" href="supranim/support/logit.html#ERROR">logit: LogLevel.ERROR</a></li>
+          </ul></dd>
+<dt><a name="error" href="#error"><span>error:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: template error(self: Logit; message = &quot;&quot;; autoNewLine = true)" href="supranim/support/logit.html#error.t%2CLogit%2Cstring">logit: template error(self: Logit; message = &quot;&quot;; autoNewLine = true)</a></li>
+          </ul></dd>
 <dt><a name="ErrorCb" href="#ErrorCb"><span>ErrorCb:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="websocket: type ErrorCb" href="supranim/network/websocket.html#ErrorCb">websocket: type ErrorCb</a></li>
           </ul></dd>
 <dt><a name="errorHandler" href="#errorHandler"><span>errorHandler:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc errorHandler(router: var HttpRouterInstance; code: HttpCode; callback: Callable)" href="supranim/core/router.html#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable">router: proc errorHandler(router: var HttpRouterInstance; code: HttpCode; callback: Callable)</a></li>
+          data-doc-search-tag="router: proc errorHandler(router: HttpRouterInstance; code: HttpCode; callback: Callable)" href="supranim/core/router.html#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable">router: proc errorHandler(router: HttpRouterInstance; code: HttpCode; callback: Callable)</a></li>
           </ul></dd>
 <dt><a name="event" href="#event"><span>event:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -338,9 +356,21 @@
 <li><a class="reference external"
           data-doc-search-tag="services: macro extractThreadServicesClient()" href="supranim/core/services.html#extractThreadServicesClient.m">services: macro extractThreadServicesClient()</a></li>
           </ul></dd>
+<dt><a name="FATAL" href="#FATAL"><span>FATAL:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: LogLevel.FATAL" href="supranim/support/logit.html#FATAL">logit: LogLevel.FATAL</a></li>
+          </ul></dd>
+<dt><a name="fatal" href="#fatal"><span>fatal:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: template fatal(self: Logit; message = &quot;&quot;; autoNewLine = true)" href="supranim/support/logit.html#fatal.t%2CLogit%2Cstring">logit: template fatal(self: Logit; message = &quot;&quot;; autoNewLine = true)</a></li>
+          </ul></dd>
 <dt><a name="findHeader" href="#findHeader"><span>findHeader:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc findHeader(req: Request; name: string): string" href="supranim/network/http/webserver.html#findHeader%2CRequest%2Cstring">webserver: proc findHeader(req: Request; name: string): string</a></li>
+          </ul></dd>
+<dt><a name="finish" href="#finish"><span>finish:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: proc finish(self: var Logit)" href="supranim/support/logit.html#finish%2CLogit">logit: proc finish(self: var Logit)</a></li>
           </ul></dd>
 <dt><a name="freemem" href="#freemem"><span>freemem:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -484,6 +514,16 @@
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc getIp(req: var Request): string" href="supranim/network/http/webserver.html#getIp%2CRequest">webserver: proc getIp(req: var Request): string</a></li>
           </ul></dd>
+<dt><a name="getLogger" href="#getLogger"><span>getLogger:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logger: proc getLogger(): ptr Logger" href="supranim/service/logger.html#getLogger">logger: proc getLogger(): ptr Logger</a></li>
+          </ul></dd>
+<dt><a name="getLoggerInstance" href="#getLoggerInstance"><span>getLoggerInstance:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logger: proc getLoggerInstance(onceCb`gensym0`gensym5: OnInitSingletonCallback`gensym0`gensym5 = nil;
+                  initShared`gensym0`gensym5: static bool = true): ptr Logger" href="supranim/service/logger.html#getLoggerInstance%2COnInitSingletonCallback%60gensym0%60gensym5%2Cstaticbool">logger: proc getLoggerInstance(onceCb`gensym0`gensym5: OnInitSingletonCallback`gensym0`gensym5 = nil;
+                  initShared`gensym0`gensym5: static bool = true): ptr Logger</a></li>
+          </ul></dd>
 <dt><a name="getMethod" href="#getMethod"><span>getMethod:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc getMethod(req: var Request): HttpMethod" href="supranim/network/http/webserver.html#getMethod%2CRequest">webserver: proc getMethod(req: var Request): HttpMethod</a></li>
@@ -578,6 +618,10 @@
           <li><a class="reference external"
           data-doc-search-tag="httpclient: proc head(client: HttpClient; url: Uri | string): Response" href="supranim/support/httpclient.html#head%2CHttpClient%2C">httpclient: proc head(client: HttpClient; url: Uri | string): Response</a></li>
           </ul></dd>
+<dt><a name="header" href="#header"><span>header:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: proc header(self: Logit; message: string)" href="supranim/support/logit.html#header%2CLogit%2Cstring">logit: proc header(self: Logit; message: string)</a></li>
+          </ul></dd>
 <dt><a name="hexify" href="#hexify"><span>hexify:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="uuid: proc hexify(bytes: openArray[uint8]): string" href="supranim/support/uuid.html#hexify%2CopenArray%5Buint8%5D">uuid: proc hexify(bytes: openArray[uint8]): string</a></li>
@@ -656,6 +700,14 @@
 <li><a class="reference external"
           data-doc-search-tag="application: proc info(str: string; indentSize = 0)" href="supranim/core/application.html#info%2Cstring%2Cint">application: proc info(str: string; indentSize = 0)</a></li>
           </ul></dd>
+<dt><a name="INFO" href="#INFO"><span>INFO:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: LogLevel.INFO" href="supranim/support/logit.html#INFO">logit: LogLevel.INFO</a></li>
+          </ul></dd>
+<dt><a name="info" href="#info"><span>info:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: template info(self: Logit; message = &quot;&quot;; autoNewLine = true)" href="supranim/support/logit.html#info.t%2CLogit%2Cstring">logit: template info(self: Logit; message = &quot;&quot;; autoNewLine = true)</a></li>
+          </ul></dd>
 <dt><a name="init" href="#init"><span>init:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)" href="supranim/core/application.html#init.m%2C%2Cstaticbool%2Cuntyped">application: macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)</a></li>
@@ -663,6 +715,8 @@
           data-doc-search-tag="paths: proc init(path: var ApplicationPaths; installPath: string; createDirs: bool): bool" href="supranim/core/paths.html#init%2CApplicationPaths%2Cstring%2Cbool">paths: proc init(path: var ApplicationPaths; installPath: string; createDirs: bool): bool</a></li>
           <li><a class="reference external"
           data-doc-search-tag="events: proc init()" href="supranim/service/events.html#init">events: proc init()</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="logger: proc init()" href="supranim/service/logger.html#init">logger: proc init()</a></li>
           </ul></dd>
 <dt><a name="initApplication" href="#initApplication"><span>initApplication:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -675,6 +729,14 @@
 <dt><a name="initHttpRouter" href="#initHttpRouter"><span>initHttpRouter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: template initHttpRouter()" href="supranim/core/application.html#initHttpRouter.t">application: template initHttpRouter()</a></li>
+          </ul></dd>
+<dt><a name="initLogit" href="#initLogit"><span>initLogit:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: proc initLogit(logsFolder = getTempDir(); namespace = &quot;Logit&quot;;
+          defaultLogLevel = OTHER; logToFile = true; logToConsole = false;
+          exitOnError = false; filePrefix = initTimeFormat(&quot;YYYY-MM-dd&quot;)): Logit" href="supranim/support/logit.html#initLogit%2Cstring">logit: proc initLogit(logsFolder = getTempDir(); namespace = &quot;Logit&quot;;
+          defaultLogLevel = OTHER; logToFile = true; logToConsole = false;
+          exitOnError = false; filePrefix = initTimeFormat(&quot;YYYY-MM-dd&quot;)): Logit</a></li>
           </ul></dd>
 <dt><a name="initRouter" href="#initRouter"><span>initRouter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -695,6 +757,10 @@
 <dt><a name="injectSafeThreadCallbacks" href="#injectSafeThreadCallbacks"><span>injectSafeThreadCallbacks:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: macro injectSafeThreadCallbacks()" href="supranim/core/application.html#injectSafeThreadCallbacks.m">application: macro injectSafeThreadCallbacks()</a></li>
+          </ul></dd>
+<dt><a name="InstantiationInfo" href="#InstantiationInfo"><span>InstantiationInfo:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: tuple InstantiationInfo" href="supranim/support/logit.html#InstantiationInfo">logit: tuple InstantiationInfo</a></li>
           </ul></dd>
 <dt><a name="isAuth" href="#isAuth"><span>isAuth:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -731,6 +797,34 @@
 <dt><a name="loadEventListeners" href="#loadEventListeners"><span>loadEventListeners:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: proc loadEventListeners(): NimNode" href="supranim/core/application.html#loadEventListeners">application: proc loadEventListeners(): NimNode</a></li>
+          </ul></dd>
+<dt><a name="log" href="#log"><span>log:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: template log(self: Logit; level: LogLevel; message: string; autoNewLine = true;
+    someInfo = none(InstantiationInfo))" href="supranim/support/logit.html#log.t%2CLogit%2CLogLevel%2Cstring">logit: template log(self: Logit; level: LogLevel; message: string; autoNewLine = true;
+    someInfo = none(InstantiationInfo))</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="logit: template log(self: Logit; message = &quot;&quot;; autoNewLine = true)" href="supranim/support/logit.html#log.t%2CLogit%2Cstring">logit: template log(self: Logit; message = &quot;&quot;; autoNewLine = true)</a></li>
+          </ul></dd>
+<dt><a name="logger" href="#logger"><span>logger:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logger: template logger(message: string; level: LogLevel = INFO)" href="supranim/service/logger.html#logger.t%2Cstring%2CLogLevel">logger: template logger(message: string; level: LogLevel = INFO)</a></li>
+          </ul></dd>
+<dt><a name="Logit" href="#Logit"><span>Logit:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: object Logit" href="supranim/support/logit.html#Logit">logit: object Logit</a></li>
+          </ul></dd>
+<dt><a name="LogLevel" href="#LogLevel"><span>LogLevel:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: enum LogLevel" href="supranim/support/logit.html#LogLevel">logit: enum LogLevel</a></li>
+          </ul></dd>
+<dt><a name="logsFolder" href="#logsFolder"><span>logsFolder:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: proc logsFolder(self: Logit): string" href="supranim/support/logit.html#logsFolder%2CLogit">logit: proc logsFolder(self: Logit): string</a></li>
+          </ul></dd>
+<dt><a name="logsFolder%3D" href="#logsFolder%3D"><span>logsFolder=:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: proc logsFolder=(self: var Logit; newLogsFolder: string)" href="supranim/support/logit.html#logsFolder%3D%2CLogit%2Cstring">logit: proc logsFolder=(self: var Logit; newLogsFolder: string)</a></li>
           </ul></dd>
 <dt><a name="logsPath" href="#logsPath"><span>logsPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -841,6 +935,8 @@
 <dt><a name="OnInitSingletonCallback%60gensym0%60gensym5" href="#OnInitSingletonCallback%60gensym0%60gensym5"><span>OnInitSingletonCallback`gensym0`gensym5:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="events: type OnInitSingletonCallback`gensym0`gensym5" href="supranim/service/events.html#OnInitSingletonCallback%60gensym0%60gensym5">events: type OnInitSingletonCallback`gensym0`gensym5</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="logger: type OnInitSingletonCallback`gensym0`gensym5" href="supranim/service/logger.html#OnInitSingletonCallback%60gensym0%60gensym5">logger: type OnInitSingletonCallback`gensym0`gensym5</a></li>
           </ul></dd>
 <dt><a name="OnRequest" href="#OnRequest"><span>OnRequest:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -853,6 +949,14 @@
 <dt><a name="OpenCb" href="#OpenCb"><span>OpenCb:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="websocket: type OpenCb" href="supranim/network/websocket.html#OpenCb">websocket: type OpenCb</a></li>
+          </ul></dd>
+<dt><a name="OTHER" href="#OTHER"><span>OTHER:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: LogLevel.OTHER" href="supranim/support/logit.html#OTHER">logit: LogLevel.OTHER</a></li>
+          </ul></dd>
+<dt><a name="other" href="#other"><span>other:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: template other(self: Logit; message = &quot;&quot;; autoNewLine = true)" href="supranim/support/logit.html#other.t%2CLogit%2Cstring">logit: template other(self: Logit; message = &quot;&quot;; autoNewLine = true)</a></li>
           </ul></dd>
 <dt><a name="p" href="#p"><span>p:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -998,12 +1102,12 @@
           </ul></dd>
 <dt><a name="registerRoute" href="#registerRoute"><span>registerRoute:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc registerRoute(router: var HttpRouterInstance;
-              autolinked: sink (string, string); httpMethod: HttpMethod;
-              callback: Callable; middlewares: seq[Middleware] = @[];
-              afterwares: seq[Afterware] = @[]; isWebSocket = false)" href="supranim/core/router.html#registerRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D">router: proc registerRoute(router: var HttpRouterInstance;
-              autolinked: sink (string, string); httpMethod: HttpMethod;
-              callback: Callable; middlewares: seq[Middleware] = @[];
+          data-doc-search-tag="router: proc registerRoute(router: HttpRouterInstance; autolinked: sink (string, string);
+              httpMethod: HttpMethod; callback: Callable;
+              middlewares: seq[Middleware] = @[];
+              afterwares: seq[Afterware] = @[]; isWebSocket = false)" href="supranim/core/router.html#registerRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D">router: proc registerRoute(router: HttpRouterInstance; autolinked: sink (string, string);
+              httpMethod: HttpMethod; callback: Callable;
+              middlewares: seq[Middleware] = @[];
               afterwares: seq[Afterware] = @[]; isWebSocket = false)</a></li>
           </ul></dd>
 <dt><a name="releaseUnusedMemory" href="#releaseUnusedMemory"><span>releaseUnusedMemory:</span></a></dt><dd><ul class="simple">
@@ -1281,6 +1385,8 @@
           data-doc-search-tag="webserver: proc start(server: var WebServer; onRequest: OnRequest;
       startupCallback: StartupCallback; threads: int)" href="supranim/network/http/webserver.html#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint">webserver: proc start(server: var WebServer; onRequest: OnRequest;
       startupCallback: StartupCallback; threads: int)</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="logit: proc start(self: var Logit)" href="supranim/support/logit.html#start%2CLogit">logit: proc start(self: var Logit)</a></li>
           </ul></dd>
 <dt><a name="startChunk" href="#startChunk"><span>startChunk:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1334,6 +1440,14 @@
 <li><a class="reference external"
           data-doc-search-tag="response: proc toString(headers: HttpHeaders): string" href="supranim/core/response.html#toString%2CHttpHeaders">response: proc toString(headers: HttpHeaders): string</a></li>
           </ul></dd>
+<dt><a name="TRACE" href="#TRACE"><span>TRACE:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: LogLevel.TRACE" href="supranim/support/logit.html#TRACE">logit: LogLevel.TRACE</a></li>
+          </ul></dd>
+<dt><a name="trace" href="#trace"><span>trace:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: template trace(self: Logit; message = &quot;&quot;; autoNewLine = true)" href="supranim/support/logit.html#trace.t%2CLogit%2Cstring">logit: template trace(self: Logit; message = &quot;&quot;; autoNewLine = true)</a></li>
+          </ul></dd>
 <dt><a name="UnixHttpClient" href="#UnixHttpClient"><span>UnixHttpClient:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="httpclient: type UnixHttpClient" href="supranim/support/httpclient.html#UnixHttpClient">httpclient: type UnixHttpClient</a></li>
@@ -1369,6 +1483,14 @@
 <dt><a name="version" href="#version"><span>version:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="uuid: proc version(u: Uuid): int" href="supranim/support/uuid.html#version%2CUuid">uuid: proc version(u: Uuid): int</a></li>
+          </ul></dd>
+<dt><a name="WARN" href="#WARN"><span>WARN:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: LogLevel.WARN" href="supranim/support/logit.html#WARN">logit: LogLevel.WARN</a></li>
+          </ul></dd>
+<dt><a name="warn" href="#warn"><span>warn:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="logit: template warn(self: Logit; message = &quot;&quot;; autoNewLine = true)" href="supranim/support/logit.html#warn.t%2CLogit%2Cstring">logit: template warn(self: Logit; message = &quot;&quot;; autoNewLine = true)</a></li>
           </ul></dd>
 <dt><a name="WebServer" href="#WebServer"><span>WebServer:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1446,7 +1568,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-18 13:34:21 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-19 12:54:38 UTC</small>
       </div>
     </div>
   </div>

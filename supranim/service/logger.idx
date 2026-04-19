@@ -1,0 +1,6 @@
+nimTitle	logger	supranim/service/logger.html	module supranim/service/logger		0
+nim	OnInitSingletonCallback`gensym0`gensym5	supranim/service/logger.html#OnInitSingletonCallback`gensym0`gensym5	type OnInitSingletonCallback`gensym0`gensym5		393
+nim	getLoggerInstance	supranim/service/logger.html#getLoggerInstance,OnInitSingletonCallback`gensym0`gensym5,staticbool	proc getLoggerInstance(onceCb`gensym0`gensym5: OnInitSingletonCallback`gensym0`gensym5 = nil;\n                  initShared`gensym0`gensym5: static bool = true): ptr Logger		391
+nim	getLogger	supranim/service/logger.html#getLogger	proc getLogger(): ptr Logger		20
+nim	init	supranim/service/logger.html#init	proc init()		37
+nim	logger	supranim/service/logger.html#logger.t,string,LogLevel	template logger(message: string; level: LogLevel = INFO)		41

@@ -1,0 +1,28 @@
+nimTitle	logit	supranim/support/logit.html	module supranim/support/logit		0
+nim	OTHER	supranim/support/logit.html#OTHER	LogLevel.OTHER		30
+nim	TRACE	supranim/support/logit.html#TRACE	LogLevel.TRACE		30
+nim	INFO	supranim/support/logit.html#INFO	LogLevel.INFO		30
+nim	DEBUG	supranim/support/logit.html#DEBUG	LogLevel.DEBUG		30
+nim	WARN	supranim/support/logit.html#WARN	LogLevel.WARN		30
+nim	ERROR	supranim/support/logit.html#ERROR	LogLevel.ERROR		30
+nim	FATAL	supranim/support/logit.html#FATAL	LogLevel.FATAL		30
+nim	LogLevel	supranim/support/logit.html#LogLevel	enum LogLevel		30
+nim	Logit	supranim/support/logit.html#Logit	object Logit		31
+nim	`$`	supranim/support/logit.html#$,LogLevel	proc `$`(lvl: LogLevel): string		47
+nim	initLogit	supranim/support/logit.html#initLogit,string	proc initLogit(logsFolder = getTempDir(); namespace = "Logit";\n          defaultLogLevel = OTHER; logToFile = true; logToConsole = false;\n          exitOnError = false; filePrefix = initTimeFormat("YYYY-MM-dd")): Logit		85
+nim	start	supranim/support/logit.html#start,Logit	proc start(self: var Logit)		108
+nim	InstantiationInfo	supranim/support/logit.html#InstantiationInfo	tuple InstantiationInfo		125
+nim	log	supranim/support/logit.html#log.t,Logit,LogLevel,string	template log(self: Logit; level: LogLevel; message: string; autoNewLine = true;\n    someInfo = none(InstantiationInfo))		127
+nim	log	supranim/support/logit.html#log.t,Logit,string	template log(self: Logit; message = ""; autoNewLine = true)		177
+nim	other	supranim/support/logit.html#other.t,Logit,string	template other(self: Logit; message = ""; autoNewLine = true)		178
+nim	trace	supranim/support/logit.html#trace.t,Logit,string	template trace(self: Logit; message = ""; autoNewLine = true)		179
+nim	info	supranim/support/logit.html#info.t,Logit,string	template info(self: Logit; message = ""; autoNewLine = true)		180
+nim	debug	supranim/support/logit.html#debug.t,Logit,string	template debug(self: Logit; message = ""; autoNewLine = true)		181
+nim	warn	supranim/support/logit.html#warn.t,Logit,string	template warn(self: Logit; message = ""; autoNewLine = true)		182
+nim	error	supranim/support/logit.html#error.t,Logit,string	template error(self: Logit; message = ""; autoNewLine = true)		183
+nim	fatal	supranim/support/logit.html#fatal.t,Logit,string	template fatal(self: Logit; message = ""; autoNewLine = true)		184
+nim	header	supranim/support/logit.html#header,Logit,string	proc header(self: Logit; message: string)		187
+nim	finish	supranim/support/logit.html#finish,Logit	proc finish(self: var Logit)		193
+nim	logsFolder	supranim/support/logit.html#logsFolder,Logit	proc logsFolder(self: Logit): string		196
+nim	logsFolder=	supranim/support/logit.html#logsFolder=,Logit,string	proc logsFolder=(self: var Logit; newLogsFolder: string)		199
+nimgrp	log	supranim/support/logit.html#log-templates-all	template		127
