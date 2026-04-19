@@ -63,8 +63,8 @@ type
   HttpRouterInstance = ref object
     httpGet*, httpPost*, httpPut*, httpHead*,
       httpConnect*, httpDelete*, httpPatch*,
-      httpTrace*, httpOptions*, httpErrors*: CritBitTree[HttpRoute]
-    httpWS*: CritBitTree[HttpRouteWs]
+      httpTrace*, httpOptions*, httpErrors*: TableRef[string, HttpRoute]
+    httpWS*: TableRef[string, HttpRouteWs]
 
   HttpRouterError* = object of CatchableError
 
@@ -108,17 +108,17 @@ var
 proc newHttpRouter*: HttpRouterInstance =
   ## Initializes a new `HttpRouterInstance`.
   HttpRouterInstance(
-    httpGet: CritBitTree[HttpRoute](),
-    httpPost: CritBitTree[HttpRoute](),
-    httpPut: CritBitTree[HttpRoute](),
-    httpPatch: CritBitTree[HttpRoute](),
-    httpHead: CritBitTree[HttpRoute](),
-    httpDelete: CritBitTree[HttpRoute](),
-    httpTrace: CritBitTree[HttpRoute](),
-    httpOptions: CritBitTree[HttpRoute](),
-    httpConnect: CritBitTree[HttpRoute](),
-    httpWS: CritBitTree[HttpRouteWs](),
-    httpErrors: CritBitTree[HttpRoute]()
+    httpGet: TableRef[string, HttpRoute](),
+    httpPost: TableRef[string, HttpRoute](),
+    httpPut: TableRef[string, HttpRoute](),
+    httpPatch: TableRef[string, HttpRoute](),
+    httpHead: TableRef[string, HttpRoute](),
+    httpDelete: TableRef[string, HttpRoute](),
+    httpTrace: TableRef[string, HttpRoute](),
+    httpOptions: TableRef[string, HttpRoute](),
+    httpConnect: TableRef[string, HttpRoute](),
+    httpWS: TableRef[string, HttpRouteWs](),
+    httpErrors: TableRef[string, HttpRoute]()
   )
 
 proc newHttpRoute(autolinked: (string, string),
@@ -159,7 +159,7 @@ proc newWsRoute(path: string, httpMethod: HttpMethod, callback: Callable,
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
 
-proc registerRoute*(router: var HttpRouterInstance,
+proc registerRoute*(router: HttpRouterInstance,
   autolinked: sink (string, string),
   httpMethod: HttpMethod,
   callback: Callable,
@@ -504,7 +504,7 @@ macro searchRouteWs*() =
 type
   RouteCheckResult* = tuple[exists: bool, route: HttpRoute, params: Table[string, string]]
 
-proc checkExists*(router: var HttpRouterInstance,
+proc checkExists*(router: HttpRouterInstance,
             requestPath: string, httpMethod: HttpMethod): RouteCheckResult =
   ## Check if a route exists for the given request path and HTTP method
   case httpMethod
@@ -520,7 +520,7 @@ proc checkExists*(router: var HttpRouterInstance,
   result.exists =
     likely(result.route != nil)
 
-proc checkWsExists*(router: var HttpRouterInstance, requestPath: string): RouteCheckResult =
+proc checkWsExists*(router: HttpRouterInstance, requestPath: string): RouteCheckResult =
   ## Check if a WebSocket route exists for the given request path
   searchRouteWs()
   result.exists = likely(result.route != nil)
@@ -567,7 +567,7 @@ proc resolveAfterware*(route: HttpRoute,
 #
 # Error Handles
 #
-proc errorHandler*(router: var HttpRouterInstance,
+proc errorHandler*(router: HttpRouterInstance,
     code: HttpCode, callback: Callable) =
   ## Register an error handler for a specific HTTP status code
   let httpRoute = newHttpRoute(("", "4xx"), HttpGet, callback)
@@ -577,17 +577,17 @@ proc errorHandler*(router: var HttpRouterInstance,
   else: discard
 
 when defined supraMicroservice:
-  proc call4xx*(router: var HttpRouterInstance,
+  proc call4xx*(router: HttpRouterInstance,
                 req: ptr Request, res: ptr Response) {.discardable.} =
     ## Run the `4xx` callback
     router.httpErrors["4xx"].callback(req, res)
 elif compileOption("app", "lib"):
-  proc call4xx*(router: var HttpRouterInstance,
+  proc call4xx*(router: HttpRouterInstance,
                 req: ptr Request, res: ptr Response) {.cdecl, discardable.} =
     ## Run the `4xx` callback
     router.httpErrors["4xx"].callback(req, res)
 else:
-  proc call4xx*(router: var HttpRouterInstance,
+  proc call4xx*(router: HttpRouterInstance,
                 req: var Request, res: var Response) {.discardable.} =
     ## Run the `4xx` callback
     router.httpErrors["4xx"].callback(req, res)
