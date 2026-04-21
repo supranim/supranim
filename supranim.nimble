@@ -3,7 +3,7 @@
 version       = "0.1.0"
 author        = "OpenPeeps"
 description   = "A full-featured web framework for Nim"
-license       = "MIT"
+license       = "LGPL-3.0-or-later"
 srcDir        = "src"
 
 # Core dependencies

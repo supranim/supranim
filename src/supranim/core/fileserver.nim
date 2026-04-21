@@ -22,8 +22,8 @@ proc sendEmbeddedAsset*(req: var Request, path: string,
     let mimeType = mimedb.getMimeType(splitPath.ext[1..^1]).get("application/octet-stream")
     headers.add("Content-Type", mimeType)
     try:
-      if staticAssets().hasAssetString(path):
-        req.send(200, staticAssets().getAssetString(path), headers)
+      if staticAssets().hasTextAsset(path):
+        req.send(200, staticAssets().getTextAsset(path), headers)
         hasFoundResource = true
       elif staticAssets().hasAsset(path):
         req.sendFile(staticAssets().get(path), headers)

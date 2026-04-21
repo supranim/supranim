@@ -59,12 +59,12 @@ initService Assets[Singleton]:
       if sta[].files.hasKey(key):
         return sta[].files[key]
       raise newException(StaticAssetsError, "Asset not found: " & key)
-    
-    proc hasAssetString*(sta: ptr Assets, key: string): bool =
+
+    proc hasTextAsset*(sta: ptr Assets, key: string): bool =
       ## Checks if a text asset exists for the given key
       sta[].textFiles.hasKey(key)
 
-    proc getAssetString*(sta: ptr Assets, key: string): string =
+    proc getTextAsset*(sta: ptr Assets, key: string): string =
       ## Fast path for text assets; fallback to byte->string copy
       if sta[].textFiles.hasKey(key):
         return sta[].textFiles[key]
@@ -88,8 +88,22 @@ initService Assets[Singleton]:
       let srcDir = joinPath(storagePath, dir)
       let safeName = dir.replace("\\", "_").replace("/", "_")
       let outFile = joinPath(cachePath, "embed_" & safeName & ".nim")
-      AssetsImportStmt["loadBundler"] = nnkIncludeStmt.newTree(newLit(outFile))
+      AssetsImportStmt["loadBundler"] = nnkImportStmt.newTree(newLit(outFile))
 
-    macro preloadAssets*() =
+    macro embedDirectory*(dir: static string, key: static string) =
+      ## Embed all files from the specified directory into the application binary.
+      ## This is a more flexible version of `embedAssets` that allows you to specify a
+      ## directory outside of the Supranim storage path.
+      let safeName = splitPath(dir).tail
+      let outFile = joinPath(cachePath, "embed_" & safeName & ".nim")
+      AssetsImportStmt[key] = nnkImportStmt.newTree(newLit(outFile))
+
+    macro preloadAssets*: untyped =
       ## Preloads assets at runtime (if needed). This can be used to trigger any lazy loading logic.
       result = AssetsImportStmt["loadBundler"]
+
+    macro preloadBundle*(key: static string): untyped = 
+      ## Preloads templates at runtime (if needed). This can be used to trigger any lazy loading logic.
+      if not AssetsImportStmt.hasKey(key):
+        error("No embedded assets found for key: " & key)
+      result = AssetsImportStmt[key]
