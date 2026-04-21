@@ -96,16 +96,16 @@
                   initShared`gensym0`gensym10: static bool = true): ptr Assets</a></li>
 
 </ul>
-<ul class="simple nested-toc-section">getAssetString
-  <li><a class="reference" href="#getAssetString%2Cptr.Assets%2Cstring" title="getAssetString(sta: ptr Assets; key: string): string">getAssetString(sta: ptr Assets; key: string): string</a></li>
+<ul class="simple nested-toc-section">getTextAsset
+  <li><a class="reference" href="#getTextAsset%2Cptr.Assets%2Cstring" title="getTextAsset(sta: ptr Assets; key: string): string">getTextAsset(sta: ptr Assets; key: string): string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">hasAsset
   <li><a class="reference" href="#hasAsset%2Cptr.Assets%2Cstring" title="hasAsset(sta: ptr Assets; key: string): bool">hasAsset(sta: ptr Assets; key: string): bool</a></li>
 
 </ul>
-<ul class="simple nested-toc-section">hasAssetString
-  <li><a class="reference" href="#hasAssetString%2Cptr.Assets%2Cstring" title="hasAssetString(sta: ptr Assets; key: string): bool">hasAssetString(sta: ptr Assets; key: string): bool</a></li>
+<ul class="simple nested-toc-section">hasTextAsset
+  <li><a class="reference" href="#hasTextAsset%2Cptr.Assets%2Cstring" title="hasTextAsset(sta: ptr Assets; key: string): bool">hasTextAsset(sta: ptr Assets; key: string): bool</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">isPlainText
@@ -128,8 +128,16 @@
   <li><a class="reference" href="#embedAssets.m%2Cstaticstring" title="embedAssets(dir: static string): untyped">embedAssets(dir: static string): untyped</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">embedDirectory
+  <li><a class="reference" href="#embedDirectory.m%2Cstaticstring%2Cstaticstring" title="embedDirectory(dir: static string; key: static string)">embedDirectory(dir: static string; key: static string)</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">preloadAssets
-  <li><a class="reference" href="#preloadAssets.m" title="preloadAssets()">preloadAssets()</a></li>
+  <li><a class="reference" href="#preloadAssets.m" title="preloadAssets(): untyped">preloadAssets(): untyped</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">preloadBundle
+  <li><a class="reference" href="#preloadBundle.m%2Cstaticstring" title="preloadBundle(key: static string): untyped">preloadBundle(key: static string): untyped</a></li>
 
 </ul>
 
@@ -243,9 +251,9 @@
 </div>
 
 </div>
-<div id="getAssetString-procs-all">
-  <div id="getAssetString,ptr.Assets,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getAssetString%2Cptr.Assets%2Cstring"><span class="Identifier">getAssetString</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
+<div id="getTextAsset-procs-all">
+  <div id="getTextAsset,ptr.Assets,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getTextAsset%2Cptr.Assets%2Cstring"><span class="Identifier">getTextAsset</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">StaticAssetsError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -267,9 +275,9 @@
 </div>
 
 </div>
-<div id="hasAssetString-procs-all">
-  <div id="hasAssetString,ptr.Assets,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#hasAssetString%2Cptr.Assets%2Cstring"><span class="Identifier">hasAssetString</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+<div id="hasTextAsset-procs-all">
+  <div id="hasTextAsset,ptr.Assets,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#hasTextAsset%2Cptr.Assets%2Cstring"><span class="Identifier">hasTextAsset</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -322,12 +330,34 @@
 </div>
 
 </div>
+<div id="embedDirectory-macros-all">
+  <div id="embedDirectory.m,staticstring,staticstring">
+  <dt><pre><span class="Keyword">macro</span> <a href="#embedDirectory.m%2Cstaticstring%2Cstaticstring"><span class="Identifier">embedDirectory</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">string</span><span class="Other">)</span></pre></dt>
+  <dd>
+    
+    Embed all files from the specified directory into the application binary. This is a more flexible version of <tt class="docutils literal"><span class="pre"><span class="Identifier">embedAssets</span></span></tt> that allows you to specify a directory outside of the Supranim storage path.
+    
+  </dd>
+</div>
+
+</div>
 <div id="preloadAssets-macros-all">
   <div id="preloadAssets.m">
-  <dt><pre><span class="Keyword">macro</span> <a href="#preloadAssets.m"><span class="Identifier">preloadAssets</span></a><span class="Other">(</span><span class="Other">)</span></pre></dt>
+  <dt><pre><span class="Keyword">macro</span> <a href="#preloadAssets.m"><span class="Identifier">preloadAssets</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
   <dd>
     
     Preloads assets at runtime (if needed). This can be used to trigger any lazy loading logic.
+    
+  </dd>
+</div>
+
+</div>
+<div id="preloadBundle-macros-all">
+  <div id="preloadBundle.m,staticstring">
+  <dt><pre><span class="Keyword">macro</span> <a href="#preloadBundle.m%2Cstaticstring"><span class="Identifier">preloadBundle</span></a><span class="Other">(</span><span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
+  <dd>
+    
+    Preloads templates at runtime (if needed). This can be used to trigger any lazy loading logic.
     
   </dd>
 </div>
@@ -343,7 +373,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-19 12:54:38 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-21 15:11:54 UTC</small>
       </div>
     </div>
   </div>

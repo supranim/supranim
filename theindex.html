@@ -312,6 +312,10 @@
 <li><a class="reference external"
           data-doc-search-tag="assets: macro embedAssets(dir: static string): untyped" href="supranim/service/assets.html#embedAssets.m%2Cstaticstring">assets: macro embedAssets(dir: static string): untyped</a></li>
           </ul></dd>
+<dt><a name="embedDirectory" href="#embedDirectory"><span>embedDirectory:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="assets: macro embedDirectory(dir: static string; key: static string)" href="supranim/service/assets.html#embedDirectory.m%2Cstaticstring%2Cstaticstring">assets: macro embedDirectory(dir: static string; key: static string)</a></li>
+          </ul></dd>
 <dt><a name="emptyResponseBody" href="#emptyResponseBody"><span>emptyResponseBody:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="response: const emptyResponseBody" href="supranim/core/response.html#emptyResponseBody">response: const emptyResponseBody</a></li>
@@ -403,10 +407,6 @@
           data-doc-search-tag="assets: proc getAssetsInstance(onceCb`gensym0`gensym10: OnInitSingletonCallback`gensym0`gensym10 = nil;
                   initShared`gensym0`gensym10: static bool = true): ptr Assets" href="supranim/service/assets.html#getAssetsInstance%2COnInitSingletonCallback%60gensym0%60gensym10%2Cstaticbool">assets: proc getAssetsInstance(onceCb`gensym0`gensym10: OnInitSingletonCallback`gensym0`gensym10 = nil;
                   initShared`gensym0`gensym10: static bool = true): ptr Assets</a></li>
-          </ul></dd>
-<dt><a name="getAssetString" href="#getAssetString"><span>getAssetString:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="assets: proc getAssetString(sta: ptr Assets; key: string): string" href="supranim/service/assets.html#getAssetString%2Cptr.Assets%2Cstring">assets: proc getAssetString(sta: ptr Assets; key: string): string</a></li>
           </ul></dd>
 <dt><a name="getBaseMiddlewares" href="#getBaseMiddlewares"><span>getBaseMiddlewares:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -570,6 +570,10 @@
 <li><a class="reference external"
           data-doc-search-tag="controller: proc getSomeBodyData(req: var Request): SomeBodyData" href="supranim/controller.html#getSomeBodyData%2CRequest">controller: proc getSomeBodyData(req: var Request): SomeBodyData</a></li>
           </ul></dd>
+<dt><a name="getTextAsset" href="#getTextAsset"><span>getTextAsset:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="assets: proc getTextAsset(sta: ptr Assets; key: string): string" href="supranim/service/assets.html#getTextAsset%2Cptr.Assets%2Cstring">assets: proc getTextAsset(sta: ptr Assets; key: string): string</a></li>
+          </ul></dd>
 <dt><a name="getUriPath" href="#getUriPath"><span>getUriPath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="request: proc getUriPath(req: Request): string" href="supranim/core/request.html#getUriPath%2CRequest">request: proc getUriPath(req: Request): string</a></li>
@@ -604,13 +608,13 @@
 <li><a class="reference external"
           data-doc-search-tag="assets: proc hasAsset(sta: ptr Assets; key: string): bool" href="supranim/service/assets.html#hasAsset%2Cptr.Assets%2Cstring">assets: proc hasAsset(sta: ptr Assets; key: string): bool</a></li>
           </ul></dd>
-<dt><a name="hasAssetString" href="#hasAssetString"><span>hasAssetString:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="assets: proc hasAssetString(sta: ptr Assets; key: string): bool" href="supranim/service/assets.html#hasAssetString%2Cptr.Assets%2Cstring">assets: proc hasAssetString(sta: ptr Assets; key: string): bool</a></li>
-          </ul></dd>
 <dt><a name="hasCookies" href="#hasCookies"><span>hasCookies:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="request: proc hasCookies(req: var Request): bool" href="supranim/core/request.html#hasCookies%2CRequest">request: proc hasCookies(req: var Request): bool</a></li>
+          </ul></dd>
+<dt><a name="hasTextAsset" href="#hasTextAsset"><span>hasTextAsset:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="assets: proc hasTextAsset(sta: ptr Assets; key: string): bool" href="supranim/service/assets.html#hasTextAsset%2Cptr.Assets%2Cstring">assets: proc hasTextAsset(sta: ptr Assets; key: string): bool</a></li>
           </ul></dd>
 <dt><a name="head" href="#head"><span>head:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1034,7 +1038,11 @@
           </ul></dd>
 <dt><a name="preloadAssets" href="#preloadAssets"><span>preloadAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="assets: macro preloadAssets()" href="supranim/service/assets.html#preloadAssets.m">assets: macro preloadAssets()</a></li>
+          data-doc-search-tag="assets: macro preloadAssets(): untyped" href="supranim/service/assets.html#preloadAssets.m">assets: macro preloadAssets(): untyped</a></li>
+          </ul></dd>
+<dt><a name="preloadBundle" href="#preloadBundle"><span>preloadBundle:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="assets: macro preloadBundle(key: static string): untyped" href="supranim/service/assets.html#preloadBundle.m%2Cstaticstring">assets: macro preloadBundle(key: static string): untyped</a></li>
           </ul></dd>
 <dt><a name="preparePath" href="#preparePath"><span>preparePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1568,7 +1576,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-19 12:54:38 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-21 15:11:54 UTC</small>
       </div>
     </div>
   </div>
