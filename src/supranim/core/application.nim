@@ -5,21 +5,22 @@
 #   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
-import std/[macros, os, net, tables, strutils,
-          json, hashes, macrocache, posix]
+import std/[macros, os, net, tables, strutils, hashes, macrocache, posix]
 
 import pkg/threading/[once, rwlock]
 import pkg/libevent/bindings/[http, buffer, event]
 
-import pkg/[nyml, kapsis]
+import pkg/kapsis
 import pkg/kapsis/interactive/prompts
+
+import pkg/openparser/[json, yaml]
 
 import ../network/webserver
 import ./[config, paths, request, response, router]
 
 import ../support/uuid
 
-export json, nyml, paths, macros
+export json, yaml, paths, macros
 export supranimServer, registerCallback, unregisterCallback
 
 type
@@ -42,7 +43,7 @@ type
       ## The port number the application listens on
     address*: string
       ## The address the application binds to
-    configs*: OrderedTableRef[string, nyml.Document]
+    configs*: OrderedTableRef[string, YAMLObject]
       ## A table of configuration documents
     applicationPaths* : ApplicationPaths
       ## The application paths object that manages directory paths for the application
@@ -92,7 +93,7 @@ proc paths*(app: Application): ApplicationPaths =
 #
 # Config API
 #
-proc config*(app: Application, key: string): JsonNode =
+proc config*(app: Application, key: string): YamlNode =
   let x = key.split(".")
   let id = x[0]
   let keys = x[1..^1]
@@ -112,15 +113,11 @@ template initHttpRouter* =
 
     add result,
       newProc(
-        ident"initRouter",
+        ident"registerRoutes",
         body = nnkStmtList.newTree(
           nnkPragmaBlock.newTree(
             nnkPragma.newTree(ident"gcsafe"),
             nnkStmtList.newTree(
-              # newAssignment(
-              #   newDotExpr(ident"App", ident"router"),
-              #   newCall(ident"newHttpRouter")
-              # ),
               newAssignment(
                 ident"Router",
                 newCall(ident"newHttpRouter")
@@ -129,10 +126,10 @@ template initHttpRouter* =
             )
           )
         ),
-        # pragmas = nnkPragma.newTree(
-        #   ident "thread"
-        # )
       )
+    add result, newCall(ident"registerRoutes")
+    add result, quote do:
+      Router.errorHandler(Http404, get4xx)
   initHttpRouterMacro()
 
 when defined supraMicroservice:
@@ -248,7 +245,7 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
       # Application Initialization via Kapsis CLI
       loadEnv() # read `.env.yml` config file
       add result, quote do:
-        App.configs = newOrderedTable[string, Document]()
+        App.configs = newOrderedTable[string, YamlObject]()
         for path in walkFiles(App.applicationPaths.resolve("config", "*")):
           let p = path.splitFile
           if p.ext in [".yml", ".yaml"]:
@@ -293,8 +290,6 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
     # adding the service providers, so that they are available to all services.
     add result, quote do:
       initHttpRouter()
-      initRouter()
-      Router.errorHandler(Http404, get4xx)
 
     # add the service providers
     add result, serviceProviders
