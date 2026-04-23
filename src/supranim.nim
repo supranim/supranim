@@ -179,7 +179,8 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
       # additional logic during the server startup process
       optionalBlock
 
-      injectSafeThreadCallbacks()
+      when not compiles(startupCallback()):
+        injectSafeThreadCallbacks()
       
       # Starts the actual server loop, this will block
       # the main thread and keep the server running until it's stopped.
