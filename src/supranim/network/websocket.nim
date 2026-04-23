@@ -61,10 +61,18 @@ type
     onOpen*: OpenCb
       ## Callback for handling new connections.
 
+  WsSendJob = ref object
+    bev: ptr bufferevent
+    opcode: int
+    payload: seq[byte]
+
   WebSocketConnection* = ref WebSocketConnectionImpl
     ## Reference type wrapper around `WebSocketConnectionImpl` for easier usage in application code.
 
 const wsGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11" # Magic GUID used in WebSocket handshake
+
+var gConns: Table[ptr bufferevent, WebSocketConnection]
+# Global registry: keep refs alive while bev exists
 
 # Convenience: register callbacks
 proc setOnMessage*(ws: ptr WebSocketConnectionImpl, cb: MessageCb) = ws.onMessage = cb
@@ -73,23 +81,57 @@ proc setOnError*(ws: ptr WebSocketConnectionImpl, cb: ErrorCb) = ws.onError = cb
 proc setOnOpen*(ws: ptr WebSocketConnectionImpl, cb: OpenCb) = ws.onOpen = cb
 proc writeFrame(bev: ptr bufferevent, opcode: int, payload: openArray[byte])
 
+proc cleanupWs(ws: ptr WebSocketConnectionImpl) =
+  if ws.isNil: return
+  if not ws.bev.isNil:
+    if gConns.hasKey(ws.bev):
+      gConns.del(ws.bev)
+
+proc wsSendOnceCb(fd: evutil_socket_t, what: cshort, arg: pointer) {.cdecl.} =
+  let job = cast[WsSendJob](arg)
+  if not job.isNil and not job.bev.isNil:
+    writeFrame(job.bev, job.opcode, job.payload)
+  GC_unref(job)
+
+proc sendFrameOnBase(c: ptr WebSocketConnectionImpl, opcode: int, payload: openArray[byte]) =
+  if c.isNil or c.bev.isNil: return
+  let base = bufferevent_get_base(c.bev)
+  if base.isNil: return
+
+  let job = WsSendJob(bev: c.bev, opcode: opcode, payload: @payload)
+  GC_ref(job)
+
+  var tv: Timeval
+  tv.tv_sec = 0
+  tv.tv_usec = 0
+  discard event_base_once(base, -1, EV_TIMEOUT, wsSendOnceCb, cast[pointer](job), addr tv)
+
 proc sendFrame*(c: ptr WebSocketConnectionImpl, opcode: int, payload: openArray[byte]) =
   ## Send a WebSocket frame with the given opcode and payload.
   if c.isNil or c.bev.isNil: return
-  writeFrame(c.bev, opcode, payload)
+  sendFrameOnBase(c, opcode, payload)
 
 proc sendText*(c: ptr WebSocketConnectionImpl, s: string) =
   ## Send a text message as a WebSocket frame. If the string is empty, send an empty frame.
-  if s.len == 0: c.sendFrame(0x1, [])
-  else:          c.sendFrame(0x1, s.toOpenArrayByte(0, s.len-1))
+  if s.len == 0:
+    sendFrameOnBase(c, 0x1, @[]) # opcode 0x1 for text frame
+  else:
+    sendFrameOnBase(c, 0x1, s.toOpenArrayByte(0, s.len-1))
 
 proc sendBinary*(c: ptr WebSocketConnectionImpl, data: openArray[byte]) =
   ## Send a binary message as a WebSocket frame. If the data is empty, send an empty frame.
-  c.sendFrame(0x2, data)
+  # c.sendFrame(0x2, data)
+  if data.len == 0:
+    sendFrameOnBase(c, 0x2, @[]) # opcode 0x2 for binary frame
+  else:
+    sendFrameOnBase(c, 0x2, data)
 
 proc sendPing*(c: ptr WebSocketConnectionImpl, data: openArray[byte] = []) =
   ## Send a ping frame with optional payload. If no data is provided, send an empty ping.
-  c.sendFrame(0x9, data)
+  if data.len == 0:
+    sendFrameOnBase(c, 0x9, @[]) # opcode 0x9 for ping frame
+  else:
+    sendFrameOnBase(c, 0x9, data)
 
 proc close*(c: ptr WebSocketConnectionImpl, code: int = 1000, reason = "") =
   ## Close the WebSocket connection with an optional close code and reason.
@@ -99,7 +141,7 @@ proc close*(c: ptr WebSocketConnectionImpl, code: int = 1000, reason = "") =
     payload[0] = uint8((code shr 8) and 0xFF)
     payload[1] = uint8(code and 0xFF)
     for i, ch in reason: payload[2+i] = uint8(ch.ord and 0xFF)
-  c.sendFrame(0x8, payload)
+  sendFrameOnBase(c, 0x8, payload)
 
 proc sendFrame*(ws: WebSocketConnection, opcode: int, payload: openArray[byte]) =
   ## Send a WebSocket frame from a `WebSocketConnection` reference. If the connection is nil, this is a no-op.
@@ -139,36 +181,39 @@ proc computeAccept(key: cstring): string =
   let shaArray = cast[array[0 .. 19, uint8]](digest)
   result = base64.encode(shaArray)
 
-# Global registry: keep refs alive while bev exists
-var gConns: Table[ptr bufferevent, WebSocketConnection]
-
 proc writeFrame(bev: ptr bufferevent, opcode: int, payload: openArray[byte]) =
   # Write a WebSocket frame to the bufferevent
   if bev.isNil: return
-  let outbuf = bufferevent_get_output(bev)
-  var b0: uint8 = uint8(0x80 or (opcode and 0x0F)) # FIN=1
-  discard evbuffer_add(outbuf, addr b0, 1)
+
+  var hlen = 0
+  var header: array[10, uint8]
   let n = payload.len
+
+  hlen = 1
+  header[0] = uint8(0x80 or (opcode and 0x0F)) # FIN=1
+
   if n < 126:
-    var b1: uint8 = uint8(n)
-    discard evbuffer_add(outbuf, addr b1, 1)
+    header[1] = uint8(n)
+    hlen = 2
   elif n <= 0xFFFF:
-    var b1: uint8 = 126
-    discard evbuffer_add(outbuf, addr b1, 1)
-    var l16: array[2, uint8]
-    l16[0] = uint8((n shr 8) and 0xFF)
-    l16[1] = uint8(n and 0xFF)
-    discard evbuffer_add(outbuf, addr l16[0], 2)
+    header[1] = 126
+    header[2] = uint8((n shr 8) and 0xFF)
+    header[3] = uint8(n and 0xFF)
+    hlen = 4
   else:
-    var b1: uint8 = 127
-    discard evbuffer_add(outbuf, addr b1, 1)
-    var l64: array[8, uint8]
+    header[1] = 127
     var v = uint64(n)
     for i in 0 ..< 8:
-      l64[7 - i] = uint8(v and 0xFF); v = v shr 8
-    discard evbuffer_add(outbuf, addr l64[0], 8)
+      header[9 - i] = uint8(v and 0xFF)
+      v = v shr 8
+    hlen = 10
+
+  let rcH = bufferevent_write(bev, addr header[0], csize_t(hlen))
+  var rcP = 0
   if n > 0:
-    discard evbuffer_add(outbuf, unsafeAddr payload[0], csize_t(n))
+    rcP = bufferevent_write(bev, unsafeAddr payload[0], csize_t(n))
+  let rcF = bufferevent_flush(bev, EV_WRITE, BEV_FLUSH)
+  # echo "ws write rcH=", rcH, " rcP=", rcP, " rcF=", rcF, " fd=", bufferevent_getfd(bev)
 
 proc parseFrames(ws: ptr WebSocketConnectionImpl, inbuf: ptr Evbuffer) =
   # Parse incoming data from the bufferevent's input buffer as WebSocket frames
@@ -295,18 +340,22 @@ proc bev_eventcb(bev: ptr bufferevent, what: cshort, ctx: pointer) {.cdecl.} =
     if not ws.isNil and not ws.onError.isNil:
       ws.onError(addr(ws[]), "bufferevent error")
   if (what and BEV_EVENT_EOF.cshort) != 0 or (what and BEV_EVENT_ERROR.cshort) != 0:
-    # free and unroot
     if not ws.isNil and not ws.onClose.isNil:
       ws.onClose(addr(ws[]), 1000, "")
-    if not ws.isNil:
-      gConns.del(ws.bev)
-    if not bev.isNil: bufferevent_free(bev)
+    cleanupWs(ws)
+
+proc evcon_closecb(conn: ptr evhttp_connection, arg: pointer) {.cdecl.} =
+  let ws = cast[ptr WebSocketConnectionImpl](arg)
+  if not ws.isNil and not ws.onClose.isNil:
+    ws.onClose(addr(ws[]), 1000, "")
+  cleanupWs(ws)
 
 proc websocketUpgrade*(req: ptr evhttp_request,
                       onOpen: OpenCb = nil,
                       onMessage: MessageCb = nil,
                       onClose: CloseCb = nil,
                       onError: ErrorCb = nil): WebSocketConnection =
+
   ## Perform an RFC6455 upgrade on a libevent request and return a connection. This should
   ## be called from an HTTP handler when a WebSocket upgrade is desired.
   let inHeaders = evhttp_request_get_input_headers(req)
@@ -328,7 +377,7 @@ proc websocketUpgrade*(req: ptr evhttp_request,
   
   # Own the request to keep it alive after this handler returns. We'll send the final reply
   # after setting up the connection.
-  evhttp_request_own(req)
+  # evhttp_request_own(req)
   evhttp_send_reply_start(req, 101, "Switching Protocols")
 
   let conn = evhttp_request_get_connection(req)
@@ -342,15 +391,24 @@ proc websocketUpgrade*(req: ptr evhttp_request,
     return
 
   # Create connection object and root it
-  result = WebSocketConnection(bev: cast[ptr bufferevent](bev), onMessage: onMessage,
-                              onClose: onClose, onError: onError, onOpen: onOpen)
+  result = WebSocketConnection(
+    bev: cast[ptr bufferevent](bev),
+    onMessage: onMessage,
+    onClose: onClose,
+    onError: onError,
+    onOpen: onOpen
+  )
   result.id = bufferevent_getfd(result.bev)
   gConns[result.bev] = result
 
+  # finish the HTTP upgrade response
+  evhttp_send_reply_end(req)
+
+  # Set up bufferevent callbacks for this connection
   bufferevent_setcb(result.bev, bev_readcb, nil, bev_eventcb, cast[pointer](result))
-  discard bufferevent_enable(result.bev, BEV_EVENT_READING or BEV_EVENT_WRITING)
-  
-  # Call onOpen if provided
+  discard bufferevent_enable(result.bev, EV_READ or EV_WRITE)
+  evhttp_connection_set_closecb(conn, evcon_closecb, cast[pointer](result))
+
   if not result.onOpen.isNil:
     result.onOpen(addr result[])
   
