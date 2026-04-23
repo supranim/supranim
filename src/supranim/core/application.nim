@@ -14,7 +14,7 @@ import pkg/libevent/bindings/[http, buffer, event]
 import pkg/[nyml, kapsis]
 import pkg/kapsis/interactive/prompts
 
-import ../network/http/webserver
+import ../network/webserver
 import ./[config, paths, request, response, router]
 
 import ../support/uuid
