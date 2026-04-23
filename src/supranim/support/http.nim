@@ -10,7 +10,7 @@
 #     https://supranim.com | https://github.com/supranim
 
 import std/[uri, httpcore, sequtils]
-import pkg/jsony # todo change it with voodoo json
+import pkg/openparser/json
 
 import ./httpclient
 export body
@@ -53,7 +53,7 @@ proc get*[T](H: Http, uri: Uri|string, t: typedesc[T]): T =
   defer:
     H.httpClient.close()
   let body = res.body
-  result = jsony.fromJson(body, t)
+  result = json.fromJson(body, t)
 
 #
 # POST handlers

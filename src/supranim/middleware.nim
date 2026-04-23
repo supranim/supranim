@@ -20,7 +20,7 @@ import ./core/[request, response]
 
 from ./core/router import baseMiddlewares
 from ./controller import getClientId, getSessionCookie
-from ./network/http/webserver import dropRequest
+from ./network/webserver import dropRequest
 
 export request, response, resp, json
 export getClientId, getSessionCookie, dropRequest
