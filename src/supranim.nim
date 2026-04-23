@@ -26,8 +26,7 @@ import pkg/kapsis/interactive/prompts
 
 import ./supranim/core/[application, router, fileserver, utils]
 import ./supranim/controller
-import ./supranim/network/http/webserver
-import ./supranim/network/websocket
+import ./supranim/network/[webserver, websocket]
 import ./supranim/service/events
 
 export application, webserver, websocket,
@@ -170,7 +169,11 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
       # Start the HTTP server
       # let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)
       event().emit("app.startup")
-      app.server = newWebServer(Port(app.config("server.port").getInt), true)
+      
+      when defined supranimUseGlobalOnRequest:
+        app.server = newWebServer(Port(app.config("server.port").getInt))
+      else:
+        app.server = newWebServer(Port(app.config("server.port").getInt), true)
       
       # when provided, the optional block can be used to inject
       # additional logic during the server startup process
@@ -180,10 +183,13 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
       
       # Starts the actual server loop, this will block
       # the main thread and keep the server running until it's stopped.
-      when compiles(startupCallback()):
-        app.server.start(onRequest, startupCallback, threads = countProcessors())
+      when defined supranimUseGlobalOnRequest:
+        app.server.start(onRequest)
       else:
-        app.server.start(onRequest, nil, threads = countProcessors())
+        when compiles(startupCallback()):
+          app.server.start(onRequest, startupCallback, threads = countProcessors())
+        else:
+          app.server.start(onRequest, nil, threads = countProcessors())
 
 template run*(app: Application) =
   ## Runs the Supranim application server without an optional block.

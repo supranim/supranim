@@ -11,7 +11,7 @@ import pkg/openparser/json # std/json is exported from here
 
 import ../support/uuid
 
-from ../network/http/webserver import Request, send
+from ../network/webserver import Request, send
 export HttpCode
 
 type

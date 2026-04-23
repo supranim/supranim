@@ -11,10 +11,10 @@ import std/[os, posix, tables, httpcore, options,
 
 import pkg/threading/rwlock
 import pkg/libevent/bindings/[http, event, buffer, threaded, listener]
+import ../support/http
+from std/net import Port, `$`
 
 export evhttp_request, threaded, evhttp_request_get_connection
-
-import ../../support/http
 
 # for some reason the emit pragma won't work if placed in
 # bindings/http.nim so will put it here
@@ -31,8 +31,6 @@ import ../../support/http
     }
   }
 """.}
-
-from std/net import Port, `$`
 
 ## This module implements a high-performance HTTP server using the Libevent library.
 ## 
@@ -94,6 +92,12 @@ type
 
 var webWorkerLocker = createRwLock()
 var runtimeLowLevelCallbacks = initTable[string, OnRequestLowLevel]()
+var gLibeventThreadingInit: Atomic[bool]
+
+proc ensureLibeventThreading() =
+  if not gLibeventThreadingInit.load(moAcquire):
+    doAssert evthread_use_pthreads() == 0, "evthread_use_pthreads failed"
+    gLibeventThreadingInit.store(true, moRelease)
 
 proc normalizeCallbackPath(path: string): string {.inline.} =
   let p = if path.len == 0: "/" else: path
@@ -127,13 +131,6 @@ type
 #
 proc addCallback*(server: WebServer, path: string, callback: OnRequestLowLevel)
 proc addCallback*(httpServer: ptr evhttp, path: string, callback: OnRequestLowLevel)
-
-# var gLibeventThreadingInit: Atomic[bool]
-# proc ensureLibeventThreading() =
-#   # Must be called before creating any event_base in multithreaded mode.
-#   if not gLibeventThreadingInit.load(moAcquire):
-#     doAssert evthread_use_pthreads() == 0, "evthread_use_pthreads failed"
-#     gLibeventThreadingInit.store(true, moRelease)
 
 proc applyAllowedMethods(httpServer: ptr evhttp) =
   let allowedMethods = (uint16(EVHTTP_REQ_GET) or uint16(EVHTTP_REQ_POST) or
@@ -172,6 +169,7 @@ proc newReusePortListener(base: ptr event_base,
 
 proc newWebServer*(port: Port = Port(8080)): WebServer =
   ## Creates a new WebServer instance.
+  ensureLibeventThreading()
   new(result)
   result.base = event_base_new()
   discard evthread_make_base_notifiable(result.base)
@@ -191,6 +189,7 @@ proc newWebServer*(port: Port = Port(8080), enableMultiThreading: bool): WebServ
   ## This is recommended for production use. For development, you can use the
   ## single-threaded version for simplicity.
   # ensureLibeventThreading()
+  ensureLibeventThreading()
   new(result)
   
   # `enableMultiThreading` is just a marker here
@@ -221,10 +220,10 @@ proc initialOnRequest(raw: ptr evhttp_request, arg: pointer) {.cdecl.} =
 
   readWith webWorkerLocker:
     if runtimeLowLevelCallbacks.hasKey(normPath):
-      let cb = runtimeLowLevelCallbacks[normPath]
-      if cb != nil:
-        cb(raw, nil)
-        return
+      # let cb = runtimeLowLevelCallbacks[normPath]
+      # if cb != nil:
+      #   cb(raw, nil)
+      return
   
   let host = evhttp_request_get_host(raw)
   var req = Request(
@@ -349,7 +348,6 @@ proc start*(server: var WebServer, onRequest: OnRequest,
   if startupCallback != nil:
     startupCallback() # TODO move to initialRequest?
 
-  assert server.httpServer != nil
   assert evhttp_bind_socket(server.httpServer, "0.0.0.0", server.port.uint16) == 0
   when defined(supranimUseGlobalOnRequest):
     appOnRequest = onRequest

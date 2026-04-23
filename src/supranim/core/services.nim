@@ -277,7 +277,7 @@ template initService*(id, config: untyped) =
         
         import pkg/jsony
         
-        import pkg/supranim/network/http/webserver
+        import pkg/supranim/network/webserver
         import pkg/supranim/core/[request, router, response]
         
         from std/net import Port

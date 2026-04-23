@@ -14,7 +14,7 @@ import ./core/[request, response, router, fileserver]
 import ./support/cookie
 
 from ./core/application import appInstance
-from ./network/http/webserver import streamFile
+from ./network/webserver import streamFile
 
 export json, uri, request, response, tables,
         asyncdispatch, options, streamFile
