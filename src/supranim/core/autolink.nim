@@ -38,8 +38,7 @@ const
   }.toTable()
 
 proc autolinkController*(routePath: string,
-        httpMethod: HttpMethod, isWebSocket = false,
-): Autolinked {.compileTime.} =
+        httpMethod: HttpMethod, isWebSocket = false): Autolinked =
   # Generates controller name and route
   # patterns from `routePath` string
   var
@@ -53,7 +52,10 @@ proc autolinkController*(routePath: string,
       var p: RoutePattern
       i += routePath.parseUntil(p.key, {':'}, i)
       if i >= routePath.len:
-        error("Invalid pattern missing ending `}`")
+        when nimvm:
+          error("Invalid pattern missing ending `}`")
+        else:
+          raise newException(ValueError, "Invalid pattern missing ending `}`")
       else:
         inc(i) # skip :
         i += routePath.parseUntil(p.reKey, {'}', '?'}, i)
@@ -62,14 +64,20 @@ proc autolinkController*(routePath: string,
           if likely(routePath[i+1] == '}'):
             inc(i, 2) # ?
           else:
-            error("Invalid optional pattern missing ending `}`")
+            when nimvm:
+              error("Invalid optional pattern missing ending `}`")
+            else:
+              raise newException(ValueError, "Invalid optional pattern missing ending `}`")
         else:
           inc(i) # }
         if likely(RegexPatterns.hasKey(p.reKey)):
           add patterns, (p.key, p)
         else:
           let choices = RegexPatterns.keys.toSeq().join(", ")
-          error("Unknown pattern `" & p.reKey & "`. Use one of: " & choices)
+          when nimvm:
+            error("Unknown pattern `" & p.reKey & "`. Use one of: " & choices)
+          else:
+            raise newException(ValueError, "Unknown pattern `" & p.reKey & "`. Use one of: " & choices)
     else:
       var p: RoutePattern
       i += routePath.parseUntil(p.key, {'{'}, i)

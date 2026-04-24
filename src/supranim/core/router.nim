@@ -18,6 +18,7 @@ import std/[httpcore, critbits, tables, macros,
         macrocache, strutils, sequtils, enumutils]
 
 import pkg/regex
+import pkg/threading/rwlock
 
 import ./request, ./response
 import ./autolink
@@ -59,7 +60,6 @@ type
   
   HttpRouteWs* = ref object of HttpRoute
 
-
   HttpRouterInstance = ref object
     httpGet*, httpPost*, httpPut*, httpHead*,
       httpConnect*, httpDelete*, httpPatch*,
@@ -68,6 +68,7 @@ type
 
   HttpRouterError* = object of CatchableError
 
+var rw = createRwLock()
 var Router*: HttpRouterInstance
   ## A thread local singleton instance of `HttpRouterInstance`
   ## that is used to register routes and error handlers.
@@ -168,42 +169,52 @@ proc registerRoute*(router: HttpRouterInstance,
   isWebSocket = false
 ) =
   ## Register a new `Route` in the `HttpRouterInstance` based on the given parameters
-  let path = autolinked[1] # the original path string used to define the route
-  if isWebSocket:
-    let routeObject = newWsRoute(path, HttpGet, callback, middlewares, afterwares)
-    if not router.httpWS.hasKey(path):
-      router.httpWS[path] = routeObject
-  else:
-    let routeObject =
-      newHttpRoute(autolinked, httpMethod, callback, middlewares, afterwares)
-    case httpMethod
-    of HttpGet:
-      if not router.httpGet.hasKey(path):
-        router.httpGet[path] = routeObject
-    of HttpPost:
-      if not router.httpPost.hasKey(path):
-        router.httpPost[path] = routeObject
-    of HttpPut:
-      if not router.httpPut.hasKey(path):
-        router.httpPut[path] = routeObject
-    of HttpPatch:
-      if not router.httpPatch.hasKey(path):
-        router.httpPatch[path] = routeObject
-    of HttpHead:
-      if not router.httpHead.hasKey(path):
-        router.httpHead[path] = routeObject
-    of HttpDelete:
-      if not router.httpDelete.hasKey(path):
-        router.httpDelete[path] = routeObject
-    of HttpTrace:
-      if not router.httpTrace.hasKey(path):
-        router.httpTrace[path] = routeObject
-    of HttpOptions:
-      if not router.httpOptions.hasKey(path):
-        router.httpOptions[path] = routeObject
-    of HttpConnect:
-      if not router.httpConnect.hasKey(path):
-        router.httpConnect[path] = routeObject
+  writeWith rw:
+    let path = autolinked[1] # the original path string used to define the route
+    if isWebSocket:
+      let routeObject = newWsRoute(path, HttpGet, callback, middlewares, afterwares)
+      if not router.httpWS.hasKey(path):
+        router.httpWS[path] = routeObject
+    else:
+      let routeObject =
+        newHttpRoute(autolinked, httpMethod, callback, middlewares, afterwares)
+      case httpMethod
+      of HttpGet:
+        if not router.httpGet.hasKey(path):
+          router.httpGet[path] = routeObject
+      of HttpPost:
+        if not router.httpPost.hasKey(path):
+          router.httpPost[path] = routeObject
+      of HttpPut:
+        if not router.httpPut.hasKey(path):
+          router.httpPut[path] = routeObject
+      of HttpPatch:
+        if not router.httpPatch.hasKey(path):
+          router.httpPatch[path] = routeObject
+      of HttpHead:
+        if not router.httpHead.hasKey(path):
+          router.httpHead[path] = routeObject
+      of HttpDelete:
+        if not router.httpDelete.hasKey(path):
+          router.httpDelete[path] = routeObject
+      of HttpTrace:
+        if not router.httpTrace.hasKey(path):
+          router.httpTrace[path] = routeObject
+      of HttpOptions:
+        if not router.httpOptions.hasKey(path):
+          router.httpOptions[path] = routeObject
+      of HttpConnect:
+        if not router.httpConnect.hasKey(path):
+          router.httpConnect[path] = routeObject
+
+proc registerRoute*(router: HttpRouterInstance, path: string,
+                httpMethod: HttpMethod, callback: Callable,
+                middlewares: seq[Middleware] = @[],
+                afterwares: seq[Afterware] = @[]) =
+  ## Register a new Route in the `HttpRouterInstance` based on the given parameters
+  let autolinked = autolinkController(path, httpMethod)
+  registerRoute(router, (autolinked[1], autolinked[0]), httpMethod,
+              callback, middlewares, afterwares)
 
 const httpMethods* = ["get", "post", "put", "patch", "head",
                   "delete", "trace", "options", "connect", "ws"]

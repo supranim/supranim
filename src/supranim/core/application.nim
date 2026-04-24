@@ -54,9 +54,9 @@ type
     server*: WebServer
       ## The web server instance that handles incoming HTTP requests.
       ## This is initialized when the application starts.
-    # router*: HttpRouterInstance
-    #   ## The HTTP router instance that manages route registration and request handling.
-    #   ## This is initialized during application setup.
+    router*: Router.type
+      ## The HTTP router instance that manages route registration and request handling.
+      ## This is initialized during application setup.
 
   AppConfigDefect* = object of CatchableError
   
@@ -83,6 +83,11 @@ proc initApplication* =
 proc appInstance*: Application =
   ## Returns the singleton application instance
   # TODO rename to `app()`
+  initApplication()
+  result = App
+
+proc AppInstance*: Application =
+  ## Returns the singleton application instance
   initApplication()
   result = App
 
@@ -130,6 +135,7 @@ template initHttpRouter* =
     add result, newCall(ident"registerRoutes")
     add result, quote do:
       Router.errorHandler(Http404, get4xx)
+      App.router = Router # assign the reference of the initialized router
   initHttpRouterMacro()
 
 when defined supraMicroservice:
@@ -251,9 +257,9 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
           if p.ext in [".yml", ".yaml"]:
             let configFile = path.splitFile
             try:
-              App.configs[p.name] = yaml(readFile(path)).toJson
-            except YAMLException:
-              displayError("Invalid YAML configuration: " & path, quitProcess = true)
+              App.configs[p.name] = parseYAML(readFile(path))
+            except OpenParserYamlError as e:
+              displayError(e.msg & "\n" & path, quitProcess = true)
   
   if initBody != nil:
     add result, quote do:
