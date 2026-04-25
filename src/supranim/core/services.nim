@@ -11,16 +11,18 @@ import std/[os, macros, macrocache, tables, sequtils,
 
 import pkg/checksums/md5
 import pkg/threading/once
+import pkg/openparser/yaml
+
 import pkg/kapsis/framework
 import pkg/kapsis/interactive/prompts
 
-import pkg/supranim/[application, controller]
+import pkg/supranim/application
 import pkg/supranim/core/[paths, autolink, router]
 
 from std/net import Port, `$`
 from std/httpcore import HttpCode, HttpMethod
 
-export macros, macrocache, tables, once, options, controller
+export macros, macrocache, tables, once, options
 
 type
   ServiceType* = enum
@@ -275,7 +277,7 @@ template initService*(id, config: untyped) =
         import std/[asyncdispatch, httpcore, options,
                 critbits, json, strutils, sequtils, uri]
         
-        import pkg/jsony
+        import pkg/openparser/json
         
         import pkg/supranim/network/webserver
         import pkg/supranim/core/[request, router, response]
@@ -303,6 +305,14 @@ template initService*(id, config: untyped) =
         #
         # Request Utils
         #
+        proc setParams*(req: var Request, params: sink Table[string, string]) =
+          ## Sets the route parameters in `Request`
+          req.routeParams = params
+
+        proc params*(req: Request): lent Table[string, string] =
+          ## Returns the route parameters from `Request`
+          req.routeParams
+
         proc getFields(req: Request): seq[(string, string)] =
           ## Decodes `Request` body and returns as a sequence of tuples
           toSeq(req.body.get().decodeQuery)
@@ -311,8 +321,8 @@ template initService*(id, config: untyped) =
           ## Decodes `Request` body and returns a JsonNode
           try:
             result = fromJson(req.body.get(), JsonNode)
-          except jsony.JsonError:
-            discard
+          except OpenParserJsonError as e:
+            echo e.msg
 
         proc getFieldsTable(req: Request, fromJson: bool = false): Table[string, string] =
           ## Decodes `Request` body to `Table[string, string]`
@@ -330,7 +340,7 @@ template initService*(id, config: untyped) =
           ## Decodes `Request` body from stringified JSON to Nim object
           try:
             result = some(fromJson(req.body.get(), t))
-          except jsony.JsonError:
+          except OpenParserJsonError:
             result = none(t)
 
         proc toString(headers: HttpHeaders): string =
@@ -506,7 +516,7 @@ template initService*(id, config: untyped) =
           # standalone service using the built-in web server
           var p = initOptParser(commandLineParams())
           p.next() # skip the binary name
-          var port = Port(8000) # default port
+          var port = Port(3000)
           for kind, key, val in p.getOpt():
             case kind
             of cmdShortOption, cmdLongOption:
@@ -514,7 +524,7 @@ template initService*(id, config: untyped) =
                 port = Port(parseInt(val))
             else: discard
           
-          displayInfo("Starting Service Provider")
+          displayInfo("Starting the pluggable service provider")
           displayInfo("Available at http://127.0.0.1:" & $(port))
           
           # Start the  web server
