@@ -33,7 +33,7 @@ export application, webserver, websocket,
         router, fileserver, strutils,
         prompts
 
-export events, countProcessors
+export events, countProcessors, controller
 export Domain, Port, `$`, releaseUnusedMemory
 
 macro runBaseMiddlewares*(req, res) =

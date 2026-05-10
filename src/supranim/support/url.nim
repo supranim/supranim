@@ -6,6 +6,7 @@
 #   https://supranim.com | https://github.com/supranim
 #
 import std/[uri, json]
+import pkg/openparser/yaml
 export uri
 
 from ../core/application import appInstance, config

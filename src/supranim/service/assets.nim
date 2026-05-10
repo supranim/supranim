@@ -126,13 +126,13 @@ initService Assets[Singleton]:
       ## Embed all files from the specified directory into the application binary.
       ## This is a more flexible version of `embedAssets` that allows you to specify a
       ## directory outside of the Supranim storage path.
-      let safeName = splitPath(dir).tail
+      let safeName = dir.replace("\\", "_").replace("/", "_")
       let outFile = joinPath(cachePath, "embed_" & safeName & ".nim")
       AssetsImportStmt[key] = nnkImportStmt.newTree(newLit(outFile))
 
     macro preloadAssets*: untyped =
       ## Preloads assets at runtime (if needed). This can be used to trigger any lazy loading logic.
-      result = AssetsImportStmt["loadBundler"]
+      result = AssetsImportStmt["assets"]
 
     macro preloadBundle*(key: static string): untyped = 
       ## Preloads templates at runtime (if needed). This can be used to trigger any lazy loading logic.

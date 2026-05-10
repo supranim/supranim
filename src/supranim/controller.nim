@@ -18,7 +18,7 @@ from ./network/webserver import streamFile
 
 export json, uri, request, response, tables,
         asyncdispatch, options, streamFile
-export fileserver
+export fileserver, getQuery
 
 type
   BodyData* = TableRef[string, string]

@@ -11,7 +11,7 @@ import std/[os, macros, macrocache, tables, sequtils,
 
 import pkg/checksums/md5
 import pkg/threading/once
-import pkg/openparser/yaml
+import pkg/openparser/[yaml, json]
 
 import pkg/kapsis/framework
 import pkg/kapsis/interactive/prompts
@@ -23,6 +23,7 @@ from std/net import Port, `$`
 from std/httpcore import HttpCode, HttpMethod
 
 export macros, macrocache, tables, once, options
+export yaml, json
 
 type
   ServiceType* = enum
