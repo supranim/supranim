@@ -1,4 +1,3 @@
 nimTitle	config	supranim/core/config.html	module supranim/core/config		0
 nim	SupranimEnvLoader	supranim/core/config.html#SupranimEnvLoader	object SupranimEnvLoader		15
-nim	supranimServer	supranim/core/config.html#supranimServer	const supranimServer		18
-nim	loadEnv	supranim/core/config.html#loadEnv	proc loadEnv()		22
+nim	loadEnv	supranim/core/config.html#loadEnv	proc loadEnv()		17

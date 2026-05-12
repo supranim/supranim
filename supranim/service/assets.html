@@ -16,13 +16,16 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.8">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.8"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
 </head>
 <body>
   <div class="document" id="documentId">
+    <input type="checkbox" id="nav-toggle" hidden>
+    <label for="nav-toggle" id="nav-burger">&#9776;</label>
+    <label for="nav-toggle" id="nav-overlay"></label>
     <div class="container">
       <h1 class="title">supranim/service/assets</h1>
       <div class="row">
@@ -82,8 +85,12 @@
   <li><a class="reference" href="#addAsset%2Cptr.Assets%2Cstring%2Cseq%5Buint8%5D" title="addAsset(sta: ptr Assets; key: string; data: seq[uint8])">addAsset(sta: ptr Assets; key: string; data: seq[uint8])</a></li>
 
 </ul>
-<ul class="simple nested-toc-section">addTextAsset
-  <li><a class="reference" href="#addTextAsset%2Cptr.Assets%2Cstring%2Cstring" title="addTextAsset(sta: ptr Assets; key: string; data: string)">addTextAsset(sta: ptr Assets; key: string; data: string)</a></li>
+<ul class="simple nested-toc-section">addTextFile
+  <li><a class="reference" href="#addTextFile%2Cptr.Assets%2Cstring%2Cstring%2Csinkstring" title="addTextFile(sta: ptr Assets; dir: string; key: string; data: sink string)">addTextFile(sta: ptr Assets; dir: string; key: string; data: sink string)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">directory
+  <li><a class="reference" href="#directory%2Cptr.Assets%2Cstring" title="directory(sta: ptr Assets; key: string): TableRef[string, string]">directory(sta: ptr Assets; key: string): TableRef[string, string]</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">get
@@ -96,16 +103,20 @@
                   initShared`gensym0`gensym10: static bool = true): ptr Assets</a></li>
 
 </ul>
-<ul class="simple nested-toc-section">getTextAsset
-  <li><a class="reference" href="#getTextAsset%2Cptr.Assets%2Cstring" title="getTextAsset(sta: ptr Assets; key: string): string">getTextAsset(sta: ptr Assets; key: string): string</a></li>
+<ul class="simple nested-toc-section">getFile
+  <li><a class="reference" href="#getFile%2CTextFilesTable%2Cstring" title="getFile(filesDir: TextFilesTable; key: string): string">getFile(filesDir: TextFilesTable; key: string): string</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">getTextFile
+  <li><a class="reference" href="#getTextFile%2CTextFilesTable%2Cstring" title="getTextFile(dir: TextFilesTable; key: string): string">getTextFile(dir: TextFilesTable; key: string): string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">hasAsset
   <li><a class="reference" href="#hasAsset%2Cptr.Assets%2Cstring" title="hasAsset(sta: ptr Assets; key: string): bool">hasAsset(sta: ptr Assets; key: string): bool</a></li>
 
 </ul>
-<ul class="simple nested-toc-section">hasTextAsset
-  <li><a class="reference" href="#hasTextAsset%2Cptr.Assets%2Cstring" title="hasTextAsset(sta: ptr Assets; key: string): bool">hasTextAsset(sta: ptr Assets; key: string): bool</a></li>
+<ul class="simple nested-toc-section">hasFile
+  <li><a class="reference" href="#hasFile%2CTextFilesTable%2Cstring" title="hasFile(filesDir: TextFilesTable; key: string): bool">hasFile(filesDir: TextFilesTable; key: string): bool</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">isPlainText
@@ -167,7 +178,7 @@
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
     <div id="OnInitSingletonCallback`gensym0`gensym10">
-  <dt><pre><a href="assets.html#OnInitSingletonCallback`gensym0`gensym10"><span class="Identifier">OnInitSingletonCallback`gensym0`gensym10</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span>
+  <dt><pre><a href="#OnInitSingletonCallback`gensym0`gensym10"><span class="Identifier">OnInitSingletonCallback`gensym0`gensym10</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span>
     <span class="Identifier">instance`gensym0`gensym10</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
@@ -176,7 +187,7 @@
   </dd>
 </div>
 <div id="StaticAssetsError">
-  <dt><pre><a href="assets.html#StaticAssetsError"><span class="Identifier">StaticAssetsError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span></pre></dt>
+  <dt><pre><a href="#StaticAssetsError"><span class="Identifier">StaticAssetsError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span></pre></dt>
   <dd>
     
     
@@ -190,7 +201,7 @@
   <h1><a class="toc-backref" href="#10">Consts</a></h1>
   <dl class="item">
     <div id="AssetsImportStmt">
-  <dt><pre><a href="assets.html#AssetsImportStmt"><span class="Identifier">AssetsImportStmt</span></a> <span class="Other">=</span> <span class="StringLit">r&quot;AssetsImportStmt&quot;</span></pre></dt>
+  <dt><pre><a href="#AssetsImportStmt"><span class="Identifier">AssetsImportStmt</span></a> <span class="Other">=</span> <span class="StringLit">r&quot;AssetsImportStmt&quot;</span></pre></dt>
   <dd>
     
     
@@ -215,13 +226,25 @@
 </div>
 
 </div>
-<div id="addTextAsset-procs-all">
-  <div id="addTextAsset,ptr.Assets,string,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#addTextAsset%2Cptr.Assets%2Cstring%2Cstring"><span class="Identifier">addTextAsset</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<div id="addTextFile-procs-all">
+  <div id="addTextFile,ptr.Assets,string,string,sinkstring">
+  <dt><pre><span class="Keyword">proc</span> <a href="#addTextFile%2Cptr.Assets%2Cstring%2Cstring%2Csinkstring"><span class="Identifier">addTextFile</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Identifier">string</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Add plain-text asset
+    Add a text asset to a directory in the StaticBundle
+    
+  </dd>
+</div>
+
+</div>
+<div id="directory-procs-all">
+  <div id="directory,ptr.Assets,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#directory%2Cptr.Assets%2Cstring"><span class="Identifier">directory</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">StaticAssetsError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Get a directory of text assets by key
     
   </dd>
 </div>
@@ -241,7 +264,7 @@
 </div>
 <div id="getAssetsInstance-procs-all">
   <div id="getAssetsInstance,OnInitSingletonCallback`gensym0`gensym10,staticbool">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getAssetsInstance%2COnInitSingletonCallback%60gensym0%60gensym10%2Cstaticbool"><span class="Identifier">getAssetsInstance</span></a><span class="Other">(</span><span class="Identifier">onceCb`gensym0`gensym10</span><span class="Other">:</span> <a href="assets.html#OnInitSingletonCallback`gensym0`gensym10"><span class="Identifier">OnInitSingletonCallback`gensym0`gensym10</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getAssetsInstance%2COnInitSingletonCallback%60gensym0%60gensym10%2Cstaticbool"><span class="Identifier">getAssetsInstance</span></a><span class="Other">(</span><span class="Identifier">onceCb`gensym0`gensym10</span><span class="Other">:</span> <a href="#OnInitSingletonCallback`gensym0`gensym10"><span class="Identifier">OnInitSingletonCallback`gensym0`gensym10</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span>
                        <span class="Identifier">initShared`gensym0`gensym10</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">bool</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span></pre></dt>
   <dd>
     
@@ -251,13 +274,25 @@
 </div>
 
 </div>
-<div id="getTextAsset-procs-all">
-  <div id="getTextAsset,ptr.Assets,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getTextAsset%2Cptr.Assets%2Cstring"><span class="Identifier">getTextAsset</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
+<div id="getFile-procs-all">
+  <div id="getFile,TextFilesTable,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getFile%2CTextFilesTable%2Cstring"><span class="Identifier">getFile</span></a><span class="Other">(</span><span class="Identifier">filesDir</span><span class="Other">:</span> <span class="Identifier">TextFilesTable</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">StaticAssetsError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Fast path for text assets; fallback to byte-&gt;string copy
+    Get a text asset from a directory
+    
+  </dd>
+</div>
+
+</div>
+<div id="getTextFile-procs-all">
+  <div id="getTextFile,TextFilesTable,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getTextFile%2CTextFilesTable%2Cstring"><span class="Identifier">getTextFile</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">TextFilesTable</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">StaticAssetsError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Get a text asset by key from a directory
     
   </dd>
 </div>
@@ -275,13 +310,13 @@
 </div>
 
 </div>
-<div id="hasTextAsset-procs-all">
-  <div id="hasTextAsset,ptr.Assets,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#hasTextAsset%2Cptr.Assets%2Cstring"><span class="Identifier">hasTextAsset</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<div id="hasFile-procs-all">
+  <div id="hasFile,TextFilesTable,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#hasFile%2CTextFilesTable%2Cstring"><span class="Identifier">hasFile</span></a><span class="Other">(</span><span class="Identifier">filesDir</span><span class="Other">:</span> <span class="Identifier">TextFilesTable</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Checks if a text asset exists for the given key
+    Check if a text asset exists in a directory
     
   </dd>
 </div>
@@ -319,7 +354,7 @@
   <dl class="item">
     <div id="embedAssets-macros-all">
   <div id="embedAssets.m,staticstring">
-  <dt><pre><span class="Keyword">macro</span> <a href="#embedAssets.m%2Cstaticstring"><span class="Identifier">embedAssets</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
+  <dt><pre><span class="Keyword">macro</span> <a href="#embedAssets.m%2Cstaticstring"><span class="Identifier">embedAssets</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Keyword">static</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
   <dd>
     
     <p>Embed all files from the specified directory into the application binary.</p>
@@ -332,7 +367,7 @@
 </div>
 <div id="embedDirectory-macros-all">
   <div id="embedDirectory.m,staticstring,staticstring">
-  <dt><pre><span class="Keyword">macro</span> <a href="#embedDirectory.m%2Cstaticstring%2Cstaticstring"><span class="Identifier">embedDirectory</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">string</span><span class="Other">)</span></pre></dt>
+  <dt><pre><span class="Keyword">macro</span> <a href="#embedDirectory.m%2Cstaticstring%2Cstaticstring"><span class="Identifier">embedDirectory</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Keyword">static</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Keyword">static</span> <span class="Identifier">string</span><span class="Other">)</span></pre></dt>
   <dd>
     
     Embed all files from the specified directory into the application binary. This is a more flexible version of <tt class="docutils literal"><span class="pre"><span class="Identifier">embedAssets</span></span></tt> that allows you to specify a directory outside of the Supranim storage path.
@@ -354,7 +389,7 @@
 </div>
 <div id="preloadBundle-macros-all">
   <div id="preloadBundle.m,staticstring">
-  <dt><pre><span class="Keyword">macro</span> <a href="#preloadBundle.m%2Cstaticstring"><span class="Identifier">preloadBundle</span></a><span class="Other">(</span><span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
+  <dt><pre><span class="Keyword">macro</span> <a href="#preloadBundle.m%2Cstaticstring"><span class="Identifier">preloadBundle</span></a><span class="Other">(</span><span class="Identifier">key</span><span class="Other">:</span> <span class="Keyword">static</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
   <dd>
     
     Preloads templates at runtime (if needed). This can be used to trigger any lazy loading logic.
@@ -373,7 +408,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-21 15:11:54 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-12 08:25:08 UTC</small>
       </div>
     </div>
   </div>

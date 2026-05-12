@@ -16,13 +16,16 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.8">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.8"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
 </head>
 <body>
   <div class="document" id="documentId">
+    <input type="checkbox" id="nav-toggle" hidden>
+    <label for="nav-toggle" id="nav-burger">&#9776;</label>
+    <label for="nav-toggle" id="nav-overlay"></label>
     <div class="container">
       <h1 class="title">supranim/core/application</h1>
       <div class="row">
@@ -96,8 +99,12 @@
   <li><a class="reference" href="#appInstance" title="appInstance(): Application">appInstance(): Application</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">AppInstance
+  <li><a class="reference" href="#AppInstance_2" title="AppInstance(): Application">AppInstance(): Application</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">config
-  <li><a class="reference" href="#config%2CApplication%2Cstring" title="config(app: Application; key: string): JsonNode">config(app: Application; key: string): JsonNode</a></li>
+  <li><a class="reference" href="#config%2CApplication%2Cstring" title="config(app: Application; key: string): YamlNode">config(app: Application; key: string): YamlNode</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">getAddress
@@ -195,14 +202,14 @@
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
-    <a class="reference external" href="../network/http/webserver.html">../network/http/webserver</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="paths.html">paths</a>, <a class="reference external" href="request.html">request</a>, <a class="reference external" href="response.html">response</a>, <a class="reference external" href="router.html">router</a>, <a class="reference external" href="../support/uuid.html">../support/uuid</a>
+    <a class="reference external" href="../network/webserver.html">../network/webserver</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="paths.html">paths</a>, <a class="reference external" href="request.html">request</a>, <a class="reference external" href="response.html">response</a>, <a class="reference external" href="router.html">router</a>, <a class="reference external" href="../support/uuid.html">../support/uuid</a>
   </dl>
 </div>
 <div class="section" id="7">
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
     <div id="AppConfigDefect">
-  <dt><pre><a href="application.html#AppConfigDefect"><span class="Identifier">AppConfigDefect</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span></pre></dt>
+  <dt><pre><a href="#AppConfigDefect"><span class="Identifier">AppConfigDefect</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span></pre></dt>
   <dd>
     
     
@@ -210,7 +217,7 @@
   </dd>
 </div>
 <div id="Application">
-  <dt><pre><a href="application.html#Application"><span class="Identifier">Application</span></a> <span class="Other">=</span> <span class="Keyword">ptr</span> <span class="Identifier">ApplicationObject</span></pre></dt>
+  <dt><pre><a href="#Application"><span class="Identifier">Application</span></a> <span class="Other">=</span> <span class="Keyword">ptr</span> <span class="Identifier">ApplicationObject</span></pre></dt>
   <dd>
     
     Alias for the application object pointer
@@ -218,7 +225,7 @@
   </dd>
 </div>
 <div id="ApplicationAssetsHandler">
-  <dt><pre><a href="application.html#ApplicationAssetsHandler"><span class="Identifier">ApplicationAssetsHandler</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/http/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">;</span>
+  <dt><pre><a href="#ApplicationAssetsHandler"><span class="Identifier">ApplicationAssetsHandler</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">;</span>
                                  <span class="Identifier">hasFoundResource</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">bool</span><span class="Other">)</span> {.<span class="Identifier">closure</span>.}</pre></dt>
   <dd>
     
@@ -227,7 +234,7 @@
   </dd>
 </div>
 <div id="ApplicationThreadCallback">
-  <dt><pre><a href="application.html#ApplicationThreadCallback"><span class="Identifier">ApplicationThreadCallback</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">ApplicationObject</span><span class="Other">)</span> {.<span class="Identifier">closure</span>.}</pre></dt>
+  <dt><pre><a href="#ApplicationThreadCallback"><span class="Identifier">ApplicationThreadCallback</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">ApplicationObject</span><span class="Other">)</span> {.<span class="Identifier">closure</span>.}</pre></dt>
   <dd>
     
     
@@ -235,7 +242,7 @@
   </dd>
 </div>
 <div id="JsonString">
-  <dt><pre><a href="application.html#JsonString"><span class="Identifier">JsonString</span></a> <span class="Other">=</span> <span class="Identifier">string</span></pre></dt>
+  <dt><pre><a href="#JsonString"><span class="Identifier">JsonString</span></a> <span class="Other">=</span> <span class="Identifier">string</span></pre></dt>
   <dd>
     
     
@@ -243,7 +250,7 @@
   </dd>
 </div>
 <div id="Services">
-  <dt><pre><a href="application.html#Services"><span class="Identifier">Services</span></a> <span class="Other">=</span> <span class="Keyword">object</span></pre></dt>
+  <dt><pre><a href="#Services"><span class="Identifier">Services</span></a> <span class="Other">=</span> <span class="Keyword">object</span></pre></dt>
   <dd>
     
     
@@ -257,7 +264,7 @@
   <h1><a class="toc-backref" href="#8">Vars</a></h1>
   <dl class="item">
     <div id="App">
-  <dt><pre><a href="application.html#App"><span class="Identifier">App</span></a><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">ApplicationObject</span></pre></dt>
+  <dt><pre><a href="#App"><span class="Identifier">App</span></a><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">ApplicationObject</span></pre></dt>
   <dd>
     
     
@@ -265,7 +272,7 @@
   </dd>
 </div>
 <div id="appInitialized">
-  <dt><pre><a href="application.html#appInitialized"><span class="Identifier">appInitialized</span></a> <span class="Other">=</span> <span class="Identifier">false</span></pre></dt>
+  <dt><pre><a href="#appInitialized"><span class="Identifier">appInitialized</span></a> <span class="Other">=</span> <span class="Identifier">false</span></pre></dt>
   <dd>
     
     
@@ -279,7 +286,7 @@
   <h1><a class="toc-backref" href="#10">Consts</a></h1>
   <dl class="item">
     <div id="SafeThreadVarSeq">
-  <dt><pre><a href="application.html#SafeThreadVarSeq"><span class="Identifier">SafeThreadVarSeq</span></a> <span class="Other">=</span> <span class="StringLit">r&quot;WithThreadCallbackStmt&quot;</span></pre></dt>
+  <dt><pre><a href="#SafeThreadVarSeq"><span class="Identifier">SafeThreadVarSeq</span></a> <span class="Other">=</span> <span class="StringLit">r&quot;WithThreadCallbackStmt&quot;</span></pre></dt>
   <dd>
     
     A macro cache sequence that stores thread-safe initializations that need to be executed in the context of the application thread. This is used to ensure that certain operations that require access to the application instance or its resources are performed in a thread-safe manner.
@@ -294,7 +301,18 @@
   <dl class="item">
     <div id="appInstance-procs-all">
   <div id="appInstance">
-  <dt><pre><span class="Keyword">proc</span> <a href="#appInstance"><span class="Identifier">appInstance</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#appInstance"><span class="Identifier">appInstance</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Returns the singleton application instance
+    
+  </dd>
+</div>
+
+</div>
+<div id="AppInstance-procs-all">
+  <div id="AppInstance_2">
+  <dt><pre><span class="Keyword">proc</span> <a href="#AppInstance_2"><span class="Identifier">AppInstance</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Returns the singleton application instance
@@ -305,7 +323,7 @@
 </div>
 <div id="config-procs-all">
   <div id="config,Application,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#config%2CApplication%2Cstring"><span class="Identifier">config</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#config%2CApplication%2Cstring"><span class="Identifier">config</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">YamlNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -317,7 +335,7 @@
 </div>
 <div id="getAddress-procs-all">
   <div id="getAddress,Application">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getAddress%2CApplication"><span class="Identifier">getAddress</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getAddress%2CApplication"><span class="Identifier">getAddress</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -329,7 +347,7 @@
 </div>
 <div id="getPort-procs-all">
   <div id="getPort,Application">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getPort%2CApplication"><span class="Identifier">getPort</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">Port</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getPort%2CApplication"><span class="Identifier">getPort</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">Port</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Get port number
@@ -340,7 +358,7 @@
 </div>
 <div id="getUuid-procs-all">
   <div id="getUuid,Application">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getUuid%2CApplication"><span class="Identifier">getUuid</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <a href="../support/uuid.html#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getUuid%2CApplication"><span class="Identifier">getUuid</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <a href="../support/uuid.html#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Get ApplicationObject UUID
@@ -385,7 +403,7 @@
 </div>
 <div id="paths-procs-all">
   <div id="paths,Application">
-  <dt><pre><span class="Keyword">proc</span> <a href="#paths%2CApplication"><span class="Identifier">paths</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#paths%2CApplication"><span class="Identifier">paths</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -403,7 +421,7 @@
   <dl class="item">
     <div id="init-macros-all">
   <div id="init.m,,staticbool,untyped">
-  <dt><pre><span class="Keyword">macro</span> <a href="#init.m%2C%2Cstaticbool%2Cuntyped"><span class="Identifier">init</span></a><span class="Other">(</span><span class="Identifier">appInstance</span><span class="Other">;</span> <span class="Identifier">skipLocalConfig</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">bool</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
+  <dt><pre><span class="Keyword">macro</span> <a href="#init.m%2C%2Cstaticbool%2Cuntyped"><span class="Identifier">init</span></a><span class="Other">(</span><span class="Identifier">appInstance</span><span class="Other">;</span> <span class="Identifier">skipLocalConfig</span><span class="Other">:</span> <span class="Keyword">static</span> <span class="Identifier">bool</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
            <span class="Identifier">initBody</span><span class="Other">:</span> <span class="Identifier">untyped</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span></pre></dt>
   <dd>
     
@@ -443,7 +461,7 @@
   <dl class="item">
     <div id="cli-templates-all">
   <div id="cli.t,Application,">
-  <dt><pre><span class="Keyword">template</span> <a href="#cli.t%2CApplication%2C"><span class="Identifier">cli</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">cliCommands</span><span class="Other">)</span> {.<span class="Identifier">dirty</span>.}</pre></dt>
+  <dt><pre><span class="Keyword">template</span> <a href="#cli.t%2CApplication%2C"><span class="Identifier">cli</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">cliCommands</span><span class="Other">)</span> {.<span class="Identifier">dirty</span>.}</pre></dt>
   <dd>
     
     Injects CLI commands into the application using Kapsis command framework
@@ -476,7 +494,7 @@
 </div>
 <div id="services-templates-all">
   <div id="services.t,Application,">
-  <dt><pre><span class="Keyword">template</span> <a href="#services.t%2CApplication%2C"><span class="Identifier">services</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">servicesStmt</span><span class="Other">)</span> {.<span class="Identifier">inject</span>.}</pre></dt>
+  <dt><pre><span class="Keyword">template</span> <a href="#services.t%2CApplication%2C"><span class="Identifier">services</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">servicesStmt</span><span class="Other">)</span> {.<span class="Identifier">inject</span>.}</pre></dt>
   <dd>
     
     
@@ -487,7 +505,7 @@
 </div>
 <div id="withAssetsHandler-templates-all">
   <div id="withAssetsHandler.t,Application,ApplicationAssetsHandler">
-  <dt><pre><span class="Keyword">template</span> <a href="#withAssetsHandler.t%2CApplication%2CApplicationAssetsHandler"><span class="Identifier">withAssetsHandler</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="application.html#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">handler</span><span class="Other">:</span> <a href="application.html#ApplicationAssetsHandler"><span class="Identifier">ApplicationAssetsHandler</span></a><span class="Other">)</span></pre></dt>
+  <dt><pre><span class="Keyword">template</span> <a href="#withAssetsHandler.t%2CApplication%2CApplicationAssetsHandler"><span class="Identifier">withAssetsHandler</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">handler</span><span class="Other">:</span> <a href="#ApplicationAssetsHandler"><span class="Identifier">ApplicationAssetsHandler</span></a><span class="Other">)</span></pre></dt>
   <dd>
     
     Inject a custom assets handler into the application. This allows you to define custom logic for serving static assets (CSS, JS, images, etc.) instead of using the default static file serving from the <tt class="docutils literal"><span class="pre"><span class="Identifier">assets</span><span class="Operator">/</span></span></tt> directory
@@ -502,7 +520,7 @@
 <div class="section" id="19">
   <h1><a class="toc-backref" href="#19">Exports</a></h1>
   <dl class="item">
-    <a href="paths.html#init,ApplicationPaths,string,bool"><span class="Identifier">init</span></a>, <a href="paths.html#getInstallationPath,ApplicationPaths"><span class="Identifier">getInstallationPath</span></a>, <a href="paths.html#consolePath"><span class="Identifier">consolePath</span></a>, <a href="paths.html#cachePath"><span class="Identifier">cachePath</span></a>, <a href="paths.html#runtimeConfigPath"><span class="Identifier">runtimeConfigPath</span></a>, <a href="paths.html#eventsPath"><span class="Identifier">eventsPath</span></a>, <a href="paths.html#pluginsPath"><span class="Identifier">pluginsPath</span></a>, <a href="paths.html#middlewarePath"><span class="Identifier">middlewarePath</span></a>, <a href="paths.html#basePath"><span class="Identifier">basePath</span></a>, <a href="paths.html#configPath"><span class="Identifier">configPath</span></a>, <a href="paths.html#modelPath"><span class="Identifier">modelPath</span></a>, <a href="paths.html#controllerPath"><span class="Identifier">controllerPath</span></a>, <a href="paths.html#storagePath"><span class="Identifier">storagePath</span></a>, <a href="paths.html#rootPath"><span class="Identifier">rootPath</span></a>, <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a>, <a href="paths.html#p.t,varargs[string]"><span class="Identifier">p</span></a>, <a href="paths.html#migrationPath"><span class="Identifier">migrationPath</span></a>, <a href="paths.html#logsPath"><span class="Identifier">logsPath</span></a>, <a href="paths.html#servicePath"><span class="Identifier">servicePath</span></a>, <a href="paths.html#resolve,ApplicationPaths,string,string"><span class="Identifier">resolve</span></a>, <a href="paths.html#databasePath"><span class="Identifier">databasePath</span></a>, <a href="config.html#supranimServer"><span class="Identifier">supranimServer</span></a>, <a href="../network/http/webserver.html#registerCallback,WebServer,string,OnRequestLowLevel"><span class="Identifier">registerCallback</span></a>, <a href="../network/http/webserver.html#unregisterCallback,WebServer,string"><span class="Identifier">unregisterCallback</span></a>
+    <a href="paths.html#init,ApplicationPaths,string,bool"><span class="Identifier">init</span></a>, <a href="paths.html#getInstallationPath,ApplicationPaths"><span class="Identifier">getInstallationPath</span></a>, <a href="paths.html#consolePath"><span class="Identifier">consolePath</span></a>, <a href="paths.html#cachePath"><span class="Identifier">cachePath</span></a>, <a href="paths.html#runtimeConfigPath"><span class="Identifier">runtimeConfigPath</span></a>, <a href="paths.html#eventsPath"><span class="Identifier">eventsPath</span></a>, <a href="paths.html#pluginsPath"><span class="Identifier">pluginsPath</span></a>, <a href="paths.html#middlewarePath"><span class="Identifier">middlewarePath</span></a>, <a href="paths.html#basePath"><span class="Identifier">basePath</span></a>, <a href="paths.html#configPath"><span class="Identifier">configPath</span></a>, <a href="paths.html#modelPath"><span class="Identifier">modelPath</span></a>, <a href="paths.html#controllerPath"><span class="Identifier">controllerPath</span></a>, <a href="paths.html#storagePath"><span class="Identifier">storagePath</span></a>, <a href="paths.html#rootPath"><span class="Identifier">rootPath</span></a>, <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a>, <a href="paths.html#p.t,varargs[string]"><span class="Identifier">p</span></a>, <a href="paths.html#migrationPath"><span class="Identifier">migrationPath</span></a>, <a href="paths.html#logsPath"><span class="Identifier">logsPath</span></a>, <a href="paths.html#servicePath"><span class="Identifier">servicePath</span></a>, <a href="paths.html#resolve,ApplicationPaths,string,string"><span class="Identifier">resolve</span></a>, <a href="paths.html#databasePath"><span class="Identifier">databasePath</span></a>, <a href="../network/webserver.html#registerCallback,WebServer,string,OnRequestLowLevel"><span class="Identifier">registerCallback</span></a>, <a href="../network/webserver.html#unregisterCallback,WebServer,string"><span class="Identifier">unregisterCallback</span></a>
   </dl>
 </div>
 
@@ -512,7 +530,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-21 15:11:54 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-12 08:25:08 UTC</small>
       </div>
     </div>
   </div>

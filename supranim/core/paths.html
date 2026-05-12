@@ -16,13 +16,16 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.8">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.8"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
 </head>
 <body>
   <div class="document" id="documentId">
+    <input type="checkbox" id="nav-toggle" hidden>
+    <label for="nav-toggle" id="nav-burger">&#9776;</label>
+    <label for="nav-toggle" id="nav-overlay"></label>
     <div class="container">
       <h1 class="title">supranim/core/paths</h1>
       <div class="row">
@@ -129,7 +132,7 @@
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
     <div id="ApplicationPaths">
-  <dt><pre><a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span></pre></dt>
+  <dt><pre><a href="#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span></pre></dt>
   <dd>
     
     
@@ -143,7 +146,7 @@
   <h1><a class="toc-backref" href="#10">Consts</a></h1>
   <dl class="item">
     <div id="basePath">
-  <dt><pre><a href="paths.html#basePath"><span class="Identifier">basePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src&quot;</span></pre></dt>
+  <dt><pre><a href="#basePath"><span class="Identifier">basePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src&quot;</span></pre></dt>
   <dd>
     
     
@@ -151,7 +154,7 @@
   </dd>
 </div>
 <div id="cachePath">
-  <dt><pre><a href="paths.html#cachePath"><span class="Identifier">cachePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/.cache&quot;</span></pre></dt>
+  <dt><pre><a href="#cachePath"><span class="Identifier">cachePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/.cache&quot;</span></pre></dt>
   <dd>
     
     
@@ -159,7 +162,7 @@
   </dd>
 </div>
 <div id="configPath">
-  <dt><pre><a href="paths.html#configPath"><span class="Identifier">configPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/config&quot;</span></pre></dt>
+  <dt><pre><a href="#configPath"><span class="Identifier">configPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/config&quot;</span></pre></dt>
   <dd>
     
     
@@ -167,7 +170,7 @@
   </dd>
 </div>
 <div id="consolePath">
-  <dt><pre><a href="paths.html#consolePath"><span class="Identifier">consolePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/storage/plugins/console&quot;</span></pre></dt>
+  <dt><pre><a href="#consolePath"><span class="Identifier">consolePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/storage/plugins/console&quot;</span></pre></dt>
   <dd>
     
     
@@ -175,7 +178,7 @@
   </dd>
 </div>
 <div id="controllerPath">
-  <dt><pre><a href="paths.html#controllerPath"><span class="Identifier">controllerPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/controller&quot;</span></pre></dt>
+  <dt><pre><a href="#controllerPath"><span class="Identifier">controllerPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/controller&quot;</span></pre></dt>
   <dd>
     
     
@@ -183,7 +186,7 @@
   </dd>
 </div>
 <div id="databasePath">
-  <dt><pre><a href="paths.html#databasePath"><span class="Identifier">databasePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service/database&quot;</span></pre></dt>
+  <dt><pre><a href="#databasePath"><span class="Identifier">databasePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service/database&quot;</span></pre></dt>
   <dd>
     
     
@@ -191,7 +194,7 @@
   </dd>
 </div>
 <div id="eventsPath">
-  <dt><pre><a href="paths.html#eventsPath"><span class="Identifier">eventsPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service/event&quot;</span></pre></dt>
+  <dt><pre><a href="#eventsPath"><span class="Identifier">eventsPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service/event&quot;</span></pre></dt>
   <dd>
     
     
@@ -199,7 +202,7 @@
   </dd>
 </div>
 <div id="logsPath">
-  <dt><pre><a href="paths.html#logsPath"><span class="Identifier">logsPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/storage/logs&quot;</span></pre></dt>
+  <dt><pre><a href="#logsPath"><span class="Identifier">logsPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/storage/logs&quot;</span></pre></dt>
   <dd>
     
     
@@ -207,7 +210,7 @@
   </dd>
 </div>
 <div id="middlewarePath">
-  <dt><pre><a href="paths.html#middlewarePath"><span class="Identifier">middlewarePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service/middleware&quot;</span></pre></dt>
+  <dt><pre><a href="#middlewarePath"><span class="Identifier">middlewarePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service/middleware&quot;</span></pre></dt>
   <dd>
     
     
@@ -215,7 +218,7 @@
   </dd>
 </div>
 <div id="migrationPath">
-  <dt><pre><a href="paths.html#migrationPath"><span class="Identifier">migrationPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service/database/migrations&quot;</span></pre></dt>
+  <dt><pre><a href="#migrationPath"><span class="Identifier">migrationPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service/database/migrations&quot;</span></pre></dt>
   <dd>
     
     
@@ -223,7 +226,7 @@
   </dd>
 </div>
 <div id="modelPath">
-  <dt><pre><a href="paths.html#modelPath"><span class="Identifier">modelPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/model&quot;</span></pre></dt>
+  <dt><pre><a href="#modelPath"><span class="Identifier">modelPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/model&quot;</span></pre></dt>
   <dd>
     
     
@@ -231,7 +234,7 @@
   </dd>
 </div>
 <div id="pluginsPath">
-  <dt><pre><a href="paths.html#pluginsPath"><span class="Identifier">pluginsPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/storage/plugins&quot;</span></pre></dt>
+  <dt><pre><a href="#pluginsPath"><span class="Identifier">pluginsPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/storage/plugins&quot;</span></pre></dt>
   <dd>
     
     
@@ -239,7 +242,7 @@
   </dd>
 </div>
 <div id="rootPath">
-  <dt><pre><a href="paths.html#rootPath"><span class="Identifier">rootPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim&quot;</span></pre></dt>
+  <dt><pre><a href="#rootPath"><span class="Identifier">rootPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim&quot;</span></pre></dt>
   <dd>
     
     
@@ -247,7 +250,7 @@
   </dd>
 </div>
 <div id="runtimeConfigPath">
-  <dt><pre><a href="paths.html#runtimeConfigPath"><span class="Identifier">runtimeConfigPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/.cache/runtime/config&quot;</span></pre></dt>
+  <dt><pre><a href="#runtimeConfigPath"><span class="Identifier">runtimeConfigPath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/.cache/runtime/config&quot;</span></pre></dt>
   <dd>
     
     
@@ -255,7 +258,7 @@
   </dd>
 </div>
 <div id="servicePath">
-  <dt><pre><a href="paths.html#servicePath"><span class="Identifier">servicePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service&quot;</span></pre></dt>
+  <dt><pre><a href="#servicePath"><span class="Identifier">servicePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/service&quot;</span></pre></dt>
   <dd>
     
     
@@ -263,7 +266,7 @@
   </dd>
 </div>
 <div id="storagePath">
-  <dt><pre><a href="paths.html#storagePath"><span class="Identifier">storagePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/storage&quot;</span></pre></dt>
+  <dt><pre><a href="#storagePath"><span class="Identifier">storagePath</span></a> <span class="Other">=</span> <span class="StringLit">&quot;/home/runner/work/supranim/supranim/src/storage&quot;</span></pre></dt>
   <dd>
     
     
@@ -278,7 +281,7 @@
   <dl class="item">
     <div id="getInstallationPath-procs-all">
   <div id="getInstallationPath,ApplicationPaths">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getInstallationPath%2CApplicationPaths"><span class="Identifier">getInstallationPath</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getInstallationPath%2CApplicationPaths"><span class="Identifier">getInstallationPath</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <a href="#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -290,7 +293,7 @@
 </div>
 <div id="init-procs-all">
   <div id="init,ApplicationPaths,string,bool">
-  <dt><pre><span class="Keyword">proc</span> <a href="#init%2CApplicationPaths%2Cstring%2Cbool"><span class="Identifier">init</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a><span class="Other">;</span> <span class="Identifier">installPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">createDirs</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#init%2CApplicationPaths%2Cstring%2Cbool"><span class="Identifier">init</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a><span class="Other">;</span> <span class="Identifier">installPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">createDirs</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
@@ -304,7 +307,7 @@
 </div>
 <div id="resolve-procs-all">
   <div id="resolve,ApplicationPaths,string,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#resolve%2CApplicationPaths%2Cstring%2Cstring"><span class="Identifier">resolve</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a><span class="Other">;</span> <span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">fpath</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#resolve%2CApplicationPaths%2Cstring%2Cstring"><span class="Identifier">resolve</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <a href="#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a><span class="Other">;</span> <span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">fpath</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -341,7 +344,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-21 15:11:53 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-12 08:25:07 UTC</small>
       </div>
     </div>
   </div>

@@ -16,13 +16,16 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.8">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.8"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
 </head>
 <body>
   <div class="document" id="documentId">
+    <input type="checkbox" id="nav-toggle" hidden>
+    <label for="nav-toggle" id="nav-burger">&#9776;</label>
+    <label for="nav-toggle" id="nav-overlay"></label>
     <div class="container">
       <h1 class="title">supranim/support/uuid</h1>
       <div class="row">
@@ -117,7 +120,7 @@
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
     <div id="Uuid">
-  <dt><pre><a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a> <span class="Other">=</span> <span class="Keyword">object</span></pre></dt>
+  <dt><pre><a href="#Uuid"><span class="Identifier">Uuid</span></a> <span class="Other">=</span> <span class="Keyword">object</span></pre></dt>
   <dd>
     
     
@@ -125,7 +128,7 @@
   </dd>
 </div>
 <div id="UUIDError">
-  <dt><pre><a href="uuid.html#UUIDError"><span class="Identifier">UUIDError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span></pre></dt>
+  <dt><pre><a href="#UUIDError"><span class="Identifier">UUIDError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span></pre></dt>
   <dd>
     
     
@@ -133,7 +136,7 @@
   </dd>
 </div>
 <div id="UuidVariant">
-  <dt><pre><a href="uuid.html#UuidVariant"><span class="Identifier">UuidVariant</span></a> {.<span class="Identifier">pure</span>.} <span class="Other">=</span> <span class="Keyword">enum</span>
+  <dt><pre><a href="#UuidVariant"><span class="Identifier">UuidVariant</span></a> {.<span class="Identifier">pure</span>.} <span class="Other">=</span> <span class="Keyword">enum</span>
   <span class="Identifier">ApolloNcs</span><span class="Other">,</span> <span class="Identifier">RFC4122</span><span class="Other">,</span> <span class="Identifier">ReservedFuture</span><span class="Other">,</span> <span class="Identifier">ReservedMicrosoft</span></pre></dt>
   <dd>
     
@@ -149,7 +152,7 @@
   <dl class="item">
     <div id="$-procs-all">
   <div id="$,Uuid">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%24%2CUuid"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">uuid</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#%24%2CUuid"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">uuid</span><span class="Other">:</span> <a href="#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Return the string version of <tt class="docutils literal"><span class="pre"><span class="Identifier">UUID</span></span></tt>
@@ -160,7 +163,7 @@
 </div>
 <div id="$$-procs-all">
   <div id="$$,Uuid">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%24%24%2CUuid"><span class="Identifier">`$$`</span></a><span class="Other">(</span><span class="Identifier">uuid</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#%24%24%2CUuid"><span class="Identifier">`$$`</span></a><span class="Other">(</span><span class="Identifier">uuid</span><span class="Other">:</span> <a href="#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Return the string version of <tt class="docutils literal"><span class="pre"><span class="Identifier">UUID</span></span></tt> without hyphens
@@ -171,7 +174,7 @@
 </div>
 <div id="getUuidBytes-procs-all">
   <div id="getUuidBytes,Uuid">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getUuidBytes%2CUuid"><span class="Identifier">getUuidBytes</span></a><span class="Other">(</span><span class="Identifier">uuid</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">array</span><span class="Other">[</span><span class="DecNumber">16</span><span class="Other">,</span> <span class="Identifier">uint8</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getUuidBytes%2CUuid"><span class="Identifier">getUuidBytes</span></a><span class="Other">(</span><span class="Identifier">uuid</span><span class="Other">:</span> <a href="#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">array</span><span class="Other">[</span><span class="DecNumber">16</span><span class="Other">,</span> <span class="Identifier">uint8</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -191,7 +194,7 @@
   </dd>
 </div>
 <div id="hexify,Uuid">
-  <dt><pre><span class="Keyword">proc</span> <a href="#hexify%2CUuid"><span class="Identifier">hexify</span></a><span class="Other">(</span><span class="Identifier">uuid</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#hexify%2CUuid"><span class="Identifier">hexify</span></a><span class="Other">(</span><span class="Identifier">uuid</span><span class="Other">:</span> <a href="#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Converts a Uuid object to its hexadecimal string representation.
@@ -202,7 +205,7 @@
 </div>
 <div id="uuid4-procs-all">
   <div id="uuid4">
-  <dt><pre><span class="Keyword">proc</span> <a href="#uuid4"><span class="Identifier">uuid4</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#uuid4"><span class="Identifier">uuid4</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Generates a random version 4 UUID.
@@ -210,7 +213,7 @@
   </dd>
 </div>
 <div id="uuid4,array[,uint8]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#uuid4%2Carray%5B%2Cuint8%5D"><span class="Identifier">uuid4</span></a><span class="Other">(</span><span class="Identifier">uuidBytes</span><span class="Other">:</span> <span class="Identifier">array</span><span class="Other">[</span><span class="DecNumber">16</span><span class="Other">,</span> <span class="Identifier">uint8</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#uuid4%2Carray%5B%2Cuint8%5D"><span class="Identifier">uuid4</span></a><span class="Other">(</span><span class="Identifier">uuidBytes</span><span class="Other">:</span> <span class="Identifier">array</span><span class="Other">[</span><span class="DecNumber">16</span><span class="Other">,</span> <span class="Identifier">uint8</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -219,7 +222,7 @@
   </dd>
 </div>
 <div id="uuid4,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#uuid4%2Cstring"><span class="Identifier">uuid4</span></a><span class="Other">(</span><span class="Identifier">uuidStr</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">UUIDError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#uuid4%2Cstring"><span class="Identifier">uuid4</span></a><span class="Other">(</span><span class="Identifier">uuidStr</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">UUIDError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Parse a UUID from a string (with or without hyphens, any casing).
@@ -230,7 +233,7 @@
 </div>
 <div id="variant-procs-all">
   <div id="variant,Uuid">
-  <dt><pre><span class="Keyword">proc</span> <a href="#variant%2CUuid"><span class="Identifier">variant</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <a href="uuid.html#UuidVariant"><span class="Identifier">UuidVariant</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#variant%2CUuid"><span class="Identifier">variant</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <a href="#UuidVariant"><span class="Identifier">UuidVariant</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Determine the variant of the UUID. Most in the wild are RFC-4122.
@@ -241,7 +244,7 @@
 </div>
 <div id="version-procs-all">
   <div id="version,Uuid">
-  <dt><pre><span class="Keyword">proc</span> <a href="#version%2CUuid"><span class="Identifier">version</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="uuid.html#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#version%2CUuid"><span class="Identifier">version</span></a><span class="Other">(</span><span class="Identifier">u</span><span class="Other">:</span> <a href="#Uuid"><span class="Identifier">Uuid</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Determine the version of an RFC-4122 UUID.
@@ -260,7 +263,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-21 15:11:53 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-12 08:25:07 UTC</small>
       </div>
     </div>
   </div>

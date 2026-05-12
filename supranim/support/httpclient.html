@@ -16,13 +16,16 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.8">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.8"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
 </head>
 <body>
   <div class="document" id="documentId">
+    <input type="checkbox" id="nav-toggle" hidden>
+    <label for="nav-toggle" id="nav-burger">&#9776;</label>
+    <label for="nav-toggle" id="nav-overlay"></label>
     <div class="container">
       <h1 class="title">supranim/support/httpclient</h1>
       <div class="row">
@@ -102,7 +105,7 @@
   <details open>
     <summary><a class="reference reference-toplevel" href="#10" id="60">Consts</a></summary>
     <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#defUserAgent" title="defUserAgent = &quot;Nim httpclient/2.2.8&quot;">defUserAgent</a></li>
+      <li><a class="reference" href="#defUserAgent" title="defUserAgent = &quot;Nim httpclient/2.2.10&quot;">defUserAgent</a></li>
 
     </ul>
   </details>
@@ -438,7 +441,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
     <div id="AsyncHttpClient">
-  <dt><pre><a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a> <span class="Other">=</span> <a href="httpclient.html#HttpClientBase"><span class="Identifier">HttpClientBase</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span></pre></dt>
+  <dt><pre><a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a> <span class="Other">=</span> <a href="#HttpClientBase"><span class="Identifier">HttpClientBase</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span></pre></dt>
   <dd>
     
     
@@ -446,7 +449,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="AsyncResponse">
-  <dt><pre><a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+  <dt><pre><a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">version</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">status</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">headers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span>
@@ -458,7 +461,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="HttpClient">
-  <dt><pre><a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a> <span class="Other">=</span> <a href="httpclient.html#HttpClientBase"><span class="Identifier">HttpClientBase</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span></pre></dt>
+  <dt><pre><a href="#HttpClient"><span class="Identifier">HttpClient</span></a> <span class="Other">=</span> <a href="#HttpClientBase"><span class="Identifier">HttpClientBase</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span></pre></dt>
   <dd>
     
     
@@ -466,7 +469,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="HttpClientBase">
-  <dt><pre><a href="httpclient.html#HttpClientBase"><span class="Identifier">HttpClientBase</span></a><span class="Other">[</span><span class="Identifier">SocketType</span><span class="Other">]</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+  <dt><pre><a href="#HttpClientBase"><span class="Identifier">HttpClientBase</span></a><span class="Other">[</span><span class="Identifier">SocketType</span><span class="Other">]</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">headers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span>      <span class="Comment">## Headers to send in requests.</span>
   <span class="Identifier">timeout</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>              <span class="Comment">## Only used for blocking HttpClient for now.</span>
   <span class="Keyword">when</span> <span class="Identifier">SocketType</span> <span class="Keyword">is</span> <span class="Identifier">Socket</span><span class="Other">:</span>
@@ -483,7 +486,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="HttpRequestError">
-  <dt><pre><a href="httpclient.html#HttpRequestError"><span class="Identifier">HttpRequestError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">IOError</span></pre></dt>
+  <dt><pre><a href="#HttpRequestError"><span class="Identifier">HttpRequestError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">IOError</span></pre></dt>
   <dd>
     
     Thrown in the <tt class="docutils literal"><span class="pre"><span class="Identifier">getContent</span></span></tt> proc and <tt class="docutils literal"><span class="pre"><span class="Identifier">postContent</span></span></tt> proc, when the server returns an error
@@ -491,7 +494,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="MultipartData">
-  <dt><pre><a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span></pre></dt>
+  <dt><pre><a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span></pre></dt>
   <dd>
     
     
@@ -499,7 +502,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="MultipartEntries">
-  <dt><pre><a href="httpclient.html#MultipartEntries"><span class="Identifier">MultipartEntries</span></a> <span class="Other">=</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span></pre></dt>
+  <dt><pre><a href="#MultipartEntries"><span class="Identifier">MultipartEntries</span></a> <span class="Other">=</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span></pre></dt>
   <dd>
     
     
@@ -507,7 +510,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="ProgressChangedProc">
-  <dt><pre><a href="httpclient.html#ProgressChangedProc"><span class="Identifier">ProgressChangedProc</span></a><span class="Other">[</span><span class="Identifier">ReturnType</span><span class="Other">]</span> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">total</span><span class="Other">,</span> <span class="Identifier">progress</span><span class="Other">,</span> <span class="Identifier">speed</span><span class="Other">:</span> <span class="Identifier">BiggestInt</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">ReturnType</span> {.
+  <dt><pre><a href="#ProgressChangedProc"><span class="Identifier">ProgressChangedProc</span></a><span class="Other">[</span><span class="Identifier">ReturnType</span><span class="Other">]</span> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">total</span><span class="Other">,</span> <span class="Identifier">progress</span><span class="Other">,</span> <span class="Identifier">speed</span><span class="Other">:</span> <span class="Identifier">BiggestInt</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">ReturnType</span> {.
     <span class="Identifier">closure</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
@@ -516,7 +519,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="ProtocolError">
-  <dt><pre><a href="httpclient.html#ProtocolError"><span class="Identifier">ProtocolError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">IOError</span></pre></dt>
+  <dt><pre><a href="#ProtocolError"><span class="Identifier">ProtocolError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">IOError</span></pre></dt>
   <dd>
     
     exception that is raised when server does not conform to the implemented protocol
@@ -524,7 +527,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="Proxy">
-  <dt><pre><a href="httpclient.html#Proxy"><span class="Identifier">Proxy</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+  <dt><pre><a href="#Proxy"><span class="Identifier">Proxy</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">url</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Uri</span>
   <span class="Identifier">auth</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
   <dd>
@@ -534,7 +537,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="Response">
-  <dt><pre><a href="httpclient.html#Response"><span class="Identifier">Response</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+  <dt><pre><a href="#Response"><span class="Identifier">Response</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">version</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">status</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">headers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span>
@@ -546,7 +549,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="UnixHttpClient">
-  <dt><pre><a href="httpclient.html#UnixHttpClient"><span class="Identifier">UnixHttpClient</span></a> <span class="Other">=</span> <a href="httpclient.html#HttpClientBase"><span class="Identifier">HttpClientBase</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span></pre></dt>
+  <dt><pre><a href="#UnixHttpClient"><span class="Identifier">UnixHttpClient</span></a> <span class="Other">=</span> <a href="#HttpClientBase"><span class="Identifier">HttpClientBase</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span></pre></dt>
   <dd>
     
     
@@ -560,7 +563,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   <h1><a class="toc-backref" href="#10">Consts</a></h1>
   <dl class="item">
     <div id="defUserAgent">
-  <dt><pre><a href="httpclient.html#defUserAgent"><span class="Identifier">defUserAgent</span></a> <span class="Other">=</span> <span class="StringLit">&quot;Nim httpclient/2.2.8&quot;</span></pre></dt>
+  <dt><pre><a href="#defUserAgent"><span class="Identifier">defUserAgent</span></a> <span class="Other">=</span> <span class="StringLit">&quot;Nim httpclient/2.2.10&quot;</span></pre></dt>
   <dd>
     
     
@@ -575,7 +578,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   <dl class="item">
     <div id="$-procs-all">
   <div id="$,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%24%2CMultipartData"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#%24%2CMultipartData"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     convert MultipartData to string so it's human readable when echo see <a class="reference external" href="https://github.com/nim-lang/Nim/issues/11863">https://github.com/nim-lang/Nim/issues/11863</a>
@@ -586,7 +589,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="[]=-procs-all">
   <div id="[]=,MultipartData,string,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CMultipartData%2Cstring%2Cstring"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span class="Identifier">inline</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CMultipartData%2Cstring%2Cstring"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span class="Identifier">inline</span><span class="Other">,</span>
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -595,7 +598,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="[]=,MultipartData,string,tuple[string,string,string]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CMultipartData%2Cstring%2Ctuple%5Bstring%2Cstring%2Cstring%5D"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%3D%2CMultipartData%2Cstring%2Ctuple%5Bstring%2Cstring%2Cstring%5D"><span class="Identifier">`[]=`</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
            <span class="Identifier">file</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">contentType</span><span class="Other">,</span> <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> {.<span class="Identifier">inline</span><span class="Other">,</span>
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
@@ -609,7 +612,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="add-procs-all">
   <div id="add,MultipartData,string,string,string,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#add%2CMultipartData%2Cstring%2Cstring%2Cstring%2Cstring"><span class="Identifier">add</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">filename</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#add%2CMultipartData%2Cstring%2Cstring%2Cstring%2Cstring"><span class="Identifier">add</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">filename</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
          <span class="Identifier">contentType</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">useStream</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
@@ -622,7 +625,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="add,MultipartData,MultipartEntries">
-  <dt><pre><span class="Keyword">proc</span> <a href="#add%2CMultipartData%2CMultipartEntries"><span class="Identifier">add</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">xs</span><span class="Other">:</span> <a href="httpclient.html#MultipartEntries"><span class="Identifier">MultipartEntries</span></a><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> {.<span class="Identifier">discardable</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#add%2CMultipartData%2CMultipartEntries"><span class="Identifier">add</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">xs</span><span class="Other">:</span> <a href="#MultipartEntries"><span class="Identifier">MultipartEntries</span></a><span class="Other">)</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> {.<span class="Identifier">discardable</span><span class="Other">,</span>
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -634,8 +637,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="addFiles-procs-all">
   <div id="addFiles,MultipartData,openArray[tuple[string,string]]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#addFiles%2CMultipartData%2CopenArray%5Btuple%5Bstring%2Cstring%5D%5D"><span class="Identifier">addFiles</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">xs</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">file</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span><span class="Other">;</span>
-              <span class="Identifier">mimeDb</span> <span class="Other">=</span> <span class="Identifier">newMimetypes</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">useStream</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#addFiles%2CMultipartData%2CopenArray%5Btuple%5Bstring%2Cstring%5D%5D"><span class="Identifier">addFiles</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a><span class="Other">;</span> <span class="Identifier">xs</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">file</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span><span class="Other">;</span>
+              <span class="Identifier">mimeDb</span> <span class="Other">=</span> <span class="Identifier">newMimetypes</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">useStream</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> {.
     <span class="Identifier">discardable</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
@@ -648,7 +651,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="body-procs-all">
   <div id="body,AsyncResponse">
-  <dt><pre><span class="Keyword">proc</span> <a href="#body%2CAsyncResponse"><span class="Identifier">body</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#body%2CAsyncResponse"><span class="Identifier">body</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span><span class="Other">,</span>
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -657,7 +660,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="body,Response">
-  <dt><pre><span class="Keyword">proc</span> <a href="#body%2CResponse"><span class="Identifier">body</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#body%2CResponse"><span class="Identifier">body</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span>
                                         <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -671,7 +674,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="close-procs-all">
   <div id="close">
-  <dt><pre><span class="Keyword">proc</span> <a href="#close"><span class="Identifier">close</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a> <span class="Operator">|</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">)</span></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#close"><span class="Identifier">close</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a> <span class="Operator">|</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">)</span></pre></dt>
   <dd>
     
     Closes any connections held by the HTTP client.
@@ -682,7 +685,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="code-procs-all">
   <div id="code">
-  <dt><pre><span class="Keyword">proc</span> <a href="#code"><span class="Identifier">code</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a> <span class="Operator">|</span> <a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">HttpCode</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#code"><span class="Identifier">code</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a> <span class="Operator">|</span> <a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">HttpCode</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OverflowDefect</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -696,7 +699,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="contentLength-procs-all">
   <div id="contentLength">
-  <dt><pre><span class="Keyword">proc</span> <a href="#contentLength"><span class="Identifier">contentLength</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a> <span class="Operator">|</span> <a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#contentLength"><span class="Identifier">contentLength</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a> <span class="Operator">|</span> <a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span></pre></dt>
   <dd>
     
     <p>Retrieves the specified response's content length.</p>
@@ -710,7 +713,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="contentType-procs-all">
   <div id="contentType">
-  <dt><pre><span class="Keyword">proc</span> <a href="#contentType"><span class="Identifier">contentType</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a> <span class="Operator">|</span> <a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span class="Identifier">inline</span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#contentType"><span class="Identifier">contentType</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a> <span class="Operator">|</span> <a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span class="Identifier">inline</span>.}</pre></dt>
   <dd>
     
     <p>Retrieves the specified response's content type.</p>
@@ -723,7 +726,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="delete-procs-all">
   <div id="delete,AsyncHttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#delete%2CAsyncHttpClient%2C"><span class="Identifier">delete</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#delete%2CAsyncHttpClient%2C"><span class="Identifier">delete</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -732,7 +735,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="delete,HttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#delete%2CHttpClient%2C"><span class="Identifier">delete</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#delete%2CHttpClient%2C"><span class="Identifier">delete</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     
@@ -743,7 +746,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="deleteContent-procs-all">
   <div id="deleteContent,AsyncHttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#deleteContent%2CAsyncHttpClient%2C"><span class="Identifier">deleteContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#deleteContent%2CAsyncHttpClient%2C"><span class="Identifier">deleteContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -752,7 +755,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="deleteContent,HttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#deleteContent%2CHttpClient%2C"><span class="Identifier">deleteContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#deleteContent%2CHttpClient%2C"><span class="Identifier">deleteContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
   <dd>
     
     
@@ -763,7 +766,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="downloadFile-procs-all">
   <div id="downloadFile,AsyncHttpClient,,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#downloadFile%2CAsyncHttpClient%2C%2Cstring"><span class="Identifier">downloadFile</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">filename</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#downloadFile%2CAsyncHttpClient%2C%2Cstring"><span class="Identifier">downloadFile</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">filename</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
     <span class="Identifier">void</span><span class="Other">]</span></pre></dt>
   <dd>
     
@@ -772,7 +775,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="downloadFile,,,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#downloadFile%2C%2C%2Cstring"><span class="Identifier">downloadFile</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a> <span class="Operator">|</span> <a href="httpclient.html#UnixHttpClient"><span class="Identifier">UnixHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#downloadFile%2C%2C%2Cstring"><span class="Identifier">downloadFile</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a> <span class="Operator">|</span> <a href="#UnixHttpClient"><span class="Identifier">UnixHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span>
                   <span class="Identifier">filename</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span></pre></dt>
   <dd>
     
@@ -784,7 +787,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="get-procs-all">
   <div id="get,AsyncHttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#get%2CAsyncHttpClient%2C"><span class="Identifier">get</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#get%2CAsyncHttpClient%2C"><span class="Identifier">get</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -795,7 +798,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="get,HttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#get%2CHttpClient%2C"><span class="Identifier">get</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#get%2CHttpClient%2C"><span class="Identifier">get</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     
@@ -806,7 +809,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="getContent-procs-all">
   <div id="getContent,AsyncHttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getContent%2CAsyncHttpClient%2C"><span class="Identifier">getContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#getContent%2CAsyncHttpClient%2C"><span class="Identifier">getContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -815,7 +818,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="getContent,HttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getContent%2CHttpClient%2C"><span class="Identifier">getContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getContent%2CHttpClient%2C"><span class="Identifier">getContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
   <dd>
     
     
@@ -826,7 +829,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="getSocket-procs-all">
   <div id="getSocket,AsyncHttpClient">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getSocket%2CAsyncHttpClient"><span class="Identifier">getSocket</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">AsyncSocket</span> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getSocket%2CAsyncHttpClient"><span class="Identifier">getSocket</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">AsyncSocket</span> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -835,7 +838,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="getSocket,HttpClient">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getSocket%2CHttpClient"><span class="Identifier">getSocket</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Socket</span> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getSocket%2CHttpClient"><span class="Identifier">getSocket</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Socket</span> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -851,7 +854,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="head-procs-all">
   <div id="head,AsyncHttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#head%2CAsyncHttpClient%2C"><span class="Identifier">head</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#head%2CAsyncHttpClient%2C"><span class="Identifier">head</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -862,7 +865,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="head,HttpClient,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#head%2CHttpClient%2C"><span class="Identifier">head</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#head%2CHttpClient%2C"><span class="Identifier">head</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     
@@ -873,7 +876,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="lastModified-procs-all">
   <div id="lastModified">
-  <dt><pre><span class="Keyword">proc</span> <a href="#lastModified"><span class="Identifier">lastModified</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a> <span class="Operator">|</span> <a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">DateTime</span></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#lastModified"><span class="Identifier">lastModified</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a> <span class="Operator">|</span> <a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">DateTime</span></pre></dt>
   <dd>
     
     <p>Retrieves the specified response's last modified time.</p>
@@ -888,8 +891,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 <div id="newAsyncHttpClient-procs-all">
   <div id="newAsyncHttpClient,int,Proxy">
   <dt><pre><span class="Keyword">proc</span> <a href="#newAsyncHttpClient%2Cint%2CProxy"><span class="Identifier">newAsyncHttpClient</span></a><span class="Other">(</span><span class="Identifier">userAgent</span> <span class="Other">=</span> <span class="Identifier">defUserAgent</span><span class="Other">;</span> <span class="Identifier">maxRedirects</span> <span class="Other">=</span> <span class="DecNumber">5</span><span class="Other">;</span>
-                        <span class="Identifier">sslContext</span> <span class="Other">=</span> <span class="Identifier">getDefaultSSL</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">proxy</span><span class="Other">:</span> <a href="httpclient.html#Proxy"><span class="Identifier">Proxy</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span>
-                        <span class="Identifier">headers</span> <span class="Other">=</span> <span class="Identifier">newHttpHeaders</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a> {.
+                        <span class="Identifier">sslContext</span> <span class="Other">=</span> <span class="Identifier">getDefaultSSL</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">proxy</span><span class="Other">:</span> <a href="#Proxy"><span class="Identifier">Proxy</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span>
+                        <span class="Identifier">headers</span> <span class="Other">=</span> <span class="Identifier">newHttpHeaders</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -918,8 +921,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 <div id="newHttpClient-procs-all">
   <div id="newHttpClient,int,Proxy,int">
   <dt><pre><span class="Keyword">proc</span> <a href="#newHttpClient%2Cint%2CProxy%2Cint"><span class="Identifier">newHttpClient</span></a><span class="Other">(</span><span class="Identifier">userAgent</span> <span class="Other">=</span> <span class="Identifier">defUserAgent</span><span class="Other">;</span> <span class="Identifier">maxRedirects</span> <span class="Other">=</span> <span class="DecNumber">5</span><span class="Other">;</span>
-                   <span class="Identifier">sslContext</span> <span class="Other">=</span> <span class="Identifier">getDefaultSSL</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">proxy</span><span class="Other">:</span> <a href="httpclient.html#Proxy"><span class="Identifier">Proxy</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span>
-                   <span class="Identifier">timeout</span> <span class="Other">=</span> <span class="DecNumber">-1</span><span class="Other">;</span> <span class="Identifier">headers</span> <span class="Other">=</span> <span class="Identifier">newHttpHeaders</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a> {.
+                   <span class="Identifier">sslContext</span> <span class="Other">=</span> <span class="Identifier">getDefaultSSL</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">proxy</span><span class="Other">:</span> <a href="#Proxy"><span class="Identifier">Proxy</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span>
+                   <span class="Identifier">timeout</span> <span class="Other">=</span> <span class="DecNumber">-1</span><span class="Other">;</span> <span class="Identifier">headers</span> <span class="Other">=</span> <span class="Identifier">newHttpHeaders</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -944,7 +947,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="newMultipartData-procs-all">
   <div id="newMultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#newMultipartData"><span class="Identifier">newMultipartData</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#newMultipartData"><span class="Identifier">newMultipartData</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -953,7 +956,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="newMultipartData,MultipartEntries">
-  <dt><pre><span class="Keyword">proc</span> <a href="#newMultipartData%2CMultipartEntries"><span class="Identifier">newMultipartData</span></a><span class="Other">(</span><span class="Identifier">xs</span><span class="Other">:</span> <a href="httpclient.html#MultipartEntries"><span class="Identifier">MultipartEntries</span></a><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#newMultipartData%2CMultipartEntries"><span class="Identifier">newMultipartData</span></a><span class="Other">(</span><span class="Identifier">xs</span><span class="Other">:</span> <a href="#MultipartEntries"><span class="Identifier">MultipartEntries</span></a><span class="Other">)</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -965,7 +968,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="newProxy-procs-all">
   <div id="newProxy,string,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#newProxy%2Cstring%2Cstring"><span class="Identifier">newProxy</span></a><span class="Other">(</span><span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">auth</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Proxy"><span class="Identifier">Proxy</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#newProxy%2Cstring%2Cstring"><span class="Identifier">newProxy</span></a><span class="Other">(</span><span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">auth</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="#Proxy"><span class="Identifier">Proxy</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Constructs a new <tt class="docutils literal"><span class="pre"><span class="Identifier">TProxy</span></span></tt> object.
@@ -973,7 +976,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="newProxy,Uri,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#newProxy%2CUri%2Cstring"><span class="Identifier">newProxy</span></a><span class="Other">(</span><span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span><span class="Other">;</span> <span class="Identifier">auth</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Proxy"><span class="Identifier">Proxy</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#newProxy%2CUri%2Cstring"><span class="Identifier">newProxy</span></a><span class="Other">(</span><span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span><span class="Other">;</span> <span class="Identifier">auth</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="#Proxy"><span class="Identifier">Proxy</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Constructs a new <tt class="docutils literal"><span class="pre"><span class="Identifier">TProxy</span></span></tt> object.
@@ -986,7 +989,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   <div id="newUnixHttpClient,string,int,int">
   <dt><pre><span class="Keyword">proc</span> <a href="#newUnixHttpClient%2Cstring%2Cint%2Cint"><span class="Identifier">newUnixHttpClient</span></a><span class="Other">(</span><span class="Identifier">unixPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">userAgent</span> <span class="Other">=</span> <span class="Identifier">defUserAgent</span><span class="Other">;</span>
                        <span class="Identifier">maxRedirects</span> <span class="Other">=</span> <span class="DecNumber">5</span><span class="Other">;</span> <span class="Identifier">sslContext</span> <span class="Other">=</span> <span class="Identifier">getDefaultSSL</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-                       <span class="Identifier">timeout</span> <span class="Other">=</span> <span class="DecNumber">-1</span><span class="Other">;</span> <span class="Identifier">headers</span> <span class="Other">=</span> <span class="Identifier">newHttpHeaders</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#UnixHttpClient"><span class="Identifier">UnixHttpClient</span></a> {.
+                       <span class="Identifier">timeout</span> <span class="Other">=</span> <span class="DecNumber">-1</span><span class="Other">;</span> <span class="Identifier">headers</span> <span class="Other">=</span> <span class="Identifier">newHttpHeaders</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#UnixHttpClient"><span class="Identifier">UnixHttpClient</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -1004,8 +1007,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="patch-procs-all">
   <div id="patch,AsyncHttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#patch%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">patch</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-           <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#patch%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">patch</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+           <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -1014,8 +1017,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="patch,HttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#patch%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">patch</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-           <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#patch%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">patch</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+           <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     
@@ -1026,8 +1029,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="patchContent-procs-all">
   <div id="patchContent,AsyncHttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#patchContent%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">patchContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-                  <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#patchContent%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">patchContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                  <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -1036,8 +1039,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="patchContent,HttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#patchContent%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">patchContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-                  <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#patchContent%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">patchContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                  <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
   <dd>
     
     
@@ -1048,8 +1051,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="post-procs-all">
   <div id="post,AsyncHttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#post%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">post</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-          <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#post%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">post</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+          <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -1058,8 +1061,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="post,HttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#post%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">post</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-          <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#post%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">post</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+          <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     
@@ -1070,8 +1073,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="postContent-procs-all">
   <div id="postContent,AsyncHttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#postContent%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">postContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-                 <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#postContent%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">postContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                 <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -1080,8 +1083,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="postContent,HttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#postContent%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">postContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-                 <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#postContent%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">postContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                 <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
   <dd>
     
     
@@ -1092,8 +1095,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="put-procs-all">
   <div id="put,AsyncHttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#put%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">put</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-         <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#put%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">put</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+         <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -1102,8 +1105,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="put,HttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#put%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">put</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-         <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#put%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">put</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+         <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     
@@ -1114,8 +1117,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="putContent-procs-all">
   <div id="putContent,AsyncHttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#putContent%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">putContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-                <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#putContent%2CAsyncHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">putContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
@@ -1124,8 +1127,8 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="putContent,HttpClient,,string,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#putContent%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">putContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-                <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#putContent%2CHttpClient%2C%2Cstring%2CMultipartData"><span class="Identifier">putContent</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
+                <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
   <dd>
     
     
@@ -1136,10 +1139,10 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
 </div>
 <div id="request-procs-all">
   <div id="request,AsyncHttpClient,,string,HttpHeaders,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#request%2CAsyncHttpClient%2C%2Cstring%2CHttpHeaders%2CMultipartData"><span class="Identifier">request</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#request%2CAsyncHttpClient%2C%2Cstring%2CHttpHeaders%2CMultipartData"><span class="Identifier">request</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#AsyncHttpClient"><span class="Identifier">AsyncHttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span>
              <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span> <span class="Operator">|</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="Identifier">HttpGet</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-             <span class="Identifier">headers</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span> <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="httpclient.html#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
+             <span class="Identifier">headers</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span> <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+    <a href="#AsyncResponse"><span class="Identifier">AsyncResponse</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">stackTrace</span><span class="Other">:</span> <span class="DecNumber">false</span></span>.}</pre></dt>
   <dd>
     
     <p>Connects to the hostname specified by the URL and performs a request using the custom method string specified by <tt class="docutils literal"><span class="pre"><span class="Identifier">httpMethod</span></span></tt>.</p>
@@ -1153,9 +1156,9 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
   </dd>
 </div>
 <div id="request,HttpClient,,string,HttpHeaders,MultipartData">
-  <dt><pre><span class="Keyword">proc</span> <a href="#request%2CHttpClient%2C%2Cstring%2CHttpHeaders%2CMultipartData"><span class="Identifier">request</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="httpclient.html#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#request%2CHttpClient%2C%2Cstring%2CHttpHeaders%2CMultipartData"><span class="Identifier">request</span></a><span class="Other">(</span><span class="Identifier">client</span><span class="Other">:</span> <a href="#HttpClient"><span class="Identifier">HttpClient</span></a><span class="Other">;</span> <span class="Identifier">url</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span>
              <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span> <span class="Operator">|</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="Identifier">HttpGet</span><span class="Other">;</span> <span class="Identifier">body</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span>
-             <span class="Identifier">headers</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span> <span class="Identifier">multipart</span><span class="Other">:</span> <a href="httpclient.html#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+             <span class="Identifier">headers</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span> <span class="Identifier">multipart</span><span class="Other">:</span> <a href="#MultipartData"><span class="Identifier">MultipartData</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span><span class="Other">:</span> <a href="#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     
@@ -1174,7 +1177,7 @@ The <tt class="docutils literal"><span class="pre"><span class="Identifier">tota
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-21 15:11:53 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-12 08:25:07 UTC</small>
       </div>
     </div>
   </div>

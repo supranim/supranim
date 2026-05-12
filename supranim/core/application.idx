@@ -9,11 +9,12 @@ nim	App	supranim/core/application.html#App	var App		69
 nim	Application	supranim/core/application.html#Application	type Application		73
 nim	initApplication	supranim/core/application.html#initApplication	proc initApplication()		76
 nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		82
-nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Application): ApplicationPaths		88
-nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): JsonNode		95
-nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		105
-nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		190
-nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		229
+nim	AppInstance	supranim/core/application.html#AppInstance_2	proc AppInstance(): Application		88
+nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Application): ApplicationPaths		93
+nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): YamlNode		100
+nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		110
+nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		192
+nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		231
 nim	SafeThreadVarSeq	supranim/core/application.html#SafeThreadVarSeq	const SafeThreadVarSeq		302
 nim	withThreadCallback	supranim/core/application.html#withThreadCallback.m,untyped,untyped	macro withThreadCallback(appInstance, callback: untyped)		307
 nim	injectSafeThreadCallbacks	supranim/core/application.html#injectSafeThreadCallbacks.m	macro injectSafeThreadCallbacks()		313

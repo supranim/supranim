@@ -16,13 +16,16 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.8">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.8"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
 </head>
 <body>
   <div class="document" id="documentId">
+    <input type="checkbox" id="nav-toggle" hidden>
+    <label for="nav-toggle" id="nav-burger">&#9776;</label>
+    <label for="nav-toggle" id="nav-overlay"></label>
     <div class="container">
       <h1 class="title">supranim/support/http</h1>
       <div class="row">
@@ -124,7 +127,7 @@
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
     <div id="Http">
-  <dt><pre><a href="http.html#Http"><span class="Identifier">Http</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span></pre></dt>
+  <dt><pre><a href="#Http"><span class="Identifier">Http</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span></pre></dt>
   <dd>
     
     
@@ -132,7 +135,7 @@
   </dd>
 </div>
 <div id="HttpForm">
-  <dt><pre><a href="http.html#HttpForm"><span class="Identifier">HttpForm</span></a> <span class="Other">=</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">key</span><span class="Other">,</span> <span class="Identifier">val</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span></pre></dt>
+  <dt><pre><a href="#HttpForm"><span class="Identifier">HttpForm</span></a> <span class="Other">=</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">key</span><span class="Other">,</span> <span class="Identifier">val</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span></pre></dt>
   <dd>
     
     
@@ -140,7 +143,7 @@
   </dd>
 </div>
 <div id="HttpResponse">
-  <dt><pre><a href="http.html#HttpResponse"><span class="Identifier">HttpResponse</span></a> <span class="Other">=</span> <span class="Keyword">object</span></pre></dt>
+  <dt><pre><a href="#HttpResponse"><span class="Identifier">HttpResponse</span></a> <span class="Other">=</span> <span class="Keyword">object</span></pre></dt>
   <dd>
     
     
@@ -148,7 +151,7 @@
   </dd>
 </div>
 <div id="RetryAttemptCallback">
-  <dt><pre><a href="http.html#RetryAttemptCallback"><span class="Identifier">RetryAttemptCallback</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">uint</span></pre></dt>
+  <dt><pre><a href="#RetryAttemptCallback"><span class="Identifier">RetryAttemptCallback</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">uint</span></pre></dt>
   <dd>
     
     
@@ -163,7 +166,7 @@
   <dl class="item">
     <div id="get-procs-all">
   <div id="get,Http,">
-  <dt><pre><span class="Keyword">proc</span> <a href="#get%2CHttp%2C"><span class="Identifier">get</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="http.html#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#get%2CHttp%2C"><span class="Identifier">get</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     Sends a GET request to the specified URI and returns the response body as a string.
@@ -171,7 +174,7 @@
   </dd>
 </div>
 <div id="get,typedesc[Http],">
-  <dt><pre><span class="Keyword">proc</span> <a href="#get%2Ctypedesc%5BHttp%5D%2C"><span class="Identifier">get</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><a href="http.html#Http"><span class="Identifier">Http</span></a><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#get%2Ctypedesc%5BHttp%5D%2C"><span class="Identifier">get</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><a href="#Http"><span class="Identifier">Http</span></a><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     Sends a GET request to the specified URI and returns the response body as a string.
@@ -179,7 +182,7 @@
   </dd>
 </div>
 <div id="get,Http,,typedesc[T]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#get%2CHttp%2C%2Ctypedesc%5BT%5D"><span class="Identifier">get</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="http.html#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">t</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#get%2CHttp%2C%2Ctypedesc%5BT%5D"><span class="Identifier">get</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">t</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
   <dd>
     
     Sends a GET request to the specified URI and returns the response deserialized into the specified <tt class="docutils literal"><span class="pre"><span class="Identifier">T</span></span></tt> type.
@@ -201,7 +204,7 @@
 </div>
 <div id="post-procs-all">
   <div id="post,typedesc[Http],,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#post%2Ctypedesc%5BHttp%5D%2C%2Cstring"><span class="Identifier">post</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><a href="http.html#Http"><span class="Identifier">Http</span></a><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#post%2Ctypedesc%5BHttp%5D%2C%2Cstring"><span class="Identifier">post</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><a href="#Http"><span class="Identifier">Http</span></a><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     Sends a POST request to the specified URI with the given body and returns the response.
@@ -209,7 +212,7 @@
   </dd>
 </div>
 <div id="post,typedesc[Http],,HttpForm">
-  <dt><pre><span class="Keyword">proc</span> <a href="#post%2Ctypedesc%5BHttp%5D%2C%2CHttpForm"><span class="Identifier">post</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><a href="http.html#Http"><span class="Identifier">Http</span></a><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">httpForm</span><span class="Other">:</span> <a href="http.html#HttpForm"><span class="Identifier">HttpForm</span></a><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#post%2Ctypedesc%5BHttp%5D%2C%2CHttpForm"><span class="Identifier">post</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><a href="#Http"><span class="Identifier">Http</span></a><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span> <span class="Operator">|</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">httpForm</span><span class="Other">:</span> <a href="#HttpForm"><span class="Identifier">HttpForm</span></a><span class="Other">)</span><span class="Other">:</span> <a href="httpclient.html#Response"><span class="Identifier">Response</span></a></pre></dt>
   <dd>
     
     Sends a POST request to the specified URI with the given body and returns the response.
@@ -220,7 +223,7 @@
 </div>
 <div id="retry-procs-all">
   <div id="retry,Http,uint">
-  <dt><pre><span class="Keyword">proc</span> <a href="#retry%2CHttp%2Cuint"><span class="Identifier">retry</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="http.html#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">times</span><span class="Other">:</span> <span class="Identifier">uint</span><span class="Other">)</span><span class="Other">:</span> <a href="http.html#Http"><span class="Identifier">Http</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#retry%2CHttp%2Cuint"><span class="Identifier">retry</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">times</span><span class="Other">:</span> <span class="Identifier">uint</span><span class="Other">)</span><span class="Other">:</span> <a href="#Http"><span class="Identifier">Http</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Quickly adds a retry to the request
@@ -228,7 +231,7 @@
   </dd>
 </div>
 <div id="retry,Http,uint,RetryAttemptCallback">
-  <dt><pre><span class="Keyword">proc</span> <a href="#retry%2CHttp%2Cuint%2CRetryAttemptCallback"><span class="Identifier">retry</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="http.html#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">times</span><span class="Other">:</span> <span class="Identifier">uint</span><span class="Other">;</span> <span class="Identifier">retryAttemptCallback</span><span class="Other">:</span> <a href="http.html#RetryAttemptCallback"><span class="Identifier">RetryAttemptCallback</span></a><span class="Other">)</span> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#retry%2CHttp%2Cuint%2CRetryAttemptCallback"><span class="Identifier">retry</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">times</span><span class="Other">:</span> <span class="Identifier">uint</span><span class="Other">;</span> <span class="Identifier">retryAttemptCallback</span><span class="Other">:</span> <a href="#RetryAttemptCallback"><span class="Identifier">RetryAttemptCallback</span></a><span class="Other">)</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -240,8 +243,8 @@
 </div>
 <div id="withHeaders-procs-all">
   <div id="withHeaders,typedesc[Http],openArray[tuple[string,string]]">
-  <dt><pre><span class="Keyword">proc</span> <a href="#withHeaders%2Ctypedesc%5BHttp%5D%2CopenArray%5Btuple%5Bstring%2Cstring%5D%5D"><span class="Identifier">withHeaders</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><a href="http.html#Http"><span class="Identifier">Http</span></a><span class="Other">]</span><span class="Other">;</span>
-                 <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">key</span><span class="Other">,</span> <span class="Identifier">val</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="http.html#Http"><span class="Identifier">Http</span></a></pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#withHeaders%2Ctypedesc%5BHttp%5D%2CopenArray%5Btuple%5Bstring%2Cstring%5D%5D"><span class="Identifier">withHeaders</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <span class="Identifier">typedesc</span><span class="Other">[</span><a href="#Http"><span class="Identifier">Http</span></a><span class="Other">]</span><span class="Other">;</span>
+                 <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">key</span><span class="Other">,</span> <span class="Identifier">val</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="#Http"><span class="Identifier">Http</span></a></pre></dt>
   <dd>
     
     Instantiates a new Http object with the specified headers.
@@ -252,7 +255,7 @@
 </div>
 <div id="withToken-procs-all">
   <div id="withToken,Http,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#withToken%2CHttp%2Cstring"><span class="Identifier">withToken</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="http.html#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="http.html#Http"><span class="Identifier">Http</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#withToken%2CHttp%2Cstring"><span class="Identifier">withToken</span></a><span class="Other">(</span><span class="Identifier">H</span><span class="Other">:</span> <a href="#Http"><span class="Identifier">Http</span></a><span class="Other">;</span> <span class="Identifier">token</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#Http"><span class="Identifier">Http</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -278,7 +281,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-04-21 15:11:53 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-12 08:25:07 UTC</small>
       </div>
     </div>
   </div>

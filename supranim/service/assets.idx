@@ -1,17 +1,19 @@
 nimTitle	assets	supranim/service/assets.html	module supranim/service/assets		0
-nim	StaticAssetsError	supranim/service/assets.html#StaticAssetsError	object StaticAssetsError		31
-nim	isPlainText	supranim/service/assets.html#isPlainText,openArray[uint8],int	proc isPlainText(data: openArray[uint8]; sampleSize = 8192): bool		33
-nim	OnInitSingletonCallback`gensym0`gensym10	supranim/service/assets.html#OnInitSingletonCallback`gensym0`gensym10	type OnInitSingletonCallback`gensym0`gensym10		393
-nim	getAssetsInstance	supranim/service/assets.html#getAssetsInstance,OnInitSingletonCallback`gensym0`gensym10,staticbool	proc getAssetsInstance(onceCb`gensym0`gensym10: OnInitSingletonCallback`gensym0`gensym10 = nil;\n                  initShared`gensym0`gensym10: static bool = true): ptr Assets		391
-nim	staticAssets	supranim/service/assets.html#staticAssets	proc staticAssets(): ptr Assets		49
-nim	hasAsset	supranim/service/assets.html#hasAsset,ptr.Assets,string	proc hasAsset(sta: ptr Assets; key: string): bool		53
-nim	get	supranim/service/assets.html#get,ptr.Assets,string	proc get(sta: ptr Assets; key: string): lent seq[uint8]		57
-nim	hasTextAsset	supranim/service/assets.html#hasTextAsset,ptr.Assets,string	proc hasTextAsset(sta: ptr Assets; key: string): bool		63
-nim	getTextAsset	supranim/service/assets.html#getTextAsset,ptr.Assets,string	proc getTextAsset(sta: ptr Assets; key: string): string		67
-nim	addAsset	supranim/service/assets.html#addAsset,ptr.Assets,string,seq[uint8]	proc addAsset(sta: ptr Assets; key: string; data: seq[uint8])		73
-nim	addTextAsset	supranim/service/assets.html#addTextAsset,ptr.Assets,string,string	proc addTextAsset(sta: ptr Assets; key: string; data: string)		79
-nim	AssetsImportStmt	supranim/service/assets.html#AssetsImportStmt	const AssetsImportStmt		83
-nim	embedAssets	supranim/service/assets.html#embedAssets.m,staticstring	macro embedAssets(dir: static string): untyped		84
-nim	embedDirectory	supranim/service/assets.html#embedDirectory.m,staticstring,staticstring	macro embedDirectory(dir: static string; key: static string)		93
-nim	preloadAssets	supranim/service/assets.html#preloadAssets.m	macro preloadAssets(): untyped		101
-nim	preloadBundle	supranim/service/assets.html#preloadBundle.m,staticstring	macro preloadBundle(key: static string): untyped		105
+nim	StaticAssetsError	supranim/service/assets.html#StaticAssetsError	object StaticAssetsError		35
+nim	isPlainText	supranim/service/assets.html#isPlainText,openArray[uint8],int	proc isPlainText(data: openArray[uint8]; sampleSize = 8192): bool		37
+nim	OnInitSingletonCallback`gensym0`gensym10	supranim/service/assets.html#OnInitSingletonCallback`gensym0`gensym10	type OnInitSingletonCallback`gensym0`gensym10		404
+nim	getAssetsInstance	supranim/service/assets.html#getAssetsInstance,OnInitSingletonCallback`gensym0`gensym10,staticbool	proc getAssetsInstance(onceCb`gensym0`gensym10: OnInitSingletonCallback`gensym0`gensym10 = nil;\n                  initShared`gensym0`gensym10: static bool = true): ptr Assets		402
+nim	staticAssets	supranim/service/assets.html#staticAssets	proc staticAssets(): ptr Assets		53
+nim	hasAsset	supranim/service/assets.html#hasAsset,ptr.Assets,string	proc hasAsset(sta: ptr Assets; key: string): bool		66
+nim	get	supranim/service/assets.html#get,ptr.Assets,string	proc get(sta: ptr Assets; key: string): lent seq[uint8]		70
+nim	addAsset	supranim/service/assets.html#addAsset,ptr.Assets,string,seq[uint8]	proc addAsset(sta: ptr Assets; key: string; data: seq[uint8])		76
+nim	directory	supranim/service/assets.html#directory,ptr.Assets,string	proc directory(sta: ptr Assets; key: string): TableRef[string, string]		85
+nim	getTextFile	supranim/service/assets.html#getTextFile,TextFilesTable,string	proc getTextFile(dir: TextFilesTable; key: string): string		91
+nim	addTextFile	supranim/service/assets.html#addTextFile,ptr.Assets,string,string,sinkstring	proc addTextFile(sta: ptr Assets; dir: string; key: string; data: sink string)		97
+nim	hasFile	supranim/service/assets.html#hasFile,TextFilesTable,string	proc hasFile(filesDir: TextFilesTable; key: string): bool		105
+nim	getFile	supranim/service/assets.html#getFile,TextFilesTable,string	proc getFile(filesDir: TextFilesTable; key: string): string		109
+nim	AssetsImportStmt	supranim/service/assets.html#AssetsImportStmt	const AssetsImportStmt		115
+nim	embedAssets	supranim/service/assets.html#embedAssets.m,staticstring	macro embedAssets(dir: static string): untyped		116
+nim	embedDirectory	supranim/service/assets.html#embedDirectory.m,staticstring,staticstring	macro embedDirectory(dir: static string; key: static string)		125
+nim	preloadAssets	supranim/service/assets.html#preloadAssets.m	macro preloadAssets(): untyped		133
+nim	preloadBundle	supranim/service/assets.html#preloadBundle.m,staticstring	macro preloadBundle(key: static string): untyped		137
