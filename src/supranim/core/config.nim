@@ -7,25 +7,22 @@
 #
 
 import std/[macros, os]
-import pkg/nyml
+import pkg/openparser/yaml
 
 import ./paths
 
 type
   SupranimEnvLoader* = object of CatchableError
 
-const
-  supranimServer* {.strdefine.} = "httpbeast"
-    # Choose a preferred web server. Possible values:
-    # `httpbeast`, `mummy`, `experimental`
-
 proc loadEnv* =
   ## Loads environment variables from the `.env.yml` file in the project root directory.
+  ## 
   if not fileExists(rootPath / ".env.yml"):
-    raise newException(SupranimEnvLoader, "Configuration file '.env.yml' not found in project root directory.")
+    raise newException(SupranimEnvLoader,
+        "Configuration file '.env.yml' not found in project root directory.")
   let
     envContents = readFile(rootPath / ".env.yml")
-    ymlEnv = yaml(envContents).toJson
+    ymlEnv = parseYAML(envContents)
   when not defined release:
     let
       dbUser = ymlEnv.get("database.local.user").getStr

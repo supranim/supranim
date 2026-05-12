@@ -12,7 +12,6 @@ import pkg/libevent/bindings/[http, buffer, event]
 
 import pkg/kapsis
 import pkg/kapsis/interactive/prompts
-
 import pkg/openparser/[json, yaml]
 
 import ../network/webserver
@@ -21,7 +20,7 @@ import ./[config, paths, request, response, router]
 import ../support/uuid
 
 export json, yaml, paths, macros
-export supranimServer, registerCallback, unregisterCallback
+export registerCallback, unregisterCallback
 
 type
   JsonString* = string  # an alias for JSON string
