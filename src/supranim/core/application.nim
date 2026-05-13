@@ -53,7 +53,7 @@ type
     server*: WebServer
       ## The web server instance that handles incoming HTTP requests.
       ## This is initialized when the application starts.
-    router*: Router.type
+    router*: HttpRouterInstance
       ## The HTTP router instance that manages route registration and request handling.
       ## This is initialized during application setup.
 
@@ -114,16 +114,17 @@ template initHttpRouter* =
     var registerRoutes = newStmtList()
     for k, ctrl in queuedRoutes:
       add registerRoutes, ctrl
-
+    add result, quote do:
+      assert App != nil, "Application instance is not initialized"
     add result,
       newProc(
-        ident"registerRoutes",
+        ident"loadRoutes",
         body = nnkStmtList.newTree(
           nnkPragmaBlock.newTree(
             nnkPragma.newTree(ident"gcsafe"),
             nnkStmtList.newTree(
               newAssignment(
-                ident"Router",
+                newDotExpr(ident"App", ident"router"),
                 newCall(ident"newHttpRouter")
               ),
               registerRoutes
@@ -131,10 +132,9 @@ template initHttpRouter* =
           )
         ),
       )
-    add result, newCall(ident"registerRoutes")
+    add result, newCall(ident"loadRoutes")
     add result, quote do:
-      Router.errorHandler(Http404, get4xx)
-      App.router = Router # assign the reference of the initialized router
+      App.router.errorHandler(Http404, get4xx)
   initHttpRouterMacro()
 
 when defined supraMicroservice:
@@ -160,7 +160,7 @@ when defined supraMicroservice:
         app.pluginmanager.autoloadModule(path, rootPath)
       if not module.isNil:
         for route in module[].routes[].routes:
-          Router.registerRoute((route[1], route[2]), route[3], module[].controllers[route[0]])
+          app.router.registerRoute((route[1], route[2]), route[3], module[].controllers[route[0]])
   
   # proc controllers*(app: ApplicationObject, key: string): PluggableController =
   #   ## Retrieves a Pluggable Controller by `key`. If not found
@@ -195,7 +195,7 @@ else:
     # add result, newCall(ident"initEventManager")
     for f in walkDirRec(eventsPath / "listeners"):
       if f.endsWith(".nim"):
-        if not f.splitFile.name.startsWith("!"):
+        if f.splitFile.name[0] notin ['!', '_']:
           add result, nnkImportStmt.newTree(newLit(f))
   
   proc loadMiddlewares: NimNode {.compileTime.} =
@@ -205,7 +205,7 @@ else:
     for fMiddleware in walkDirRec(middlewarePath):
       if fMiddleware.endsWith(".nim"):
         let f = fMiddleware.splitFile
-        if not f.name.startsWith("!"):
+        if f.name[0] notin ['!', '_']:
           add result, nnkImportStmt.newTree(newLit(fMiddleware))
           let x = newLit(f.name)
 
@@ -216,17 +216,9 @@ else:
     result = newStmtList()
     for fController in walkDirRec(basePath / "controller"):
       if fController.endsWith(".nim"):
-        if not fController.splitFile.name.startsWith("!"):
+        let f = fController.splitFile
+        if f.name[0] notin ['!', '_']:
           add result, nnkImportStmt.newTree(newLit(fController))
-
-  proc loadConsole: NimNode {.compileTime.} =
-    # walks recursively and auto discover console commands
-    # available at /console/*.nim
-    result = newStmtList()
-    for fConsole in walkDirRec(basePath / "console"):
-      if fConsole.endsWith(".nim"):
-        if not fConsole.splitFile.name.startsWith("!"):
-          add result, nnkImportStmt.newTree(newLit(fConsole))
 
 macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped = nil) =
   ## Initializes Supranim application instance. This macro is responsible for
@@ -270,13 +262,13 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
   var serviceProviders = newNimNode(nnkStmtList)
   for path in walkDirRec(servicePath / "provider"):
     let f = path.splitFile
-    if f.ext == ".nim" and f.name.startsWith("!") == false:
+    if f.ext == ".nim" and f.name[0] notin ['_', '!']:
       serviceProviders.add(nnkImportStmt.newTree(newLit(path)))
 
   when defined supraMicroservice:
     add result, quote do:
-      Router.errorHandler(Http404, DefaultHttpError)
-      Router.errorHandler(Http500, DefaultHttpError)
+      app.router.errorHandler(Http404, DefaultHttpError)
+      app.router.errorHandler(Http500, DefaultHttpError)
       app.enablePluginManager()
   else:
     add result, loadEventListeners()
@@ -287,9 +279,6 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
       newLit(basePath / "routes.nim"))
 
     add result, loadControllers()
-
-    # when found, will load console commands
-    add result, loadConsole()
 
     # inject the base middlewares and route handlers before 
     # adding the service providers, so that they are available to all services.

@@ -83,9 +83,9 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
   block:
     template invoke4xxHandler(path, req, res) =
       when defined supraMicroservice:
-        Router.call4xx(req.addr, res.addr)
+        app.router.call4xx(req.addr, res.addr)
       else:
-        Router.call4xx(req, res)
+        app.router.call4xx(req, res)
       req.resp(Http404, res.getBody, res.getHeaders)
       event().emit("http.error", some(@[path, $Http404]))
       
@@ -103,7 +103,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
           let
             path = req.getUriPath()
             httpMethod = req.getHttpMethod()
-            runtimeCheck = Router.checkExists(path, httpMethod)
+            runtimeCheck = app.router.checkExists(path, httpMethod)
 
           # The `checkExists` method of the Router service checks if there is
           # a route that matches the incoming request's path and HTTP method.

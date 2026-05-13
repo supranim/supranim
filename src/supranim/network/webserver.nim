@@ -188,7 +188,6 @@ proc newWebServer*(port: Port = Port(8080), enableMultiThreading: bool): WebServ
   ## 
   ## This is recommended for production use. For development, you can use the
   ## single-threaded version for simplicity.
-  # ensureLibeventThreading()
   ensureLibeventThreading()
   new(result)
   
@@ -371,7 +370,6 @@ proc start*(server: var WebServer, onRequest: OnRequest,
     # threads are not enabled we cannot run in pool mode
     {.error: "Mutli-threaded Supranim requires threads support. Use `--threads:on`".}
 
-  # ensureLibeventThreading()
   let sharedFd = bindSharedSocket(server.port)
   when defined(supranimUseGlobalOnRequest):
     appOnRequest = onRequest

@@ -17,7 +17,7 @@
 import std/[httpcore, critbits, tables, macros,
         macrocache, strutils, sequtils, enumutils]
 
-import pkg/regex
+import pkg/openparser/regex
 import pkg/threading/rwlock
 
 import ./request, ./response
@@ -41,10 +41,12 @@ type
   HttpRoute* = ref object of RootObj
     path: string
       # The `path` is the original path string used to define the route.
-    regexPath: Regex2
+    regexPath: RegexVM
       # The `regexPath` is used to match dynamic routes with parameters.
     httpMethod: HttpMethod
+      # The HTTP method (GET, POST, etc.) associated with this route.
     callback*: Callable
+      ## The callback procedure that will be executed when this route is matched.
     case httpRouteType: HttpRouteType
       of DynamicRoute:
         routePatterns: RoutePatternsTable
@@ -60,7 +62,7 @@ type
   
   HttpRouteWs* = ref object of HttpRoute
 
-  HttpRouterInstance = ref object
+  HttpRouterInstance* = ref object
     httpGet*, httpPost*, httpPut*, httpHead*,
       httpConnect*, httpDelete*, httpPatch*,
       httpTrace*, httpOptions*, httpErrors*: TableRef[string, HttpRoute]
@@ -69,14 +71,14 @@ type
   HttpRouterError* = object of CatchableError
 
 var rw = createRwLock()
-var Router*: HttpRouterInstance
-  ## A thread local singleton instance of `HttpRouterInstance`
-  ## that is used to register routes and error handlers.
-  ## 
-  ## Note that this is a thread-local variable, so each thread will
-  ## have its own instance of the router. This allows for better
-  ## performance in multi-threaded applications, as each thread
-  ## can access its own router instance without any locking mechanism
+# var Router*: HttpRouterInstance
+# A thread local singleton instance of `HttpRouterInstance`
+# that is used to register routes and error handlers.
+# 
+# Note that this is a thread-local variable, so each thread will
+# have its own instance of the router. This allows for better
+# performance in multi-threaded applications, as each thread
+# can access its own router instance without any locking mechanism
 
 const
   # Register default HTTP Error Handles
@@ -142,7 +144,8 @@ proc newHttpRoute(autolinked: (string, string),
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
-  result.regexPath = re2(autolinked[0])
+  # result.regexPath = re(autolinked[0])
+  result.regexPath = regex.initRegexVM(regex.compile(autolinked[0]))
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
 
@@ -157,6 +160,7 @@ proc newWsRoute(path: string, httpMethod: HttpMethod, callback: Callable,
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
+  # result.regexPath = re(path)
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
 
@@ -237,8 +241,8 @@ proc parseRouteNode*(verb, routePath: string,
     queuedRoutes[autolinked.handleName] =
       newCall(
         ident"registerRoute",
-        # newDotExpr(ident"App", ident"router"),
-        ident"Router",
+        newDotExpr(ident"App", ident"router"),
+        # ident"Router",
         nnkTupleConstr.newTree(
           newLit(autolinked[1]),
           newLit(autolinked[2]),
@@ -479,38 +483,62 @@ group "/account":
   result = newStmtList()
 
 macro searchRoute(httpMethod: static string) =
-  result = newstmtList()
+  result = newStmtList()
   let verb = ident httpMethod
   add result, quote do:
     if likely(router.`verb`.hasKey(requestPath)):
       result.route = router.`verb`[requestPath]
     else:
       for k, r in router.`verb`:
-        var m: RegexMatch2
-        if find(requestPath, r.regexPath, m):
+        let match = r.regexPath.find(requestPath)
+        if match.matched:
           result.route = r
-          for name in m.groupNames():
-            let g = m.group(name)
-            if g != reNonCapture:
-              result.params[name] = requestPath[g]
+          # Map indexed capture groups to param names using routePatterns
+          if r.httpRouteType == DynamicRoute:
+            var idx = 1
+            for name, _ in r.routePatterns:
+              let g = match.group(idx)
+              if g.matched:
+                result.params[name] = g.str(requestPath)
+              inc idx
           break
+      # for k, r in router.`verb`:
+      #   let someRegexMatch = requestPath.match(r.regexPath)
+      #   if someRegexMatch.isSome():
+      #     result.route = r # found a matching route
+      #     let pattern = someRegexMatch.get().captures()
+      #     if RegexMatch(pattern).pattern.captureNameId.len > 0:
+      #       for key in RegexMatch(pattern).pattern.captureNameId.keys:
+      #         result.params[key] = pattern[key]
 
 macro searchRouteWs*() =
   ## Search for a WebSocket route
-  result = newstmtList()
+  result = newStmtList()
   add result, quote do:
     if router.httpWS.hasKey(requestPath):
       result.route = router.httpWS[requestPath]
     else:
       for k, r in router.httpWS:
-        var m: RegexMatch2
-        if find(requestPath, r.regexPath, m):
+        let match = r.regexPath.find(requestPath)
+        if match.matched:
           result.route = r
-          for name in m.groupNames():
-            let g = m.group(name)
-            if g != reNonCapture:
-              result.params[name] = requestPath[g]
+          if r.httpRouteType == DynamicRoute:
+            var idx = 1
+            for name, _ in r.routePatterns:
+              let g = match.group(idx)
+              if g.matched:
+                result.params[name] = g.str(requestPath)
+              inc idx
           break
+      # for k, r in router.httpWS:
+      #   let someRegexMatch = requestPath.match(r.regexPath)
+      #   if someRegexMatch.isSome():
+      #     result.route = r # found a matching WebSocket route
+      #     let pattern = someRegexMatch.get().captures()
+      #     if RegexMatch(pattern).pattern.captureNameId.len > 0:
+      #       for key in RegexMatch(pattern).pattern.captureNameId.keys:
+      #         result.params[key] = pattern[key]
+      #     break # stop at the first match
 
 type
   RouteCheckResult* = tuple[exists: bool, route: HttpRoute, params: Table[string, string]]
@@ -518,23 +546,25 @@ type
 proc checkExists*(router: HttpRouterInstance,
             requestPath: string, httpMethod: HttpMethod): RouteCheckResult =
   ## Check if a route exists for the given request path and HTTP method
-  case httpMethod
-    of HttpGet:     searchRoute("httpGet")
-    of HttpPost:    searchRoute("httpPost")
-    of HttpPut:     searchRoute("httpPut")
-    of HttpPatch:   searchRoute("httpPatch")
-    of HttpHead:    searchRoute("httpHead")
-    of HttpDelete:  searchRoute("httpDelete")
-    of HttpTrace:   searchRoute("httpTrace")
-    of HttpOptions: searchRoute("httpOptions")
-    of HttpConnect: searchRoute("httpConnect")
-  result.exists =
-    likely(result.route != nil)
+  readWith rw:
+    case httpMethod
+      of HttpGet:     searchRoute("httpGet")
+      of HttpPost:    searchRoute("httpPost")
+      of HttpPut:     searchRoute("httpPut")
+      of HttpPatch:   searchRoute("httpPatch")
+      of HttpHead:    searchRoute("httpHead")
+      of HttpDelete:  searchRoute("httpDelete")
+      of HttpTrace:   searchRoute("httpTrace")
+      of HttpOptions: searchRoute("httpOptions")
+      of HttpConnect: searchRoute("httpConnect")
+    result.exists =
+      likely(result.route != nil)
 
 proc checkWsExists*(router: HttpRouterInstance, requestPath: string): RouteCheckResult =
   ## Check if a WebSocket route exists for the given request path
-  searchRouteWs()
-  result.exists = likely(result.route != nil)
+  readWith rw:
+    searchRouteWs()
+    result.exists = likely(result.route != nil)
 
 #
 # Middleware API
@@ -606,4 +636,4 @@ else:
 template initRouterErrorHandlers* =
   ## Initialize default error handlers for the router. This is called during
   ## application startup to ensure that there is always a default error handler for HTTP 4xx errors
-  Router.errorHandler(Http404, errors.get4xx)
+  App.router.errorHandler(Http404, errors.get4xx)

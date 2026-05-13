@@ -35,6 +35,7 @@ proc loadEnv* =
       dbName = ymlEnv.get("database.prod.name").getStr
       dbPassword = ymlEnv.get("database.prod.password").getStr
       dbPort = ymlEnv.get("database.prod.port").getStr
+  
   putEnv("database.user", dbUser)
   putEnv("database.name", dbName)
   putEnv("database.password", dbPassword)
