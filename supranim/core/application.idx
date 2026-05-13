@@ -14,15 +14,15 @@ nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Appli
 nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): YamlNode		100
 nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		110
 nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		192
-nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		231
-nim	SafeThreadVarSeq	supranim/core/application.html#SafeThreadVarSeq	const SafeThreadVarSeq		302
-nim	withThreadCallback	supranim/core/application.html#withThreadCallback.m,untyped,untyped	macro withThreadCallback(appInstance, callback: untyped)		307
-nim	injectSafeThreadCallbacks	supranim/core/application.html#injectSafeThreadCallbacks.m	macro injectSafeThreadCallbacks()		313
-nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		336
-nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		341
-nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		360
-nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		379
-nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		401
-nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		407
-nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		411
-nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		415
+nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		223
+nim	SafeThreadVarSeq	supranim/core/application.html#SafeThreadVarSeq	const SafeThreadVarSeq		291
+nim	withThreadCallback	supranim/core/application.html#withThreadCallback.m,untyped,untyped	macro withThreadCallback(appInstance, callback: untyped)		296
+nim	injectSafeThreadCallbacks	supranim/core/application.html#injectSafeThreadCallbacks.m	macro injectSafeThreadCallbacks()		302
+nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		325
+nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		330
+nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		349
+nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		368
+nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		390
+nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		396
+nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		400
+nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		404
