@@ -6,16 +6,19 @@
 
 ### Key features
 - Fast, modern and simple to use.
-- Built-in ORM supporting SQLite, MySQL, PostgreSQL and more.
-- Built-in templating engine for rendering HTML.
-- Middleware support for handling requests and responses.
-- Easy routing with support for parameters and wildcards.
-- Built-in support for sessions and cookies.
+- Built-in ORM supporting PostgreSQL (with plans for MySQL and SQLite)
+- Middleware support for handling requests and responses
+- Easy routing with support for parameters and wildcards
+- Service Providers for wrapping and managing external services
+- Built-in support for sessions and cookies
 - Support for WebSockets for real-time communication.
+- Ready-to-use templating engine for rendering HTML.
 - Modular architecture for easy extension and customization.
 
-### Architecture
-Build monolithic or microservice applications with a clear separation of concerns using the MVC pattern.
+### About
+Supranim is a web framework built on top of Libevent, designed to be fast, modern and simple to use. It provides a set of tools and features for building web apps, REST APIs and real-time applications in Nim.
+
+Check the official documentation: https://docs.supranim.com
 
 ### External Libraries
 Supranim requires the following external libraries to be installed on your system:
