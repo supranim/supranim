@@ -6,7 +6,7 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
-import std/[macros, tables, nre, options,
+import std/[macros, tables, options,
   strutils, parseutils, sequtils, enumutils]
 
 from std/httpcore import HttpMethod
