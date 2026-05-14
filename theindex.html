@@ -1132,10 +1132,12 @@
           data-doc-search-tag="router: proc registerRoute(router: HttpRouterInstance; autolinked: sink (string, string);
               httpMethod: HttpMethod; callback: Callable;
               middlewares: seq[Middleware] = @[];
-              afterwares: seq[Afterware] = @[]; isWebSocket = false)" href="supranim/core/router.html#registerRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D">router: proc registerRoute(router: HttpRouterInstance; autolinked: sink (string, string);
+              afterwares: seq[Afterware] = @[]; isWebSocket = false;
+              routeParams: seq[(string, bool)] = @[])" href="supranim/core/router.html#registerRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D%2Cseq%5B%5D">router: proc registerRoute(router: HttpRouterInstance; autolinked: sink (string, string);
               httpMethod: HttpMethod; callback: Callable;
               middlewares: seq[Middleware] = @[];
-              afterwares: seq[Afterware] = @[]; isWebSocket = false)</a></li>
+              afterwares: seq[Afterware] = @[]; isWebSocket = false;
+              routeParams: seq[(string, bool)] = @[])</a></li>
           <li><a class="reference external"
           data-doc-search-tag="router: proc registerRoute(router: HttpRouterInstance; path: string; httpMethod: HttpMethod;
               callback: Callable; middlewares: seq[Middleware] = @[];
@@ -1593,7 +1595,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-13 23:08:34 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 08:52:26 UTC</small>
       </div>
     </div>
   </div>
