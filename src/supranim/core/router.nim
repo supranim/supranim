@@ -14,7 +14,7 @@
 ## The Router is using `pkg/regex` for dynamic route matching, which allows for powerful
 ## parameter extraction and flexible route definitions.
 
-import std/[httpcore, critbits, tables, macros,
+import std/[httpcore, critbits, tables, macros, options,
         macrocache, strutils, sequtils, enumutils]
 
 import pkg/openparser/regex
@@ -49,7 +49,7 @@ type
       ## The callback procedure that will be executed when this route is matched.
     case httpRouteType: HttpRouteType
       of DynamicRoute:
-        routePatterns: RoutePatternsTable
+        routePatterns: OrderedTableRef[string, RoutePattern]
       else: discard
     case hasMiddleware: bool
       of true:
@@ -125,8 +125,10 @@ proc newHttpRouter*: HttpRouterInstance =
   )
 
 proc newHttpRoute(autolinked: (string, string),
-          httpMethod: HttpMethod, callback: Callable): HttpRoute =
+          httpMethod: HttpMethod, callback: Callable,
+          routeParams: seq[(string, bool)] = @[]): HttpRoute =
   # Create a new `HttpRoute`
+  let isDynamic = routeParams.len > 0
   result = HttpRoute(
     path: autolinked[1],
     httpMethod: httpMethod,
@@ -135,17 +137,24 @@ proc newHttpRoute(autolinked: (string, string),
 
 proc newHttpRoute(autolinked: (string, string),
                   httpMethod: HttpMethod, callback: Callable,
-                  middlewares: seq[Middleware], afterwares: seq[Afterware]): HttpRoute =
+                  middlewares: seq[Middleware], afterwares: seq[Afterware],
+                  routeParams: seq[(string, bool)] = @[]): HttpRoute =
   # Create a new `HttpRoute`
+  let isDynamic = routeParams.len > 0
   result = HttpRoute(
     path: autolinked[1],
     httpMethod: httpMethod,
     callback: callback,
+    httpRouteType: if isDynamic: DynamicRoute else: StaticRoute,
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
   # result.regexPath = re(autolinked[0])
   result.regexPath = regex.initRegexVM(regex.compile(autolinked[0]))
+  if isDynamic:
+    result.routePatterns = newOrderedTable[string, RoutePattern]()
+    for (name, isOptional) in routeParams:
+      result.routePatterns[name] = (key: name, reKey: "", isOptional: isOptional)
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
 
@@ -170,7 +179,8 @@ proc registerRoute*(router: HttpRouterInstance,
   callback: Callable,
   middlewares: seq[Middleware] = @[],
   afterwares: seq[Afterware] = @[],
-  isWebSocket = false
+  isWebSocket = false,
+  routeParams: seq[(string, bool)] = @[]
 ) =
   ## Register a new `Route` in the `HttpRouterInstance` based on the given parameters
   writeWith rw:
@@ -181,7 +191,8 @@ proc registerRoute*(router: HttpRouterInstance,
         router.httpWS[path] = routeObject
     else:
       let routeObject =
-        newHttpRoute(autolinked, httpMethod, callback, middlewares, afterwares)
+        newHttpRoute(autolinked, httpMethod, callback,
+                middlewares, afterwares, routeParams)
       case httpMethod
       of HttpGet:
         if not router.httpGet.hasKey(path):
@@ -217,6 +228,7 @@ proc registerRoute*(router: HttpRouterInstance, path: string,
                 afterwares: seq[Afterware] = @[]) =
   ## Register a new Route in the `HttpRouterInstance` based on the given parameters
   let autolinked = autolinkController(path, httpMethod)
+  let rp = if autolinked.params.isSome(): autolinked.params.get() else: @[]
   registerRoute(router, (autolinked[1], autolinked[0]), httpMethod,
               callback, middlewares, afterwares)
 
@@ -236,7 +248,14 @@ proc parseRouteNode*(verb, routePath: string,
       else: HttpGet
     autolinked: Autolinked =
       autolinkController(routePath, httpMethod, verb == "ws")
+  
   let controllerIdent = ident(autolinked.handleName)
+  var paramsBracket = newNimNode(nnkBracket)
+  if autolinked.params.isSome:
+    for (name, isOpt) in autolinked.params.get():
+      paramsBracket.add(nnkTupleConstr.newTree(newLit(name), newLit(isOpt)))
+  let paramsLit = newTree(nnkPrefix, ident"@", paramsBracket)
+
   if closureHandle.isNil:
     queuedRoutes[autolinked.handleName] =
       newCall(
@@ -254,7 +273,8 @@ proc parseRouteNode*(verb, routePath: string,
         nnkExprEqExpr.newTree(
           ident"isWebSocket",
           newLit(verb == "ws")
-        )
+        ),
+        nnkExprEqExpr.newTree(ident"routeParams", paramsLit)
       )
   else:
     let routeDescription: NimNode = 

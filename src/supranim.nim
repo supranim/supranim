@@ -118,10 +118,15 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
             of Http204:
                 case httpMethod
                 of HttpGet:
-                  when defined supraMicroservice:
-                    runtimeCheck.route.callback(req.addr, res.addr)
-                  else:
-                    runtimeCheck.route.callback(req, res)
+                  try:
+                    when defined supraMicroservice:
+                      runtimeCheck.route.callback(req.addr, res.addr)
+                    else:
+                      runtimeCheck.route.callback(req, res)
+                  except Exception as e:
+                    req.resp(Http500, "Internal Server Error")
+                    return
+
                   let
                     code = res.getCode()
                     headers = res.getHeaders()
