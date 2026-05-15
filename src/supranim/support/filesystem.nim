@@ -207,11 +207,19 @@ proc parseYaml*[T](fs: Filesystem, path: string, t: typedesc[T]): T =
 
 proc parseJson*(fs: Filesystem, path: string): JsonNode =
   ## Convenience method to read and parse a JSON file from the default disk
-  discard
+  let content = fs.disk().read(path)
+  fromJson(content)
+
+proc parseJson*[T](fs: Filesystem, path: string, t: typedesc[T]): T =
+  ## Generic version of parseJson that returns a typed result. The caller can specify
+  ## the expected type (like a config object) and the JSON will be parsed into that type.
+  let content = fs.disk().read(path)
+  fromJson(content, t)
 
 proc parseToml*(fs: Filesystem, path: string): TomlNode =
   ## Convenience method to read and parse a TOML file from the default disk
-  discard
+  let content = fs.disk().read(path)
+  parseToml(content)
 
 proc parseCsv*(fs: Filesystem, path: string) =
   ## Convenience method to read and parse a CSV file from the default disk
