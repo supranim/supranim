@@ -7,8 +7,7 @@
 #
 
 import std/[strutils, options, json, httpcore, uri, tables]
-import pkg/jsony
-
+import pkg/openparser/json
 import ../support/cookie
 
 from ../network/webserver import Request, send, getIp, getHeaders,
