@@ -56,6 +56,19 @@ proc sendAssets*(req: var Request, basePath, path: string,
     req.sendFile(basePath / reqPath, headers)
     result = true
 
+proc sendAssetFile*(req: var Request, filepath: string, headers: HttpHeaders) =
+  ## Serves a file from the filesystem with the appropriate content type
+  if fileExists(filepath):
+    let ext = filepath.splitFile.ext
+    let typ = mimedb.getMimeType(ext[1..^1]).get("application/octet-stream")
+    if headers.hasKey("Content-Type"):
+      headers["Content-Type"] = typ
+    else:
+      headers.add("Content-Type", typ)
+    req.sendFile(filepath, headers)
+  else:
+    req.send(404, "Asset not found")
+
 proc sendDownloadable*(req: var Request, filepath: string,
               headers: HttpHeaders) =
   ## Serves a file as a downloadable attachment, prompting the user to save it.
