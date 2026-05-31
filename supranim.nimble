@@ -8,7 +8,7 @@ srcDir        = "src"
 
 # Core dependencies
 requires "nim >= 2.0.0"
-requires "semver > 1.2.3"
+requires "semver >= 1.2.3"
 requires "kapsis >= 0.3.4"
 requires "libevent >= 0.1.1"
 requires "flatty >= 0.4.0"
