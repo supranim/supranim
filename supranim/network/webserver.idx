@@ -33,19 +33,19 @@ nim	clearHeaders	supranim/network/webserver.html#clearHeaders,Request	proc clear
 nim	getMethod	supranim/network/webserver.html#getMethod,Request	proc getMethod(req: var Request): HttpMethod		564
 nim	getQuery	supranim/network/webserver.html#getQuery,Request	proc getQuery(req: var Request): TableRef[string, string]		578
 nim	streamFile	supranim/network/webserver.html#streamFile,Request,string,HttpHeaders	proc streamFile(req: var Request; filePath: string; resHeaders: HttpHeaders = nil)		639
-nim	sendFile	supranim/network/webserver.html#sendFile,Request,string,HttpHeaders	proc sendFile(req: var Request; filePath: string; resHeaders: HttpHeaders)		722
-nim	sendFile	supranim/network/webserver.html#sendFile,Request,seq[uint8],HttpHeaders	proc sendFile(req: var Request; bytes: seq[uint8]; resHeaders: HttpHeaders)		744
-nim	BodyStream	supranim/network/webserver.html#BodyStream	object BodyStream		757
-nim	getBodyStream	supranim/network/webserver.html#getBodyStream,Request	proc getBodyStream(req: var Request): BodyStream		761
-nim	readChunk	supranim/network/webserver.html#readChunk,BodyStream,int	proc readChunk(stream: var BodyStream; maxLen: int): string		765
-nim	peekChunk	supranim/network/webserver.html#peekChunk,BodyStream,int	proc peekChunk(stream: BodyStream; maxLen: int): (pointer, int)		780
-nim	drainChunk	supranim/network/webserver.html#drainChunk,BodyStream,int	proc drainChunk(stream: var BodyStream; len: int)		790
-nim	runServer	supranim/network/webserver.html#runServer,OnRequest,StartupCallback	proc runServer(onRequest: OnRequest; startupCallback: StartupCallback;\n          port = Port(3000))		795
-nim	addEvent	supranim/network/webserver.html#addEvent,WebServer,proc(cint,cshort,pointer)	proc addEvent(server: WebServer;\n         callback: proc (fd: cint; events: cshort; arg: pointer) {.cdecl.})		802
-nim	registerCallback	supranim/network/webserver.html#registerCallback,WebServer,string,OnRequestLowLevel	proc registerCallback(server: WebServer; path: string; callback: OnRequestLowLevel)		832
-nim	unregisterCallback	supranim/network/webserver.html#unregisterCallback,WebServer,string	proc unregisterCallback(server: WebServer; path: string)		846
+nim	sendFile	supranim/network/webserver.html#sendFile,Request,string,HttpHeaders	proc sendFile(req: var Request; filePath: string; resHeaders: HttpHeaders)		723
+nim	sendFile	supranim/network/webserver.html#sendFile,Request,seq[uint8],HttpHeaders	proc sendFile(req: var Request; bytes: seq[uint8]; resHeaders: HttpHeaders)		745
+nim	BodyStream	supranim/network/webserver.html#BodyStream	object BodyStream		758
+nim	getBodyStream	supranim/network/webserver.html#getBodyStream,Request	proc getBodyStream(req: var Request): BodyStream		762
+nim	readChunk	supranim/network/webserver.html#readChunk,BodyStream,int	proc readChunk(stream: var BodyStream; maxLen: int): string		766
+nim	peekChunk	supranim/network/webserver.html#peekChunk,BodyStream,int	proc peekChunk(stream: BodyStream; maxLen: int): (pointer, int)		781
+nim	drainChunk	supranim/network/webserver.html#drainChunk,BodyStream,int	proc drainChunk(stream: var BodyStream; len: int)		791
+nim	runServer	supranim/network/webserver.html#runServer,OnRequest,StartupCallback	proc runServer(onRequest: OnRequest; startupCallback: StartupCallback;\n          port = Port(3000))		796
+nim	addEvent	supranim/network/webserver.html#addEvent,WebServer,proc(cint,cshort,pointer)	proc addEvent(server: WebServer;\n         callback: proc (fd: cint; events: cshort; arg: pointer) {.cdecl.})		803
+nim	registerCallback	supranim/network/webserver.html#registerCallback,WebServer,string,OnRequestLowLevel	proc registerCallback(server: WebServer; path: string; callback: OnRequestLowLevel)		833
+nim	unregisterCallback	supranim/network/webserver.html#unregisterCallback,WebServer,string	proc unregisterCallback(server: WebServer; path: string)		847
 nimgrp	newwebserver	supranim/network/webserver.html#newWebServer-procs-all	proc		170
 nimgrp	send	supranim/network/webserver.html#send-procs-all	proc		207
 nimgrp	start	supranim/network/webserver.html#start-procs-all	proc		336
-nimgrp	sendfile	supranim/network/webserver.html#sendFile-procs-all	proc		722
+nimgrp	sendfile	supranim/network/webserver.html#sendFile-procs-all	proc		723
 nimgrp	addcallback	supranim/network/webserver.html#addCallback-procs-all	proc		132
