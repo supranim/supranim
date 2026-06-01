@@ -30,7 +30,7 @@ Supranim requires the following external libraries to be installed on your syste
 ### ❤ Contributions & Support
 - 🐛 Found a bug? [Create a new Issue](https://github.com/supranim/supranim/issues)
 - 👋 Wanna help? [Fork it!](https://github.com/supranim/supranim/fork)
-- 😎 [Get €20 in cloud credits from Hetzner](https://hetzner.cloud/?ref=Hm0mYGM9NxZ4)
+- 🤘 Use Supranim in your next awesome project!
 
 ### 🎩 License
 MIT license. [Made by Humans from OpenPeeps](https://github.com/openpeeps).<br>
