@@ -38,5 +38,5 @@ initService Filesystem[Singleton]:
 
       # API
       # fs.write("uploads/avatar.png", pngBytes, visPublic)
-      let data = storage().disk("themes").read("twentysix/theme.yaml")
-      echo data
+      # let data = storage().disk("themes").read("twentysix/theme.yaml")
+      # echo data
