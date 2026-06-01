@@ -636,7 +636,8 @@ proc parseRangeHeader(rangeHeader: string, fileSize: int): Option[(int, int)] =
         return some((start, fileSize - 1))
   none((int, int))
 
-proc streamFile*(req: var Request, filePath: string, resHeaders: HttpHeaders = nil) =
+proc streamFile*(req: var Request, filePath: string,
+            resHeaders: HttpHeaders = nil) =
   ## Streams a file over HTTP using chunked transfer encoding and zero-copy file segments.
   ## 
   ## Supports HTTP Range requests for partial content delivery.
