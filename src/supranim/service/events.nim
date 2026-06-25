@@ -6,7 +6,9 @@
 #   https://supranim.com | https://github.com/supranim
 #
 import pkg/supranim/core/services
-import pkg/[emitter, libevent/bindings/threaded]
+import pkg/emitter
+when not defined(supraNative):
+  import pkg/libevent/bindings/threaded
 
 import ./logger
 
@@ -40,7 +42,8 @@ initService EventEmitter[Singleton]:
       ## Initializes the EventEmitter service by starting the event
       ## loop in a separate thread to allow asynchronous event handling
       ## without blocking the main thread
-      assert evthread_use_pthreads() == 0
+      when not defined(supraNative):
+        assert evthread_use_pthreads() == 0
       createThread(thr, runEventThread)
       logger("Service Events: Initialized EventEmitter singleton and started event loop thread")
 

@@ -21,6 +21,7 @@ import std/[options, asyncdispatch, asynchttpserver,
 from std/net import Port, `$`
 from std/nativesockets import Domain
 
+import pkg/powpow
 import pkg/kapsis/framework
 import pkg/kapsis/interactive/prompts
 
@@ -31,7 +32,7 @@ import ./supranim/service/events
 
 export application, webserver, websocket,
         router, fileserver, strutils,
-        prompts
+        prompts, powpow
 
 export events, countProcessors, controller
 export Domain, Port, `$`, releaseUnusedMemory
@@ -92,6 +93,91 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
     when defined supraWebkit:
       # Bootstrap Supranim from a web-based `WebKit` desktop application. 
       discard # todo to be implemented/documented
+    elif defined supraNative:
+      # Bootstrap Supranim using powpow native Nim HTTP server
+      proc onRequest(req: var webserver.Request) {.gcsafe.} =
+        {.gcsafe.}:
+          var res = Response(headers: newHttpHeaders())
+          getBaseMiddlewares(req, res)
+          let
+            path = req.getUriPath()
+            httpMethod = req.getHttpMethod()
+            runtimeCheck = app.router.checkExists(path, httpMethod)
+
+          case runtimeCheck.exists
+          of true:
+            req.setParams(runtimeCheck.params)
+            let middlewareStatus: HttpCode =
+              runtimeCheck.route.resolveMiddleware(req, res)
+            case middlewareStatus
+            of Http301, Http302, Http303:
+              req.resp(middlewareStatus, "", res.getHeaders())
+            of Http204:
+                case httpMethod
+                of HttpGet:
+                  try:
+                    when defined supraMicroservice:
+                      runtimeCheck.route.callback(req.addr, res.addr)
+                    else:
+                      runtimeCheck.route.callback(req, res)
+                  except Exception as e:
+                    req.resp(Http500, "Internal Server Error")
+                    return
+
+                  let
+                    code = res.getCode()
+                    headers = res.getHeaders()
+                    body = res.getBody()
+                  
+                  discard runtimeCheck.route.resolveAfterware(req, res)
+                  
+                  if not res.isStreaming and req.responseSent == false:
+                    req.resp(res.getCode, res.getBody, res.getHeaders)
+                else:
+                  when not defined supraMicroservice:
+                    try: 
+                      runtimeCheck.route.callback(req, res)
+                    except Exception as e:
+                      displayError("Error processing request: " & e.msg)
+                      req.resp(Http500, "Internal Server Error", res.getHeaders())
+                      return
+                  discard runtimeCheck.route.resolveAfterware(req, res)
+                  req.resp(res.getCode, res.getBody, res.headers)
+            else:
+              req.resp(Http403, getDefault(Http403), res.getHeaders)
+              event().emit("http.error", some(@[path, $Http403]))
+          of false:
+            when defined webApp:
+              when defined supraFileserver:
+                var hasFoundResource: bool
+                if app.assetsHandler != nil:
+                  app.assetsHandler(req, res, hasFoundResource)
+                else:
+                  if startsWith(path, "/assets"):
+                    req.sendAssets(path, res.getHeaders(), hasFoundResource)
+                if not hasFoundResource: invoke4xxHandler(path, req, res)
+              else: invoke4xxHandler(path, req, res)
+            else: invoke4xxHandler(path, req, res)
+
+      event().emit("app.startup")
+      
+      when defined supranimUseGlobalOnRequest:
+        app.server = newWebServer(Port(app.config("server.port").getInt))
+      else:
+        app.server = newWebServer(Port(app.config("server.port").getInt), true)
+      
+      optionalBlock
+
+      when not compiles(startupCallback()):
+        injectSafeThreadCallbacks()
+      
+      when defined supranimUseGlobalOnRequest:
+        app.server.start(onRequest)
+      else:
+        when compiles(startupCallback()):
+          app.server.start(onRequest, startupCallback, threads = countProcessors())
+        else:
+          app.server.start(onRequest, nil, threads = countProcessors())
     else:
       # Bootstrap Supranim from a web-based application.
       proc onRequest(req: var webserver.Request) {.gcsafe.} =

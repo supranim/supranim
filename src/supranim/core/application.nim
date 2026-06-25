@@ -8,7 +8,8 @@
 import std/[macros, os, net, tables, strutils, hashes, macrocache, posix]
 
 import pkg/threading/[once, rwlock]
-import pkg/libevent/bindings/[http, buffer, event]
+when not defined(supraNative):
+  import pkg/libevent/bindings/[http, buffer, event]
 
 import pkg/kapsis
 import pkg/kapsis/interactive/prompts
@@ -383,7 +384,7 @@ template services*(app: Application, servicesStmt) {.inject.} =
     add blockStmt, newEmptyNode()
     add blockStmt, node
     add result, blockStmt
-    add result, newCall(ident"extractThreadServicesBackend")
+    # add result, newCall(ident"extractThreadServicesBackend")
     # add result, newCall(ident"extractThreadServicesClient")
   preloadServices(servicesStmt)
 
