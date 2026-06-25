@@ -1,28 +1,28 @@
 nimTitle	application	supranim/core/application.html	module supranim/core/application		0
-nim	JsonString	supranim/core/application.html#JsonString	type JsonString		26
-nim	Services	supranim/core/application.html#Services	object Services		28
-nim	ApplicationAssetsHandler	supranim/core/application.html#ApplicationAssetsHandler	type ApplicationAssetsHandler		35
-nim	ApplicationThreadCallback	supranim/core/application.html#ApplicationThreadCallback	type ApplicationThreadCallback		36
-nim	AppConfigDefect	supranim/core/application.html#AppConfigDefect	object AppConfigDefect		60
-nim	info	supranim/core/application.html#info,string,int	proc info(str: string; indentSize = 0)		62
-nim	App	supranim/core/application.html#App	var App		69
-nim	Application	supranim/core/application.html#Application	type Application		73
-nim	initApplication	supranim/core/application.html#initApplication	proc initApplication()		76
-nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		82
-nim	AppInstance	supranim/core/application.html#AppInstance_2	proc AppInstance(): Application		88
-nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Application): ApplicationPaths		93
-nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): YamlNode		100
-nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		110
-nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		192
-nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		223
-nim	SafeThreadVarSeq	supranim/core/application.html#SafeThreadVarSeq	const SafeThreadVarSeq		291
-nim	withThreadCallback	supranim/core/application.html#withThreadCallback.m,untyped,untyped	macro withThreadCallback(appInstance, callback: untyped)		296
-nim	injectSafeThreadCallbacks	supranim/core/application.html#injectSafeThreadCallbacks.m	macro injectSafeThreadCallbacks()		302
-nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		325
-nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		330
-nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		349
-nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		368
-nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		390
-nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		396
-nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		400
-nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		404
+nim	JsonString	supranim/core/application.html#JsonString	type JsonString		27
+nim	Services	supranim/core/application.html#Services	object Services		29
+nim	ApplicationAssetsHandler	supranim/core/application.html#ApplicationAssetsHandler	type ApplicationAssetsHandler		36
+nim	ApplicationThreadCallback	supranim/core/application.html#ApplicationThreadCallback	type ApplicationThreadCallback		37
+nim	AppConfigDefect	supranim/core/application.html#AppConfigDefect	object AppConfigDefect		61
+nim	info	supranim/core/application.html#info,string,int	proc info(str: string; indentSize = 0)		63
+nim	App	supranim/core/application.html#App	var App		70
+nim	Application	supranim/core/application.html#Application	type Application		74
+nim	initApplication	supranim/core/application.html#initApplication	proc initApplication()		77
+nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		83
+nim	AppInstance	supranim/core/application.html#AppInstance_2	proc AppInstance(): Application		89
+nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Application): ApplicationPaths		94
+nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): YamlNode		101
+nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		111
+nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		193
+nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		224
+nim	SafeThreadVarSeq	supranim/core/application.html#SafeThreadVarSeq	const SafeThreadVarSeq		292
+nim	withThreadCallback	supranim/core/application.html#withThreadCallback.m,untyped,untyped	macro withThreadCallback(appInstance, callback: untyped)		297
+nim	injectSafeThreadCallbacks	supranim/core/application.html#injectSafeThreadCallbacks.m	macro injectSafeThreadCallbacks()		303
+nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		326
+nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		331
+nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		350
+nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		369
+nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		391
+nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		397
+nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		401
+nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		405
