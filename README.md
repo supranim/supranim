@@ -16,16 +16,18 @@
 - Modular architecture for easy extension and customization.
 
 ### About
-Supranim is a web framework built on top of Libevent, designed to be fast, modern and simple to use. It provides a set of tools and features for building web apps, REST APIs and real-time applications in Nim.
+Supranim is a web framework designed to be fast, modern and simple to use. It provides a set of tools and features for building web apps, REST APIs and real-time applications in Nim. Supranim provides multiple backends that can be used to build web apps, including WebSockets, and more. Currently, Supranim supports the following backends:
+- **libevent**: A C library that provides asynchronous I/O and event notification. It is used for building high-performance network applications.
+- **powpow**: A high-performance HTTP server written in Nim. Supporting UDP, TCP, HTTP/1.1 and WebSockets. [Check Repository: openpeeps/powpow](https://github.com/openpeeps/powpow)
 
 Check the official documentation: https://docs.supranim.com
 
-### External Libraries
-Supranim requires the following external libraries to be installed on your system:
 
-- openssl
-- libevent
-- libzip
+### Built with Supranim
+- [Booyaka](https://github.com/openpeeps/booyaka) - A super fast documentaton generator powered by Supranim and Markdown
+- [Sunday](https://github.com/getsunday/sunday) - A simple publishing platform powered by Supranim (CMS)
+- [Supranim StarterKit 2026](https://github.com/supranim/starterkit) - A starter kit for building web apps with Supranim
+- Add your project here! [Create a new Issue](https://github.com/supranim/supranim/issues/new)
 
 ### ❤ Contributions & Support
 - 🐛 Found a bug? [Create a new Issue](https://github.com/supranim/supranim/issues)
@@ -33,5 +35,5 @@ Supranim requires the following external libraries to be installed on your syste
 - 🤘 Use Supranim in your next awesome project!
 
 ### 🎩 License
-MIT license. [Made by Humans from OpenPeeps](https://github.com/openpeeps).<br>
+LGPL-3.0 license. [Made by Humans from OpenPeeps](https://github.com/openpeeps).<br>
 Copyright &copy; 2025 OpenPeeps & Contributors &mdash; All rights reserved.
