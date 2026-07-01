@@ -52,9 +52,9 @@ proc isExpired*(cookie: ref Cookie): bool =
     result = now() >= cookie.expires.get()
 
 proc expires*(cookie: ref Cookie) =
-  ## Set `Cookie` as expired
-  if cookie.expires.isSome:
-    cookie.expires = some(cookie.expires.get() - 1.years)
+  ## Set `Cookie` as expired by pushing expiration to the past.
+  ## Works for both session cookies (no expiry) and persistent cookies.
+  cookie.expires = some(now() - 1.years)
 
 proc parseCookies*(cookies: string): CookiesTable =
   ## Parse cookies and return a `CookiesTable`
@@ -67,12 +67,15 @@ proc parseCookies*(cookies: string): CookiesTable =
 
 proc `$`*(cookie: ref Cookie): string =
   result.add kv(cookie.name, cookie.value)
-  result.add kv("HttpOnly", $cookie.httpOnly)
+  if cookie.httpOnly:
+    result.add "HttpOnly;"
   if cookie.expires.isSome():
     result.add kv("Expires", format(cookie.expires.get().utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"))
-  # result.add kv("MaxAge", $(cookie.maxAge.get))
-  result.add kv("Domain", $cookie.domain)
-  result.add kv("Path", $cookie.path)
-  # when defined release:
-  result.add kv("Secure", $cookie.secure)
+  if cookie.maxAge.isSome:
+    result.add kv("Max-Age", $cookie.maxAge.get)
+  if cookie.domain.len > 0:
+    result.add kv("Domain", cookie.domain)
+  result.add kv("Path", cookie.path)
+  if cookie.secure:
+    result.add "Secure;"
   result.add kv("SameSite", $cookie.sameSite)
