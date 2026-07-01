@@ -84,7 +84,7 @@ type
       ## Whether a response has already been sent for this request.
       ## This is used to prevent multiple responses.
   
-  OnRequestLowLevel* = proc(req: ptr evhttp_request, arg: pointer) {.cdecl.}
+  OnRequestLowLevel* = proc(req: pointer, arg: pointer) {.cdecl, gcsafe.}
     ## Low-level callback type for handling HTTP requests directly with evhttp_request.
 
   StartupCallback* = proc() {.gcsafe.}
@@ -320,11 +320,12 @@ proc webWorker(arg: (ptr WorkerCtx, StartupCallback)) {.thread.} =
     evhttp_set_gencb(httpServer, initialOnRequest, cast[pointer](ctx.handler))
   
   # register any additional path-specific callbacks for this worker
+  type EvCallback = proc(req: ptr evhttp_request, arg: pointer) {.cdecl.}
   readWith webWorkerLocker:
     # not sure if we need to lock here since the server should
     # not be accepting requests yet, but just to be safe
     for path, callback in ctx.otherOnRequestCallbacks:
-      discard evhttp_set_cb(httpServer, path.cstring, callback, nil)
+      discard evhttp_set_cb(httpServer, path.cstring, cast[EvCallback](callback), nil)
 
   # Start the event loop for this worker thread
   discard event_base_dispatch(base)
@@ -820,7 +821,8 @@ proc addCallback*(server: WebServer, path: string,
   ## 
   ## Note: This is a lower-level API. For more complex routing consider
   ## using the Router service which provides higher-level abstractions.
-  discard evhttp_set_cb(server.httpServer, path.cstring, callback, nil)
+  type EvCallback = proc(req: ptr evhttp_request, arg: pointer) {.cdecl.}
+  discard evhttp_set_cb(server.httpServer, path.cstring, cast[EvCallback](callback), nil)
 
 proc addCallback*(httpServer: ptr evhttp, path: string,
     callback: OnRequestLowLevel) =
@@ -828,7 +830,8 @@ proc addCallback*(httpServer: ptr evhttp, path: string,
   ## 
   ## This is a lower-level API. For more complex routing consider
   ## using the Router service which provides higher-level abstractions
-  discard evhttp_set_cb(httpServer, path.cstring, callback, nil)
+  type EvCallback = proc(req: ptr evhttp_request, arg: pointer) {.cdecl.}
+  discard evhttp_set_cb(httpServer, path.cstring, cast[EvCallback](callback), nil)
 
 proc registerCallback*(server: WebServer, path: string, callback: OnRequestLowLevel) =
   ## Registers a callback to WebServer
@@ -856,4 +859,6 @@ proc unregisterCallback*(server: WebServer, path: string) =
 
   if not server.enableMultiThreading and server.httpServer != nil:
     # clear direct libevent route if it was installed
-    discard evhttp_set_cb(server.httpServer, normalized.cstring, nil, nil)
+    type EvCallback = proc(req: ptr evhttp_request, arg: pointer) {.cdecl.}
+    discard evhttp_set_cb(server.httpServer, normalized.cstring,
+      cast[EvCallback](nil), nil)

@@ -21,7 +21,10 @@ import std/[options, asyncdispatch, asynchttpserver,
 from std/net import Port, `$`
 from std/nativesockets import Domain
 
-import pkg/powpow
+when defined supraNative:
+  import pkg/powpow
+  export powpow
+
 import pkg/kapsis/framework
 import pkg/kapsis/interactive/prompts
 
@@ -32,7 +35,7 @@ import ./supranim/service/events
 
 export application, webserver, websocket,
         router, fileserver, strutils,
-        prompts, powpow
+        prompts
 
 export events, countProcessors, controller
 export Domain, Port, `$`, releaseUnusedMemory
