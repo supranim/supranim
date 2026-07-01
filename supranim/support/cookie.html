@@ -155,10 +155,10 @@
 </div>
 <div id="expires-procs-all">
   <div id="expires,ref.Cookie">
-  <dt><pre><span class="Keyword">proc</span> <a href="#expires%2Cref.Cookie"><span class="Identifier">expires</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#expires%2Cref.Cookie"><span class="Identifier">expires</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Set <tt class="docutils literal"><span class="pre"><span class="Identifier">Cookie</span></span></tt> as expired
+    Set <tt class="docutils literal"><span class="pre"><span class="Identifier">Cookie</span></span></tt> as expired by pushing expiration to the past. Works for both session cookies (no expiry) and persistent cookies.
     
   </dd>
 </div>
@@ -246,7 +246,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-06-27 09:32:27 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-07-01 07:03:00 UTC</small>
       </div>
     </div>
   </div>

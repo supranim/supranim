@@ -211,15 +211,15 @@
           </ul></dd>
 <dt><a name="close" href="#close"><span>close:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: proc close(c: ptr WebSocketConnectionImpl; code: int = 1000; reason = &quot;&quot;)" href="supranim/network/websocket.html#close%2Cptr.WebSocketConnectionImpl%2Cint%2Cstring">websocket: proc close(c: ptr WebSocketConnectionImpl; code: int = 1000; reason = &quot;&quot;)</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="websocket: proc close(ws: WebSocketConnection; code: int = 1000; reason = &quot;&quot;)" href="supranim/network/websocket.html#close%2CWebSocketConnection%2Cint%2Cstring">websocket: proc close(ws: WebSocketConnection; code: int = 1000; reason = &quot;&quot;)</a></li>
-          <li><a class="reference external"
           data-doc-search-tag="httpclient: proc close(client: HttpClient | AsyncHttpClient)" href="supranim/support/httpclient.html#close">httpclient: proc close(client: HttpClient | AsyncHttpClient)</a></li>
           </ul></dd>
 <dt><a name="CloseCb" href="#CloseCb"><span>CloseCb:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="websocket: type CloseCb" href="supranim/network/websocket.html#CloseCb">websocket: type CloseCb</a></li>
+          </ul></dd>
+<dt><a name="closeWs" href="#closeWs"><span>closeWs:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc closeWs(ws: WsConnection; code: int = 1000; reason = &quot;&quot;)" href="supranim/network/websocket.html#closeWs%2CWsConnection%2Cint%2Cstring">websocket: proc closeWs(ws: WsConnection; code: int = 1000; reason = &quot;&quot;)</a></li>
           </ul></dd>
 <dt><a name="code" href="#code"><span>code:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1295,9 +1295,7 @@
           </ul></dd>
 <dt><a name="sendBinary" href="#sendBinary"><span>sendBinary:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: proc sendBinary(c: ptr WebSocketConnectionImpl; data: openArray[byte])" href="supranim/network/websocket.html#sendBinary%2Cptr.WebSocketConnectionImpl%2CopenArray%5Bbyte%5D">websocket: proc sendBinary(c: ptr WebSocketConnectionImpl; data: openArray[byte])</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="websocket: proc sendBinary(ws: WebSocketConnection; data: openArray[byte])" href="supranim/network/websocket.html#sendBinary%2CWebSocketConnection%2CopenArray%5Bbyte%5D">websocket: proc sendBinary(ws: WebSocketConnection; data: openArray[byte])</a></li>
+          data-doc-search-tag="websocket: proc sendBinary(ws: WsConnection; data: openArray[byte])" href="supranim/network/websocket.html#sendBinary%2CWsConnection%2CopenArray%5Bbyte%5D">websocket: proc sendBinary(ws: WsConnection; data: openArray[byte])</a></li>
           </ul></dd>
 <dt><a name="sendChunk" href="#sendChunk"><span>sendChunk:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1319,27 +1317,21 @@
           <li><a class="reference external"
           data-doc-search-tag="webserver: proc sendFile(req: var Request; filePath: string; resHeaders: HttpHeaders)" href="supranim/network/webserver.html#sendFile%2CRequest%2Cstring%2CHttpHeaders">webserver: proc sendFile(req: var Request; filePath: string; resHeaders: HttpHeaders)</a></li>
           </ul></dd>
-<dt><a name="sendFrame" href="#sendFrame"><span>sendFrame:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="websocket: proc sendFrame(c: ptr WebSocketConnectionImpl; opcode: int; payload: openArray[byte])" href="supranim/network/websocket.html#sendFrame%2Cptr.WebSocketConnectionImpl%2Cint%2CopenArray%5Bbyte%5D">websocket: proc sendFrame(c: ptr WebSocketConnectionImpl; opcode: int; payload: openArray[byte])</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="websocket: proc sendFrame(ws: WebSocketConnection; opcode: int; payload: openArray[byte])" href="supranim/network/websocket.html#sendFrame%2CWebSocketConnection%2Cint%2CopenArray%5Bbyte%5D">websocket: proc sendFrame(ws: WebSocketConnection; opcode: int; payload: openArray[byte])</a></li>
-          </ul></dd>
 <dt><a name="sendJson" href="#sendJson"><span>sendJson:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="response: template sendJson(body: typed; code: HttpCode = Http200): untyped" href="supranim/core/response.html#sendJson.t%2Ctyped%2CHttpCode">response: template sendJson(body: typed; code: HttpCode = Http200): untyped</a></li>
           </ul></dd>
 <dt><a name="sendPing" href="#sendPing"><span>sendPing:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: proc sendPing(c: ptr WebSocketConnectionImpl; data: openArray[byte] = [])" href="supranim/network/websocket.html#sendPing%2Cptr.WebSocketConnectionImpl%2CopenArray%5Bbyte%5D">websocket: proc sendPing(c: ptr WebSocketConnectionImpl; data: openArray[byte] = [])</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="websocket: proc sendPing(ws: WebSocketConnection; data: openArray[byte] = [])" href="supranim/network/websocket.html#sendPing%2CWebSocketConnection%2CopenArray%5Bbyte%5D">websocket: proc sendPing(ws: WebSocketConnection; data: openArray[byte] = [])</a></li>
+          data-doc-search-tag="websocket: proc sendPing(ws: WsConnection; data: openArray[byte] = [])" href="supranim/network/websocket.html#sendPing%2CWsConnection%2CopenArray%5Bbyte%5D">websocket: proc sendPing(ws: WsConnection; data: openArray[byte] = [])</a></li>
+          </ul></dd>
+<dt><a name="sendPong" href="#sendPong"><span>sendPong:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: proc sendPong(ws: WsConnection; data: openArray[byte] = [])" href="supranim/network/websocket.html#sendPong%2CWsConnection%2CopenArray%5Bbyte%5D">websocket: proc sendPong(ws: WsConnection; data: openArray[byte] = [])</a></li>
           </ul></dd>
 <dt><a name="sendText" href="#sendText"><span>sendText:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: proc sendText(c: ptr WebSocketConnectionImpl; s: string)" href="supranim/network/websocket.html#sendText%2Cptr.WebSocketConnectionImpl%2Cstring">websocket: proc sendText(c: ptr WebSocketConnectionImpl; s: string)</a></li>
-          <li><a class="reference external"
-          data-doc-search-tag="websocket: proc sendText(ws: WebSocketConnection; s: string)" href="supranim/network/websocket.html#sendText%2CWebSocketConnection%2Cstring">websocket: proc sendText(ws: WebSocketConnection; s: string)</a></li>
+          data-doc-search-tag="websocket: proc sendText(ws: WsConnection; s: string)" href="supranim/network/websocket.html#sendText%2CWsConnection%2Cstring">websocket: proc sendText(ws: WsConnection; s: string)</a></li>
           </ul></dd>
 <dt><a name="ServiceManagerThreadServices" href="#ServiceManagerThreadServices"><span>ServiceManagerThreadServices:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1376,22 +1368,6 @@
 <dt><a name="setCode" href="#setCode"><span>setCode:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="response: proc setCode(res: var Response; code: HttpCode)" href="supranim/core/response.html#setCode%2CResponse%2CHttpCode">response: proc setCode(res: var Response; code: HttpCode)</a></li>
-          </ul></dd>
-<dt><a name="setOnClose" href="#setOnClose"><span>setOnClose:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="websocket: proc setOnClose(ws: ptr WebSocketConnectionImpl; cb: CloseCb)" href="supranim/network/websocket.html#setOnClose%2Cptr.WebSocketConnectionImpl%2CCloseCb">websocket: proc setOnClose(ws: ptr WebSocketConnectionImpl; cb: CloseCb)</a></li>
-          </ul></dd>
-<dt><a name="setOnError" href="#setOnError"><span>setOnError:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="websocket: proc setOnError(ws: ptr WebSocketConnectionImpl; cb: ErrorCb)" href="supranim/network/websocket.html#setOnError%2Cptr.WebSocketConnectionImpl%2CErrorCb">websocket: proc setOnError(ws: ptr WebSocketConnectionImpl; cb: ErrorCb)</a></li>
-          </ul></dd>
-<dt><a name="setOnMessage" href="#setOnMessage"><span>setOnMessage:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="websocket: proc setOnMessage(ws: ptr WebSocketConnectionImpl; cb: MessageCb)" href="supranim/network/websocket.html#setOnMessage%2Cptr.WebSocketConnectionImpl%2CMessageCb">websocket: proc setOnMessage(ws: ptr WebSocketConnectionImpl; cb: MessageCb)</a></li>
-          </ul></dd>
-<dt><a name="setOnOpen" href="#setOnOpen"><span>setOnOpen:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="websocket: proc setOnOpen(ws: ptr WebSocketConnectionImpl; cb: OpenCb)" href="supranim/network/websocket.html#setOnOpen%2Cptr.WebSocketConnectionImpl%2COpenCb">websocket: proc setOnOpen(ws: ptr WebSocketConnectionImpl; cb: OpenCb)</a></li>
           </ul></dd>
 <dt><a name="setParams" href="#setParams"><span>setParams:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1535,21 +1511,17 @@
 <li><a class="reference external"
           data-doc-search-tag="websocket: type WebSocketConnection" href="supranim/network/websocket.html#WebSocketConnection">websocket: type WebSocketConnection</a></li>
           </ul></dd>
-<dt><a name="WebSocketConnectionImpl" href="#WebSocketConnectionImpl"><span>WebSocketConnectionImpl:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="websocket: object WebSocketConnectionImpl" href="supranim/network/websocket.html#WebSocketConnectionImpl">websocket: object WebSocketConnectionImpl</a></li>
-          </ul></dd>
 <dt><a name="WebSocketFrameKind" href="#WebSocketFrameKind"><span>WebSocketFrameKind:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: enum WebSocketFrameKind" href="supranim/network/websocket.html#WebSocketFrameKind">websocket: enum WebSocketFrameKind</a></li>
+          data-doc-search-tag="websocket: type WebSocketFrameKind" href="supranim/network/websocket.html#WebSocketFrameKind">websocket: type WebSocketFrameKind</a></li>
           </ul></dd>
 <dt><a name="websocketUpgrade" href="#websocketUpgrade"><span>websocketUpgrade:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: proc websocketUpgrade(req: ptr evhttp_request; onOpen: OpenCb = nil;
-                 onMessage: MessageCb = nil; onClose: CloseCb = nil;
-                 onError: ErrorCb = nil): WebSocketConnection" href="supranim/network/websocket.html#websocketUpgrade%2Cptr.evhttp_request%2COpenCb%2CMessageCb%2CCloseCb%2CErrorCb">websocket: proc websocketUpgrade(req: ptr evhttp_request; onOpen: OpenCb = nil;
-                 onMessage: MessageCb = nil; onClose: CloseCb = nil;
-                 onError: ErrorCb = nil): WebSocketConnection</a></li>
+          data-doc-search-tag="websocket: proc websocketUpgrade(req: ptr evhttp_request; onOpen: WsOpenCb = nil;
+                 onMessage: WsMessageCb = nil; onClose: WsCloseCb = nil;
+                 onError: WsErrorCb = nil): WsConnection" href="supranim/network/websocket.html#websocketUpgrade%2Cptr.evhttp_request%2CWsOpenCb%2CWsMessageCb%2CWsCloseCb%2CWsErrorCb">websocket: proc websocketUpgrade(req: ptr evhttp_request; onOpen: WsOpenCb = nil;
+                 onMessage: WsMessageCb = nil; onClose: WsCloseCb = nil;
+                 onError: WsErrorCb = nil): WsConnection</a></li>
           </ul></dd>
 <dt><a name="withAssetsHandler" href="#withAssetsHandler"><span>withAssetsHandler:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1573,33 +1545,57 @@
           </ul></dd>
 <dt><a name="wsBinary" href="#wsBinary"><span>wsBinary:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: WebSocketFrameKind.wsBinary" href="supranim/network/websocket.html#wsBinary">websocket: WebSocketFrameKind.wsBinary</a></li>
+          data-doc-search-tag="websocket: WsFrameKind.wsBinary" href="supranim/network/websocket.html#wsBinary">websocket: WsFrameKind.wsBinary</a></li>
           </ul></dd>
 <dt><a name="wsClose" href="#wsClose"><span>wsClose:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: WebSocketFrameKind.wsClose" href="supranim/network/websocket.html#wsClose">websocket: WebSocketFrameKind.wsClose</a></li>
+          data-doc-search-tag="websocket: WsFrameKind.wsClose" href="supranim/network/websocket.html#wsClose">websocket: WsFrameKind.wsClose</a></li>
           </ul></dd>
-<dt><a name="wsNone" href="#wsNone"><span>wsNone:</span></a></dt><dd><ul class="simple">
+<dt><a name="WsCloseCb" href="#WsCloseCb"><span>WsCloseCb:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: WebSocketFrameKind.wsNone" href="supranim/network/websocket.html#wsNone">websocket: WebSocketFrameKind.wsNone</a></li>
+          data-doc-search-tag="websocket: type WsCloseCb" href="supranim/network/websocket.html#WsCloseCb">websocket: type WsCloseCb</a></li>
+          </ul></dd>
+<dt><a name="WsConnection" href="#WsConnection"><span>WsConnection:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: type WsConnection" href="supranim/network/websocket.html#WsConnection">websocket: type WsConnection</a></li>
+          </ul></dd>
+<dt><a name="wsContinuation" href="#wsContinuation"><span>wsContinuation:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: WsFrameKind.wsContinuation" href="supranim/network/websocket.html#wsContinuation">websocket: WsFrameKind.wsContinuation</a></li>
+          </ul></dd>
+<dt><a name="WsErrorCb" href="#WsErrorCb"><span>WsErrorCb:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: type WsErrorCb" href="supranim/network/websocket.html#WsErrorCb">websocket: type WsErrorCb</a></li>
+          </ul></dd>
+<dt><a name="WsFrameKind" href="#WsFrameKind"><span>WsFrameKind:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: enum WsFrameKind" href="supranim/network/websocket.html#WsFrameKind">websocket: enum WsFrameKind</a></li>
+          </ul></dd>
+<dt><a name="WsMessageCb" href="#WsMessageCb"><span>WsMessageCb:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: type WsMessageCb" href="supranim/network/websocket.html#WsMessageCb">websocket: type WsMessageCb</a></li>
+          </ul></dd>
+<dt><a name="WsOpenCb" href="#WsOpenCb"><span>WsOpenCb:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="websocket: type WsOpenCb" href="supranim/network/websocket.html#WsOpenCb">websocket: type WsOpenCb</a></li>
           </ul></dd>
 <dt><a name="wsPing" href="#wsPing"><span>wsPing:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: WebSocketFrameKind.wsPing" href="supranim/network/websocket.html#wsPing">websocket: WebSocketFrameKind.wsPing</a></li>
+          data-doc-search-tag="websocket: WsFrameKind.wsPing" href="supranim/network/websocket.html#wsPing">websocket: WsFrameKind.wsPing</a></li>
           </ul></dd>
 <dt><a name="wsPong" href="#wsPong"><span>wsPong:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: WebSocketFrameKind.wsPong" href="supranim/network/websocket.html#wsPong">websocket: WebSocketFrameKind.wsPong</a></li>
+          data-doc-search-tag="websocket: WsFrameKind.wsPong" href="supranim/network/websocket.html#wsPong">websocket: WsFrameKind.wsPong</a></li>
           </ul></dd>
 <dt><a name="wsText" href="#wsText"><span>wsText:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="websocket: WebSocketFrameKind.wsText" href="supranim/network/websocket.html#wsText">websocket: WebSocketFrameKind.wsText</a></li>
+          data-doc-search-tag="websocket: WsFrameKind.wsText" href="supranim/network/websocket.html#wsText">websocket: WsFrameKind.wsText</a></li>
           </ul></dd>
 </dl>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-06-27 09:32:27 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-07-01 07:03:00 UTC</small>
       </div>
     </div>
   </div>

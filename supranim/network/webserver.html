@@ -63,7 +63,7 @@
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#BodyStream" title="BodyStream = object">BodyStream</a></li>
 <li><a class="reference" href="#OnRequest" title="OnRequest = proc (req: var Request) {.nimcall.}">OnRequest</a></li>
-<li><a class="reference" href="#OnRequestLowLevel" title="OnRequestLowLevel = proc (req: ptr evhttp_request; arg: pointer) {.cdecl.}">OnRequestLowLevel</a></li>
+<li><a class="reference" href="#OnRequestLowLevel" title="OnRequestLowLevel = proc (req: pointer; arg: pointer) {.cdecl, gcsafe.}">OnRequestLowLevel</a></li>
 <li><a class="reference" href="#Request" title="Request = object
   httpMethod*: EvhttpCmdType ## The HTTP method (GET, POST, etc.).
   raw*: ptr evhttp_request   ## The underlying evhttp_request pointer.
@@ -286,7 +286,7 @@
   </dd>
 </div>
 <div id="OnRequestLowLevel">
-  <dt><pre><a href="#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span>.}</pre></dt>
+  <dt><pre><a href="#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
     Low-level callback type for handling HTTP requests directly with evhttp_request.
@@ -806,7 +806,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-06-27 09:32:27 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-07-01 07:03:00 UTC</small>
       </div>
     </div>
   </div>
