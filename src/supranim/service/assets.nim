@@ -112,6 +112,18 @@ initService Assets[Singleton]:
         return filesDir[key]
       raise newException(StaticAssetsError, "Text asset not found in directory: " & key)
 
+    proc listAssetsDir*(sta: ptr Assets, prefix: string): seq[string] =
+      ## Return all asset keys (text + binary) that start with the given prefix.
+      ## Useful for enumerating embedded assets at runtime (e.g. writing them to disk).
+      result = @[]
+      for dir, files in sta[].textFilesDir:
+        for key in files.keys:
+          if key.startsWith(prefix):
+            result.add(key)
+      for key in sta[].files.keys:
+        if key.startsWith(prefix):
+          result.add(key)
+
     const AssetsImportStmt* = CacheTable"AssetsImportStmt"
     macro embedAssets*(dir: static string): untyped =
       ## Embed all files from the specified directory into the application binary.
