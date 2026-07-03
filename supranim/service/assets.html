@@ -123,6 +123,10 @@
   <li><a class="reference" href="#isPlainText%2CopenArray%5Buint8%5D%2Cint" title="isPlainText(data: openArray[uint8]; sampleSize = 8192): bool">isPlainText(data: openArray[uint8]; sampleSize = 8192): bool</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">listAssetsDir
+  <li><a class="reference" href="#listAssetsDir%2Cptr.Assets%2Cstring" title="listAssetsDir(sta: ptr Assets; prefix: string): seq[string]">listAssetsDir(sta: ptr Assets; prefix: string): seq[string]</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">staticAssets
   <li><a class="reference" href="#staticAssets" title="staticAssets(): ptr Assets">staticAssets(): ptr Assets</a></li>
 
@@ -334,6 +338,18 @@
 </div>
 
 </div>
+<div id="listAssetsDir-procs-all">
+  <div id="listAssetsDir,ptr.Assets,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#listAssetsDir%2Cptr.Assets%2Cstring"><span class="Identifier">listAssetsDir</span></a><span class="Other">(</span><span class="Identifier">sta</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span><span class="Other">;</span> <span class="Identifier">prefix</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Return all asset keys (text + binary) that start with the given prefix. Useful for enumerating embedded assets at runtime (e.g. writing them to disk).
+    
+  </dd>
+</div>
+
+</div>
 <div id="staticAssets-procs-all">
   <div id="staticAssets">
   <dt><pre><span class="Keyword">proc</span> <a href="#staticAssets"><span class="Identifier">staticAssets</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">Assets</span> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
@@ -408,7 +424,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-07-02 11:58:20 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-07-03 08:01:01 UTC</small>
       </div>
     </div>
   </div>

@@ -12,8 +12,9 @@ nim	getTextFile	supranim/service/assets.html#getTextFile,TextFilesTable,string	p
 nim	addTextFile	supranim/service/assets.html#addTextFile,ptr.Assets,string,string,sinkstring	proc addTextFile(sta: ptr Assets; dir: string; key: string; data: sink string)		97
 nim	hasFile	supranim/service/assets.html#hasFile,TextFilesTable,string	proc hasFile(filesDir: TextFilesTable; key: string): bool		105
 nim	getFile	supranim/service/assets.html#getFile,TextFilesTable,string	proc getFile(filesDir: TextFilesTable; key: string): string		109
-nim	AssetsImportStmt	supranim/service/assets.html#AssetsImportStmt	const AssetsImportStmt		115
-nim	embedAssets	supranim/service/assets.html#embedAssets.m,staticstring	macro embedAssets(dir: static string): untyped		116
-nim	embedDirectory	supranim/service/assets.html#embedDirectory.m,staticstring,staticstring	macro embedDirectory(dir: static string; key: static string)		125
-nim	preloadAssets	supranim/service/assets.html#preloadAssets.m	macro preloadAssets(): untyped		133
-nim	preloadBundle	supranim/service/assets.html#preloadBundle.m,staticstring	macro preloadBundle(key: static string): untyped		137
+nim	listAssetsDir	supranim/service/assets.html#listAssetsDir,ptr.Assets,string	proc listAssetsDir(sta: ptr Assets; prefix: string): seq[string]		115
+nim	AssetsImportStmt	supranim/service/assets.html#AssetsImportStmt	const AssetsImportStmt		127
+nim	embedAssets	supranim/service/assets.html#embedAssets.m,staticstring	macro embedAssets(dir: static string): untyped		128
+nim	embedDirectory	supranim/service/assets.html#embedDirectory.m,staticstring,staticstring	macro embedDirectory(dir: static string; key: static string)		137
+nim	preloadAssets	supranim/service/assets.html#preloadAssets.m	macro preloadAssets(): untyped		145
+nim	preloadBundle	supranim/service/assets.html#preloadBundle.m,staticstring	macro preloadBundle(key: static string): untyped		149
