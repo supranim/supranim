@@ -23,35 +23,36 @@ type
     maxAge: Option[int]
     sameSite: SameSite
 
-  CookiesTable* = TableRef[string, ref Cookie]
+  CookiesTable* = TableRef[string, Cookie]
 
 proc kv(k, v: string): string = result = k & "=" & v & ";"
 
 proc newCookie*(name, value: string,
       expirationDate: Option[DateTime] = none(DateTime),
       maxAge = none(int), domain = "", path = "/", secure,
-      httpOnly = true, sameSite = Strict): ref Cookie =
-  ## Create a new `Cookie` object and return as a ref object.
-  new result
-  result.name = name
-  result.value = value
-  result.expires = expirationDate
-  result.maxAge = maxAge
-  result.domain = domain
-  result.path = path
-  result.secure = secure
-  result.httpOnly = httpOnly
-  result.sameSite = sameSite
+      httpOnly = true, sameSite = Strict): Cookie =
+  ## Create a new `Cookie` object.
+  Cookie(
+    name: name,
+    value: value,
+    expires: expirationDate,
+    maxAge: maxAge,
+    domain: domain,
+    path: path,
+    secure: secure,
+    httpOnly: httpOnly,
+    sameSite: sameSite
+  )
 
-proc getName*(cookie: ref Cookie): string = cookie.name
-proc getValue*(cookie: ref Cookie): string = cookie.value
-proc getDomain*(cookie: ref Cookie): string = cookie.domain
+proc getName*(cookie: Cookie): string = cookie.name
+proc getValue*(cookie: Cookie): string = cookie.value
+proc getDomain*(cookie: Cookie): string = cookie.domain
 
-proc isExpired*(cookie: ref Cookie): bool =
+proc isExpired*(cookie: Cookie): bool =
   if cookie.expires.isSome:
     result = now() >= cookie.expires.get()
 
-proc expires*(cookie: ref Cookie) =
+proc expires*(cookie: var Cookie) =
   ## Set `Cookie` as expired by pushing expiration to the past.
   ## Works for both session cookies (no expiry) and persistent cookies.
   cookie.expires = some(now() - 1.years)
@@ -65,7 +66,7 @@ proc parseCookies*(cookies: string): CookiesTable =
     if kv.len == 2:
       result[kv[0]] = newCookie(kv[0], kv[1], some(now() + 1.hours))
 
-proc `$`*(cookie: ref Cookie): string =
+proc `$`*(cookie: Cookie): string =
   result.add kv(cookie.name, cookie.value)
   if cookie.httpOnly:
     result.add "HttpOnly;"

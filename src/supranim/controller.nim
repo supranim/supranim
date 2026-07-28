@@ -112,12 +112,12 @@ proc getClientId*(req: var Request): Option[string] =
       let ssidCookie = clientCookies["ssid"]
       return some(ssidCookie.getValue())
 
-proc getSessionCookie*(req: var Request): ref Cookie =
+proc getSessionCookie*(req: var Request): Option[Cookie] =
   ## Returns the client-side `ssid` Cookie from `Request`
   if req.hasCookies:
     var clientCookies: CookiesTable = parseCookies(req.getCookies().get())
     if clientCookies.hasKey("ssid"):
-      return clientCookies["ssid"]
+      return some(clientCookies["ssid"])
 
 #
 # Controller Compile utils
