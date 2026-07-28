@@ -141,11 +141,12 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                     try: 
                       runtimeCheck.route.callback(req, res)
                     except Exception as e:
-                      displayError("Error processing request: " & e.msg)
+                      displayError("Error processing request: " & e.msg & "\n" & e.getStackTrace())
                       req.resp(Http500, "Internal Server Error", res.getHeaders())
                       return
                   discard runtimeCheck.route.resolveAfterware(req, res)
-                  req.resp(res.getCode, res.getBody, res.headers)
+                  if not req.responseSent:
+                    req.resp(res.getCode, res.getBody, res.headers)
             else:
               req.resp(Http403, getDefault(Http403), res.getHeaders)
               event().emit("http.error", some(@[path, $Http403]))
@@ -235,11 +236,12 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                     except Exception as e:
                       # is important to catch unexpected errors here
                       # in order to prevent the server from crashing
-                      displayError("Error processing request: " & e.msg)
+                      displayError("Error processing request: " & e.msg & "\n" & e.getStackTrace())
                       req.resp(Http500, "Internal Server Error", res.getHeaders())
                       return
                   discard runtimeCheck.route.resolveAfterware(req, res)
-                  req.resp(res.getCode, res.getBody, res.headers)
+                  if not req.responseSent:
+                    req.resp(res.getCode, res.getBody, res.headers)
             else:
               req.resp(Http403, getDefault(Http403), res.getHeaders)
               event().emit("http.error", some(@[path, $Http403]))

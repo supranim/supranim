@@ -36,7 +36,8 @@ initService EventEmitter[Singleton]:
 
     proc runEventThread {.thread.} =
       # the thread procedure that runs the event loop
-      event().run()
+      {.gcsafe.}:
+        event().run()
 
     proc init*() =
       ## Initializes the EventEmitter service by starting the event
