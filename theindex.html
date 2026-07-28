@@ -35,7 +35,7 @@
           </ul></dd>
 <dt><a name="%60%24%60" href="#%60%24%60"><span>`$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="cookie: proc `$`(cookie: ref Cookie): string" href="supranim/support/cookie.html#%24%2Cref.Cookie">cookie: proc `$`(cookie: ref Cookie): string</a></li>
+          data-doc-search-tag="cookie: proc `$`(cookie: Cookie): string" href="supranim/support/cookie.html#%24%2CCookie">cookie: proc `$`(cookie: Cookie): string</a></li>
           <li><a class="reference external"
           data-doc-search-tag="httpclient: proc `$`(data: MultipartData): string" href="supranim/support/httpclient.html#%24%2CMultipartData">httpclient: proc `$`(data: MultipartData): string</a></li>
           <li><a class="reference external"
@@ -361,7 +361,7 @@
           </ul></dd>
 <dt><a name="expires" href="#expires"><span>expires:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="cookie: proc expires(cookie: ref Cookie)" href="supranim/support/cookie.html#expires%2Cref.Cookie">cookie: proc expires(cookie: ref Cookie)</a></li>
+          data-doc-search-tag="cookie: proc expires(cookie: var Cookie)" href="supranim/support/cookie.html#expires%2CCookie">cookie: proc expires(cookie: var Cookie)</a></li>
           </ul></dd>
 <dt><a name="extractThreadServicesBackend" href="#extractThreadServicesBackend"><span>extractThreadServicesBackend:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -479,7 +479,7 @@
           </ul></dd>
 <dt><a name="getDomain" href="#getDomain"><span>getDomain:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="cookie: proc getDomain(cookie: ref Cookie): string" href="supranim/support/cookie.html#getDomain%2Cref.Cookie">cookie: proc getDomain(cookie: ref Cookie): string</a></li>
+          data-doc-search-tag="cookie: proc getDomain(cookie: Cookie): string" href="supranim/support/cookie.html#getDomain%2CCookie">cookie: proc getDomain(cookie: Cookie): string</a></li>
           </ul></dd>
 <dt><a name="getEventEmitterInstance" href="#getEventEmitterInstance"><span>getEventEmitterInstance:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -545,7 +545,7 @@
           </ul></dd>
 <dt><a name="getName" href="#getName"><span>getName:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="cookie: proc getName(cookie: ref Cookie): string" href="supranim/support/cookie.html#getName%2Cref.Cookie">cookie: proc getName(cookie: ref Cookie): string</a></li>
+          data-doc-search-tag="cookie: proc getName(cookie: Cookie): string" href="supranim/support/cookie.html#getName%2CCookie">cookie: proc getName(cookie: Cookie): string</a></li>
           </ul></dd>
 <dt><a name="getOutputHeaders" href="#getOutputHeaders"><span>getOutputHeaders:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -573,7 +573,7 @@
           </ul></dd>
 <dt><a name="getSessionCookie" href="#getSessionCookie"><span>getSessionCookie:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="controller: proc getSessionCookie(req: var Request): ref Cookie" href="supranim/controller.html#getSessionCookie%2CRequest">controller: proc getSessionCookie(req: var Request): ref Cookie</a></li>
+          data-doc-search-tag="controller: proc getSessionCookie(req: var Request): Option[Cookie]" href="supranim/controller.html#getSessionCookie%2CRequest">controller: proc getSessionCookie(req: var Request): Option[Cookie]</a></li>
           </ul></dd>
 <dt><a name="getSocket" href="#getSocket"><span>getSocket:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -607,7 +607,7 @@
           </ul></dd>
 <dt><a name="getValue" href="#getValue"><span>getValue:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="cookie: proc getValue(cookie: ref Cookie): string" href="supranim/support/cookie.html#getValue%2Cref.Cookie">cookie: proc getValue(cookie: ref Cookie): string</a></li>
+          data-doc-search-tag="cookie: proc getValue(cookie: Cookie): string" href="supranim/support/cookie.html#getValue%2CCookie">cookie: proc getValue(cookie: Cookie): string</a></li>
           </ul></dd>
 <dt><a name="Global" href="#Global"><span>Global:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -791,7 +791,7 @@
           </ul></dd>
 <dt><a name="isExpired" href="#isExpired"><span>isExpired:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="cookie: proc isExpired(cookie: ref Cookie): bool" href="supranim/support/cookie.html#isExpired%2Cref.Cookie">cookie: proc isExpired(cookie: ref Cookie): bool</a></li>
+          data-doc-search-tag="cookie: proc isExpired(cookie: Cookie): bool" href="supranim/support/cookie.html#isExpired%2CCookie">cookie: proc isExpired(cookie: Cookie): bool</a></li>
           </ul></dd>
 <dt><a name="isPlainText" href="#isPlainText"><span>isPlainText:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -909,9 +909,9 @@
 <li><a class="reference external"
           data-doc-search-tag="cookie: proc newCookie(name, value: string;
           expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
-          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): ref Cookie" href="supranim/support/cookie.html#newCookie%2Cstring%2Cstring%2COption%5BDateTime%5D%2Cstring%2Cstring">cookie: proc newCookie(name, value: string;
+          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): Cookie" href="supranim/support/cookie.html#newCookie%2Cstring%2Cstring%2COption%5BDateTime%5D%2Cstring%2Cstring">cookie: proc newCookie(name, value: string;
           expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
-          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): ref Cookie</a></li>
+          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): Cookie</a></li>
           </ul></dd>
 <dt><a name="newHttpClient" href="#newHttpClient"><span>newHttpClient:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1599,7 +1599,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-07-03 08:01:02 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-07-28 07:17:23 UTC</small>
       </div>
     </div>
   </div>

@@ -13,7 +13,7 @@ nim	getFieldsTableJson	supranim/controller.html#getFieldsTableJson,Request	proc 
 nim	getBodyData	supranim/controller.html#getBodyData,Request,typedesc[T]	proc getBodyData[T: BodyData | JsonNode](req: var Request; dataType: typedesc[T]): Option[\n    T]		95
 nim	getQueryTable	supranim/controller.html#getQueryTable,Request	proc getQueryTable(req: var Request): TableRef[string, string]		103
 nim	getClientId	supranim/controller.html#getClientId,Request	proc getClientId(req: var Request): Option[string]		107
-nim	getSessionCookie	supranim/controller.html#getSessionCookie,Request	proc getSessionCookie(req: var Request): ref Cookie		115
+nim	getSessionCookie	supranim/controller.html#getSessionCookie,Request	proc getSessionCookie(req: var Request): Option[Cookie]		115
 nim	newController	supranim/controller.html#newController.m,untyped,untyped	macro newController(name, body: untyped)		124
 nim	ctrl	supranim/controller.html#ctrl.t,untyped,untyped	template ctrl(name, body: untyped)		156
 nim	go	supranim/controller.html#go.m,untyped,typed	macro go(id: untyped; params: typed)		160

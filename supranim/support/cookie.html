@@ -59,7 +59,7 @@
     <summary><a class="reference reference-toplevel" href="#7" id="57">Types</a></summary>
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#Cookie" title="Cookie = object">Cookie</a></li>
-<li><a class="reference" href="#CookiesTable" title="CookiesTable = TableRef[string, ref Cookie]">CookiesTable</a></li>
+<li><a class="reference" href="#CookiesTable" title="CookiesTable = TableRef[string, Cookie]">CookiesTable</a></li>
 
     </ul>
   </details>
@@ -69,35 +69,35 @@
     <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
     <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">$
-  <li><a class="reference" href="#%24%2Cref.Cookie" title="`$`(cookie: ref Cookie): string">`$`(cookie: ref Cookie): string</a></li>
+  <li><a class="reference" href="#%24%2CCookie" title="`$`(cookie: Cookie): string">`$`(cookie: Cookie): string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">expires
-  <li><a class="reference" href="#expires%2Cref.Cookie" title="expires(cookie: ref Cookie)">expires(cookie: ref Cookie)</a></li>
+  <li><a class="reference" href="#expires%2CCookie" title="expires(cookie: var Cookie)">expires(cookie: var Cookie)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">getDomain
-  <li><a class="reference" href="#getDomain%2Cref.Cookie" title="getDomain(cookie: ref Cookie): string">getDomain(cookie: ref Cookie): string</a></li>
+  <li><a class="reference" href="#getDomain%2CCookie" title="getDomain(cookie: Cookie): string">getDomain(cookie: Cookie): string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">getName
-  <li><a class="reference" href="#getName%2Cref.Cookie" title="getName(cookie: ref Cookie): string">getName(cookie: ref Cookie): string</a></li>
+  <li><a class="reference" href="#getName%2CCookie" title="getName(cookie: Cookie): string">getName(cookie: Cookie): string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">getValue
-  <li><a class="reference" href="#getValue%2Cref.Cookie" title="getValue(cookie: ref Cookie): string">getValue(cookie: ref Cookie): string</a></li>
+  <li><a class="reference" href="#getValue%2CCookie" title="getValue(cookie: Cookie): string">getValue(cookie: Cookie): string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">isExpired
-  <li><a class="reference" href="#isExpired%2Cref.Cookie" title="isExpired(cookie: ref Cookie): bool">isExpired(cookie: ref Cookie): bool</a></li>
+  <li><a class="reference" href="#isExpired%2CCookie" title="isExpired(cookie: Cookie): bool">isExpired(cookie: Cookie): bool</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">newCookie
   <li><a class="reference" href="#newCookie%2Cstring%2Cstring%2COption%5BDateTime%5D%2Cstring%2Cstring" title="newCookie(name, value: string;
           expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
-          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): ref Cookie">newCookie(name, value: string;
+          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): Cookie">newCookie(name, value: string;
           expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
-          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): ref Cookie</a></li>
+          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): Cookie</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">parseCookies
@@ -129,7 +129,7 @@
   </dd>
 </div>
 <div id="CookiesTable">
-  <dt><pre><a href="#CookiesTable"><span class="Identifier">CookiesTable</span></a> <span class="Other">=</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">]</span></pre></dt>
+  <dt><pre><a href="#CookiesTable"><span class="Identifier">CookiesTable</span></a> <span class="Other">=</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">]</span></pre></dt>
   <dd>
     
     
@@ -143,8 +143,8 @@
   <h1><a class="toc-backref" href="#12">Procs</a></h1>
   <dl class="item">
     <div id="$-procs-all">
-  <div id="$,ref.Cookie">
-  <dt><pre><span class="Keyword">proc</span> <a href="#%24%2Cref.Cookie"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <div id="$,Cookie">
+  <dt><pre><span class="Keyword">proc</span> <a href="#%24%2CCookie"><span class="Identifier">`$`</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -154,8 +154,8 @@
 
 </div>
 <div id="expires-procs-all">
-  <div id="expires,ref.Cookie">
-  <dt><pre><span class="Keyword">proc</span> <a href="#expires%2Cref.Cookie"><span class="Identifier">expires</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <div id="expires,Cookie">
+  <dt><pre><span class="Keyword">proc</span> <a href="#expires%2CCookie"><span class="Identifier">expires</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Set <tt class="docutils literal"><span class="pre"><span class="Identifier">Cookie</span></span></tt> as expired by pushing expiration to the past. Works for both session cookies (no expiry) and persistent cookies.
@@ -165,8 +165,8 @@
 
 </div>
 <div id="getDomain-procs-all">
-  <div id="getDomain,ref.Cookie">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getDomain%2Cref.Cookie"><span class="Identifier">getDomain</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <div id="getDomain,Cookie">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getDomain%2CCookie"><span class="Identifier">getDomain</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -176,8 +176,8 @@
 
 </div>
 <div id="getName-procs-all">
-  <div id="getName,ref.Cookie">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getName%2Cref.Cookie"><span class="Identifier">getName</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <div id="getName,Cookie">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getName%2CCookie"><span class="Identifier">getName</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -187,8 +187,8 @@
 
 </div>
 <div id="getValue-procs-all">
-  <div id="getValue,ref.Cookie">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getValue%2Cref.Cookie"><span class="Identifier">getValue</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <div id="getValue,Cookie">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getValue%2CCookie"><span class="Identifier">getValue</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -198,9 +198,9 @@
 
 </div>
 <div id="isExpired-procs-all">
-  <div id="isExpired,ref.Cookie">
-  <dt><pre><span class="Keyword">proc</span> <a href="#isExpired%2Cref.Cookie"><span class="Identifier">isExpired</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <div id="isExpired,Cookie">
+  <dt><pre><span class="Keyword">proc</span> <a href="#isExpired%2CCookie"><span class="Identifier">isExpired</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
+                                       <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     
@@ -214,11 +214,11 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#newCookie%2Cstring%2Cstring%2COption%5BDateTime%5D%2Cstring%2Cstring"><span class="Identifier">newCookie</span></a><span class="Other">(</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                <span class="Identifier">expirationDate</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">DateTime</span><span class="Other">]</span> <span class="Other">=</span> <span class="Identifier">none</span><span class="Other">(</span><span class="Identifier">DateTime</span><span class="Other">)</span><span class="Other">;</span>
                <span class="Identifier">maxAge</span> <span class="Other">=</span> <span class="Identifier">none</span><span class="Other">(</span><span class="Identifier">int</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">domain</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">path</span> <span class="Other">=</span> <span class="StringLit">&quot;/&quot;</span><span class="Other">;</span>
-               <span class="Identifier">secure</span><span class="Other">,</span> <span class="Identifier">httpOnly</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span> <span class="Identifier">sameSite</span> <span class="Other">=</span> <span class="Identifier">Strict</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">ref</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+               <span class="Identifier">secure</span><span class="Other">,</span> <span class="Identifier">httpOnly</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span> <span class="Identifier">sameSite</span> <span class="Other">=</span> <span class="Identifier">Strict</span><span class="Other">)</span><span class="Other">:</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Create a new <tt class="docutils literal"><span class="pre"><span class="Identifier">Cookie</span></span></tt> object and return as a ref object.
+    Create a new <tt class="docutils literal"><span class="pre"><span class="Identifier">Cookie</span></span></tt> object.
     
   </dd>
 </div>
@@ -246,7 +246,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-07-03 08:01:01 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-07-28 07:17:23 UTC</small>
       </div>
     </div>
   </div>
