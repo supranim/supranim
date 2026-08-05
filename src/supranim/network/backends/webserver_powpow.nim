@@ -317,6 +317,8 @@ proc streamFile*(req: var Request, filePath: string,
 proc sendFile*(req: var Request, filePath: string, resHeaders: HttpHeaders) =
   ## Sends a file using powpow's zero-copy `sendFile` (sendfile syscall).
   ## Dynamically determines MIME type from file extension.
+  if req.responseSent: return
+  req.responseSent = true
   if resHeaders != nil:
     for k, v in resHeaders:
       req.powRes.header(k, v)
@@ -325,6 +327,8 @@ proc sendFile*(req: var Request, filePath: string, resHeaders: HttpHeaders) =
 proc sendFile*(req: var Request, bytes: seq[uint8], resHeaders: HttpHeaders) =
   ## Sends a byte sequence as a file response. Not zero-copy;
   ## suitable for smaller in-memory assets.
+  if req.responseSent: return
+  req.responseSent = true
   if resHeaders != nil:
     for k, v in resHeaders:
       req.powRes.header(k, v)

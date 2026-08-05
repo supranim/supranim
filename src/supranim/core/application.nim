@@ -105,6 +105,26 @@ proc config*(app: Application, key: string): YamlNode =
   if likely(app.configs.hasKey(id)):
     return app.configs[id].get(keys.join("."))
 
+when defined supranimEmbedConfig:
+  proc embedConfigs: NimNode {.compileTime.} =
+    ## Reads the application's `config/` directory at compile time and
+    ## generates code that initializes `App.configs` from the embedded YAML files.
+    result = newStmtList()
+    add result, quote do:
+      App.configs = newOrderedTable[string, YamlObject]()
+    for path in walkDirRec(configPath):
+      let f = path.splitFile
+      if f.ext in [".yml", ".yaml"]:
+        let
+          key = newLit(f.name)
+          content = newLit(staticRead(path))
+          cfg = newLit(path)
+        add result, quote do:
+          try:
+            App.configs[`key`] = parseYAML(`content`)
+          except OpenParserYamlError as e:
+            displayError(e.msg & "\n" & `cfg`, quitProcess = true)
+
 #
 # ApplicationObject API
 #
@@ -242,16 +262,20 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
     when not compileOption("app", "lib"):
       # Application Initialization via Kapsis CLI
       loadEnv() # read `.env.yml` config file
-      add result, quote do:
-        App.configs = newOrderedTable[string, YamlObject]()
-        for path in walkFiles(App.applicationPaths.resolve("config", "*")):
-          let p = path.splitFile
-          if p.ext in [".yml", ".yaml"]:
-            let configFile = path.splitFile
-            try:
-              App.configs[p.name] = parseYAML(readFile(path))
-            except OpenParserYamlError as e:
-              displayError(e.msg & "\n" & path, quitProcess = true)
+      when defined supranimEmbedConfig:
+        # config files are embedded into the binary at compile time
+        add result, embedConfigs()
+      else:
+        add result, quote do:
+          App.configs = newOrderedTable[string, YamlObject]()
+          for path in walkFiles(App.applicationPaths.resolve("config", "*")):
+            let p = path.splitFile
+            if p.ext in [".yml", ".yaml"]:
+              let configFile = path.splitFile
+              try:
+                App.configs[p.name] = parseYAML(readFile(path))
+              except OpenParserYamlError as e:
+                displayError(e.msg & "\n" & path, quitProcess = true)
   
   if initBody != nil:
     add result, quote do:
@@ -337,14 +361,15 @@ template initStartCommand*(v: Values, createDirs = true) =
     let runtimePath = App.applicationPaths.getInstallationPath()
     display(span("⚡️ Start Supranim application"))
     display(span"📂 Installation path:", span(runtimePath))
-    if not dirExists(runtimePath / "config"):
-      # create runtime config directory and copy default config files.
-      createDir(runtimePath / "config")
-      for file in walkFiles(paths.configPath / "*"):
-        let f = file.splitFile
-        if f.ext in [".yml", ".yaml"]:
-          let dest = runtimePath / "config" / f.name & f.ext
-          if not fileExists(dest): copyFile(file, dest)
+    when not defined supranimEmbedConfig:
+      if not dirExists(runtimePath / "config"):
+        # create runtime config directory and copy default config files.
+        createDir(runtimePath / "config")
+        for file in walkFiles(paths.configPath / "*"):
+          let f = file.splitFile
+          if f.ext in [".yml", ".yaml"]:
+            let dest = runtimePath / "config" / f.name & f.ext
+            if not fileExists(dest): copyFile(file, dest)
     appInitialized = true
 
 template cli*(app: Application, cliCommands) {.dirty.} =

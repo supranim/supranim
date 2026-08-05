@@ -725,15 +725,16 @@ proc sendFile*(req: var Request, filePath: string, resHeaders: HttpHeaders) =
   ## Sends a file as a single chunk using zero-copy.
   ## Note: Does not check for file type. Ensure to
   ## set the correct `Content-Type` header.
+  if req.responseSent: return
   let fd = open(filePath, O_RDONLY)
   if fd < 0:
     req.send(404, "File not found")
     return
-  # defer: discard close(fd)
   let fileSize = getFileSize(filePath)
   if fileSize < 0: # allow empty files
     req.send(404, "File not found")
     return
+  req.responseSent = true
   assert resHeaders.hasKey("Content-Type"), "Content-Type header must be set"
   let outHeaders = evhttp_request_get_output_headers(req.raw)
   for k, v in resHeaders:
@@ -746,6 +747,8 @@ proc sendFile*(req: var Request, filePath: string, resHeaders: HttpHeaders) =
 proc sendFile*(req: var Request, bytes: seq[uint8], resHeaders: HttpHeaders) =
   ## Sends a byte sequence as a file response.
   ## Note: This is not zero-copy and is suitable for smaller files.
+  if req.responseSent: return
+  req.responseSent = true
   assert resHeaders.hasKey("Content-Type"), "Content-Type header must be set"
   let outHeaders = evhttp_request_get_output_headers(req.raw)
   for k, v in resHeaders:

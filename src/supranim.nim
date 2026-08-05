@@ -48,25 +48,14 @@ macro runBaseMiddlewares*(req, res) =
     var baseMiddlewareCall = ident(mKey)
     add result, quote do:
       if unlikely(req.raw == nil):
-        # this means that the request has been dropped by
-        # a base middleware and we should not continue processing it.
         return
 
       if `baseMiddlewareCall`(req, res) == false:
-        # if a base middleware returns false, it means that
-        # the response has been sent or the request has been dropped
-        # and we should not continue processing the request
-        # or run any more base middlewares.
         return
 
-#
-# Httpbeast Wrapper
-#
 template getBaseMiddlewares*(req, res) {.dirty.} =
   ## Walk through the registered base middlewares and execute them in order.
   if unlikely(req.raw == nil):
-    # this means that the request has been dropped by a base middleware
-    # and we should not continue processing it.
     return
   when not defined httpbench:
     runBaseMiddlewares(req, res)
@@ -90,8 +79,13 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
         app.router.call4xx(req.addr, res.addr)
       else:
         app.router.call4xx(req, res)
-      req.resp(Http404, res.getBody, res.getHeaders)
-      event().emit("http.error", some(@[path, $Http404]))
+      if not req.responseSent:
+        let body = res.getBody()
+        if body.len > 0:
+          req.resp(res.getCode, body, res.headers)
+        else:
+          req.resp(Http500, "Internal Server Error", res.headers)
+      # event().emit("http.error", some(@[path, $Http404]))
       
     when defined supraWebkit:
       # Bootstrap Supranim from a web-based `WebKit` desktop application. 
@@ -124,18 +118,18 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                     else:
                       runtimeCheck.route.callback(req, res)
                   except Exception as e:
+                    displayError("Error processing GET request: " & e.msg & "\n" & e.getStackTrace())
                     req.resp(Http500, "Internal Server Error")
                     return
 
-                  let
-                    code = res.getCode()
-                    headers = res.getHeaders()
-                    body = res.getBody()
-                  
                   discard runtimeCheck.route.resolveAfterware(req, res)
                   
-                  if not res.isStreaming and req.responseSent == false:
-                    req.resp(res.getCode, res.getBody, res.getHeaders)
+                  if not req.responseSent and not res.isStreaming:
+                    let body = res.getBody()
+                    if body.len > 0:
+                      req.resp(res.getCode, body, res.getHeaders)
+                    else:
+                      req.resp(Http500, "Internal Server Error")
                 else:
                   when not defined supraMicroservice:
                     try: 
@@ -146,10 +140,13 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                       return
                   discard runtimeCheck.route.resolveAfterware(req, res)
                   if not req.responseSent:
-                    req.resp(res.getCode, res.getBody, res.headers)
+                    let body = res.getBody()
+                    if body.len > 0:
+                      req.resp(res.getCode, body, res.headers)
+                    else:
+                      req.resp(Http500, "Internal Server Error", res.headers)
             else:
               req.resp(Http403, getDefault(Http403), res.getHeaders)
-              event().emit("http.error", some(@[path, $Http403]))
           of false:
             when defined webApp:
               when defined supraFileserver:
@@ -159,9 +156,12 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                 else:
                   if startsWith(path, "/assets"):
                     req.sendAssets(path, res.getHeaders(), hasFoundResource)
-                if not hasFoundResource: invoke4xxHandler(path, req, res)
-              else: invoke4xxHandler(path, req, res)
-            else: invoke4xxHandler(path, req, res)
+                if not hasFoundResource:
+                  invoke4xxHandler(path, req, res)
+              else:
+                invoke4xxHandler(path, req, res)
+            else:
+              invoke4xxHandler(path, req, res)
 
       event().emit("app.startup")
       
@@ -186,88 +186,85 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
       # Bootstrap Supranim from a web-based application.
       proc onRequest(req: var webserver.Request) {.gcsafe.} =
         {.gcsafe.}:
-          # req.send(Http200, "", newHttpHeaders()) # send 100 Continue response to the client
-          # return
           var res = Response(headers: newHttpHeaders())
           getBaseMiddlewares(req, res)
-          let
-            path = req.getUriPath()
-            httpMethod = req.getHttpMethod()
-            runtimeCheck = app.router.checkExists(path, httpMethod)
+          try:
+            let
+              path = req.getUriPath()
+              httpMethod = req.getHttpMethod()
+              runtimeCheck = app.router.checkExists(path, httpMethod)
 
-          # The `checkExists` method of the Router service checks if there is
-          # a route that matches the incoming request's path and HTTP method.
-          case runtimeCheck.exists
-          of true:
-            req.setParams(runtimeCheck.params)
-            let middlewareStatus: HttpCode =
-              runtimeCheck.route.resolveMiddleware(req, res)
-            case middlewareStatus
-            of Http301, Http302, Http303:
-              req.resp(middlewareStatus, "", res.getHeaders())
-            of Http204:
-                case httpMethod
-                of HttpGet:
-                  try:
-                    when defined supraMicroservice:
-                      runtimeCheck.route.callback(req.addr, res.addr)
-                    else:
-                      runtimeCheck.route.callback(req, res)
-                  except Exception as e:
-                    req.resp(Http500, "Internal Server Error")
-                    return
-
-                  let
-                    code = res.getCode()
-                    headers = res.getHeaders()
-                    body = res.getBody()
-                  
-                  # resolve afterwares
-                  discard runtimeCheck.route.resolveAfterware(req, res)
-                  
-                  if not res.isStreaming and req.responseSent == false:
-                    # when `isStreaming` is true the response is being streamed
-                    # otherwise we send the full response here
-                    req.resp(res.getCode, res.getBody, res.getHeaders)
-                else:
-                  when not defined supraMicroservice:
-                    try: 
-                      runtimeCheck.route.callback(req, res)
+            case runtimeCheck.exists
+            of true:
+              req.setParams(runtimeCheck.params)
+              let middlewareStatus: HttpCode =
+                runtimeCheck.route.resolveMiddleware(req, res)
+              case middlewareStatus
+              of Http301, Http302, Http303:
+                req.resp(middlewareStatus, "", res.getHeaders())
+              of Http204:
+                  case httpMethod
+                  of HttpGet:
+                    try:
+                      when defined supraMicroservice:
+                        runtimeCheck.route.callback(req.addr, res.addr)
+                      else:
+                        runtimeCheck.route.callback(req, res)
                     except Exception as e:
-                      # is important to catch unexpected errors here
-                      # in order to prevent the server from crashing
-                      displayError("Error processing request: " & e.msg & "\n" & e.getStackTrace())
-                      req.resp(Http500, "Internal Server Error", res.getHeaders())
+                      displayError("Error processing GET request: " & e.msg & "\n" & e.getStackTrace())
+                      req.resp(Http500, "Internal Server Error")
                       return
-                  discard runtimeCheck.route.resolveAfterware(req, res)
-                  if not req.responseSent:
-                    req.resp(res.getCode, res.getBody, res.headers)
-            else:
-              req.resp(Http403, getDefault(Http403), res.getHeaders)
-              event().emit("http.error", some(@[path, $Http403]))
-          of false:
-            when defined webApp:
-              when defined supraFileserver:
-                # useful when the supranim application is running without a reverse
-                # proxy in front of it, for example in development.
-                # in production it's recommended to use a reverse proxy like Nginx,
-                # Caddy, or Traefik to serve static assets and handle SSL termination.
-                var hasFoundResource: bool
-                if app.assetsHandler != nil:
-                  app.assetsHandler(req, res, hasFoundResource)
-                else:
-                  if startsWith(path, "/assets"): # TODO expose `/assets` route for customization
-                    req.sendAssets(path, res.getHeaders(), hasFoundResource)
-                if not hasFoundResource: invoke4xxHandler(path, req, res)
+
+                    # resolve afterwares
+                    discard runtimeCheck.route.resolveAfterware(req, res)
+                    
+                    if not req.responseSent and not res.isStreaming:
+                      let body = res.getBody()
+                      if body.len > 0:
+                        req.resp(res.getCode, body, res.getHeaders)
+                      else:
+                        req.resp(Http500, "Internal Server Error")
+                  else:
+                    when not defined supraMicroservice:
+                      try: 
+                        runtimeCheck.route.callback(req, res)
+                      except Exception as e:
+                        displayError("Error processing request: " & e.msg & "\n" & e.getStackTrace())
+                        req.resp(Http500, "Internal Server Error", res.getHeaders())
+                        return
+                    discard runtimeCheck.route.resolveAfterware(req, res)
+                    if not req.responseSent:
+                      let body = res.getBody()
+                      if body.len > 0:
+                        req.resp(res.getCode, body, res.headers)
+                      else:
+                        req.resp(Http500, "Internal Server Error", res.headers)
+              else:
+                req.resp(Http403, getDefault(Http403), res.getHeaders)
+                # event().emit("http.error", some(@[path, $Http403]))
+            of false:
+              when defined webApp:
+                when defined supraFileserver:
+                  var hasFoundResource: bool
+                  if app.assetsHandler != nil:
+                    app.assetsHandler(req, res, hasFoundResource)
+                  else:
+                    if startsWith(path, "/assets"):
+                      req.sendAssets(path, res.getHeaders(), hasFoundResource)
+                  if not hasFoundResource: invoke4xxHandler(path, req, res)
+                else: invoke4xxHandler(path, req, res)
               else: invoke4xxHandler(path, req, res)
-            else: invoke4xxHandler(path, req, res)
+          except:
+            displayError("Unhandled exception in onRequest: " & e.msg & "\n" & e.getStackTrace())
+            if not req.responseSent:
+              req.resp(Http500, "Internal Server Error")
 
       # Start the HTTP server
       # let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)
       event().emit("app.startup")
       
       when defined supranimUseGlobalOnRequest:
-        app.server = newWebServer(Port(app.config("server.port").getInt))
+        app.server = newWebServer()
       else:
         app.server = newWebServer(Port(app.config("server.port").getInt), true)
       
