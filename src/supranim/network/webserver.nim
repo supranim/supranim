@@ -6,7 +6,7 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
-when defined(supraNative):
+when defined(features.supranim.powpow):
   include backends/webserver_powpow
 else:
   include backends/webserver_libevent

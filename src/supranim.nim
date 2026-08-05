@@ -21,7 +21,7 @@ import std/[options, asyncdispatch, asynchttpserver,
 from std/net import Port, `$`
 from std/nativesockets import Domain
 
-when defined supraNative:
+when defined(features.supranim.powpow):
   import pkg/powpow
   export powpow
 
@@ -90,7 +90,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
     when defined supraWebkit:
       # Bootstrap Supranim from a web-based `WebKit` desktop application. 
       discard # todo to be implemented/documented
-    elif defined supraNative:
+    elif defined(features.supranim.powpow):
       # Bootstrap Supranim using powpow native Nim HTTP server
       proc onRequest(req: var webserver.Request) {.gcsafe.} =
         {.gcsafe.}:
