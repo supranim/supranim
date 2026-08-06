@@ -254,7 +254,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                   if not hasFoundResource: invoke4xxHandler(path, req, res)
                 else: invoke4xxHandler(path, req, res)
               else: invoke4xxHandler(path, req, res)
-          except:
+          except CatchableError as e:
             displayError("Unhandled exception in onRequest: " & e.msg & "\n" & e.getStackTrace())
             if not req.responseSent:
               req.resp(Http500, "Internal Server Error")
