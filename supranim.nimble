@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.6"
+version       = "0.1.7"
 author        = "OpenPeeps"
 description   = "A full-featured web framework for Nim"
 license       = "LGPL-3.0-or-later"
