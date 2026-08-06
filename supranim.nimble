@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.5"
+version       = "0.1.6"
 author        = "OpenPeeps"
 description   = "A full-featured web framework for Nim"
 license       = "LGPL-3.0-or-later"
@@ -21,7 +21,7 @@ feature "libevent":
 requires "flatty >= 0.4.0"
 requires "openparser >= 0.1.2"
 requires "emitter >= 0.1.0"
-requires "ozark >= 0.1.4"
+requires "ozark >= 0.1.5"
 requires "threading >= 0.1.0"
 requires "mimedb >= 0.1.0"
 requires "checksums >= 0.2.2"
