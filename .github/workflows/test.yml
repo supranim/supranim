@@ -1,58 +1,23 @@
 name: test
-on:
-  push:
-    paths-ignore:
-      - LICENSE
-      - README.*
-      - .github/workflows
-  pull_request:
-    paths-ignore:
-      - LICENSE
-      - README.*
-      - .github/workflows
+on: [push, pull_request]
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          # - windows-latest
-          - macos-latest
-        nim-version:
-          - 'stable'
-    steps:
-      - uses: actions/checkout@v3
+    uses: nimbase/setup-nim-action/.github/workflows/test.yml@main
 
-      - uses: jiro4989/setup-nim-action@v2
-        with:
-          nim-version: ${{ matrix.nim-version }}
+# - name: Install supra CLI
+#   run: nimble install https://github.com/supranim/supra -Y
 
-        # - if: runner.os == 'Linux'
-        #   run: sudo apt-get install -y libpcre3-dev libpq-dev
+# - name: Create a test project with supra
+#   run: |
+#     git config --global user.name "CI"
+#     supra init testapp --skipconfig --nocache
+#     cd testapp
+#     git init
+#   env:
+#     DYLD_LIBRARY_PATH: /usr/local/opt/libpq/lib:$DYLD_LIBRARY_PATH
 
-        # - if: runner.os == 'Windows'
-        #   run: choco install openssl postgresql --params="/NoServer" -y --no-progress
-
-        # - if: runner.os == 'macOS'
-        #   run: brew install libpq openssl
-
-      - run: nimble install -Y
-
-      - name: Install supra CLI
-        run: nimble install https://github.com/supranim/supra -Y
-
-      - name: Create a test project with supra
-        run: |
-          git config --global user.name "CI"
-          supra init testapp --skipconfig --nocache
-          cd testapp
-          git init
-        # env:
-        #   DYLD_LIBRARY_PATH: /usr/local/opt/libpq/lib:$DYLD_LIBRARY_PATH
-
-      - name: Build the test project
-        run: nimble build
-        working-directory: testapp
-        # env:
-        #   DYLD_LIBRARY_PATH: /usr/local/opt/libpq/lib:$DYLD_LIBRARY_PATH
+# - name: Build the test project
+#   run: nimble build
+#   working-directory: testapp
+#   env:
+#     DYLD_LIBRARY_PATH: /usr/local/opt/libpq/lib:$DYLD_LIBRARY_PATH

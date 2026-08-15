@@ -229,8 +229,8 @@ proc registerRoute*(router: HttpRouterInstance, path: string,
   ## Register a new Route in the `HttpRouterInstance` based on the given parameters
   let autolinked = autolinkController(path, httpMethod)
   let rp = if autolinked.params.isSome(): autolinked.params.get() else: @[]
-  registerRoute(router, (autolinked[1], autolinked[0]), httpMethod,
-              callback, middlewares, afterwares)
+  registerRoute(router, (autolinked[1], autolinked[2]), httpMethod,
+              callback, middlewares, afterwares, routeParams = rp)
 
 const httpMethods* = ["get", "post", "put", "patch", "head",
                   "delete", "trace", "options", "connect", "ws"]

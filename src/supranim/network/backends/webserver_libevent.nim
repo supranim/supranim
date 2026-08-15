@@ -624,7 +624,7 @@ proc streamFileChunkCb(conn: ptr evhttp_connection, ctxPtr: pointer) {.cdecl.} =
   evhttp_send_reply_chunk_with_cb(ctx.req, buf, streamFileChunkCb, ctx)
   evbuffer_file_segment_free(seg)
 
-proc parseRangeHeader(rangeHeader: string, fileSize: int): Option[(int, int)] =
+proc parseRangeHeader*(rangeHeader: string, fileSize: int): Option[(int, int)] =
   # Parses a Range header like "bytes=100-200" or "bytes=100-"
   var start, finish: int
   if rangeHeader.startsWith("bytes="):

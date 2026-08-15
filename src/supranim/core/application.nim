@@ -129,7 +129,7 @@ when defined supranimEmbedConfig:
 # ApplicationObject API
 #
 template initHttpRouter* =
-  App.key = uuid4()
+  App.key = newUuidV4()
   macro initHttpRouterMacro() =
     result = newStmtList()
     var registerRoutes = newStmtList()

@@ -5,8 +5,8 @@
 #     Made by Humans from OpenPeeps
 #     https://github.com/openpeeps/sunday
 
-## This service provider wraps the `supranim/support/filesystem` module,
-## providing a unified API for file storage operations. It allows you to  manage files across
+## This service provider wraps `pkg/flysystem`,
+## providing a unified API for file storage operations. It allows you to manage files across
 ## different storage backends (like local disk, cloud storage, etc.) using a consistent interface.
 
 import std/[os, memfiles, strutils, tables, options, times]
@@ -14,8 +14,8 @@ import std/[os, memfiles, strutils, tables, options, times]
 import pkg/supranim/core/services
 import pkg/supranim/core/[paths, application]
 
-import pkg/supranim/support/filesystem
-export filesystem
+import pkg/flysystem
+export flysystem
 
 initService Filesystem[Singleton]:
   client do:

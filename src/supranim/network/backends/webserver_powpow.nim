@@ -293,7 +293,7 @@ proc getQuery*(req: var Request): TableRef[string, string] =
   result = queryTable
   req.uriQuery = result
 
-proc parseRangeHeader(rangeHeader: string, fileSize: int): Option[(int, int)] =
+proc parseRangeHeader*(rangeHeader: string, fileSize: int): Option[(int, int)] =
   var start, finish: int
   if rangeHeader.startsWith("bytes="):
     let rangePart = rangeHeader[6..^1].strip()

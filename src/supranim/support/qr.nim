@@ -1,39 +1,14 @@
-# Supranim is a lightweight, high-performance MVC framework for Nim,
-# designed to simplify the development of web applications and REST APIs.
 #
-# It features intuitive routing, modular architecture, and built-in support
-# for modern web standards, making it easy to build scalable and maintainable
-# projects.
+# Supranim is a high-performance web framework for building
+# web applications and microservices in Nim
+# 
+#   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
+#   https://supranim.com | https://github.com/supranim
 #
-# (c) 2025 Supranim | MIT License
-#     Made by Humans from OpenPeeps
-#     https://supranim.com | https://github.com/supranim
 
-import std/[strutils]
-import pkg/[otp, qr, base32]
+## QR code and 2FA support backed by `pkg/twofa`. Importing this module
+## re-exports the full twofa API: `initTotp`, `initHotp`, `provisioningUri`,
+## `saveQr`, `getQr`, plus the `otp`, `base32` and `qr` modules.
 
-type
-  OtpType* = enum
-    otpHotp = "hotp" # counter based OTP
-    otpTotp = "totp" # time based OTP
-
-const otpauth = "otpauth://$1/$2?secret=$3&period=$4"
-
-proc gen2FACode*(secret, label: sink string,
-    issuer: string = "", interval: uint = 30, otpType = OtpType.otpTotp): string = 
-  ## Generate a new QR Code for 2FA (Two Factor Authentication)
-  var x = otpauth % [$(otpType), label, secret, $interval]
-  if issuer.len > 0:
-    add x, "&issuer=" & issuer
-  result = qrSVG(x, "test.svg")
-
-proc genQR*(x: string): string =
-  ## Generate a generic QR Code from `x` string
-  qrSVG(x)
-
-# when isMainModule:
-#   import std/times
-#   gen2FACode("loremipsum", "MyLabel", "Vasco")
-#   var totp = Totp.init("loremipsum")
-#   echo totp.now()
-#   echo totp.verify(853136, getTime().toUnix)
+import pkg/twofa
+export twofa
