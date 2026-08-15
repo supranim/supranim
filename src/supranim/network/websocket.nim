@@ -6,7 +6,18 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
-when defined(features.supranim.powpow):
-  include backends/websocket_powpow
-else:
-  include backends/websocket_libevent
+import pkg/powpow as pw
+export pw.WsConnection, pw.WsFrameKind
+export pw.WsOpenCb, pw.WsMessageCb, pw.WsCloseCb, pw.WsErrorCb
+export pw.WsServer, pw.newWsServer
+export pw.sendText, pw.sendBinary, pw.sendPing, pw.sendPong
+export pw.closeWs, pw.websocketUpgrade
+
+# Backward-compat aliases
+type
+  WebSocketConnection* = pw.WsConnection
+  WebSocketFrameKind* = pw.WsFrameKind
+  OpenCb* = pw.WsOpenCb
+  MessageCb* = pw.WsMessageCb
+  CloseCb* = pw.WsCloseCb
+  ErrorCb* = pw.WsErrorCb

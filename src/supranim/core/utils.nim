@@ -53,4 +53,20 @@ template freemem*(x: untyped) =
   {.gcsafe.}:
     discard releaseUnusedMemory()
 
-  
+# macro require(innerModule: untyped): untyped =
+#   ## Imports `innerModule` relative to the project's `src/` directory.
+#   ## For example, `require service/provider/db` resolves to
+#   ## `<project>/src/service/provider/db`.
+#   let
+#     projectDir = getProjectPath() # returns `src`
+#     moduleStr = innerModule.repr.replace(" ") # remove spaces from the module string
+#     modulePath = projectDir / moduleStr
+#     # For local modules, compute relative path from current file
+#     thisFile = currentSourcePath()
+#     thisDir = parentDir(thisFile)
+#     relPath = relativePath(modulePath, thisDir)
+#   let importPath = newStrLitNode(relPath)
+#   result = quote do:
+#     import `importPath`
+
+# require service/provider/db

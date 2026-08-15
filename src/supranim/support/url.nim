@@ -4,7 +4,13 @@
 # 
 #   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
-#
+
+## URL helpers for building absolute links from the application configuration.
+## The `link` procedures construct a fully-qualified `Uri` from the `app.url`
+## and `app.ssl` configuration values (choosing `https` when SSL is enabled),
+## optionally appending a query string. `std/uri` is re-exported for
+## convenience.
+
 import std/[uri, json]
 import pkg/openparser/yaml
 export uri

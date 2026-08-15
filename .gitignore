@@ -4,3 +4,15 @@ nimcache/
 nimblecache/
 htmldocs/
 pkginfo.json
+.cache
+docs/
+example/
+nimble.develop
+nimble.paths
+nimbledeps
+tests/tests
+tests/*.o
+tests/*.d
+tests/data
+tests/test_*
+!tests/*.nim

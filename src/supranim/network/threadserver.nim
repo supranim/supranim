@@ -13,7 +13,7 @@
 ## The threaded server can be useful for handling multiple clients concurrently for
 ## CPU-bound tasks, but it may not be the best choice for high-concurrency scenarios due to the overhead
 ## of thread creation and context switching. For high-concurrency scenarios, consider using
-## the default Supranim server built on top of Libevent.
+## the default Supranim server built on top of powpow.
 import std/[nativesockets, posix, strutils,
         times, net, options, httpcore, parseutils]
 

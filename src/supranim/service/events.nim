@@ -7,8 +7,6 @@
 #
 import pkg/supranim/core/services
 import pkg/emitter
-when not defined(features.supranim.powpow):
-  import pkg/libevent/bindings/threaded
 
 import ./logger
 
@@ -16,7 +14,7 @@ export emitter
 
 ## The `events` service provides a global event emitter that can be used
 ## throughout the application to emit and listen for custom events. It uses
-## the `emitter` package for efficient event handling with Libevent.
+## the `emitter` package for efficient event handling.
 
 initService EventEmitter[Singleton]:
   ## A singleton of the EventEmitter `emitter` package.
@@ -43,8 +41,6 @@ initService EventEmitter[Singleton]:
       ## Initializes the EventEmitter service by starting the event
       ## loop in a separate thread to allow asynchronous event handling
       ## without blocking the main thread
-      when not defined(features.supranim.powpow):
-        assert evthread_use_pthreads() == 0
       createThread(thr, runEventThread)
       logger("Service Events: Initialized EventEmitter singleton and started event loop thread")
 

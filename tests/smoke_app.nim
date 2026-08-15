@@ -4,7 +4,7 @@
 # against an embedded Postgres (pkg/greskewel), and probe it over HTTP.
 #
 # Run explicitly with `nim c -r` (excluded from `nimble test`):
-#   nim c -r -d:features.supranim.powpow \
+#   nim c -r \
 #       --path:/Users/georgelemon/Development/otherpackages/embedded-postgres/src \
 #       tests/smoke_app.nim
 #
@@ -145,11 +145,10 @@ suite "Full-app smoke (supra + embedded postgres + powpow)":
     writeFileUnless(appDir, "config.nims",
       "switch(\"path\", \"" & RepoRoot / "src" & "\")\n")
 
-    # ---------- 6. force the powpow backend + threaded server ------------
+    # ---------- 6. force the threaded server -------------------------------
     writeFile(appDir / "src" / "app.nims",
       "--deepCopy:on\n--mm:atomicArc\n--threads:on\n" &
-      "--define:webapp\n--define:supraFileserver\n" &
-      "--define:features.supranim.powpow\n")
+      "--define:webapp\n--define:supraFileserver\n")
 
     # ---------- 7. patch the DB service -----------------------------------
     let dbNim = appDir / "src" / "service" / "provider" / "db.nim"

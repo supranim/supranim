@@ -565,8 +565,7 @@ template initService*(id, config: untyped) =
         import std/[json, asyncdispatch]
         import pkg/jsony
         import pkg/supranim/support/httpclient
-        # we use a modified version of `httpclient`
-        # that can handle HTTP operations over Unix Sockets
+        # powpow's HTTP client handles HTTP operations over Unix Sockets
 
       add clientHandle, quote do:
         type
@@ -605,8 +604,8 @@ template initService*(id, config: untyped) =
         var httpClientSideFunctionBody = newStmtList()
         add httpClientSideFunctionBody, quote do:
           let path {.inject.} = `routePathNode.`
-          let res {.inject.}: AsyncResponse = await request(client.base, path)
-          let resBody {.inject.} = await res.body
+          let res {.inject.}: HttpClientResponse = await client.base.get(path)
+          let resBody {.inject.} = res.getBodyString()
 
         var toObject = ident("JsonNode")
         add httpClientSideFunctionBody, quote do:

@@ -69,3 +69,7 @@ proc resolve*(path: ApplicationPaths, dir: string, fpath = ""): string =
   result = path.installPath / dir
   if fpath.len > 0:
     result = result / fpath
+
+template staticStorage*(path: string): string =
+  ## Returns the absolute path to a file in the static storage directory
+  result = path.installPath / "storage" / path

@@ -9,11 +9,20 @@
 #     Made by Humans from OpenPeeps
 #     https://supranim.com | https://github.com/supranim
 
+## High-level HTTP client facade for Supranim, built on powpow's internal
+## HTTP client (`HttpClient` / `AsyncHttpClient`, re-exported from
+## `./httpclient`). Provides a simple fluent API for making requests:
+## synchronous and asynchronous `get` / `post` (with `HttpForm` encoded as
+## JSON), JSON deserialization via `get[T]`, per-request headers
+## (`withHeaders`), bearer tokens (`withToken`), and automatic retries with a
+## configurable backoff (`retry`). Also includes the `normalizePath` utility
+## used by the web server backends to collapse repeated slashes.
+
 import std/[uri, httpcore, asyncdispatch]
 import pkg/openparser/json
 
 import ./httpclient
-export body, AsyncResponse
+export httpclient
 
 type
   RetryAttemptCallback* = proc(): uint
@@ -26,36 +35,24 @@ type
     retryAttemptCallback: RetryAttemptCallback
 
   HttpResponse* = object
-    res: Response
+    res: HttpClientResponse
 
   AsyncHttp* = ref object
     httpClient: AsyncHttpClient
     retries: uint
     retryAttemptCallback: RetryAttemptCallback
 
-proc get*(H: typedesc[Http], uri: Uri|string): Response =
-  ## Sends a GET request to the specified URI and returns the
-  ## response body as a string.
-  var client = H(httpClient: newHttpClient())
-  defer:
-    client.httpClient.close()
-  result = client.httpClient.get(uri)
+proc body*(res: HttpResponse): string =
+  ## Returns the response body as a string.
+  res.res.getBodyString()
 
-proc get*(H: Http, uri: Uri|string): Response =
-  ## Sends a GET request to the specified URI and returns the
-  ## response body as a string.
-  defer:
-    H.httpClient.close()
-  result = H.httpClient.get(uri)
+proc code*(res: HttpResponse): HttpCode =
+  ## Returns the response status code.
+  res.res.getStatusCode()
 
-proc get*[T](H: Http, uri: Uri|string, t: typedesc[T]): T =
-  ## Sends a GET request to the specified URI and returns the
-  ## response deserialized into the specified `T` type.
-  let res = H.httpClient.get(uri)
-  defer:
-    H.httpClient.close()
-  let body = res.body
-  result = json.fromJson(body, t)
+proc status*(res: HttpResponse): string =
+  ## Returns the response status text.
+  $res.res.getStatusText()
 
 proc httpFormToJson(form: HttpForm): string =
   ## Serializes an `HttpForm` (a seq of key/value pairs) as a JSON object.
@@ -65,23 +62,47 @@ proc httpFormToJson(form: HttpForm): string =
   $j
 
 #
+# GET handlers
+#
+proc get*(H: typedesc[Http], uri: Uri|string): HttpResponse =
+  ## Sends a GET request to the specified URI and returns the response.
+  var client = H(httpClient: newHttpClient())
+  defer:
+    client.httpClient.close()
+  result = HttpResponse(res: client.httpClient.get($uri))
+
+proc get*(H: Http, uri: Uri|string): HttpResponse =
+  ## Sends a GET request to the specified URI and returns the response.
+  defer:
+    H.httpClient.close()
+  result = HttpResponse(res: H.httpClient.get($uri))
+
+proc get*[T](H: Http, uri: Uri|string, t: typedesc[T]): T =
+  ## Sends a GET request to the specified URI and returns the
+  ## response deserialized into the specified `T` type.
+  let res = H.httpClient.get($uri)
+  defer:
+    H.httpClient.close()
+  result = json.fromJson(res.getBodyString(), t)
+
+#
 # POST handlers
 #
-proc post*(H: typedesc[Http], uri: Uri|string, body: string = ""): Response =
+proc post*(H: typedesc[Http], uri: Uri|string, body: string = ""): HttpResponse =
   ## Sends a POST request to the specified URI with the given body
   ## and returns the response.
   var client = H(httpClient: newHttpClient())
   defer:
     client.httpClient.close()
-  result = client.httpClient.post(uri, body = body)
+  result = HttpResponse(res: client.httpClient.post($uri, body))
 
-proc post*(H: typedesc[Http], uri: Uri|string, httpForm:  HttpForm): Response =
+proc post*(H: typedesc[Http], uri: Uri|string, httpForm: HttpForm): HttpResponse =
   ## Sends a POST request to the specified URI with the given body
   ## and returns the response.
   var client = H(httpClient: newHttpClient())
   defer:
     client.httpClient.close()
-  result = client.httpClient.post(uri, body = httpFormToJson(httpForm))
+  result = HttpResponse(res: client.httpClient.post($uri, httpFormToJson(httpForm)))
 
 #
 # Headers utils
@@ -89,16 +110,12 @@ proc post*(H: typedesc[Http], uri: Uri|string, httpForm:  HttpForm): Response =
 proc withHeaders*(H: typedesc[Http],
     httpHeaders: openArray[tuple[key, val: string]]): Http =
   ## Instantiates a new Http object with the specified headers.
-  result = H(
-    httpClient: newHttpClient(
-      headers = newHttpHeaders(httpHeaders)
-    )
-  )
+  result = H(httpClient: newHttpClient())
+  result.httpClient.defaultHeaders = @httpHeaders
 
 proc withToken*(H: Http, token: string): Http =
   ## Quickly adds a token to the request's Authorization header
-  if H.httpClient.headers == nil: H.httpClient.headers = newHttpHeaders()
-  H.httpClient.headers.add("Authorization", "Bearer " & token)
+  H.httpClient.defaultHeaders.add(("Authorization", "Bearer " & token))
   result = H
 
 proc retry*(H: Http, times: uint): Http =
@@ -117,16 +134,16 @@ proc retry*(H: Http, times: uint, retryAttemptCallback: RetryAttemptCallback): H
 # Async client
 #
 proc request(H: AsyncHttp, uri: Uri|string,
-             httpMethod: HttpMethod, body = ""): Future[AsyncResponse] {.async.} =
+             httpMethod: HttpMethod, body = ""): Future[HttpClientResponse] {.async.} =
   ## Sends a request, retrying up to `H.retries` times on transient errors.
   ## When `H.retryAttemptCallback` is set it provides the delay in milliseconds
   ## between attempts (default 100ms).
   if H.retries == 0:
-    return await H.httpClient.request(uri, httpMethod, body)
+    return await H.httpClient.request(httpMethod, $uri, body)
   var attempts: uint = 0
   while true:
     try:
-      return await H.httpClient.request(uri, httpMethod, body)
+      return await H.httpClient.request(httpMethod, $uri, body)
     except CatchableError:
       if attempts >= H.retries:
         raise
@@ -138,14 +155,14 @@ proc request(H: AsyncHttp, uri: Uri|string,
           100
       await sleepAsync(int(delay))
 
-proc get*(H: typedesc[AsyncHttp], uri: Uri|string): Future[AsyncResponse] {.async.} =
+proc get*(H: typedesc[AsyncHttp], uri: Uri|string): Future[HttpClientResponse] {.async.} =
   ## Sends an async GET request to the specified URI and returns the response.
   var client = AsyncHttp(httpClient: newAsyncHttpClient())
   defer:
     client.httpClient.close()
   result = await client.request(uri, HttpGet)
 
-proc get*(H: AsyncHttp, uri: Uri|string): Future[AsyncResponse] {.async.} =
+proc get*(H: AsyncHttp, uri: Uri|string): Future[HttpClientResponse] {.async.} =
   ## Sends an async GET request to the specified URI and returns the response.
   defer:
     H.httpClient.close()
@@ -157,11 +174,10 @@ proc get*[T](H: AsyncHttp, uri: Uri|string, t: typedesc[T]): Future[T] {.async.}
   let res = await H.request(uri, HttpGet)
   defer:
     H.httpClient.close()
-  let body = await res.body
-  result = json.fromJson(body, t)
+  result = json.fromJson(res.getBodyString(), t)
 
 proc post*(H: typedesc[AsyncHttp], uri: Uri|string,
-           body: string = ""): Future[AsyncResponse] {.async.} =
+           body: string = ""): Future[HttpClientResponse] {.async.} =
   ## Sends an async POST request to the specified URI with the given body
   ## and returns the response.
   var client = AsyncHttp(httpClient: newAsyncHttpClient())
@@ -170,14 +186,14 @@ proc post*(H: typedesc[AsyncHttp], uri: Uri|string,
   result = await client.request(uri, HttpPost, body)
 
 proc post*(H: typedesc[AsyncHttp], uri: Uri|string,
-           httpForm: HttpForm): Future[AsyncResponse] =
+           httpForm: HttpForm): Future[HttpClientResponse] =
   ## Sends an async POST request to the specified URI with a JSON-encoded
   ## form body and returns the response.
   ##
   ## The form is serialized before entering the async state machine (an
   ## `openArray` cannot be captured by an async closure).
   let body = httpFormToJson(httpForm)
-  proc impl(): Future[AsyncResponse] {.async.} =
+  proc impl(): Future[HttpClientResponse] {.async.} =
     var client = AsyncHttp(httpClient: newAsyncHttpClient())
     defer:
       client.httpClient.close()
@@ -187,16 +203,12 @@ proc post*(H: typedesc[AsyncHttp], uri: Uri|string,
 proc withHeaders*(H: typedesc[AsyncHttp],
     httpHeaders: openArray[tuple[key, val: string]]): AsyncHttp =
   ## Instantiates a new AsyncHttp object with the specified headers.
-  result = AsyncHttp(
-    httpClient: newAsyncHttpClient(
-      headers = newHttpHeaders(httpHeaders)
-    )
-  )
+  result = AsyncHttp(httpClient: newAsyncHttpClient())
+  result.httpClient.defaultHeaders = @httpHeaders
 
 proc withToken*(H: AsyncHttp, token: string): AsyncHttp =
   ## Quickly adds a token to the request's Authorization header
-  if H.httpClient.headers == nil: H.httpClient.headers = newHttpHeaders()
-  H.httpClient.headers.add("Authorization", "Bearer " & token)
+  H.httpClient.defaultHeaders.add(("Authorization", "Bearer " & token))
   result = H
 
 proc retry*(H: AsyncHttp, times: uint): AsyncHttp =
@@ -226,4 +238,4 @@ proc normalizePath*(path: string): string =
       lastWasSlash = false
 
 when isMainModule:
-  echo Http.get("https://example.com")
+  echo Http.get("https://example.com").body

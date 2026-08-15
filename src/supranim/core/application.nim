@@ -8,8 +8,6 @@
 import std/[macros, os, net, tables, strutils, hashes, macrocache, posix]
 
 import pkg/threading/[once, rwlock]
-when not defined(features.supranim.powpow):
-  import pkg/libevent/bindings/[http, buffer, event]
 
 import pkg/kapsis
 import pkg/kapsis/interactive/prompts

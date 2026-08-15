@@ -21,9 +21,7 @@ import std/[options, asyncdispatch, asynchttpserver,
 from std/net import Port, `$`
 from std/nativesockets import Domain
 
-when defined(features.supranim.powpow):
-  import pkg/powpow
-  export powpow
+import pkg/powpow
 
 import pkg/kapsis/framework
 import pkg/kapsis/interactive/prompts
@@ -90,7 +88,7 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
     when defined supraWebkit:
       # Bootstrap Supranim from a web-based `WebKit` desktop application. 
       discard # todo to be implemented/documented
-    elif defined(features.supranim.powpow):
+    else:
       # Bootstrap Supranim using powpow native Nim HTTP server
       proc onRequest(req: var webserver.Request) {.gcsafe.} =
         {.gcsafe.}:
@@ -175,108 +173,6 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
       when not compiles(startupCallback()):
         injectSafeThreadCallbacks()
       
-      when defined supranimUseGlobalOnRequest:
-        app.server.start(onRequest)
-      else:
-        when compiles(startupCallback()):
-          app.server.start(onRequest, startupCallback, threads = countProcessors())
-        else:
-          app.server.start(onRequest, nil, threads = countProcessors())
-    else:
-      # Bootstrap Supranim from a web-based application.
-      proc onRequest(req: var webserver.Request) {.gcsafe.} =
-        {.gcsafe.}:
-          var res = Response(headers: newHttpHeaders())
-          getBaseMiddlewares(req, res)
-          try:
-            let
-              path = req.getUriPath()
-              httpMethod = req.getHttpMethod()
-              runtimeCheck = app.router.checkExists(path, httpMethod)
-
-            case runtimeCheck.exists
-            of true:
-              req.setParams(runtimeCheck.params)
-              let middlewareStatus: HttpCode =
-                runtimeCheck.route.resolveMiddleware(req, res)
-              case middlewareStatus
-              of Http301, Http302, Http303:
-                req.resp(middlewareStatus, "", res.getHeaders())
-              of Http204:
-                  case httpMethod
-                  of HttpGet:
-                    try:
-                      when defined supraMicroservice:
-                        runtimeCheck.route.callback(req.addr, res.addr)
-                      else:
-                        runtimeCheck.route.callback(req, res)
-                    except Exception as e:
-                      displayError("Error processing GET request: " & e.msg & "\n" & e.getStackTrace())
-                      req.resp(Http500, "Internal Server Error")
-                      return
-
-                    # resolve afterwares
-                    discard runtimeCheck.route.resolveAfterware(req, res)
-                    
-                    if not req.responseSent and not res.isStreaming:
-                      let body = res.getBody()
-                      if body.len > 0:
-                        req.resp(res.getCode, body, res.getHeaders)
-                      else:
-                        req.resp(Http500, "Internal Server Error")
-                  else:
-                    when not defined supraMicroservice:
-                      try: 
-                        runtimeCheck.route.callback(req, res)
-                      except Exception as e:
-                        displayError("Error processing request: " & e.msg & "\n" & e.getStackTrace())
-                        req.resp(Http500, "Internal Server Error", res.getHeaders())
-                        return
-                    discard runtimeCheck.route.resolveAfterware(req, res)
-                    if not req.responseSent:
-                      let body = res.getBody()
-                      if body.len > 0:
-                        req.resp(res.getCode, body, res.headers)
-                      else:
-                        req.resp(Http500, "Internal Server Error", res.headers)
-              else:
-                req.resp(Http403, getDefault(Http403), res.getHeaders)
-                # event().emit("http.error", some(@[path, $Http403]))
-            of false:
-              when defined webApp:
-                when defined supraFileserver:
-                  var hasFoundResource: bool
-                  if app.assetsHandler != nil:
-                    app.assetsHandler(req, res, hasFoundResource)
-                  else:
-                    if startsWith(path, "/assets"):
-                      req.sendAssets(path, res.getHeaders(), hasFoundResource)
-                  if not hasFoundResource: invoke4xxHandler(path, req, res)
-                else: invoke4xxHandler(path, req, res)
-              else: invoke4xxHandler(path, req, res)
-          except CatchableError as e:
-            displayError("Unhandled exception in onRequest: " & e.msg & "\n" & e.getStackTrace())
-            if not req.responseSent:
-              req.resp(Http500, "Internal Server Error")
-
-      # Start the HTTP server
-      # let domain: Domain = parseEnum[Domain](app.config("server.type").getStr)
-      event().emit("app.startup")
-      
-      when defined supranimUseGlobalOnRequest:
-        app.server = newWebServer()
-      else:
-        app.server = newWebServer(Port(app.config("server.port").getInt), true)
-      
-      # when provided, the optional block can be used to inject
-      # additional logic during the server startup process
-      optionalBlock
-
-      when not compiles(startupCallback()):
-        injectSafeThreadCallbacks()
-      
-      # Starts the actual server loop, this will block
-      # the main thread and keep the server running until it's stopped.
       when defined supranimUseGlobalOnRequest:
         app.server.start(onRequest)
       else:
