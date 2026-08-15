@@ -3,6 +3,8 @@ on: [push, pull_request]
 jobs:
   test:
     uses: nimbase/setup-nim-action/.github/workflows/test.yml@main
+    with:
+      test-command: 'nimble test --features:powpow'
 
 # - name: Install supra CLI
 #   run: nimble install https://github.com/supranim/supra -Y
