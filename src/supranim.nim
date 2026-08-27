@@ -94,11 +94,10 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
         {.gcsafe.}:
           var res = Response(headers: newHttpHeaders())
           getBaseMiddlewares(req, res)
+          let path = req.getUriPath()
           let
-            path = req.getUriPath()
             httpMethod = req.getHttpMethod()
             runtimeCheck = app.router.checkExists(path, httpMethod)
-
           case runtimeCheck.exists
           of true:
             req.setParams(runtimeCheck.params)
@@ -147,6 +146,32 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
               req.resp(Http403, getDefault(Http403), res.getHeaders)
           of false:
             when defined webApp:
+              # WebSocket upgrade handling via router ws table
+              let upgradeHdr = req.findHeader("Upgrade")
+              if upgradeHdr.toLowerAscii == "websocket":
+                let wsCheck = app.router.checkWsExists(path)
+                if wsCheck.exists:
+                  req.setParams(wsCheck.params)
+                  let wsMidStatus = wsCheck.route.resolveMiddleware(req, res)
+                  case wsMidStatus
+                  of Http301, Http302, Http303:
+                    req.resp(wsMidStatus, "", res.getHeaders())
+                    return
+                  of Http204:
+                    try:
+                      when defined supraMicroservice:
+                        wsCheck.route.callback(req.addr, res.addr)
+                      else:
+                        wsCheck.route.callback(req, res)
+                    except Exception as e:
+                      displayError("Error processing WS request: " & e.msg & "\n" & e.getStackTrace())
+                      req.resp(Http500, "Internal Server Error")
+                      return
+                    discard wsCheck.route.resolveAfterware(req, res)
+                    return
+                  else:
+                    req.resp(Http403, getDefault(Http403), res.getHeaders())
+                    return
               when defined supraFileserver:
                 var hasFoundResource: bool
                 if app.assetsHandler != nil:

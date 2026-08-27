@@ -159,17 +159,24 @@ proc newHttpRoute(autolinked: (string, string),
   if result.hasAfterware:  result.afterwares = afterwares
 
 
-proc newWsRoute(path: string, httpMethod: HttpMethod, callback: Callable,
-                middlewares: seq[Middleware], afterwares: seq[Afterware]): HttpRouteWs =
-  # Create a new `HttpRoute`
+proc newWsRoute(autolinked: (string, string), httpMethod: HttpMethod, callback: Callable,
+                middlewares: seq[Middleware], afterwares: seq[Afterware],
+                routeParams: seq[(string, bool)] = @[]): HttpRouteWs =
+  # Create a new `HttpRoute` for WebSocket
+  let isDynamic = routeParams.len > 0
   result = HttpRouteWs(
-    path: path,
+    path: autolinked[1],
     httpMethod: httpMethod,
     callback: callback,
+    httpRouteType: if isDynamic: DynamicRoute else: StaticRoute,
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
-  # result.regexPath = re(path)
+  result.regexPath = regex.initRegexVM(regex.compile(autolinked[0]))
+  if isDynamic:
+    result.routePatterns = newOrderedTable[string, RoutePattern]()
+    for (name, isOptional) in routeParams:
+      result.routePatterns[name] = (key: name, reKey: "", isOptional: isOptional)
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
 
@@ -186,7 +193,7 @@ proc registerRoute*(router: HttpRouterInstance,
   writeWith rw:
     let path = autolinked[1] # the original path string used to define the route
     if isWebSocket:
-      let routeObject = newWsRoute(path, HttpGet, callback, middlewares, afterwares)
+      let routeObject = newWsRoute(autolinked, HttpGet, callback, middlewares, afterwares, routeParams)
       if not router.httpWS.hasKey(path):
         router.httpWS[path] = routeObject
     else:
@@ -522,14 +529,6 @@ macro searchRoute(httpMethod: static string) =
                 result.params[name] = g.str(requestPath)
               inc idx
           break
-      # for k, r in router.`verb`:
-      #   let someRegexMatch = requestPath.match(r.regexPath)
-      #   if someRegexMatch.isSome():
-      #     result.route = r # found a matching route
-      #     let pattern = someRegexMatch.get().captures()
-      #     if RegexMatch(pattern).pattern.captureNameId.len > 0:
-      #       for key in RegexMatch(pattern).pattern.captureNameId.keys:
-      #         result.params[key] = pattern[key]
 
 macro searchRouteWs*() =
   ## Search for a WebSocket route
@@ -550,15 +549,6 @@ macro searchRouteWs*() =
                 result.params[name] = g.str(requestPath)
               inc idx
           break
-      # for k, r in router.httpWS:
-      #   let someRegexMatch = requestPath.match(r.regexPath)
-      #   if someRegexMatch.isSome():
-      #     result.route = r # found a matching WebSocket route
-      #     let pattern = someRegexMatch.get().captures()
-      #     if RegexMatch(pattern).pattern.captureNameId.len > 0:
-      #       for key in RegexMatch(pattern).pattern.captureNameId.keys:
-      #         result.params[key] = pattern[key]
-      #     break # stop at the first match
 
 type
   RouteCheckResult* = tuple[exists: bool, route: HttpRoute, params: Table[string, string]]
