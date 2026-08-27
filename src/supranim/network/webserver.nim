@@ -36,8 +36,8 @@ type
     body*: Option[string]
     routeParams*: Table[string, string]
     responseSent*: bool
-    powReq: pw.HttpRequest
-    powRes: pw.HttpResponse
+    powReq*: pw.HttpRequest
+    powRes*: pw.HttpResponse
     headersFetched: bool
     headersCache: HttpHeaders
 
@@ -130,7 +130,7 @@ proc start*(server: WebServer, onRequest: OnRequest,
   when not compileOption("threads"):
     {.error: "Multi-threaded Supranim requires threads support. Use `--threads:on`".}
   let nThreads = if threads > 0: threads else: countProcessors()
-  server.powMultiServer = pw.newMultiThreadHttpServer(nThreads)
+  server.powMultiServer = pw.newHttpServer(nThreads)
   if startupCallback != nil:
     startupCallback()
   server.powMultiServer.start(
