@@ -87,7 +87,7 @@ proc autolinkController*(routePath: string,
     if isWebSocket: "ws" # websocket handles are always prefixed with `ws`
     else: toLowerAscii(symbolName(httpMethod)[4..^1])
   var
-    pathRegExpr: string
+    pathRegExpr: string = "^"
     ctrlName = methodName
     routeParams: seq[(string, bool)]
   for v in patterns:
