@@ -6,6 +6,11 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
+## Route autolinking for controllers.
+## Parses `{param:pattern}` placeholders, builds regex with named groups,
+## and derives controller proc names. Pattern table includes `slug`, `uuid`,
+## `semver`, `id` etc. Used by the `routes` macro in `router.nim`.
+
 import std/[macros, tables, options,
   strutils, parseutils, sequtils, enumutils]
 
@@ -40,7 +45,9 @@ const
 
 proc autolinkController*(routePath: string,
         httpMethod: HttpMethod, isWebSocket = false): Autolinked =
-  # Generates controller name and route
+  ## Generates controller name and route regex from a `routePath` string.
+  ## Parses `{name:pattern}` placeholders against `RegexPatterns`, builds a
+  ## `^regex$` with named groups, and returns the autolinked tuple.
   # patterns from `routePath` string
   var
     i = 0

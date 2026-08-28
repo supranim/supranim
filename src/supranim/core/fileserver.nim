@@ -5,6 +5,11 @@
 #   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
+
+## Static file serving helpers.
+## Serves embedded assets via `service/assets` and disk assets via `mimedb`
+## with range and download support.
+
 import std/[os, strutils, httpcore, tables, options]
 import pkg/mimedb
 

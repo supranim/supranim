@@ -6,6 +6,10 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
+## Utilities for memory management.
+## Provides cross-platform `malloc_trim` and `releaseUnusedMemory` shims for Linux and macOS
+## plus the `freemem` template. Used to reclaim unused heap after request handling.
+
 # Malloc trim shim
 # Cross-platform: Linux (glibc) + macOS (libmalloc)
 # todo windows?

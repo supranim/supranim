@@ -11,13 +11,13 @@ suite "autolinkController":
     let a = autolinkController("/users", HttpGet)
     check a.handleName == "getUsers"
     check a.path == "/users"
-    check a.regexPath == "\\/users$"
+    check a.regexPath == "^\\/users$"
     check a.params.isNone
 
   test "root path maps to the Homepage handle":
     let a = autolinkController("/", HttpGet)
     check a.handleName == "getHomepage"
-    check a.regexPath == "\\/$"
+    check a.regexPath == "^\\/$"
 
   test "multiple path segments produce a camel-cased handle":
     let a = autolinkController("/users/profile/details", HttpGet)

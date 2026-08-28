@@ -1,5 +1,3 @@
---path:"/Users/georgelemon/Development/packages/supranim/src"
---path:"/Users/georgelemon/Development/packages/openparser/src"
 --define:release
 --define:supraDebugServiceProviderCode
 --out:"./bin/cacheable"
