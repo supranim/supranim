@@ -6,6 +6,10 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
+## Application path constants and helper for resolving project directories.
+## Defines compile-time `basePath`, `storagePath`, `configPath` etc. and the
+## `ApplicationPaths` runtime helper for resolving installation-relative paths.
+
 import std/[tables, os, strutils]
 from std/macros import getProjectPath
 

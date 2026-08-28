@@ -6,6 +6,10 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
+## Environment loader for `.env.yml`.
+## Reads `rootPath/.env.yml`, parses database credentials, and sets
+## `database.*` env vars for the current process.
+
 import std/[macros, os]
 import pkg/openparser/yaml
 
@@ -13,6 +17,7 @@ import ./paths
 
 type
   SupranimEnvLoader* = object of CatchableError
+    ## Error raised when the environment file cannot be loaded.
 
 proc loadEnv* =
   ## Loads environment variables from the `.env.yml` file in the project root directory.

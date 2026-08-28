@@ -6,5 +6,8 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
+## Microservice entry point.
+## Re-exports `supranim/core/services` for defining `ServiceType` providers.
+
 import supranim/core/services
 export services

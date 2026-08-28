@@ -6,6 +6,10 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
+## WebSocket re-export for Supranim.
+## Thin wrapper over `pkg/powpow` WebSocket primitives, exposing connection
+## types and `websocketUpgrade` for route handlers.
+
 import pkg/powpow as pw
 export pw.WsConnection, pw.WsFrameKind
 export pw.WsOpenCb, pw.WsMessageCb, pw.WsCloseCb, pw.WsErrorCb

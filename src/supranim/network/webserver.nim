@@ -6,6 +6,10 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
+## Powpow-based HTTP server for Supranim.
+## Wraps `pkg/powpow` `HttpServer`/`MultiThreadHttpServer`, defines `Request`,
+## routing callbacks, and streaming helpers. This is the sole HTTP backend.
+
 import std/[tables, httpcore, options,
            uri, strutils, strscans, sequtils, cpuinfo, locks]
 import pkg/powpow as pw

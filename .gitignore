@@ -1,4 +1,5 @@
 .DS_Store
+.gh-pages/
 bin/
 nimcache/
 nimblecache/

@@ -5,6 +5,11 @@
 #   (c) 2026 LGPL-v3-or-later License | Made by Humans from OpenPeeps
 #   https://supranim.com | https://github.com/supranim
 #
+
+## Logger singleton service.
+## Wraps `support/logit` and exposes `getLogger`, `init` and `logger`
+## template backed by a file and console logit.
+
 import std/[os, options]
 import pkg/supranim/core/[services, application, paths]
 import pkg/supranim/support/logit
