@@ -6,12 +6,14 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
-import std/[strutils, options, json, httpcore, uri, tables]
+import std/[strutils, options, json, uri, tables]
+import std/httpcore except HttpMethod
+
 import pkg/openparser/json
 import ../support/cookie
 
 from ../network/webserver import Request, send, getIp, getHeaders,
-        getMethod, getHeader, findHeader, getQuery, getBody
+        getMethod, getHeader, findHeader, getQuery, getBody, HttpMethod
 
 export Request, send, getIp, getHeaders,
       getHeader, findHeader, `$`, getQuery, getBody

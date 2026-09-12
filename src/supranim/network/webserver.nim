@@ -10,11 +10,13 @@
 ## Wraps `pkg/powpow` `HttpServer`/`MultiThreadHttpServer`, defines `Request`,
 ## routing callbacks, and streaming helpers. This is the sole HTTP backend.
 
-import std/[tables, httpcore, options,
-           uri, strutils, strscans, sequtils, cpuinfo, locks]
+import std/[tables, options, uri, strutils, strscans, sequtils, cpuinfo, locks]
+import std/httpcore except HttpMethod
 import pkg/powpow as pw
 import supranim/support/http
 from std/net import Port, `$`
+
+export pw.HttpMethod
 
 type
   OnRequestLowLevel* = proc(req: pointer, arg: pointer) {.cdecl, gcsafe.}
