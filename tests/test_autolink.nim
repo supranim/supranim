@@ -2,9 +2,10 @@
 # Unit tests for supranim/core/autolink
 #
 import std/unittest
-import std/[httpcore, options, strutils]
+import std/[options, strutils]
 
 import supranim/core/autolink
+from powpow import HttpMethod
 
 suite "autolinkController":
   test "static route maps to a controller handle":
