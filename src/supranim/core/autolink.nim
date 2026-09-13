@@ -14,7 +14,7 @@
 import std/[macros, tables, options,
   strutils, parseutils, sequtils, enumutils]
 
-from std/httpcore import HttpMethod
+from pkg/powpow import HttpMethod
 
 type
   RoutePattern* = tuple[

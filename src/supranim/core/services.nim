@@ -20,7 +20,8 @@ import pkg/supranim/application
 import pkg/supranim/core/[paths, autolink, router]
 
 from std/net import Port, `$`
-from std/httpcore import HttpCode, HttpMethod
+from std/httpcore import HttpCode
+from pkg/powpow import HttpMethod
 
 export macros, macrocache, tables, once, options
 export yaml, json

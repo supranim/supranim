@@ -6,12 +6,13 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
-import std/[httpcore, strutils, htmlgen, times, options]
+import std/[strutils, htmlgen, times, options]
 import pkg/openparser/json # std/json is exported from here
 
+import std/httpcore except HttpMethod
 import ../support/uuid
 
-from ../network/webserver import Request, send
+from ../network/webserver import Request, send, HttpMethod
 export HttpCode
 
 type

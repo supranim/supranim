@@ -15,10 +15,8 @@ import ../support/cookie
 from ../network/webserver import Request, send, getIp, getHeaders,
         getMethod, getHeader, findHeader, getQuery, getBody, HttpMethod
 
-export Request, send, getIp, getHeaders,
+export Request, send, getIp, getHeaders, HttpMethod,
       getHeader, findHeader, `$`, getQuery, getBody
-
-export httpcore
 
 proc getHttpMethod*(req: var Request): HttpMethod =
   ## Returns the `HttpMethod` from `Request`

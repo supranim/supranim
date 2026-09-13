@@ -7,7 +7,7 @@
 #
 
 import std/[macros, macrocache, asyncdispatch, strutils,
-        tables, httpcore, uri, sequtils, options]
+          tables, uri, sequtils, options]
 
 import pkg/openparser/json
 import ./core/[request, response, router, fileserver]

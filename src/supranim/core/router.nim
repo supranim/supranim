@@ -14,11 +14,13 @@
 ## The Router is using `pkg/regex` for dynamic route matching, which allows for powerful
 ## parameter extraction and flexible route definitions.
 
-import std/[httpcore, critbits, tables, macros, options,
+import std/[critbits, tables, macros, options,
         macrocache, strutils, sequtils, enumutils]
 
 import pkg/openparser/regex
 import pkg/threading/rwlock
+
+import std/httpcore except HttpMethod
 
 import ./request, ./response
 import ./autolink
