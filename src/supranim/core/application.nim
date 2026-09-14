@@ -387,12 +387,12 @@ var appInitialized* = false
 template initStartCommand*(v: Values, createDirs = true) =
   ## Kapsis `init` command handler
   displayInfo("Initialize Application via CLI")
-  let path = $(v.get("directory").getPath)
+  let path = $(v.get("project").getPath)
   if App.applicationPaths.init(path, createDirs):
     # try to initialize the application
     let runtimePath = App.applicationPaths.getInstallationPath()
-    display(span("⚡️ Start Supranim application"))
-    display(span"📂 Installation path:", span(runtimePath))
+    displaySuccess(span("⚡️ Start Supranim application"))
+    displayInfo(span("Runtime path:"), span(runtimePath))
     when not defined supranimEmbedConfig:
       if not dirExists(runtimePath / "config"):
         # create runtime config directory and copy default config files.
