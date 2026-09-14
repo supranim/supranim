@@ -19,7 +19,7 @@ from std/net import Port, `$`
 export pw.HttpMethod
 
 type
-  OnRequestLowLevel* = proc(req: pointer, arg: pointer) {.cdecl, gcsafe.}
+  OnRequestLowLevel* = proc(req: pw.HttpRequest, res: pw.HttpResponse) {.gcsafe.}
   StartupCallback* = proc() {.gcsafe.}
 
 type
@@ -100,7 +100,7 @@ proc attachHandler(server: WebServer, onRequest: OnRequest,
         cbFound = server.callbackTable[normPath]
       release(server.callbackLock)
       if cbFound != nil:
-        cbFound(cast[pointer](req), cast[pointer](res))
+        cbFound(req, res)
         return
       var uriStr = req.getUrl()
       var parsedUri = parseUri(uriStr)
@@ -154,7 +154,7 @@ proc start*(server: WebServer, onRequest: OnRequest,
         cbFound = server.callbackTable[normPath]
       release(server.callbackLock)
       if cbFound != nil:
-        cbFound(cast[pointer](req), cast[pointer](res))
+        cbFound(req, res)
         return
       var uriStr = req.getUrl()
       var parsedUri = parseUri(uriStr)
@@ -449,13 +449,12 @@ proc addEvent*(server: WebServer,
 proc addCallback*(server: WebServer, path: string,
     callback: OnRequestLowLevel) =
   ## Adds a low-level callback for a specific request path.
-  ## 
+  ##
   ## When a request with a matching path is received, the low-level
   ## callback is invoked directly instead of going through the normal
-  ## supranim routing pipeline. The callback receives the raw powpow
-  ## `HttpRequest` as an opaque pointer — cast it back with
-  ## `cast[ptr pw.HttpRequest](req)`.
-  ## 
+  ## supranim routing pipeline. The callback receives the powpow
+  ## `HttpRequest` and `HttpResponse` directly.
+  ##
   ## Note: Path matching uses normalized paths (trailing slashes
   ## removed, etc.).
   let normalized = normalizeCallbackPath(path)

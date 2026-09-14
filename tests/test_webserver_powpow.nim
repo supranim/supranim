@@ -4,9 +4,10 @@
 import std/unittest
 import std/[options, net]
 
+import pkg/powpow as pw
 import supranim/network/webserver
 
-proc lowLevelCb(req: pointer, arg: pointer) {.cdecl, gcsafe.} =
+proc lowLevelCb(req: pw.HttpRequest, res: pw.HttpResponse) {.gcsafe.} =
   discard
 
 suite "WebServer (powpow backend)":

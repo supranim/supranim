@@ -66,8 +66,7 @@ proc mw302(req: var Request, res: var Response): HttpCode {.nimcall.} =
 #
 # Low-level callback (bypasses the router)
 #
-proc rawCb(req: pointer, arg: pointer) {.cdecl, gcsafe.} =
-  let res = cast[pw.HttpResponse](arg)
+proc rawCb(req: pw.HttpRequest, res: pw.HttpResponse) {.gcsafe.} =
   res.status(Http200).send("raw callback")
 
 #
