@@ -20,7 +20,7 @@ initService EventEmitter[Singleton]:
   ## A singleton of the EventEmitter `emitter` package.
   ## It allows different parts of the application to register listeners
   ## for specific events and emit those events with optional arguments.
-  client do:
+  api do:
     proc event*: ptr EventEmitter {.inline.} =
       ## Returns the Singleton instance of the EventManager
       getEventEmitterInstance(

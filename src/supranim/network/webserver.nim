@@ -10,7 +10,7 @@
 ## Wraps `pkg/powpow` `HttpServer`/`MultiThreadHttpServer`, defines `Request`,
 ## routing callbacks, and streaming helpers. This is the sole HTTP backend.
 
-import std/[tables, options, uri, strutils, strscans, sequtils, cpuinfo, locks]
+import std/[tables, options, uri, strutils, strscans, sequtils, cpuinfo, locks, os]
 import std/httpcore except HttpMethod
 import pkg/powpow as pw
 import supranim/support/http
@@ -84,9 +84,10 @@ proc start*(server: WebServer) =
   var dummy = pw.newHttpServer()
   dummy.start(nil, server.port)
 
-proc start*(server: WebServer, onRequest: OnRequest,
-              startupCallback: StartupCallback = nil) =
-  ## Start the PowPow WebServer 
+proc attachHandler(server: WebServer, onRequest: OnRequest,
+    startupCallback: StartupCallback = nil) =
+  ## Create the underlying powpow server and attach the `onRequest` handler.
+  ## Shared by the TCP, Unix-socket and multi-threaded `start` overloads.
   server.powServer = pw.newHttpServer()
   if startupCallback != nil:
     startupCallback()
@@ -124,6 +125,11 @@ proc start*(server: WebServer, onRequest: OnRequest,
       onRequest(sReq)
       if not sReq.responseSent:
         res.status(Http200).send("")
+
+proc start*(server: WebServer, onRequest: OnRequest,
+              startupCallback: StartupCallback = nil) =
+  ## Start the PowPow WebServer
+  server.attachHandler(onRequest, startupCallback)
   server.powServer.listen("0.0.0.0", server.port.int)
   server.powServer.getLoop().run()
   server.powServer.close()
@@ -131,7 +137,7 @@ proc start*(server: WebServer, onRequest: OnRequest,
 
 proc start*(server: WebServer, onRequest: OnRequest,
               startupCallback: StartupCallback,
-              threads: int) =
+              threads: int, host = "0.0.0.0") =
   ## Start the PowPow webserver for a specific number of `threads` 
   when not compileOption("threads"):
     {.error: "Multi-threaded Supranim requires threads support. Use `--threads:on`".}
@@ -173,7 +179,7 @@ proc start*(server: WebServer, onRequest: OnRequest,
       onRequest(sReq)
       if not sReq.responseSent:
         res.status(Http200).send(""),
-    "0.0.0.0", server.port.int)
+    host, server.port.int)
 
 proc send*(req: var Request, code: int, body: string, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response with a numeric status code.
@@ -377,6 +383,53 @@ proc runServer*(onRequest: OnRequest,
   ## binds it to the given `port`, and starts the event loop.
   var server = newWebServer(port)
   server.start(onRequest, startupCallback)
+
+proc runServer*(onRequest: OnRequest,
+            startupCallback: StartupCallback, port = Port(3000),
+            threads: int, host = "0.0.0.0") =
+  ## Convenience procedure that creates a multi-threaded WebServer
+  ## (powpow `MultiThreadHttpServer`) serving `onRequest` on `port`
+  ## with `threads` workers. `threads <= 0` uses all processors.
+  when not compileOption("threads"):
+    {.error: "Multi-threaded Supranim requires threads support. Use `--threads:on`".}
+  var server = newWebServer(port, enableMultiThreading = true)
+  server.start(onRequest, startupCallback, threads, host)
+
+proc runServer*(onRequest: OnRequest,
+            startupCallback: StartupCallback, port = Port(3000),
+            host: string) =
+  ## Convenience procedure that creates a single-threaded WebServer
+  ## bound to `host:port` and starts the event loop.
+  var server = newWebServer(port)
+  server.attachHandler(onRequest, startupCallback)
+  server.powServer.listen(host, server.port.int)
+  server.powServer.getLoop().run()
+  server.powServer.close()
+  server.powServer.getLoop().close()
+
+when not defined(windows):
+  proc startUnix*(server: WebServer, onRequest: OnRequest,
+                startupCallback: StartupCallback = nil,
+                socketPath: string, mode: int = 0o660) =
+    ## Start the PowPow WebServer on a Unix domain socket instead of TCP.
+    ## Ideal for ultra-low-latency local IPC between microservices on the
+    ## same machine (no loopback TCP stack). POSIX only.
+    if fileExists(socketPath):
+      removeFile(socketPath)
+    server.attachHandler(onRequest, startupCallback)
+    server.powServer.listenUnix(socketPath, mode)
+    server.powServer.getLoop().run()
+    server.powServer.close()
+    server.powServer.getLoop().close()
+
+  proc runUnixServer*(onRequest: OnRequest,
+              startupCallback: StartupCallback, socketPath: string,
+              mode: int = 0o660) =
+    ## Convenience procedure that creates a WebServer bound to the Unix
+    ## domain socket at `socketPath` and starts the event loop.
+    ## A stale socket file from a previous run is removed first.
+    var server = newWebServer(Port(0))
+    server.startUnix(onRequest, startupCallback, socketPath, mode)
 
 proc addEvent*(server: WebServer,
     callback: proc(fd: cint, events: cshort, arg: pointer){.cdecl, gcsafe.}) =

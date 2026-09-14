@@ -18,7 +18,7 @@ import pkg/flysystem
 export flysystem
 
 initService Filesystem[Singleton]:
-  client do:
+  api do:
     # where we define the publici API for the Storage service
     proc storage*: Filesystem =
       ## Returns the singleton instance of the Filesystem service, which provides

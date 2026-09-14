@@ -22,7 +22,7 @@ import pkg/supranim/core/paths
 ## This is particularly useful for serving static content in web applications or bundling resources for CLI tools.
 
 initService Assets[Singleton]:
-  backend do:
+  state do:
     type
       BinFilesTable = TableRef[string, seq[uint8]]
       TextFilesTable = TableRef[string, string]
@@ -49,7 +49,7 @@ initService Assets[Singleton]:
       # Threshold: >2% suspicious control chars => binary
       result = (ctrl * 100 div n) <= 2
 
-  client do:
+  api do:
     proc staticAssets*: ptr Assets {.inline.} =
       ## Returns the Singleton instance of the Assets service
       getAssetsInstance(

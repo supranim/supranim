@@ -7,7 +7,10 @@
 #
 
 ## Microservice entry point.
-## Re-exports `supranim/core/services` for defining `ServiceType` providers.
+## Re-exports `supranim/core/services` for defining `ServiceType` providers
+## plus `supranim/network/websocket` for `ws do:` blocks.
 
 import supranim/core/services
+import supranim/network/websocket
 export services
+export websocket

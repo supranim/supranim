@@ -7,7 +7,7 @@
 #
 import std/[macros, os, net, tables, strutils, hashes, macrocache, posix]
 
-import pkg/threading/[once, rwlock]
+import pkg/threading/[once, rwlock, channels]
 
 import pkg/kapsis
 import pkg/kapsis/interactive/prompts
@@ -20,6 +20,11 @@ import ../support/uuid
 
 export json, yaml, paths, macros
 export registerCallback, unregisterCallback
+# NOTE: `threading/channels` is intentionally NOT re-exported here.
+# It provides generic `send`/`recv` overloads that would leak into every
+# importer and break overload resolution in macro-generated code.
+# `Chan`/`ServiceMsg` reach service code via `supranim/core/services`,
+# which imports `threading/channels` directly.
 
 type
   JsonString* = string  # an alias for JSON string
@@ -33,6 +38,17 @@ type
 
   ApplicationAssetsHandler* = proc (req: var Request, res: var Response, hasFoundResource: var bool) {.closure.}
   ApplicationThreadCallback* = proc (app: ptr ApplicationObject) {.closure.}
+
+  ServiceMsg* = object
+    ## Envelope exchanged between the main application and
+    ## channel-based (`ThreadService`) services.
+    ## The `Application` owns one `Chan[ServiceMsg]` per service,
+    ## created at `start*Service` time and shared with the worker thread.
+    ## There is no `close` for `Chan`; workers exit on the `ServiceStopAction`
+    ## poison pill sent by the generated `stop*Service` proc.
+    id*: int64
+    action*: string
+    payload*: string
 
   ApplicationObject = object
     key*: Uuid
@@ -55,6 +71,11 @@ type
     router*: HttpRouterInstance
       ## The HTTP router instance that manages route registration and request handling.
       ## This is initialized during application setup.
+    threadChans*: TableRef[string, Chan[ServiceMsg]]
+      ## Application-owned channels for `ThreadService` job-threads,
+      ## keyed by service name. Created by the generated `start*Service`
+      ## proc, looked up by the generated `api` handles and by
+      ## `sendServiceMsg` / `recvServiceMsg` below.
 
   AppConfigDefect* = object of CatchableError
   
@@ -77,6 +98,7 @@ proc initApplication* =
   once(onceApp):
     App = createShared(ApplicationObject)
     App[].applicationPaths = ApplicationPaths()
+    App[].threadChans = newTable[string, Chan[ServiceMsg]]()
 
 proc appInstance*: Application =
   ## Returns the singleton application instance
@@ -216,6 +238,17 @@ else:
       if f.endsWith(".nim"):
         if f.splitFile.name[0] notin ['!', '_']:
           add result, nnkImportStmt.newTree(newLit(f))
+
+  proc loadEventQueues*: NimNode {.compileTime.} =
+    # walks recursively and auto discover queue jobs
+    # available at `src/service/event/queue/*.nim`.
+    # nim files prefixed with `!` or `_` will be ignored
+    result = newStmtList()
+    if dirExists(eventsPath / "queue"):
+      for f in walkDirRec(eventsPath / "queue"):
+        if f.endsWith(".nim"):
+          if f.splitFile.name[0] notin ['!', '_']:
+            add result, nnkImportStmt.newTree(newLit(f))
   
   proc loadMiddlewares: NimNode {.compileTime.} =
     # walks recursively and auto discover middleware handles
@@ -295,6 +328,7 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
       app.enablePluginManager()
   else:
     add result, loadEventListeners()
+    add result, loadEventQueues()
     add result, loadMiddlewares()
     
     # include `routes.nim` module
@@ -363,7 +397,7 @@ template initStartCommand*(v: Values, createDirs = true) =
       if not dirExists(runtimePath / "config"):
         # create runtime config directory and copy default config files.
         createDir(runtimePath / "config")
-        for file in walkFiles(paths.configPath / "*"):
+        for file in walkFiles(configPath / "*"):
           let f = file.splitFile
           if f.ext in [".yml", ".yaml"]:
             let dest = runtimePath / "config" / f.name & f.ext
@@ -427,4 +461,46 @@ proc getUuid*(app: Application): lent Uuid =
 
 proc getAddress*(app: Application): lent string =
   result = app.address
+
+const ServiceStopAction* = "__stop__"
+  ## Poison-pill `action` telling a `ThreadService` worker to exit its
+  ## message loop. Sent by the generated `stop*Service` proc
+  ## (`Chan` has no `close`).
+
+proc registerServiceChan*(app: Application, name: string, ch: Chan[ServiceMsg]) =
+  ## Store the application-owned channel for the `ThreadService` called `name`.
+  ## Called by the generated `start*Service` proc.
+  app.threadChans[name] = ch
+
+proc hasServiceChan*(app: Application, name: string): bool =
+  ## Whether a channel is registered for the `ThreadService` called `name`.
+  result = app.threadChans.hasKey(name)
+
+proc getServiceChan*(app: Application, name: string): Chan[ServiceMsg] =
+  ## Return the application-owned channel for the `ThreadService` called `name`.
+  ## Raises `KeyError` when the service was not started.
+  result = app.threadChans[name]
+
+proc sendServiceMsg*(app: Application, name, action: string,
+    payload: string = "", id: int64 = 0): bool {.discardable.} =
+  ## Non-blocking send of a `ServiceMsg` to the `ThreadService` called `name`.
+  ## Returns `false` when no channel is registered or the queue is full.
+  if likely(app.threadChans.hasKey(name)):
+    return app.threadChans[name].trySend(ServiceMsg(id: id, action: action, payload: payload))
+  false
+
+proc recvServiceMsg*(app: Application, name: string): ServiceMsg =
+  ## Blocking receive of a `ServiceMsg` from the `ThreadService` called `name`.
+  ## Used for worker replies sent back on the shared channel.
+  result = app.threadChans[name].recv()
+
+proc tryRecvServiceMsg*(app: Application, name: string, dst: var ServiceMsg): bool =
+  ## Non-blocking receive of a `ServiceMsg` from the `ThreadService` called `name`.
+  if likely(app.threadChans.hasKey(name)):
+    return app.threadChans[name].tryRecv(dst)
+  false
+
+template isServiceStop*(msg: ServiceMsg): bool =
+  ## Whether `msg` is the worker shutdown poison pill.
+  msg.action == ServiceStopAction
 

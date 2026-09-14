@@ -16,6 +16,8 @@ export pw.WsOpenCb, pw.WsMessageCb, pw.WsCloseCb, pw.WsErrorCb
 export pw.WsServer, pw.newWsServer
 export pw.sendText, pw.sendBinary, pw.sendPing, pw.sendPong
 export pw.closeWs, pw.websocketUpgrade
+export pw.listen, pw.start
+export pw.onOpen, pw.onMessage, pw.onClose, pw.onError
 
 # Backward-compat aliases
 type

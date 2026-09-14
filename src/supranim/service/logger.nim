@@ -16,11 +16,11 @@ import pkg/supranim/support/logit
 export logit
 
 initService Logger[Singleton]:
-  backend do:
+  state do:
       type Logger = ref object
         log: Logit
-  
-  client do:
+
+  api do:
 
     proc getLogger*(): ptr Logger =
       ## Returns the Singleton instance of the Logger service

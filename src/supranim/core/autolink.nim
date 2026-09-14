@@ -140,3 +140,46 @@ proc autolinkController*(routePath: string,
   when defined supranimDebugAutolink:
     debugEcho result
 
+type
+  RouteSegment* = tuple[isParam: bool, value: string]
+    ## A static text (`isParam == false`) or `{name:pattern}`
+    ## placeholder (`isParam == true`, `value` is the name) of a route path.
+
+proc routeSegments*(routePath: string): seq[RouteSegment] =
+  ## Splits a route path into static and param segments, in order.
+  ## Used by service client codegen to build request URLs.
+  ## Pattern validity itself is enforced by `autolinkController`.
+  var i = 0
+  var lit = ""
+  while i < routePath.len:
+    if routePath[i] == '{':
+      if lit.len > 0:
+        result.add((false, lit))
+        lit = ""
+      inc i
+      var name = ""
+      while i < routePath.len and routePath[i] notin {':', '}'}:
+        name.add(routePath[i])
+        inc i
+      while i < routePath.len and routePath[i] != '}':
+        inc i
+      if i < routePath.len:
+        inc i
+      result.add((true, name))
+    else:
+      lit.add(routePath[i])
+      inc i
+  if lit.len > 0:
+    result.add((false, lit))
+
+proc clientUrlExpr*(base: NimNode, routePath: string): NimNode {.compileTime.} =
+  ## Turns `base` and "/storage/{bucket:slug}/cache/{key:slug}" into
+  ## `base & "/storage/" & bucket & "/cache/" & key`.
+  ## Param names become `ident`s resolved at the use site.
+  result = base
+  for seg in routeSegments(routePath):
+    if seg.isParam:
+      result = nnkInfix.newTree(ident"&", result, ident(seg.value))
+    else:
+      result = nnkInfix.newTree(ident"&", result, newLit(seg.value))
+
