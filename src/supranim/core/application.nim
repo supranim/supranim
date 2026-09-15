@@ -11,15 +11,24 @@ import pkg/threading/[once, rwlock, channels]
 
 import pkg/kapsis
 import pkg/kapsis/interactive/prompts
-import pkg/openparser/[json, yaml]
+import pkg/openparser/[json, yaml, toml]
 
 import ../network/webserver
 import ./[config, paths, request, response, router]
 
 import ../support/uuid
 
-export json, yaml, paths, macros
+export json, yaml, toml, paths, macros
 export registerCallback, unregisterCallback
+# Re-export the configuration API (`Configuration` variant, loaders,
+# `config()`/`staticConfig()` support). `config` itself is the runtime
+# accessor proc below, so the module is exported member-wise.
+export Configuration, ConfigurationFormat, ConfigValue, ConfigError,
+  ConfigEntry, configFileExtensions, formatForExt,
+  parseConfiguration, loadConfigurations, scanConfigDir, stripStatic,
+  get, isNil, getStr, getInt, getFloat, getBool,
+  putStr, putInt, putFloat, putBool,
+  staticConfig, staticConfigFromDir
 # NOTE: `threading/channels` is intentionally NOT re-exported here.
 # It provides generic `send`/`recv` overloads that would leak into every
 # importer and break overload resolution in macro-generated code.
@@ -57,8 +66,11 @@ type
       ## The port number the application listens on
     address*: string
       ## The address the application binds to
-    configs*: OrderedTableRef[string, YAMLObject]
-      ## A table of configuration documents
+    configs*: OrderedTableRef[string, Configuration]
+      ## A table of configuration documents, one per config file
+      ## (`.yml`/`.yaml`, `.toml`, `.json`), stored natively.
+      ## Top-level `static` blocks are stripped at load time;
+      ## read compile-time settings via `staticConfig[T]()` instead.
     applicationPaths* : ApplicationPaths
       ## The application paths object that manages directory paths for the application
     assetsHandler*: ApplicationAssetsHandler
@@ -78,7 +90,7 @@ type
       ## `sendServiceMsg` / `recvServiceMsg` below.
 
   AppConfigDefect* = object of CatchableError
-  
+
 proc info*(str: string, indentSize = 0) =
   echo indent(str, indentSize)
 
@@ -111,6 +123,15 @@ proc AppInstance*: Application =
   initApplication()
   result = App
 
+proc getApplication*: Application =
+  ## Returns the singleton application instance
+  initApplication()
+  result = App
+
+proc app*: Application =
+  ## An alias for `getApplication`, returning a singleton app instance
+  getApplication()
+
 proc paths*(app: Application): ApplicationPaths =
   ## Returns the application paths
   result = app.applicationPaths
@@ -118,7 +139,10 @@ proc paths*(app: Application): ApplicationPaths =
 #
 # Config API
 #
-proc config*(app: Application, key: string): YamlNode =
+proc config*(app: Application, key: string): ConfigValue =
+  ## Runtime configuration lookup. `key` has the shape `file.key.path`;
+  ## the value is read from the natively-parsed document and wrapped in
+  ## a `ConfigValue` — use `getStr`/`getInt`/`getFloat`/`getBool` on it.
   let x = key.split(".")
   let id = x[0]
   let keys = x[1..^1]
@@ -128,22 +152,23 @@ proc config*(app: Application, key: string): YamlNode =
 when defined supranimEmbedConfig:
   proc embedConfigs: NimNode {.compileTime.} =
     ## Reads the application's `config/` directory at compile time and
-    ## generates code that initializes `App.configs` from the embedded YAML files.
+    ## generates code that initializes `App.configs` from the embedded
+    ## `.yml`/`.yaml`, `.toml` and `.json` files.
     result = newStmtList()
     add result, quote do:
-      App.configs = newOrderedTable[string, YamlObject]()
-    for path in walkDirRec(configPath):
-      let f = path.splitFile
-      if f.ext in [".yml", ".yaml"]:
-        let
-          key = newLit(f.name)
-          content = newLit(staticRead(path))
-          cfg = newLit(path)
-        add result, quote do:
-          try:
-            App.configs[`key`] = parseYAML(`content`)
-          except OpenParserYamlError as e:
-            displayError(e.msg & "\n" & `cfg`, quitProcess = true)
+      App.configs = newOrderedTable[string, Configuration]()
+    for entry in scanConfigDir(configPath):
+      let
+        key = newLit(entry.name)
+        ext = newLit(entry.ext)
+        content = newLit(staticRead(entry.path))
+        cfg = newLit(entry.path)
+      add result, quote do:
+        try:
+          App.configs[`key`] = parseConfiguration(`ext`, `content`)
+          App.configs[`key`].stripStatic()
+        except ConfigError as e:
+          displayError(e.msg & "\n" & `cfg`, quitProcess = true)
 
 #
 # ApplicationObject API
@@ -298,15 +323,10 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
         add result, embedConfigs()
       else:
         add result, quote do:
-          App.configs = newOrderedTable[string, YamlObject]()
-          for path in walkFiles(App.applicationPaths.resolve("config", "*")):
-            let p = path.splitFile
-            if p.ext in [".yml", ".yaml"]:
-              let configFile = path.splitFile
-              try:
-                App.configs[p.name] = parseYAML(readFile(path))
-              except OpenParserYamlError as e:
-                displayError(e.msg & "\n" & path, quitProcess = true)
+          try:
+            App.configs = loadConfigurations(App.applicationPaths.resolve("config"))
+          except ConfigError as e:
+            displayError(e.msg, quitProcess = true)
   
   if initBody != nil:
     add result, quote do:
@@ -399,7 +419,7 @@ template initStartCommand*(v: Values, createDirs = true) =
         createDir(runtimePath / "config")
         for file in walkFiles(configPath / "*"):
           let f = file.splitFile
-          if f.ext in [".yml", ".yaml"]:
+          if f.ext.toLowerAscii in configFileExtensions:
             let dest = runtimePath / "config" / f.name & f.ext
             if not fileExists(dest): copyFile(file, dest)
     appInitialized = true
