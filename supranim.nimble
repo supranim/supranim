@@ -19,8 +19,5 @@ requires "emitter >= 0.3.0"
 requires "nimcypher >= 0.1.0"
 requires "openparser >= 0.2.0"
 requires "mimedb >= 0.1.1"
-requires "checksums >= 0.2.2"
 requires "flysystem >= 0.1.0"
-requires "twofa >= 0.1.0"
-
 
