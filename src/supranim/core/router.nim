@@ -241,6 +241,79 @@ proc registerRoute*(router: HttpRouterInstance, path: string,
   registerRoute(router, (autolinked[1], autolinked[2]), httpMethod,
               callback, middlewares, afterwares, routeParams = rp)
 
+#
+# Verb helpers
+#
+# Thin wrappers around `registerRoute` so routes read naturally:
+# ```nim
+# router.get("/hello", myHandler)
+# router.post("/users", createUser, middlewares = @[auth])
+# ```
+proc get*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register a `GET` route. Shortcut for `registerRoute(path, HttpGet, ...)`.
+  router.registerRoute(path, HttpGet, callback, middlewares, afterwares)
+
+proc post*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register a `POST` route. Shortcut for `registerRoute(path, HttpPost, ...)`.
+  router.registerRoute(path, HttpPost, callback, middlewares, afterwares)
+
+proc put*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register a `PUT` route. Shortcut for `registerRoute(path, HttpPut, ...)`.
+  router.registerRoute(path, HttpPut, callback, middlewares, afterwares)
+
+proc patch*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register a `PATCH` route. Shortcut for `registerRoute(path, HttpPatch, ...)`.
+  router.registerRoute(path, HttpPatch, callback, middlewares, afterwares)
+
+proc head*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register a `HEAD` route. Shortcut for `registerRoute(path, HttpHead, ...)`.
+  router.registerRoute(path, HttpHead, callback, middlewares, afterwares)
+
+proc delete*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register a `DELETE` route. Shortcut for `registerRoute(path, HttpDelete, ...)`.
+  router.registerRoute(path, HttpDelete, callback, middlewares, afterwares)
+
+proc trace*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register a `TRACE` route. Shortcut for `registerRoute(path, HttpTrace, ...)`.
+  router.registerRoute(path, HttpTrace, callback, middlewares, afterwares)
+
+proc options*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register an `OPTIONS` route. Shortcut for `registerRoute(path, HttpOptions, ...)`.
+  router.registerRoute(path, HttpOptions, callback, middlewares, afterwares)
+
+proc connect*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register a `CONNECT` route. Shortcut for `registerRoute(path, HttpConnect, ...)`.
+  router.registerRoute(path, HttpConnect, callback, middlewares, afterwares)
+
+proc ws*(router: HttpRouterInstance, path: string, callback: Callable,
+        middlewares: seq[Middleware] = @[],
+        afterwares: seq[Afterware] = @[]) =
+  ## Register a WebSocket route (`GET` + `isWebSocket`).
+  ## Shortcut for `registerRoute(..., HttpGet, ..., isWebSocket = true)`.
+  let autolinked = autolinkController(path, HttpGet, isWebSocket = true)
+  let rp = if autolinked.params.isSome(): autolinked.params.get() else: @[]
+  router.registerRoute((autolinked[1], autolinked[2]), HttpGet,
+              callback, middlewares, afterwares,
+              isWebSocket = true, routeParams = rp)
+
 const httpMethods* = ["get", "post", "put", "patch", "head",
                   "delete", "trace", "options", "connect", "ws"]
   # `ws` is just an alias for `get` method used
