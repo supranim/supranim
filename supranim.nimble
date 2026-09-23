@@ -13,7 +13,7 @@ requires "semver >= 1.2.3"
 requires "kapsis >= 0.4.0"
 
 requires "powpow >= 0.2.0"
-requires "supranim_tasks >= 0.2.0"
+requires "https://github.com/supranim/tasks"
 requires "ozark >= 0.1.6"
 requires "emitter >= 0.3.0"
 requires "nimcypher >= 0.1.0"
