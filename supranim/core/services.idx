@@ -1,23 +1,25 @@
 nimTitle	services	supranim/core/services.html	module supranim/core/services		0
-nim	Global	supranim/core/services.html#Global	ServiceType.Global		29
-nim	Singleton	supranim/core/services.html#Singleton	ServiceType.Singleton		29
-nim	ChannelService	supranim/core/services.html#ChannelService	ServiceType.ChannelService		29
-nim	WebService	supranim/core/services.html#WebService	ServiceType.WebService		29
-nim	ThreadService	supranim/core/services.html#ThreadService	ServiceType.ThreadService		29
-nim	ServiceType	supranim/core/services.html#ServiceType	enum ServiceType		29
-nim	HttpRouteMeta	supranim/core/services.html#HttpRouteMeta	object HttpRouteMeta		50
-nim	HttpRouteVerbs	supranim/core/services.html#HttpRouteVerbs	type HttpRouteVerbs		56
-nim	HttpRoutes	supranim/core/services.html#HttpRoutes	type HttpRoutes		57
-nim	HttpServiceIndex	supranim/core/services.html#HttpServiceIndex	type HttpServiceIndex		61
-nim	HttpService	supranim/core/services.html#HttpService	object HttpService		74
-nim	SingletonService	supranim/core/services.html#SingletonService	object SingletonService		82
-nim	ServiceProvider	supranim/core/services.html#ServiceProvider	object ServiceProvider		84
-nim	index	supranim/core/services.html#index	var index		103
-nim	routerInstance	supranim/core/services.html#routerInstance	var routerInstance		104
-nim	ServiceManagerThreadServices	supranim/core/services.html#ServiceManagerThreadServices	const ServiceManagerThreadServices		107
-nim	ServiceManagerThreadServicesClients	supranim/core/services.html#ServiceManagerThreadServicesClients	const ServiceManagerThreadServicesClients		108
-nim	initRouter	supranim/core/services.html#initRouter.t	template initRouter(): untyped		117
-nim	initChannelRouter	supranim/core/services.html#initChannelRouter.t	template initChannelRouter()		190
-nim	initService	supranim/core/services.html#initService.t,untyped,untyped	template initService(id, config: untyped)		205
-nim	extractThreadServicesBackend	supranim/core/services.html#extractThreadServicesBackend.m	macro extractThreadServicesBackend()		673
-nim	extractThreadServicesClient	supranim/core/services.html#extractThreadServicesClient.m	macro extractThreadServicesClient()		689
+nim	Global	supranim/core/services.html#Global	ServiceType.Global		32
+nim	Singleton	supranim/core/services.html#Singleton	ServiceType.Singleton		32
+nim	ChannelService	supranim/core/services.html#ChannelService	ServiceType.ChannelService		32
+nim	WebService	supranim/core/services.html#WebService	ServiceType.WebService		32
+nim	UnixService	supranim/core/services.html#UnixService	ServiceType.UnixService		32
+nim	ThreadService	supranim/core/services.html#ThreadService	ServiceType.ThreadService		32
+nim	ThreadPoolService	supranim/core/services.html#ThreadPoolService	ServiceType.ThreadPoolService		32
+nim	ServiceType	supranim/core/services.html#ServiceType	enum ServiceType		32
+nim	HttpRouteMeta	supranim/core/services.html#HttpRouteMeta	object HttpRouteMeta		74
+nim	HttpRouteVerbs	supranim/core/services.html#HttpRouteVerbs	type HttpRouteVerbs		80
+nim	HttpRoutes	supranim/core/services.html#HttpRoutes	type HttpRoutes		81
+nim	HttpServiceIndex	supranim/core/services.html#HttpServiceIndex	type HttpServiceIndex		85
+nim	HttpService	supranim/core/services.html#HttpService	object HttpService		98
+nim	SingletonService	supranim/core/services.html#SingletonService	object SingletonService		106
+nim	ServiceProvider	supranim/core/services.html#ServiceProvider	object ServiceProvider		108
+nim	index	supranim/core/services.html#index	var index		145
+nim	routerInstance	supranim/core/services.html#routerInstance	var routerInstance		146
+nim	ServiceManagerThreadServices	supranim/core/services.html#ServiceManagerThreadServices	const ServiceManagerThreadServices		202
+nim	ServiceManagerThreadServicesClients	supranim/core/services.html#ServiceManagerThreadServicesClients	const ServiceManagerThreadServicesClients		203
+nim	initRouter	supranim/core/services.html#initRouter.t	template initRouter(): untyped		212
+nim	initChannelRouter	supranim/core/services.html#initChannelRouter.t	template initChannelRouter()		285
+nim	initService	supranim/core/services.html#initService.m,untyped,untyped	macro initService(serviceIdentifier, serviceConfig: untyped)		300
+nim	extractThreadServicesBackend	supranim/core/services.html#extractThreadServicesBackend.m	macro extractThreadServicesBackend()		1063
+nim	extractThreadServicesClient	supranim/core/services.html#extractThreadServicesClient.m	macro extractThreadServicesClient()		1079

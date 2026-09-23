@@ -1,25 +1,7 @@
 nimTitle	websocket	supranim/network/websocket.html	module supranim/network/websocket		0
-nim	WsOpenCb	supranim/network/websocket.html#WsOpenCb	type WsOpenCb		13
-nim	WsMessageCb	supranim/network/websocket.html#WsMessageCb	type WsMessageCb		14
-nim	WsCloseCb	supranim/network/websocket.html#WsCloseCb	type WsCloseCb		15
-nim	WsErrorCb	supranim/network/websocket.html#WsErrorCb	type WsErrorCb		16
-nim	wsContinuation	supranim/network/websocket.html#wsContinuation	WsFrameKind.wsContinuation		18
-nim	wsText	supranim/network/websocket.html#wsText	WsFrameKind.wsText		18
-nim	wsBinary	supranim/network/websocket.html#wsBinary	WsFrameKind.wsBinary		18
-nim	wsClose	supranim/network/websocket.html#wsClose	WsFrameKind.wsClose		18
-nim	wsPing	supranim/network/websocket.html#wsPing	WsFrameKind.wsPing		18
-nim	wsPong	supranim/network/websocket.html#wsPong	WsFrameKind.wsPong		18
-nim	WsFrameKind	supranim/network/websocket.html#WsFrameKind	enum WsFrameKind		18
-nim	WsConnection	supranim/network/websocket.html#WsConnection	type WsConnection		37
-nim	sendText	supranim/network/websocket.html#sendText,WsConnection,string	proc sendText(ws: WsConnection; s: string)		49
-nim	sendBinary	supranim/network/websocket.html#sendBinary,WsConnection,openArray[byte]	proc sendBinary(ws: WsConnection; data: openArray[byte])		50
-nim	sendPing	supranim/network/websocket.html#sendPing,WsConnection,openArray[byte]	proc sendPing(ws: WsConnection; data: openArray[byte] = [])		51
-nim	sendPong	supranim/network/websocket.html#sendPong,WsConnection,openArray[byte]	proc sendPong(ws: WsConnection; data: openArray[byte] = [])		52
-nim	closeWs	supranim/network/websocket.html#closeWs,WsConnection,int,string	proc closeWs(ws: WsConnection; code: int = 1000; reason = "")		53
-nim	websocketUpgrade	supranim/network/websocket.html#websocketUpgrade,ptr.evhttp_request,WsOpenCb,WsMessageCb,WsCloseCb,WsErrorCb	proc websocketUpgrade(req: ptr evhttp_request; onOpen: WsOpenCb = nil;\n                 onMessage: WsMessageCb = nil; onClose: WsCloseCb = nil;\n                 onError: WsErrorCb = nil): WsConnection		54
-nim	WebSocketConnection	supranim/network/websocket.html#WebSocketConnection	type WebSocketConnection		62
-nim	WebSocketFrameKind	supranim/network/websocket.html#WebSocketFrameKind	type WebSocketFrameKind		63
-nim	OpenCb	supranim/network/websocket.html#OpenCb	type OpenCb		64
-nim	MessageCb	supranim/network/websocket.html#MessageCb	type MessageCb		65
-nim	CloseCb	supranim/network/websocket.html#CloseCb	type CloseCb		66
-nim	ErrorCb	supranim/network/websocket.html#ErrorCb	type ErrorCb		67
+nim	WebSocketConnection	supranim/network/websocket.html#WebSocketConnection	type WebSocketConnection		24
+nim	WebSocketFrameKind	supranim/network/websocket.html#WebSocketFrameKind	type WebSocketFrameKind		25
+nim	OpenCb	supranim/network/websocket.html#OpenCb	type OpenCb		26
+nim	MessageCb	supranim/network/websocket.html#MessageCb	type MessageCb		27
+nim	CloseCb	supranim/network/websocket.html#CloseCb	type CloseCb		28
+nim	ErrorCb	supranim/network/websocket.html#ErrorCb	type ErrorCb		29

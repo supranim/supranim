@@ -1,3 +1,29 @@
 nimTitle	config	supranim/core/config.html	module supranim/core/config		0
-nim	SupranimEnvLoader	supranim/core/config.html#SupranimEnvLoader	object SupranimEnvLoader		15
-nim	loadEnv	supranim/core/config.html#loadEnv	proc loadEnv()		17
+nim	SupranimEnvLoader	supranim/core/config.html#SupranimEnvLoader	object SupranimEnvLoader		24
+nim	ConfigError	supranim/core/config.html#ConfigError	object ConfigError		27
+nim	cfgYaml	supranim/core/config.html#cfgYaml	ConfigurationFormat.cfgYaml		31
+nim	cfgToml	supranim/core/config.html#cfgToml	ConfigurationFormat.cfgToml		31
+nim	cfgJson	supranim/core/config.html#cfgJson	ConfigurationFormat.cfgJson		31
+nim	ConfigurationFormat	supranim/core/config.html#ConfigurationFormat	enum ConfigurationFormat		31
+nim	Configuration	supranim/core/config.html#Configuration	object Configuration		37
+nim	ConfigValue	supranim/core/config.html#ConfigValue	object ConfigValue		48
+nim	configFileExtensions	supranim/core/config.html#configFileExtensions	const configFileExtensions		60
+nim	loadEnv	supranim/core/config.html#loadEnv	proc loadEnv()		63
+nim	formatForExt	supranim/core/config.html#formatForExt,string	proc formatForExt(ext: string): ConfigurationFormat		93
+nim	parseConfiguration	supranim/core/config.html#parseConfiguration,string,string	proc parseConfiguration(ext, content: string): Configuration		105
+nim	stripStatic	supranim/core/config.html#stripStatic,Configuration	proc stripStatic(conf: var Configuration)		122
+nim	ConfigEntry	supranim/core/config.html#ConfigEntry	tuple ConfigEntry		137
+nim	scanConfigDir	supranim/core/config.html#scanConfigDir,string	proc scanConfigDir(dir: string): seq[ConfigEntry]		142
+nim	loadConfigurations	supranim/core/config.html#loadConfigurations,string	proc loadConfigurations(dir: string): OrderedTableRef[string, Configuration]		160
+nim	get	supranim/core/config.html#get,Configuration,string	proc get(conf: Configuration; key: string): ConfigValue		172
+nim	isNil	supranim/core/config.html#isNil,ConfigValue	proc isNil(v: ConfigValue): bool		196
+nim	getStr	supranim/core/config.html#getStr,ConfigValue	proc getStr(v: ConfigValue): string		203
+nim	getInt	supranim/core/config.html#getInt,ConfigValue	proc getInt(v: ConfigValue): int64		211
+nim	getFloat	supranim/core/config.html#getFloat,ConfigValue	proc getFloat(v: ConfigValue): float64		219
+nim	getBool	supranim/core/config.html#getBool,ConfigValue	proc getBool(v: ConfigValue): bool		234
+nim	putStr	supranim/core/config.html#putStr,Configuration,string,string	proc putStr(conf: var Configuration; key, val: string)		245
+nim	putInt	supranim/core/config.html#putInt,Configuration,string,int64	proc putInt(conf: var Configuration; key: string; val: int64)		259
+nim	putFloat	supranim/core/config.html#putFloat,Configuration,string,float64	proc putFloat(conf: var Configuration; key: string; val: float64)		273
+nim	putBool	supranim/core/config.html#putBool,Configuration,string,bool	proc putBool(conf: var Configuration; key: string; val: bool)		287
+nim	staticConfig	supranim/core/config.html#staticConfig,string	proc staticConfig[T](key: string): T		570
+nim	staticConfigFromDir	supranim/core/config.html#staticConfigFromDir,string,string	proc staticConfigFromDir[T](dir, key: string): T		585

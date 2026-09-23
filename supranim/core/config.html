@@ -16,10 +16,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.12">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.12"></script>
 </head>
 <body>
   <div class="document" id="documentId">
@@ -61,7 +61,36 @@
   <details open>
     <summary><a class="reference reference-toplevel" href="#7" id="57">Types</a></summary>
     <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#SupranimEnvLoader" title="SupranimEnvLoader = object of CatchableError">SupranimEnvLoader</a></li>
+      <li><a class="reference" href="#ConfigEntry" title="ConfigEntry = tuple[name, path, ext: string]">ConfigEntry</a></li>
+<li><a class="reference" href="#ConfigError" title="ConfigError = object of CatchableError">ConfigError</a></li>
+<li><a class="reference" href="#Configuration" title="Configuration = object
+  case format*: ConfigurationFormat
+  of cfgYaml:
+    yamlDoc*: YAMLObject
+  of cfgToml:
+    tomlDoc*: TomlDocument
+  of cfgJson:
+    jsonDoc*: JsonNode">Configuration</a></li>
+<li><a class="reference" href="#ConfigurationFormat" title="ConfigurationFormat = enum
+  cfgYaml, cfgToml, cfgJson">ConfigurationFormat</a></li>
+<li><a class="reference" href="#ConfigValue" title="ConfigValue = object
+  case format*: ConfigurationFormat
+  of cfgYaml:
+    yamlNode*: YamlNode
+  of cfgToml:
+    tomlNode*: TomlNode
+  of cfgJson:
+    jsonNode*: JsonNode">ConfigValue</a></li>
+<li><a class="reference" href="#SupranimEnvLoader" title="SupranimEnvLoader = object of CatchableError">SupranimEnvLoader</a></li>
+
+    </ul>
+  </details>
+</li>
+<li>
+  <details open>
+    <summary><a class="reference reference-toplevel" href="#10" id="60">Consts</a></summary>
+    <ul class="simple simple-toc-section">
+      <li><a class="reference" href="#configFileExtensions" title="configFileExtensions = [&quot;.yml&quot;, &quot;.yaml&quot;, &quot;.toml&quot;, &quot;.json&quot;]">configFileExtensions</a></li>
 
     </ul>
   </details>
@@ -70,8 +99,76 @@
   <details open>
     <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
     <ul class="simple simple-toc-section">
-      <ul class="simple nested-toc-section">loadEnv
+      <ul class="simple nested-toc-section">formatForExt
+  <li><a class="reference" href="#formatForExt%2Cstring" title="formatForExt(ext: string): ConfigurationFormat">formatForExt(ext: string): ConfigurationFormat</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">get
+  <li><a class="reference" href="#get%2CConfiguration%2Cstring" title="get(conf: Configuration; key: string): ConfigValue">get(conf: Configuration; key: string): ConfigValue</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">getBool
+  <li><a class="reference" href="#getBool%2CConfigValue" title="getBool(v: ConfigValue): bool">getBool(v: ConfigValue): bool</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">getFloat
+  <li><a class="reference" href="#getFloat%2CConfigValue" title="getFloat(v: ConfigValue): float64">getFloat(v: ConfigValue): float64</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">getInt
+  <li><a class="reference" href="#getInt%2CConfigValue" title="getInt(v: ConfigValue): int64">getInt(v: ConfigValue): int64</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">getStr
+  <li><a class="reference" href="#getStr%2CConfigValue" title="getStr(v: ConfigValue): string">getStr(v: ConfigValue): string</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">isNil
+  <li><a class="reference" href="#isNil%2CConfigValue" title="isNil(v: ConfigValue): bool">isNil(v: ConfigValue): bool</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">loadConfigurations
+  <li><a class="reference" href="#loadConfigurations%2Cstring" title="loadConfigurations(dir: string): OrderedTableRef[string, Configuration]">loadConfigurations(dir: string): OrderedTableRef[string, Configuration]</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">loadEnv
   <li><a class="reference" href="#loadEnv" title="loadEnv()">loadEnv()</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">parseConfiguration
+  <li><a class="reference" href="#parseConfiguration%2Cstring%2Cstring" title="parseConfiguration(ext, content: string): Configuration">parseConfiguration(ext, content: string): Configuration</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">putBool
+  <li><a class="reference" href="#putBool%2CConfiguration%2Cstring%2Cbool" title="putBool(conf: var Configuration; key: string; val: bool)">putBool(conf: var Configuration; key: string; val: bool)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">putFloat
+  <li><a class="reference" href="#putFloat%2CConfiguration%2Cstring%2Cfloat64" title="putFloat(conf: var Configuration; key: string; val: float64)">putFloat(conf: var Configuration; key: string; val: float64)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">putInt
+  <li><a class="reference" href="#putInt%2CConfiguration%2Cstring%2Cint64" title="putInt(conf: var Configuration; key: string; val: int64)">putInt(conf: var Configuration; key: string; val: int64)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">putStr
+  <li><a class="reference" href="#putStr%2CConfiguration%2Cstring%2Cstring" title="putStr(conf: var Configuration; key, val: string)">putStr(conf: var Configuration; key, val: string)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">scanConfigDir
+  <li><a class="reference" href="#scanConfigDir%2Cstring" title="scanConfigDir(dir: string): seq[ConfigEntry]">scanConfigDir(dir: string): seq[ConfigEntry]</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">staticConfig
+  <li><a class="reference" href="#staticConfig%2Cstring" title="staticConfig[T](key: string): T">staticConfig[T](key: string): T</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">staticConfigFromDir
+  <li><a class="reference" href="#staticConfigFromDir%2Cstring%2Cstring" title="staticConfigFromDir[T](dir, key: string): T">staticConfigFromDir[T](dir, key: string): T</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">stripStatic
+  <li><a class="reference" href="#stripStatic%2CConfiguration" title="stripStatic(conf: var Configuration)">stripStatic(conf: var Configuration)</a></li>
 
 </ul>
 
@@ -86,7 +183,9 @@
     
     <div id="tocRoot"></div>
     
-    <p class="module-desc"></p>
+    <p class="module-desc"><p>Environment loader for <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">env</span><span class="Operator">.</span><span class="Identifier">yml</span></span></tt>. Reads <tt class="docutils literal"><span class="pre"><span class="Identifier">rootPath</span><span class="Operator">/.</span><span class="Identifier">env</span><span class="Operator">.</span><span class="Identifier">yml</span></span></tt>, parses database credentials, and sets <tt class="docutils literal"><span class="pre"><span class="Identifier">database</span><span class="Operator">.*</span></span></tt> env vars for the current process.</p>
+<p>This module also owns multi-format application configuration: <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">yml</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">yaml</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">toml</span></span></tt> and <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">json</span></span></tt> files are parsed natively into a <tt class="docutils literal"><span class="pre"><span class="Identifier">Configuration</span></span></tt> variant (no cross-format conversion), served at runtime via <tt class="docutils literal"><span class="pre"><span class="Identifier">config</span><span class="Punctuation">(</span><span class="Punctuation">)</span></span></tt> and at compile time via <tt class="docutils literal"><span class="pre"><span class="Identifier">staticConfig</span><span class="Punctuation">[</span><span class="Identifier">T</span><span class="Punctuation">]</span><span class="Punctuation">(</span><span class="Punctuation">)</span></span></tt>.</p>
+</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
@@ -96,11 +195,80 @@
 <div class="section" id="7">
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
-    <div id="SupranimEnvLoader">
+    <div id="ConfigEntry">
+  <dt><pre><a href="#ConfigEntry"><span class="Identifier">ConfigEntry</span></a> <span class="Other">=</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">path</span><span class="Other">,</span> <span class="Identifier">ext</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">]</span></pre></dt>
+  <dd>
+    
+    A discovered configuration file: base <tt class="docutils literal"><span class="pre"><span class="Identifier">name</span></span></tt> (no extension), absolute <tt class="docutils literal"><span class="pre"><span class="Identifier">path</span></span></tt>, and file <tt class="docutils literal"><span class="pre"><span class="Identifier">ext</span></span></tt>.
+    
+  </dd>
+</div>
+<div id="ConfigError">
+  <dt><pre><a href="#ConfigError"><span class="Identifier">ConfigError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span></pre></dt>
+  <dd>
+    
+    Error raised when a configuration file cannot be found, parsed, or resolved (including <tt class="docutils literal"><span class="pre"><span class="Keyword">static</span></span></tt> lookups).
+    
+  </dd>
+</div>
+<div id="Configuration">
+  <dt><pre><a href="#Configuration"><span class="Identifier">Configuration</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+  <span class="Keyword">case</span> <span class="Identifier">format</span><span class="Operator">*</span><span class="Other">:</span> <a href="#ConfigurationFormat"><span class="Identifier">ConfigurationFormat</span></a>
+  <span class="Keyword">of</span> <span class="Identifier">cfgYaml</span><span class="Other">:</span>
+    <span class="Identifier">yamlDoc</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">YAMLObject</span>
+  <span class="Keyword">of</span> <span class="Identifier">cfgToml</span><span class="Other">:</span>
+    <span class="Identifier">tomlDoc</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TomlDocument</span>
+  <span class="Keyword">of</span> <span class="Identifier">cfgJson</span><span class="Other">:</span>
+    <span class="Identifier">jsonDoc</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">JsonNode</span></pre></dt>
+  <dd>
+    
+    A single parsed configuration file, stored natively. No conversion between formats ever happens.
+    
+  </dd>
+</div>
+<div id="ConfigurationFormat">
+  <dt><pre><a href="#ConfigurationFormat"><span class="Identifier">ConfigurationFormat</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
+  <span class="Identifier">cfgYaml</span><span class="Other">,</span> <span class="Identifier">cfgToml</span><span class="Other">,</span> <span class="Identifier">cfgJson</span></pre></dt>
+  <dd>
+    
+    Native format of a configuration document.
+    
+  </dd>
+</div>
+<div id="ConfigValue">
+  <dt><pre><a href="#ConfigValue"><span class="Identifier">ConfigValue</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+  <span class="Keyword">case</span> <span class="Identifier">format</span><span class="Operator">*</span><span class="Other">:</span> <a href="#ConfigurationFormat"><span class="Identifier">ConfigurationFormat</span></a>
+  <span class="Keyword">of</span> <span class="Identifier">cfgYaml</span><span class="Other">:</span>
+    <span class="Identifier">yamlNode</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">YamlNode</span>
+  <span class="Keyword">of</span> <span class="Identifier">cfgToml</span><span class="Other">:</span>
+    <span class="Identifier">tomlNode</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TomlNode</span>
+  <span class="Keyword">of</span> <span class="Identifier">cfgJson</span><span class="Other">:</span>
+    <span class="Identifier">jsonNode</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">JsonNode</span></pre></dt>
+  <dd>
+    
+    The result of a dotted-path lookup inside a <tt class="docutils literal"><span class="pre"><span class="Identifier">Configuration</span></span></tt>. Wraps the native node; use <tt class="docutils literal"><span class="pre"><span class="Identifier">getStr</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">getInt</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">getFloat</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">getBool</span></span></tt>.
+    
+  </dd>
+</div>
+<div id="SupranimEnvLoader">
   <dt><pre><a href="#SupranimEnvLoader"><span class="Identifier">SupranimEnvLoader</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">CatchableError</span></pre></dt>
   <dd>
     
+    Error raised when the environment file cannot be loaded.
     
+  </dd>
+</div>
+
+  </dl>
+</div>
+<div class="section" id="10">
+  <h1><a class="toc-backref" href="#10">Consts</a></h1>
+  <dl class="item">
+    <div id="configFileExtensions">
+  <dt><pre><a href="#configFileExtensions"><span class="Identifier">configFileExtensions</span></a> <span class="Other">=</span> <span class="Other">[</span><span class="StringLit">&quot;.yml&quot;</span><span class="Other">,</span> <span class="StringLit">&quot;.yaml&quot;</span><span class="Other">,</span> <span class="StringLit">&quot;.toml&quot;</span><span class="Other">,</span> <span class="StringLit">&quot;.json&quot;</span><span class="Other">]</span></pre></dt>
+  <dd>
+    
+    File extensions recognized as configuration files.
     
   </dd>
 </div>
@@ -110,14 +278,217 @@
 <div class="section" id="12">
   <h1><a class="toc-backref" href="#12">Procs</a></h1>
   <dl class="item">
-    <div id="loadEnv-procs-all">
+    <div id="formatForExt-procs-all">
+  <div id="formatForExt,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#formatForExt%2Cstring"><span class="Identifier">formatForExt</span></a><span class="Other">(</span><span class="Identifier">ext</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#ConfigurationFormat"><span class="Identifier">ConfigurationFormat</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ConfigError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Maps a file extension to its <tt class="docutils literal"><span class="pre"><span class="Identifier">ConfigurationFormat</span></span></tt>. Raises <tt class="docutils literal"><span class="pre"><span class="Identifier">ConfigError</span></span></tt> for unknown extensions.
+    
+  </dd>
+</div>
+
+</div>
+<div id="get-procs-all">
+  <div id="get,Configuration,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#get%2CConfiguration%2Cstring"><span class="Identifier">get</span></a><span class="Other">(</span><span class="Identifier">conf</span><span class="Other">:</span> <a href="#Configuration"><span class="Identifier">Configuration</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#ConfigValue"><span class="Identifier">ConfigValue</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Dotted-path lookup inside <tt class="docutils literal"><span class="pre"><span class="Identifier">conf</span></span></tt>, dispatching to the native getter. Missing keys return a nil node in every format (no raise).
+    
+  </dd>
+</div>
+
+</div>
+<div id="getBool-procs-all">
+  <div id="getBool,ConfigValue">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getBool%2CConfigValue"><span class="Identifier">getBool</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="#ConfigValue"><span class="Identifier">ConfigValue</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Boolean value, or <tt class="docutils literal"><span class="pre"><span class="Identifier">false</span></span></tt> on mismatch/missing.
+    
+  </dd>
+</div>
+
+</div>
+<div id="getFloat-procs-all">
+  <div id="getFloat,ConfigValue">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getFloat%2CConfigValue"><span class="Identifier">getFloat</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="#ConfigValue"><span class="Identifier">ConfigValue</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">float64</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Float value, or <tt class="docutils literal"><span class="pre"><span class="FloatNumber">0.0</span></span></tt> on mismatch/missing.
+    
+  </dd>
+</div>
+
+</div>
+<div id="getInt-procs-all">
+  <div id="getInt,ConfigValue">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getInt%2CConfigValue"><span class="Identifier">getInt</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="#ConfigValue"><span class="Identifier">ConfigValue</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int64</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Integer value, or <tt class="docutils literal"><span class="pre"><span class="DecNumber">0</span></span></tt> on mismatch/missing.
+    
+  </dd>
+</div>
+
+</div>
+<div id="getStr-procs-all">
+  <div id="getStr,ConfigValue">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getStr%2CConfigValue"><span class="Identifier">getStr</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="#ConfigValue"><span class="Identifier">ConfigValue</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+                                      <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    String value, or <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;&quot;</span></span></tt> on mismatch/missing.
+    
+  </dd>
+</div>
+
+</div>
+<div id="isNil-procs-all">
+  <div id="isNil,ConfigValue">
+  <dt><pre><span class="Keyword">proc</span> <a href="#isNil%2CConfigValue"><span class="Identifier">isNil</span></a><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <a href="#ConfigValue"><span class="Identifier">ConfigValue</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Whether the lookup produced no node.
+    
+  </dd>
+</div>
+
+</div>
+<div id="loadConfigurations-procs-all">
+  <div id="loadConfigurations,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#loadConfigurations%2Cstring"><span class="Identifier">loadConfigurations</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">OrderedTableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#Configuration"><span class="Identifier">Configuration</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ConfigError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Loads every configuration file in <tt class="docutils literal"><span class="pre"><span class="Identifier">dir</span></span></tt> natively, stripping each <tt class="docutils literal"><span class="pre"><span class="Keyword">static</span></span></tt> block. Usable both at runtime and at compile time.
+    
+  </dd>
+</div>
+
+</div>
+<div id="loadEnv-procs-all">
   <div id="loadEnv">
-  <dt><pre><span class="Keyword">proc</span> <a href="#loadEnv"><span class="Identifier">loadEnv</span></a><span class="Other">(</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">SupranimEnvLoader</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span>
-                          <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
-    <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#loadEnv"><span class="Identifier">loadEnv</span></a><span class="Other">(</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">SupranimEnvLoader</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OpenParserYamlError</span><span class="Other">,</span>
+                          <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Loads environment variables from the <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">env</span><span class="Operator">.</span><span class="Identifier">yml</span></span></tt> file in the project root directory. 
+    
+  </dd>
+</div>
+
+</div>
+<div id="parseConfiguration-procs-all">
+  <div id="parseConfiguration,string,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#parseConfiguration%2Cstring%2Cstring"><span class="Identifier">parseConfiguration</span></a><span class="Other">(</span><span class="Identifier">ext</span><span class="Other">,</span> <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#Configuration"><span class="Identifier">Configuration</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ConfigError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ConfigError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Parses <tt class="docutils literal"><span class="pre"><span class="Identifier">content</span></span></tt> natively according to <tt class="docutils literal"><span class="pre"><span class="Identifier">ext</span></span></tt>. Raises <tt class="docutils literal"><span class="pre"><span class="Identifier">ConfigError</span></span></tt> (wrapping the native parser error) on failure.
+    
+  </dd>
+</div>
+
+</div>
+<div id="putBool-procs-all">
+  <div id="putBool,Configuration,string,bool">
+  <dt><pre><span class="Keyword">proc</span> <a href="#putBool%2CConfiguration%2Cstring%2Cbool"><span class="Identifier">putBool</span></a><span class="Other">(</span><span class="Identifier">conf</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Configuration"><span class="Identifier">Configuration</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">val</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ConfigError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Sets <tt class="docutils literal"><span class="pre"><span class="Identifier">key</span></span></tt> to <tt class="docutils literal"><span class="pre"><span class="Identifier">val</span></span></tt> in <tt class="docutils literal"><span class="pre"><span class="Identifier">conf</span></span></tt>, natively per format.
+    
+  </dd>
+</div>
+
+</div>
+<div id="putFloat-procs-all">
+  <div id="putFloat,Configuration,string,float64">
+  <dt><pre><span class="Keyword">proc</span> <a href="#putFloat%2CConfiguration%2Cstring%2Cfloat64"><span class="Identifier">putFloat</span></a><span class="Other">(</span><span class="Identifier">conf</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Configuration"><span class="Identifier">Configuration</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">val</span><span class="Other">:</span> <span class="Identifier">float64</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ConfigError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Sets <tt class="docutils literal"><span class="pre"><span class="Identifier">key</span></span></tt> to <tt class="docutils literal"><span class="pre"><span class="Identifier">val</span></span></tt> in <tt class="docutils literal"><span class="pre"><span class="Identifier">conf</span></span></tt>, natively per format.
+    
+  </dd>
+</div>
+
+</div>
+<div id="putInt-procs-all">
+  <div id="putInt,Configuration,string,int64">
+  <dt><pre><span class="Keyword">proc</span> <a href="#putInt%2CConfiguration%2Cstring%2Cint64"><span class="Identifier">putInt</span></a><span class="Other">(</span><span class="Identifier">conf</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Configuration"><span class="Identifier">Configuration</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">val</span><span class="Other">:</span> <span class="Identifier">int64</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ConfigError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Sets <tt class="docutils literal"><span class="pre"><span class="Identifier">key</span></span></tt> to <tt class="docutils literal"><span class="pre"><span class="Identifier">val</span></span></tt> in <tt class="docutils literal"><span class="pre"><span class="Identifier">conf</span></span></tt>, natively per format.
+    
+  </dd>
+</div>
+
+</div>
+<div id="putStr-procs-all">
+  <div id="putStr,Configuration,string,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#putStr%2CConfiguration%2Cstring%2Cstring"><span class="Identifier">putStr</span></a><span class="Other">(</span><span class="Identifier">conf</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Configuration"><span class="Identifier">Configuration</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">,</span> <span class="Identifier">val</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ConfigError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Sets <tt class="docutils literal"><span class="pre"><span class="Identifier">key</span></span></tt> to <tt class="docutils literal"><span class="pre"><span class="Identifier">val</span></span></tt> in <tt class="docutils literal"><span class="pre"><span class="Identifier">conf</span></span></tt>, natively per format.
+    
+  </dd>
+</div>
+
+</div>
+<div id="scanConfigDir-procs-all">
+  <div id="scanConfigDir,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#scanConfigDir%2Cstring"><span class="Identifier">scanConfigDir</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#ConfigEntry"><span class="Identifier">ConfigEntry</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ConfigError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Discovers configuration files in <tt class="docutils literal"><span class="pre"><span class="Identifier">dir</span></span></tt>. The same base name in two formats (e.g. <tt class="docutils literal"><span class="pre"><span class="Identifier">app</span><span class="Operator">.</span><span class="Identifier">yml</span></span></tt> + <tt class="docutils literal"><span class="pre"><span class="Identifier">app</span><span class="Operator">.</span><span class="Identifier">toml</span></span></tt>) raises <tt class="docutils literal"><span class="pre"><span class="Identifier">ConfigError</span></span></tt>.
+    
+  </dd>
+</div>
+
+</div>
+<div id="staticConfig-procs-all">
+  <div id="staticConfig,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#staticConfig%2Cstring"><span class="Identifier">staticConfig</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> {.<span class="Identifier">compileTime</span>.}</pre></dt>
+  <dd>
+    
+    Reads a compile-time setting from a configuration file's top-level <tt class="docutils literal"><span class="pre"><span class="Keyword">static</span></span></tt> block. <tt class="docutils literal"><span class="pre"><span class="Identifier">key</span></span></tt> has the shape <tt class="docutils literal"><span class="pre"><span class="Identifier">file</span><span class="Operator">.</span><span class="Identifier">key</span><span class="Operator">.</span><span class="Identifier">path</span></span></tt>, resolved against the application's compile-time <tt class="docutils literal"><span class="pre"><span class="Identifier">config</span><span class="Operator">/</span></span></tt> directory:<pre class="listing"><span class="Keyword">const</span> <span class="Identifier">debug</span> <span class="Operator">=</span> <span class="Identifier">staticConfig</span><span class="Punctuation">[</span><span class="Identifier">bool</span><span class="Punctuation">]</span><span class="Punctuation">(</span><span class="StringLit">&quot;app.debug&quot;</span><span class="Punctuation">)</span>
+<span class="Keyword">when</span> <span class="Identifier">staticConfig</span><span class="Punctuation">[</span><span class="Identifier">bool</span><span class="Punctuation">]</span><span class="Punctuation">(</span><span class="StringLit">&quot;app.enable_feature&quot;</span><span class="Punctuation">)</span><span class="Punctuation">:</span>
+  <span class="Operator">...</span></pre><p>Plain Nim types only (<tt class="docutils literal"><span class="pre"><span class="Identifier">string</span></span></tt>, integers, floats, <tt class="docutils literal"><span class="pre"><span class="Identifier">bool</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">seq</span></span></tt>, objects, tuples). Unknown files, missing <tt class="docutils literal"><span class="pre"><span class="Keyword">static</span></span></tt> blocks, missing keys and type mismatches are compile errors.</p>
+
+    
+  </dd>
+</div>
+
+</div>
+<div id="staticConfigFromDir-procs-all">
+  <div id="staticConfigFromDir,string,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#staticConfigFromDir%2Cstring%2Cstring"><span class="Identifier">staticConfigFromDir</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">,</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> {.<span class="Identifier">compileTime</span>.}</pre></dt>
+  <dd>
+    
+    Same as <tt class="docutils literal"><span class="pre"><span class="Identifier">staticConfig</span></span></tt>, resolved against <tt class="docutils literal"><span class="pre"><span class="Identifier">dir</span></span></tt> instead of the application's <tt class="docutils literal"><span class="pre"><span class="Identifier">config</span><span class="Operator">/</span></span></tt> directory. Used for fixture-based tests.
+    
+  </dd>
+</div>
+
+</div>
+<div id="stripStatic-procs-all">
+  <div id="stripStatic,Configuration">
+  <dt><pre><span class="Keyword">proc</span> <a href="#stripStatic%2CConfiguration"><span class="Identifier">stripStatic</span></a><span class="Other">(</span><span class="Identifier">conf</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Configuration"><span class="Identifier">Configuration</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Removes the top-level <tt class="docutils literal"><span class="pre"><span class="Keyword">static</span></span></tt> block from <tt class="docutils literal"><span class="pre"><span class="Identifier">conf</span></span></tt>, so compile-time settings are never visible at runtime.
     
   </dd>
 </div>
@@ -133,7 +504,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-08-06 13:45:44 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-09-23 16:58:40 UTC</small>
       </div>
     </div>
   </div>

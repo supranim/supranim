@@ -16,10 +16,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.12">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.12"></script>
 </head>
 <body>
   <div class="document" id="documentId">
@@ -61,8 +61,8 @@
   <details open>
     <summary><a class="reference reference-toplevel" href="#7" id="57">Types</a></summary>
     <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#OnInitSingletonCallback%60gensym0%60gensym5" title="OnInitSingletonCallback`gensym0`gensym5 = proc (
-    instance`gensym0`gensym5: ptr EventEmitter) {.gcsafe.}">OnInitSingletonCallback`gensym0`gensym5</a></li>
+      <li><a class="reference" href="#OnInitSingletonCallback%60gensym1" title="OnInitSingletonCallback`gensym1 = proc (instance`gensym1: ptr EventEmitter) {.
+    gcsafe.}">OnInitSingletonCallback`gensym1</a></li>
 
     </ul>
   </details>
@@ -76,9 +76,9 @@
 
 </ul>
 <ul class="simple nested-toc-section">getEventEmitterInstance
-  <li><a class="reference" href="#getEventEmitterInstance%2COnInitSingletonCallback%60gensym0%60gensym5%2Cstaticbool" title="getEventEmitterInstance(onceCb`gensym0`gensym5: OnInitSingletonCallback`gensym0`gensym5 = nil;
-                        initShared`gensym0`gensym5: static bool = true): ptr EventEmitter">getEventEmitterInstance(onceCb`gensym0`gensym5: OnInitSingletonCallback`gensym0`gensym5 = nil;
-                        initShared`gensym0`gensym5: static bool = true): ptr EventEmitter</a></li>
+  <li><a class="reference" href="#getEventEmitterInstance%2COnInitSingletonCallback%60gensym1%2Cstaticbool" title="getEventEmitterInstance(onceCb`gensym1: OnInitSingletonCallback`gensym1 = nil;
+                        initShared`gensym1: static bool = true): ptr EventEmitter">getEventEmitterInstance(onceCb`gensym1: OnInitSingletonCallback`gensym1 = nil;
+                        initShared`gensym1: static bool = true): ptr EventEmitter</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">init
@@ -109,7 +109,7 @@
     
     <div id="tocRoot"></div>
     
-    <p class="module-desc">The <tt class="docutils literal"><span class="pre"><span class="Identifier">events</span></span></tt> service provides a global event emitter that can be used throughout the application to emit and listen for custom events. It uses the <tt class="docutils literal"><span class="pre"><span class="Identifier">emitter</span></span></tt> package for efficient event handling with Libevent.</p>
+    <p class="module-desc">The <tt class="docutils literal"><span class="pre"><span class="Identifier">events</span></span></tt> service provides a global event emitter that can be used throughout the application to emit and listen for custom events. It uses the <tt class="docutils literal"><span class="pre"><span class="Identifier">emitter</span></span></tt> package for efficient event handling.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
@@ -119,9 +119,9 @@
 <div class="section" id="7">
   <h1><a class="toc-backref" href="#7">Types</a></h1>
   <dl class="item">
-    <div id="OnInitSingletonCallback`gensym0`gensym5">
-  <dt><pre><a href="#OnInitSingletonCallback`gensym0`gensym5"><span class="Identifier">OnInitSingletonCallback`gensym0`gensym5</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span>
-    <span class="Identifier">instance`gensym0`gensym5</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">EventEmitter</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
+    <div id="OnInitSingletonCallback`gensym1">
+  <dt><pre><a href="#OnInitSingletonCallback`gensym1"><span class="Identifier">OnInitSingletonCallback`gensym1</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">instance`gensym1</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">EventEmitter</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
     
@@ -147,9 +147,9 @@
 
 </div>
 <div id="getEventEmitterInstance-procs-all">
-  <div id="getEventEmitterInstance,OnInitSingletonCallback`gensym0`gensym5,staticbool">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getEventEmitterInstance%2COnInitSingletonCallback%60gensym0%60gensym5%2Cstaticbool"><span class="Identifier">getEventEmitterInstance</span></a><span class="Other">(</span><span class="Identifier">onceCb`gensym0`gensym5</span><span class="Other">:</span> <a href="#OnInitSingletonCallback`gensym0`gensym5"><span class="Identifier">OnInitSingletonCallback`gensym0`gensym5</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span>
-                             <span class="Identifier">initShared`gensym0`gensym5</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">bool</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">EventEmitter</span></pre></dt>
+  <div id="getEventEmitterInstance,OnInitSingletonCallback`gensym1,staticbool">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getEventEmitterInstance%2COnInitSingletonCallback%60gensym1%2Cstaticbool"><span class="Identifier">getEventEmitterInstance</span></a><span class="Other">(</span><span class="Identifier">onceCb`gensym1</span><span class="Other">:</span> <a href="#OnInitSingletonCallback`gensym1"><span class="Identifier">OnInitSingletonCallback`gensym1</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span>
+                             <span class="Identifier">initShared`gensym1</span><span class="Other">:</span> <span class="Identifier">static</span> <span class="Identifier">bool</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">EventEmitter</span></pre></dt>
   <dd>
     
     Retrieve the singleton instance of the service
@@ -199,7 +199,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-08-06 13:45:45 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-09-23 16:58:40 UTC</small>
       </div>
     </div>
   </div>

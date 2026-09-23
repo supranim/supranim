@@ -16,10 +16,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.12">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.12"></script>
 </head>
 <body>
   <div class="document" id="documentId">
@@ -67,6 +67,10 @@
                                  hasFoundResource: var bool) {.closure.}">ApplicationAssetsHandler</a></li>
 <li><a class="reference" href="#ApplicationThreadCallback" title="ApplicationThreadCallback = proc (app: ptr ApplicationObject) {.closure.}">ApplicationThreadCallback</a></li>
 <li><a class="reference" href="#JsonString" title="JsonString = string">JsonString</a></li>
+<li><a class="reference" href="#ServiceMsg" title="ServiceMsg = object
+  id*: int64
+  action*: string
+  payload*: string">ServiceMsg</a></li>
 <li><a class="reference" href="#Services" title="Services = object">Services</a></li>
 
     </ul>
@@ -87,6 +91,7 @@
     <summary><a class="reference reference-toplevel" href="#10" id="60">Consts</a></summary>
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#SafeThreadVarSeq" title="SafeThreadVarSeq = r&quot;WithThreadCallbackStmt&quot;">SafeThreadVarSeq</a></li>
+<li><a class="reference" href="#ServiceStopAction" title="ServiceStopAction = &quot;__stop__&quot;">ServiceStopAction</a></li>
 
     </ul>
   </details>
@@ -95,7 +100,11 @@
   <details open>
     <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
     <ul class="simple simple-toc-section">
-      <ul class="simple nested-toc-section">appInstance
+      <ul class="simple nested-toc-section">app
+  <li><a class="reference" href="#app_2" title="app(): Application">app(): Application</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">appInstance
   <li><a class="reference" href="#appInstance" title="appInstance(): Application">appInstance(): Application</a></li>
 
 </ul>
@@ -104,19 +113,31 @@
 
 </ul>
 <ul class="simple nested-toc-section">config
-  <li><a class="reference" href="#config%2CApplication%2Cstring" title="config(app: Application; key: string): YamlNode">config(app: Application; key: string): YamlNode</a></li>
+  <li><a class="reference" href="#config%2CApplication%2Cstring" title="config(app: Application; key: string): ConfigValue">config(app: Application; key: string): ConfigValue</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">getAddress
   <li><a class="reference" href="#getAddress%2CApplication" title="getAddress(app: Application): lent string">getAddress(app: Application): lent string</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">getApplication
+  <li><a class="reference" href="#getApplication" title="getApplication(): Application">getApplication(): Application</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">getPort
   <li><a class="reference" href="#getPort%2CApplication" title="getPort(app: Application): lent Port">getPort(app: Application): lent Port</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">getServiceChan
+  <li><a class="reference" href="#getServiceChan%2CApplication%2Cstring" title="getServiceChan(app: Application; name: string): Chan[ServiceMsg]">getServiceChan(app: Application; name: string): Chan[ServiceMsg]</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">getUuid
   <li><a class="reference" href="#getUuid%2CApplication" title="getUuid(app: Application): lent Uuid">getUuid(app: Application): lent Uuid</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">hasServiceChan
+  <li><a class="reference" href="#hasServiceChan%2CApplication%2Cstring" title="hasServiceChan(app: Application; name: string): bool">hasServiceChan(app: Application; name: string): bool</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">info
@@ -131,8 +152,30 @@
   <li><a class="reference" href="#loadEventListeners" title="loadEventListeners(): NimNode">loadEventListeners(): NimNode</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">loadEventQueues
+  <li><a class="reference" href="#loadEventQueues" title="loadEventQueues(): NimNode">loadEventQueues(): NimNode</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">paths
   <li><a class="reference" href="#paths%2CApplication" title="paths(app: Application): ApplicationPaths">paths(app: Application): ApplicationPaths</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">recvServiceMsg
+  <li><a class="reference" href="#recvServiceMsg%2CApplication%2Cstring" title="recvServiceMsg(app: Application; name: string): ServiceMsg">recvServiceMsg(app: Application; name: string): ServiceMsg</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">registerServiceChan
+  <li><a class="reference" href="#registerServiceChan%2CApplication%2Cstring%2CChan%5BServiceMsg%5D" title="registerServiceChan(app: Application; name: string; ch: Chan[ServiceMsg])">registerServiceChan(app: Application; name: string; ch: Chan[ServiceMsg])</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">sendServiceMsg
+  <li><a class="reference" href="#sendServiceMsg%2CApplication%2Cstring%2Cstring%2Cstring%2Cint64" title="sendServiceMsg(app: Application; name, action: string; payload: string = &quot;&quot;;
+               id: int64 = 0): bool">sendServiceMsg(app: Application; name, action: string; payload: string = &quot;&quot;;
+               id: int64 = 0): bool</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">tryRecvServiceMsg
+  <li><a class="reference" href="#tryRecvServiceMsg%2CApplication%2Cstring%2CServiceMsg" title="tryRecvServiceMsg(app: Application; name: string; dst: var ServiceMsg): bool">tryRecvServiceMsg(app: Application; name: string; dst: var ServiceMsg): bool</a></li>
 
 </ul>
 
@@ -173,6 +216,10 @@
 </ul>
 <ul class="simple nested-toc-section">initStartCommand
   <li><a class="reference" href="#initStartCommand.t%2CValues" title="initStartCommand(v: Values; createDirs = true)">initStartCommand(v: Values; createDirs = true)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">isServiceStop
+  <li><a class="reference" href="#isServiceStop.t%2CServiceMsg" title="isServiceStop(msg: ServiceMsg): bool">isServiceStop(msg: ServiceMsg): bool</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">services
@@ -249,6 +296,17 @@
     
   </dd>
 </div>
+<div id="ServiceMsg">
+  <dt><pre><a href="#ServiceMsg"><span class="Identifier">ServiceMsg</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+  <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int64</span>
+  <span class="Identifier">action</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Identifier">payload</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
+  <dd>
+    
+    Envelope exchanged between the main application and channel-based (<tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt>) services. The <tt class="docutils literal"><span class="pre"><span class="Identifier">Application</span></span></tt> owns one <tt class="docutils literal"><span class="pre"><span class="Identifier">Chan</span><span class="Punctuation">[</span><span class="Identifier">ServiceMsg</span><span class="Punctuation">]</span></span></tt> per service, created at <tt class="docutils literal"><span class="pre"><span class="Identifier">start</span><span class="Operator">*</span><span class="Identifier">Service</span></span></tt> time and shared with the worker thread. There is no <tt class="docutils literal"><span class="pre"><span class="Identifier">close</span></span></tt> for <tt class="docutils literal"><span class="pre"><span class="Identifier">Chan</span></span></tt>; workers exit on the <tt class="docutils literal"><span class="pre"><span class="Identifier">ServiceStopAction</span></span></tt> poison pill sent by the generated <tt class="docutils literal"><span class="pre"><span class="Identifier">stop</span><span class="Operator">*</span><span class="Identifier">Service</span></span></tt> proc.
+    
+  </dd>
+</div>
 <div id="Services">
   <dt><pre><a href="#Services"><span class="Identifier">Services</span></a> <span class="Other">=</span> <span class="Keyword">object</span></pre></dt>
   <dd>
@@ -293,13 +351,32 @@
     
   </dd>
 </div>
+<div id="ServiceStopAction">
+  <dt><pre><a href="#ServiceStopAction"><span class="Identifier">ServiceStopAction</span></a> <span class="Other">=</span> <span class="StringLit">&quot;__stop__&quot;</span></pre></dt>
+  <dd>
+    
+    Poison-pill <tt class="docutils literal"><span class="pre"><span class="Identifier">action</span></span></tt> telling a <tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt> worker to exit its message loop. Sent by the generated <tt class="docutils literal"><span class="pre"><span class="Identifier">stop</span><span class="Operator">*</span><span class="Identifier">Service</span></span></tt> proc (<tt class="docutils literal"><span class="pre"><span class="Identifier">Chan</span></span></tt> has no <tt class="docutils literal"><span class="pre"><span class="Identifier">close</span></span></tt>).
+    
+  </dd>
+</div>
 
   </dl>
 </div>
 <div class="section" id="12">
   <h1><a class="toc-backref" href="#12">Procs</a></h1>
   <dl class="item">
-    <div id="appInstance-procs-all">
+    <div id="app-procs-all">
+  <div id="app_2">
+  <dt><pre><span class="Keyword">proc</span> <a href="#app_2"><span class="Identifier">app</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    An alias for <tt class="docutils literal"><span class="pre"><span class="Identifier">getApplication</span></span></tt>, returning a singleton app instance
+    
+  </dd>
+</div>
+
+</div>
+<div id="appInstance-procs-all">
   <div id="appInstance">
   <dt><pre><span class="Keyword">proc</span> <a href="#appInstance"><span class="Identifier">appInstance</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
@@ -323,11 +400,11 @@
 </div>
 <div id="config-procs-all">
   <div id="config,Application,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#config%2CApplication%2Cstring"><span class="Identifier">config</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">YamlNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#config%2CApplication%2Cstring"><span class="Identifier">config</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="config.html#ConfigValue"><span class="Identifier">ConfigValue</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Runtime configuration lookup. <tt class="docutils literal"><span class="pre"><span class="Identifier">key</span></span></tt> has the shape <tt class="docutils literal"><span class="pre"><span class="Identifier">file</span><span class="Operator">.</span><span class="Identifier">key</span><span class="Operator">.</span><span class="Identifier">path</span></span></tt>; the value is read from the natively-parsed document and wrapped in a <tt class="docutils literal"><span class="pre"><span class="Identifier">ConfigValue</span></span></tt> — use <tt class="docutils literal"><span class="pre"><span class="Identifier">getStr</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">getInt</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">getFloat</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">getBool</span></span></tt> on it. Unknown files and missing keys return a nil node (check with <tt class="docutils literal"><span class="pre"><span class="Identifier">isNil</span></span></tt>).
     
   </dd>
 </div>
@@ -345,6 +422,17 @@
 </div>
 
 </div>
+<div id="getApplication-procs-all">
+  <div id="getApplication">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getApplication"><span class="Identifier">getApplication</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Returns the singleton application instance
+    
+  </dd>
+</div>
+
+</div>
 <div id="getPort-procs-all">
   <div id="getPort,Application">
   <dt><pre><span class="Keyword">proc</span> <a href="#getPort%2CApplication"><span class="Identifier">getPort</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">Port</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
@@ -356,12 +444,36 @@
 </div>
 
 </div>
+<div id="getServiceChan-procs-all">
+  <div id="getServiceChan,Application,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getServiceChan%2CApplication%2Cstring"><span class="Identifier">getServiceChan</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Chan</span><span class="Other">[</span><a href="#ServiceMsg"><span class="Identifier">ServiceMsg</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Return the application-owned channel for the <tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt> called <tt class="docutils literal"><span class="pre"><span class="Identifier">name</span></span></tt>. Raises <tt class="docutils literal"><span class="pre"><span class="Identifier">KeyError</span></span></tt> when the service was not started.
+    
+  </dd>
+</div>
+
+</div>
 <div id="getUuid-procs-all">
   <div id="getUuid,Application">
-  <dt><pre><span class="Keyword">proc</span> <a href="#getUuid%2CApplication"><span class="Identifier">getUuid</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <a href="../support/uuid.html#Uuid"><span class="Identifier">Uuid</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#getUuid%2CApplication"><span class="Identifier">getUuid</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">Uuid</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Get ApplicationObject UUID
+    
+  </dd>
+</div>
+
+</div>
+<div id="hasServiceChan-procs-all">
+  <div id="hasServiceChan,Application,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#hasServiceChan%2CApplication%2Cstring"><span class="Identifier">hasServiceChan</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Whether a channel is registered for the <tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt> called <tt class="docutils literal"><span class="pre"><span class="Identifier">name</span></span></tt>.
     
   </dd>
 </div>
@@ -401,6 +513,18 @@
 </div>
 
 </div>
+<div id="loadEventQueues-procs-all">
+  <div id="loadEventQueues">
+  <dt><pre><span class="Keyword">proc</span> <a href="#loadEventQueues"><span class="Identifier">loadEventQueues</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">NimNode</span> {.<span class="Identifier">compileTime</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span>
+                                  <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    
+    
+  </dd>
+</div>
+
+</div>
 <div id="paths-procs-all">
   <div id="paths,Application">
   <dt><pre><span class="Keyword">proc</span> <a href="#paths%2CApplication"><span class="Identifier">paths</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
@@ -408,6 +532,55 @@
   <dd>
     
     Returns the application paths
+    
+  </dd>
+</div>
+
+</div>
+<div id="recvServiceMsg-procs-all">
+  <div id="recvServiceMsg,Application,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#recvServiceMsg%2CApplication%2Cstring"><span class="Identifier">recvServiceMsg</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#ServiceMsg"><span class="Identifier">ServiceMsg</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Blocking receive of a <tt class="docutils literal"><span class="pre"><span class="Identifier">ServiceMsg</span></span></tt> from the <tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt> called <tt class="docutils literal"><span class="pre"><span class="Identifier">name</span></span></tt>. Used for worker replies sent back on the shared channel.
+    
+  </dd>
+</div>
+
+</div>
+<div id="registerServiceChan-procs-all">
+  <div id="registerServiceChan,Application,string,Chan[ServiceMsg]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#registerServiceChan%2CApplication%2Cstring%2CChan%5BServiceMsg%5D"><span class="Identifier">registerServiceChan</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">ch</span><span class="Other">:</span> <span class="Identifier">Chan</span><span class="Other">[</span><a href="#ServiceMsg"><span class="Identifier">ServiceMsg</span></a><span class="Other">]</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Store the application-owned channel for the <tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt> called <tt class="docutils literal"><span class="pre"><span class="Identifier">name</span></span></tt>. Called by the generated <tt class="docutils literal"><span class="pre"><span class="Identifier">start</span><span class="Operator">*</span><span class="Identifier">Service</span></span></tt> proc.
+    
+  </dd>
+</div>
+
+</div>
+<div id="sendServiceMsg-procs-all">
+  <div id="sendServiceMsg,Application,string,string,string,int64">
+  <dt><pre><span class="Keyword">proc</span> <a href="#sendServiceMsg%2CApplication%2Cstring%2Cstring%2Cstring%2Cint64"><span class="Identifier">sendServiceMsg</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">action</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                    <span class="Identifier">payload</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">id</span><span class="Other">:</span> <span class="Identifier">int64</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span class="Identifier">discardable</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Non-blocking send of a <tt class="docutils literal"><span class="pre"><span class="Identifier">ServiceMsg</span></span></tt> to the <tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt> called <tt class="docutils literal"><span class="pre"><span class="Identifier">name</span></span></tt>. Returns <tt class="docutils literal"><span class="pre"><span class="Identifier">false</span></span></tt> when no channel is registered or the queue is full.
+    
+  </dd>
+</div>
+
+</div>
+<div id="tryRecvServiceMsg-procs-all">
+  <div id="tryRecvServiceMsg,Application,string,ServiceMsg">
+  <dt><pre><span class="Keyword">proc</span> <a href="#tryRecvServiceMsg%2CApplication%2Cstring%2CServiceMsg"><span class="Identifier">tryRecvServiceMsg</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">dst</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#ServiceMsg"><span class="Identifier">ServiceMsg</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Non-blocking receive of a <tt class="docutils literal"><span class="pre"><span class="Identifier">ServiceMsg</span></span></tt> from the <tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt> called <tt class="docutils literal"><span class="pre"><span class="Identifier">name</span></span></tt>.
     
   </dd>
 </div>
@@ -492,6 +665,17 @@
 </div>
 
 </div>
+<div id="isServiceStop-templates-all">
+  <div id="isServiceStop.t,ServiceMsg">
+  <dt><pre><span class="Keyword">template</span> <a href="#isServiceStop.t%2CServiceMsg"><span class="Identifier">isServiceStop</span></a><span class="Other">(</span><span class="Identifier">msg</span><span class="Other">:</span> <a href="#ServiceMsg"><span class="Identifier">ServiceMsg</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
+  <dd>
+    
+    Whether <tt class="docutils literal"><span class="pre"><span class="Identifier">msg</span></span></tt> is the worker shutdown poison pill.
+    
+  </dd>
+</div>
+
+</div>
 <div id="services-templates-all">
   <div id="services.t,Application,">
   <dt><pre><span class="Keyword">template</span> <a href="#services.t%2CApplication%2C"><span class="Identifier">services</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">servicesStmt</span><span class="Other">)</span> {.<span class="Identifier">inject</span>.}</pre></dt>
@@ -520,7 +704,7 @@
 <div class="section" id="19">
   <h1><a class="toc-backref" href="#19">Exports</a></h1>
   <dl class="item">
-    <a href="paths.html#init,ApplicationPaths,string,bool"><span class="Identifier">init</span></a>, <a href="paths.html#getInstallationPath,ApplicationPaths"><span class="Identifier">getInstallationPath</span></a>, <a href="paths.html#consolePath"><span class="Identifier">consolePath</span></a>, <a href="paths.html#cachePath"><span class="Identifier">cachePath</span></a>, <a href="paths.html#runtimeConfigPath"><span class="Identifier">runtimeConfigPath</span></a>, <a href="paths.html#eventsPath"><span class="Identifier">eventsPath</span></a>, <a href="paths.html#pluginsPath"><span class="Identifier">pluginsPath</span></a>, <a href="paths.html#middlewarePath"><span class="Identifier">middlewarePath</span></a>, <a href="paths.html#basePath"><span class="Identifier">basePath</span></a>, <a href="paths.html#configPath"><span class="Identifier">configPath</span></a>, <a href="paths.html#modelPath"><span class="Identifier">modelPath</span></a>, <a href="paths.html#controllerPath"><span class="Identifier">controllerPath</span></a>, <a href="paths.html#storagePath"><span class="Identifier">storagePath</span></a>, <a href="paths.html#rootPath"><span class="Identifier">rootPath</span></a>, <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a>, <a href="paths.html#p.t,varargs[string]"><span class="Identifier">p</span></a>, <a href="paths.html#migrationPath"><span class="Identifier">migrationPath</span></a>, <a href="paths.html#logsPath"><span class="Identifier">logsPath</span></a>, <a href="paths.html#servicePath"><span class="Identifier">servicePath</span></a>, <a href="paths.html#resolve,ApplicationPaths,string,string"><span class="Identifier">resolve</span></a>, <a href="paths.html#databasePath"><span class="Identifier">databasePath</span></a>, <a href="../network/webserver.html#registerCallback,WebServer,string,OnRequestLowLevel"><span class="Identifier">registerCallback</span></a>, <a href="../network/webserver.html#unregisterCallback,WebServer,string"><span class="Identifier">unregisterCallback</span></a>
+    <a href="paths.html#init,ApplicationPaths,string,bool"><span class="Identifier">init</span></a>, <a href="paths.html#getInstallationPath,ApplicationPaths"><span class="Identifier">getInstallationPath</span></a>, <a href="paths.html#consolePath"><span class="Identifier">consolePath</span></a>, <a href="paths.html#cachePath"><span class="Identifier">cachePath</span></a>, <a href="paths.html#runtimeConfigPath"><span class="Identifier">runtimeConfigPath</span></a>, <a href="paths.html#staticStorage.t,string"><span class="Identifier">staticStorage</span></a>, <a href="paths.html#eventsPath"><span class="Identifier">eventsPath</span></a>, <a href="paths.html#pluginsPath"><span class="Identifier">pluginsPath</span></a>, <a href="paths.html#middlewarePath"><span class="Identifier">middlewarePath</span></a>, <a href="paths.html#basePath"><span class="Identifier">basePath</span></a>, <a href="paths.html#configPath"><span class="Identifier">configPath</span></a>, <a href="paths.html#modelPath"><span class="Identifier">modelPath</span></a>, <a href="paths.html#controllerPath"><span class="Identifier">controllerPath</span></a>, <a href="paths.html#storagePath"><span class="Identifier">storagePath</span></a>, <a href="paths.html#rootPath"><span class="Identifier">rootPath</span></a>, <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a>, <a href="paths.html#p.t,varargs[string]"><span class="Identifier">p</span></a>, <a href="paths.html#migrationPath"><span class="Identifier">migrationPath</span></a>, <a href="paths.html#logsPath"><span class="Identifier">logsPath</span></a>, <a href="paths.html#servicePath"><span class="Identifier">servicePath</span></a>, <a href="paths.html#resolve,ApplicationPaths,string,string"><span class="Identifier">resolve</span></a>, <a href="paths.html#databasePath"><span class="Identifier">databasePath</span></a>, <a href="../network/webserver.html#registerCallback,WebServer,string,OnRequestLowLevel"><span class="Identifier">registerCallback</span></a>, <a href="../network/webserver.html#unregisterCallback,WebServer,string"><span class="Identifier">unregisterCallback</span></a>, <a href="config.html#Configuration"><span class="Identifier">Configuration</span></a>, <a href="config.html#ConfigurationFormat"><span class="Identifier">ConfigurationFormat</span></a>, <a href="config.html#ConfigValue"><span class="Identifier">ConfigValue</span></a>, <a href="config.html#ConfigError"><span class="Identifier">ConfigError</span></a>, <a href="config.html#ConfigEntry"><span class="Identifier">ConfigEntry</span></a>, <a href="config.html#configFileExtensions"><span class="Identifier">configFileExtensions</span></a>, <a href="config.html#formatForExt,string"><span class="Identifier">formatForExt</span></a>, <a href="config.html#parseConfiguration,string,string"><span class="Identifier">parseConfiguration</span></a>, <a href="config.html#loadConfigurations,string"><span class="Identifier">loadConfigurations</span></a>, <a href="config.html#scanConfigDir,string"><span class="Identifier">scanConfigDir</span></a>, <a href="config.html#stripStatic,Configuration"><span class="Identifier">stripStatic</span></a>, <a href="config.html#get,Configuration,string"><span class="Identifier">get</span></a>, <a href="router.html#get,HttpRouterInstance,string,Callable,seq[Middleware],seq[Afterware]"><span class="Identifier">get</span></a>, <a href="config.html#isNil,ConfigValue"><span class="Identifier">isNil</span></a>, <a href="config.html#getStr,ConfigValue"><span class="Identifier">getStr</span></a>, <a href="config.html#getInt,ConfigValue"><span class="Identifier">getInt</span></a>, <a href="config.html#getFloat,ConfigValue"><span class="Identifier">getFloat</span></a>, <a href="config.html#getBool,ConfigValue"><span class="Identifier">getBool</span></a>, <a href="config.html#putStr,Configuration,string,string"><span class="Identifier">putStr</span></a>, <a href="config.html#putInt,Configuration,string,int64"><span class="Identifier">putInt</span></a>, <a href="config.html#putFloat,Configuration,string,float64"><span class="Identifier">putFloat</span></a>, <a href="config.html#putBool,Configuration,string,bool"><span class="Identifier">putBool</span></a>, <a href="config.html#staticConfig,string"><span class="Identifier">staticConfig</span></a>, <a href="config.html#staticConfigFromDir,string,string"><span class="Identifier">staticConfigFromDir</span></a>
   </dl>
 </div>
 
@@ -530,7 +714,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-08-06 13:45:44 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-09-23 16:58:40 UTC</small>
       </div>
     </div>
   </div>

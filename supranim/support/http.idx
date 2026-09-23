@@ -1,18 +1,33 @@
 nimTitle	http	supranim/support/http.html	module supranim/support/http		0
-nim	RetryAttemptCallback	supranim/support/http.html#RetryAttemptCallback	type RetryAttemptCallback		19
-nim	HttpForm	supranim/support/http.html#HttpForm	type HttpForm		21
-nim	Http	supranim/support/http.html#Http	type Http		23
-nim	HttpResponse	supranim/support/http.html#HttpResponse	object HttpResponse		28
-nim	get	supranim/support/http.html#get,typedesc[Http],	proc get(H: typedesc[Http]; uri: Uri | string): Response		34
-nim	get	supranim/support/http.html#get,Http,	proc get(H: Http; uri: Uri | string): Response		42
-nim	get	supranim/support/http.html#get,Http,,typedesc[T]	proc get[T](H: Http; uri: Uri | string; t: typedesc[T]): T		49
-nim	post	supranim/support/http.html#post,typedesc[Http],,string	proc post(H: typedesc[Http]; uri: Uri | string; body: string = ""): Response		61
-nim	post	supranim/support/http.html#post,typedesc[Http],,HttpForm	proc post(H: typedesc[Http]; uri: Uri | string; httpForm: HttpForm): Response		69
-nim	withHeaders	supranim/support/http.html#withHeaders,typedesc[Http],openArray[tuple[string,string]]	proc withHeaders(H: typedesc[Http]; httpHeaders: openArray[tuple[key, val: string]]): Http		80
-nim	withToken	supranim/support/http.html#withToken,Http,string	proc withToken(H: Http; token: string): Http		89
-nim	retry	supranim/support/http.html#retry,Http,uint	proc retry(H: Http; times: uint): Http		95
-nim	retry	supranim/support/http.html#retry,Http,uint,RetryAttemptCallback	proc retry(H: Http; times: uint; retryAttemptCallback: RetryAttemptCallback)		99
-nim	normalizePath	supranim/support/http.html#normalizePath,string	proc normalizePath(path: string): string		104
-nimgrp	retry	supranim/support/http.html#retry-procs-all	proc		95
-nimgrp	post	supranim/support/http.html#post-procs-all	proc		61
-nimgrp	get	supranim/support/http.html#get-procs-all	proc		34
+nim	RetryAttemptCallback	supranim/support/http.html#RetryAttemptCallback	type RetryAttemptCallback		28
+nim	HttpForm	supranim/support/http.html#HttpForm	type HttpForm		30
+nim	Http	supranim/support/http.html#Http	type Http		32
+nim	HttpResponse	supranim/support/http.html#HttpResponse	object HttpResponse		37
+nim	AsyncHttp	supranim/support/http.html#AsyncHttp	type AsyncHttp		40
+nim	body	supranim/support/http.html#body,HttpResponse	proc body(res: HttpResponse): string		45
+nim	code	supranim/support/http.html#code,HttpResponse	proc code(res: HttpResponse): HttpCode		49
+nim	status	supranim/support/http.html#status,HttpResponse	proc status(res: HttpResponse): string		53
+nim	get	supranim/support/http.html#get,typedesc[Http],	proc get(H: typedesc[Http]; uri: Uri | string): HttpResponse		67
+nim	get	supranim/support/http.html#get,Http,	proc get(H: Http; uri: Uri | string): HttpResponse		74
+nim	get	supranim/support/http.html#get,Http,,typedesc[T]	proc get[T](H: Http; uri: Uri | string; t: typedesc[T]): T		80
+nim	post	supranim/support/http.html#post,typedesc[Http],,string	proc post(H: typedesc[Http]; uri: Uri | string; body: string = ""): HttpResponse		91
+nim	post	supranim/support/http.html#post,typedesc[Http],,HttpForm	proc post(H: typedesc[Http]; uri: Uri | string; httpForm: HttpForm): HttpResponse		99
+nim	withHeaders	supranim/support/http.html#withHeaders,typedesc[Http],openArray[tuple[string,string]]	proc withHeaders(H: typedesc[Http]; httpHeaders: openArray[tuple[key, val: string]]): Http		110
+nim	withToken	supranim/support/http.html#withToken,Http,string	proc withToken(H: Http; token: string): Http		116
+nim	retry	supranim/support/http.html#retry,Http,uint	proc retry(H: Http; times: uint): Http		121
+nim	retry	supranim/support/http.html#retry,Http,uint,RetryAttemptCallback	proc retry(H: Http; times: uint; retryAttemptCallback: RetryAttemptCallback): Http		126
+nim	get	supranim/support/http.html#get,typedesc[AsyncHttp],	proc get(H: typedesc[AsyncHttp]; uri: Uri | string): Future[HttpClientResponse]		158
+nim	get	supranim/support/http.html#get,AsyncHttp,	proc get(H: AsyncHttp; uri: Uri | string): Future[HttpClientResponse]		165
+nim	get	supranim/support/http.html#get,AsyncHttp,,typedesc[T]	proc get[T](H: AsyncHttp; uri: Uri | string; t: typedesc[T]): Future[T]		171
+nim	post	supranim/support/http.html#post,typedesc[AsyncHttp],,string	proc post(H: typedesc[AsyncHttp]; uri: Uri | string; body: string = ""): Future[\n    HttpClientResponse]		180
+nim	post	supranim/support/http.html#post,typedesc[AsyncHttp],,HttpForm	proc post(H: typedesc[AsyncHttp]; uri: Uri | string; httpForm: HttpForm): Future[\n    HttpClientResponse]		188
+nim	withHeaders	supranim/support/http.html#withHeaders,typedesc[AsyncHttp],openArray[tuple[string,string]]	proc withHeaders(H: typedesc[AsyncHttp];\n            httpHeaders: openArray[tuple[key, val: string]]): AsyncHttp		203
+nim	withToken	supranim/support/http.html#withToken,AsyncHttp,string	proc withToken(H: AsyncHttp; token: string): AsyncHttp		209
+nim	retry	supranim/support/http.html#retry,AsyncHttp,uint	proc retry(H: AsyncHttp; times: uint): AsyncHttp		214
+nim	retry	supranim/support/http.html#retry,AsyncHttp,uint,RetryAttemptCallback	proc retry(H: AsyncHttp; times: uint; retryAttemptCallback: RetryAttemptCallback): AsyncHttp		219
+nim	normalizePath	supranim/support/http.html#normalizePath,string	proc normalizePath(path: string): string		227
+nimgrp	withheaders	supranim/support/http.html#withHeaders-procs-all	proc		110
+nimgrp	withtoken	supranim/support/http.html#withToken-procs-all	proc		116
+nimgrp	retry	supranim/support/http.html#retry-procs-all	proc		121
+nimgrp	post	supranim/support/http.html#post-procs-all	proc		91
+nimgrp	get	supranim/support/http.html#get-procs-all	proc		67

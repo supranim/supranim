@@ -16,10 +16,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.12">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.12"></script>
 </head>
 <body>
   <div class="document" id="documentId">
@@ -70,13 +70,46 @@
 <li><a class="reference" href="#HttpService" title="HttpService = object">HttpService</a></li>
 <li><a class="reference" href="#HttpServiceIndex" title="HttpServiceIndex = ref object">HttpServiceIndex</a></li>
 <li><a class="reference" href="#ServiceProvider" title="ServiceProvider = object
-  name*, description*, author*, version*: string">ServiceProvider</a></li>
+  serviceType*: ServiceType
+  name*, description*, author*, version*: string
+  host*: string = &quot;0.0.0.0&quot;  ## Bind address for `WebService` (TCP) listeners
+  port*: int = 0 ## TCP port for `WebService`. `0` selects the default:
+                 ## `3000` standalone, `9000` embedded thread
+  threads*: int = 1 ## Server worker threads for standalone `WebService` (`&gt; 1`
+                    ## uses the multi-threaded powpow server)
+  queueSize*: int = 64       ## `Chan[ServiceMsg]` capacity for `ThreadService`
+  timeoutMs*: int = 2000     ## Default request/reply timeout hint for `ThreadService` api handles
+  poolSize*: int = 4         ## Worker count for `ThreadPoolService` (mirrors powpow's default)
+  socketPath*: string = &quot;&quot;   ## Unix domain socket path for `UnixService`
+  socketMode*: int = 0o000000000660 ## File permission bits for the `UnixService` socket
+  autoStart*: bool = true ## Whether the service starts automatically with the application
+                          ## (`ThreadService` / embedded `WebService` / `UnixService` threads)">ServiceProvider</a></li>
 <li><a class="reference" href="#ServiceType" title="ServiceType = enum
-  Global = &quot;Global&quot;,        ## Defines a Global service as part of the main application
+  Global = &quot;Global&quot;, ## Namespace-style service without an instance type: only the
+                      ## `state`/`api` blocks are emitted, no `get&lt;Name&gt;Instance`
+                      ## accessor is generated (unlike `Singleton`)
   Singleton = &quot;Singleton&quot;,  ## Defines a Singleton service as part of the main application
-  ChannelService = &quot;Channel&quot;, ## Thread-based Service enabling inter thread communications 
-  WebService = &quot;WebService&quot;, ## REST API Service Provider that connects over TCP/IP
-  ThreadService = &quot;ThreadService&quot; ## Defines thread-based `WebService` part of the main application">ServiceType</a></li>
+  ChannelService = &quot;ChannelService&quot;, ## Deprecated alias of `ThreadService`. Channel-based job-thread
+                                      ## services communicate with the main app via `threading/channels`
+  WebService = &quot;WebService&quot;, ## REST API Service Provider that connects over TCP/IP.
+                              ## Runs embedded in an application thread, or compiled
+                              ## as a standalone microservice binary (`isMainModule`).
+                              ## With a `ws do:` block it runs a standalone WebSocket
+                              ## server (powpow `WsServer`) instead, in thread or standalone mode.
+  UnixService = &quot;UnixService&quot;, ## HTTP Service Provider over a Unix domain socket.
+                                ## Same dual mode as `WebService` (embedded thread or
+                                ## standalone binary), ideal for fast local IPC.
+  ThreadService = &quot;ThreadService&quot;, ## Job-thread service: runs user code for as long as it wants
+                                    ## in its own thread and talks to the main application through
+                                    ## the application-owned `Chan[ServiceMsg]`
+                                    ## (see `core/application`). Cannot be built standalone.
+  ThreadPoolService = &quot;ThreadPoolService&quot; ## Job-pool service over `supranim_tasks` `TaskManager`: N
+                                          ## anonymous workers for CPU-bound jobs plus delayed, repeating
+                                          ## and wall-clock scheduled tasks. No worker body and no
+                                          ## channel plumbing of its own (unlike `ThreadService`). Jobs
+                                          ## run on workers; callbacks run serialized on the pool
+                                          ## dispatch thread, never on the main thread. Cannot be built
+                                          ## standalone.">ServiceType</a></li>
 <li><a class="reference" href="#SingletonService" title="SingletonService = object">SingletonService</a></li>
 
     </ul>
@@ -114,6 +147,10 @@
   <li><a class="reference" href="#extractThreadServicesClient.m" title="extractThreadServicesClient()">extractThreadServicesClient()</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">initService
+  <li><a class="reference" href="#initService.m%2Cuntyped%2Cuntyped" title="initService(serviceIdentifier, serviceConfig: untyped)">initService(serviceIdentifier, serviceConfig: untyped)</a></li>
+
+</ul>
 
     </ul>
   </details>
@@ -128,10 +165,6 @@
 </ul>
 <ul class="simple nested-toc-section">initRouter
   <li><a class="reference" href="#initRouter.t" title="initRouter(): untyped">initRouter(): untyped</a></li>
-
-</ul>
-<ul class="simple nested-toc-section">initService
-  <li><a class="reference" href="#initService.t%2Cuntyped%2Cuntyped" title="initService(id, config: untyped)">initService(id, config: untyped)</a></li>
 
 </ul>
 
@@ -150,7 +183,7 @@
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
-    <a class="reference external" href="../application.html">../application</a>, <a class="reference external" href="paths.html">paths</a>, <a class="reference external" href="autolink.html">autolink</a>, <a class="reference external" href="router.html">router</a>
+    <a class="reference external" href="../application.html">../application</a>, <a class="reference external" href="../network/websocket.html">../network/websocket</a>, <a class="reference external" href="paths.html">paths</a>, <a class="reference external" href="autolink.html">autolink</a>, <a class="reference external" href="router.html">router</a>
   </dl>
 </div>
 <div class="section" id="7">
@@ -203,7 +236,20 @@
 </div>
 <div id="ServiceProvider">
   <dt><pre><a href="#ServiceProvider"><span class="Identifier">ServiceProvider</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">description</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">author</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">version</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
+  <span class="Identifier">serviceType</span><span class="Operator">*</span><span class="Other">:</span> <a href="#ServiceType"><span class="Identifier">ServiceType</span></a>
+  <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">description</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">author</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">version</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Identifier">host</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;0.0.0.0&quot;</span>  <span class="Comment">## Bind address for `WebService` (TCP) listeners</span>
+  <span class="Identifier">port</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">0</span> <span class="Comment">## TCP port for `WebService`. `0` selects the default:</span>
+                 <span class="Comment">## `3000` standalone, `9000` embedded thread</span>
+  <span class="Identifier">threads</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">1</span> <span class="Comment">## Server worker threads for standalone `WebService` (`&gt; 1`</span>
+                    <span class="Comment">## uses the multi-threaded powpow server)</span>
+  <span class="Identifier">queueSize</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">64</span>       <span class="Comment">## `Chan[ServiceMsg]` capacity for `ThreadService`</span>
+  <span class="Identifier">timeoutMs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">2000</span>     <span class="Comment">## Default request/reply timeout hint for `ThreadService` api handles</span>
+  <span class="Identifier">poolSize</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">4</span>         <span class="Comment">## Worker count for `ThreadPoolService` (mirrors powpow's default)</span>
+  <span class="Identifier">socketPath</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span>   <span class="Comment">## Unix domain socket path for `UnixService`</span>
+  <span class="Identifier">socketMode</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">0o000000000660</span> <span class="Comment">## File permission bits for the `UnixService` socket</span>
+  <span class="Identifier">autoStart</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span> <span class="Other">=</span> <span class="DecNumber">true</span> <span class="Comment">## Whether the service starts automatically with the application</span>
+                          <span class="Comment">## (`ThreadService` / embedded `WebService` / `UnixService` threads)</span></pre></dt>
   <dd>
     
     
@@ -212,11 +258,31 @@
 </div>
 <div id="ServiceType">
   <dt><pre><a href="#ServiceType"><span class="Identifier">ServiceType</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">Global</span> <span class="Other">=</span> <span class="StringLit">&quot;Global&quot;</span><span class="Other">,</span>        <span class="Comment">## Defines a Global service as part of the main application</span>
+  <span class="Identifier">Global</span> <span class="Other">=</span> <span class="StringLit">&quot;Global&quot;</span><span class="Other">,</span> <span class="Comment">## Namespace-style service without an instance type: only the</span>
+                      <span class="Comment">## `state`/`api` blocks are emitted, no `get&lt;Name&gt;Instance`</span>
+                      <span class="Comment">## accessor is generated (unlike `Singleton`)</span>
   <span class="Identifier">Singleton</span> <span class="Other">=</span> <span class="StringLit">&quot;Singleton&quot;</span><span class="Other">,</span>  <span class="Comment">## Defines a Singleton service as part of the main application</span>
-  <span class="Identifier">ChannelService</span> <span class="Other">=</span> <span class="StringLit">&quot;Channel&quot;</span><span class="Other">,</span> <span class="Comment">## Thread-based Service enabling inter thread communications </span>
-  <span class="Identifier">WebService</span> <span class="Other">=</span> <span class="StringLit">&quot;WebService&quot;</span><span class="Other">,</span> <span class="Comment">## REST API Service Provider that connects over TCP/IP</span>
-  <span class="Identifier">ThreadService</span> <span class="Other">=</span> <span class="StringLit">&quot;ThreadService&quot;</span> <span class="Comment">## Defines thread-based `WebService` part of the main application</span></pre></dt>
+  <span class="Identifier">ChannelService</span> <span class="Other">=</span> <span class="StringLit">&quot;ChannelService&quot;</span><span class="Other">,</span> <span class="Comment">## Deprecated alias of `ThreadService`. Channel-based job-thread</span>
+                                      <span class="Comment">## services communicate with the main app via `threading/channels`</span>
+  <span class="Identifier">WebService</span> <span class="Other">=</span> <span class="StringLit">&quot;WebService&quot;</span><span class="Other">,</span> <span class="Comment">## REST API Service Provider that connects over TCP/IP.</span>
+                              <span class="Comment">## Runs embedded in an application thread, or compiled</span>
+                              <span class="Comment">## as a standalone microservice binary (`isMainModule`).</span>
+                              <span class="Comment">## With a `ws do:` block it runs a standalone WebSocket</span>
+                              <span class="Comment">## server (powpow `WsServer`) instead, in thread or standalone mode.</span>
+  <span class="Identifier">UnixService</span> <span class="Other">=</span> <span class="StringLit">&quot;UnixService&quot;</span><span class="Other">,</span> <span class="Comment">## HTTP Service Provider over a Unix domain socket.</span>
+                                <span class="Comment">## Same dual mode as `WebService` (embedded thread or</span>
+                                <span class="Comment">## standalone binary), ideal for fast local IPC.</span>
+  <span class="Identifier">ThreadService</span> <span class="Other">=</span> <span class="StringLit">&quot;ThreadService&quot;</span><span class="Other">,</span> <span class="Comment">## Job-thread service: runs user code for as long as it wants</span>
+                                    <span class="Comment">## in its own thread and talks to the main application through</span>
+                                    <span class="Comment">## the application-owned `Chan[ServiceMsg]`</span>
+                                    <span class="Comment">## (see `core/application`). Cannot be built standalone.</span>
+  <span class="Identifier">ThreadPoolService</span> <span class="Other">=</span> <span class="StringLit">&quot;ThreadPoolService&quot;</span> <span class="Comment">## Job-pool service over `supranim_tasks` `TaskManager`: N</span>
+                                          <span class="Comment">## anonymous workers for CPU-bound jobs plus delayed, repeating</span>
+                                          <span class="Comment">## and wall-clock scheduled tasks. No worker body and no</span>
+                                          <span class="Comment">## channel plumbing of its own (unlike `ThreadService`). Jobs</span>
+                                          <span class="Comment">## run on workers; callbacks run serialized on the pool</span>
+                                          <span class="Comment">## dispatch thread, never on the main thread. Cannot be built</span>
+                                          <span class="Comment">## standalone.</span></pre></dt>
   <dd>
     
     Defines Supranim Service types
@@ -303,6 +369,24 @@
 </div>
 
 </div>
+<div id="initService-macros-all">
+  <div id="initService.m,untyped,untyped">
+  <dt><pre><span class="Keyword">macro</span> <a href="#initService.m%2Cuntyped%2Cuntyped"><span class="Identifier">initService</span></a><span class="Other">(</span><span class="Identifier">serviceIdentifier</span><span class="Other">,</span> <span class="Identifier">serviceConfig</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span></pre></dt>
+  <dd>
+    
+    <p>Create a new Supranim Service. Supported service types:</p>
+<p><tt class="docutils literal"><span class="pre"><span class="Identifier">Singleton</span></span></tt> services live in the main app as a <tt class="docutils literal"><span class="pre"><span class="Identifier">pkg</span><span class="Operator">/</span><span class="Identifier">threading</span><span class="Operator">/</span><span class="Identifier">once</span></span></tt> singleton. Use <tt class="docutils literal"><span class="pre"><span class="Identifier">state</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for the type and <tt class="docutils literal"><span class="pre"><span class="Identifier">api</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for accessors (<tt class="docutils literal"><span class="pre"><span class="Identifier">backend</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">client</span></span></tt> are accepted as aliases). Top-level fields: <tt class="docutils literal"><span class="pre"><span class="Identifier">description</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">author</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">version</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">autoStart</span></span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt> services are job-threads: they run user code for as long as they want and talk to the main app through the application-owned <tt class="docutils literal"><span class="pre"><span class="Identifier">Chan</span><span class="Punctuation">[</span><span class="Identifier">ServiceMsg</span><span class="Punctuation">]</span></span></tt>. Use <tt class="docutils literal"><span class="pre"><span class="Identifier">shared</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for types visible on both sides, <tt class="docutils literal"><span class="pre"><span class="Identifier">thread</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for the worker body (the channel is available via <tt class="docutils literal"><span class="pre"><span class="Identifier">get</span><span class="Operator">&lt;</span><span class="Identifier">Name</span><span class="Operator">&gt;</span><span class="Identifier">Channel</span><span class="Punctuation">(</span><span class="Punctuation">)</span></span></tt>), and <tt class="docutils literal"><span class="pre"><span class="Identifier">api</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for the main-thread handles. Top-level fields: <tt class="docutils literal"><span class="pre"><span class="Identifier">queueSize</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">timeoutMs</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">autoStart</span></span></tt>. Cannot be built as a standalone binary.</p>
+<p><tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadPoolService</span></span></tt> services wrap powpow's <tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadPool</span></span></tt>: N anonymous workers run submitted jobs, callbacks fire serialized on the pool dispatch thread. Use <tt class="docutils literal"><span class="pre"><span class="Identifier">shared</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for job/result types and <tt class="docutils literal"><span class="pre"><span class="Identifier">api</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for submit handles (<tt class="docutils literal"><span class="pre"><span class="Identifier">get</span><span class="Operator">&lt;</span><span class="Identifier">Name</span><span class="Operator">&gt;</span><span class="Identifier">Pool</span><span class="Punctuation">(</span><span class="Punctuation">)</span></span></tt> exposes the raw pool). Top-level fields: <tt class="docutils literal"><span class="pre"><span class="Identifier">poolSize</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">autoStart</span></span></tt>. Cannot be built standalone.</p>
+<p><tt class="docutils literal"><span class="pre"><span class="Identifier">WebService</span></span></tt> services are HTTP microservices over TCP/IP with a dual mode: embedded in an application thread, or compiled as a standalone binary (<tt class="docutils literal"><span class="pre"><span class="Identifier">isMainModule</span></span></tt>). Top-level fields: <tt class="docutils literal"><span class="pre"><span class="Identifier">host</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">port</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">autoStart</span></span></tt>. With a <tt class="docutils literal"><span class="pre"><span class="Identifier">ws</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> block (exclusive with <tt class="docutils literal"><span class="pre"><span class="Identifier">routes</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt>) it runs a standalone WebSocket server instead, in thread or standalone mode alike.</p>
+<p><tt class="docutils literal"><span class="pre"><span class="Identifier">UnixService</span></span></tt> services behave like <tt class="docutils literal"><span class="pre"><span class="Identifier">WebService</span></span></tt> but listen on a Unix domain socket (<tt class="docutils literal"><span class="pre"><span class="Identifier">socketPath</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">socketMode</span></span></tt>). Great for fast local IPC.</p>
+<p><a class="reference external" href="https://dev.to/vearutop/using-nginx-as-a-proxy-to-multiple-unix-sockets-3c7a">https://dev.to/vearutop/using-nginx-as-a-proxy-to-multiple-unix-sockets-3c7a</a></p>
+
+    
+  </dd>
+</div>
+
+</div>
 
   </dl>
 </div>
@@ -331,22 +415,6 @@
 </div>
 
 </div>
-<div id="initService-templates-all">
-  <div id="initService.t,untyped,untyped">
-  <dt><pre><span class="Keyword">template</span> <a href="#initService.t%2Cuntyped%2Cuntyped"><span class="Identifier">initService</span></a><span class="Other">(</span><span class="Identifier">id</span><span class="Other">,</span> <span class="Identifier">config</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span></pre></dt>
-  <dd>
-    
-    <p>Create a new Supranim Service. Supported service types:</p>
-<p><tt class="docutils literal"><span class="pre"><span class="Identifier">Singleton</span></span></tt> Services are built within the main app providing a singleton pattern based on <tt class="docutils literal"><span class="pre"><span class="Identifier">pkg</span><span class="Operator">/</span><span class="Identifier">threading</span><span class="Operator">/</span><span class="Identifier">once</span></span></tt>.</p>
-<p><tt class="docutils literal"><span class="pre"><span class="Identifier">ChannelService</span></span></tt> Services are thread-based services that can be used for inter-thread communication</p>
-<p><tt class="docutils literal"><span class="pre"><span class="Identifier">UnixService</span></span></tt> and <tt class="docutils literal"><span class="pre"><span class="Identifier">WebService</span></span></tt> Services are REST API microservices wrapped by the built-in web server based on <tt class="docutils literal"><span class="pre"><span class="Identifier">pkg</span><span class="Operator">/</span><span class="Identifier">httbeast</span></span></tt></p>
-<p><a class="reference external" href="https://dev.to/vearutop/using-nginx-as-a-proxy-to-multiple-unix-sockets-3c7a">https://dev.to/vearutop/using-nginx-as-a-proxy-to-multiple-unix-sockets-3c7a</a></p>
-
-    
-  </dd>
-</div>
-
-</div>
 
   </dl>
 </div>
@@ -357,7 +425,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-08-06 13:45:44 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-09-23 16:58:40 UTC</small>
       </div>
     </div>
   </div>

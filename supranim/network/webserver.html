@@ -16,10 +16,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.10">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.12">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.10"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.2.12"></script>
 </head>
 <body>
   <div class="document" id="documentId">
@@ -62,28 +62,24 @@
     <summary><a class="reference reference-toplevel" href="#7" id="57">Types</a></summary>
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#BodyStream" title="BodyStream = object">BodyStream</a></li>
-<li><a class="reference" href="#OnRequest" title="OnRequest = proc (req: var Request) {.nimcall.}">OnRequest</a></li>
-<li><a class="reference" href="#OnRequestLowLevel" title="OnRequestLowLevel = proc (req: pointer; arg: pointer) {.cdecl, gcsafe.}">OnRequestLowLevel</a></li>
+<li><a class="reference" href="#OnRequest" title="OnRequest = proc (req: var Request) {.nimcall, gcsafe.}">OnRequest</a></li>
+<li><a class="reference" href="#OnRequestLowLevel" title="OnRequestLowLevel = proc (req: pw.HttpRequest; res: pw.HttpResponse) {.gcsafe.}">OnRequestLowLevel</a></li>
 <li><a class="reference" href="#Request" title="Request = object
-  httpMethod*: EvhttpCmdType ## The HTTP method (GET, POST, etc.).
-  raw*: ptr evhttp_request   ## The underlying evhttp_request pointer.
-  path*: string              ## The request path.
-  uri*: Uri                  ## The parsed URI object.
-  uriQuery*: TableRef[string, string] ## Lazily initialized query parameters from the URI.
-  headers*: Option[HttpHeaders] ## The request headers (lazily initialized).
-  body*: Option[string]      ## The request body (lazily initialized).
-  routeParams*: Table[string, string] ## The route parameters extracted from the URL.
-  responseSent*: bool ## Whether a response has already been sent for this request.
-                      ## This is used to prevent multiple responses.">Request</a></li>
+  raw*: pointer
+  httpMethod*: HttpMethod
+  path*: string
+  uri*: Uri
+  uriQuery*: TableRef[string, string]
+  headers*: Option[HttpHeaders]
+  body*: Option[string]
+  routeParams*: Table[string, string]
+  responseSent*: bool
+  powReq*: pw.HttpRequest
+  powRes*: pw.HttpResponse">Request</a></li>
 <li><a class="reference" href="#StartupCallback" title="StartupCallback = proc () {.gcsafe.}">StartupCallback</a></li>
 <li><a class="reference" href="#WebServer" title="WebServer = ref object
-  base*: ptr event_base      ## The underlying event base.
-  httpServer*: ptr evhttp    ## The underlying evhttp server.
-  port*: Port                ## The port the server listens on.
-  otherOnRequestCallbacks*: Table[string, OnRequestLowLevel] ## Store other path-specific callbacks. This table is used to inject
-                                                             ## low-level callbacks for specific paths. It works in both single-threaded and multi-threaded modes.
-  enableMultiThreading*: bool
-  workerHttpServers*: seq[ptr evhttp]">WebServer</a></li>
+  port*: Port
+  enableMultiThreading*: bool">WebServer</a></li>
 
     </ul>
   </details>
@@ -93,14 +89,13 @@
     <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
     <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">addCallback
-  <li><a class="reference" href="#addCallback%2Cptr.evhttp%2Cstring%2COnRequestLowLevel" title="addCallback(httpServer: ptr evhttp; path: string; callback: OnRequestLowLevel)">addCallback(httpServer: ptr evhttp; path: string; callback: OnRequestLowLevel)</a></li>
-<li><a class="reference" href="#addCallback%2CWebServer%2Cstring%2COnRequestLowLevel" title="addCallback(server: WebServer; path: string; callback: OnRequestLowLevel)">addCallback(server: WebServer; path: string; callback: OnRequestLowLevel)</a></li>
+  <li><a class="reference" href="#addCallback%2CWebServer%2Cstring%2COnRequestLowLevel" title="addCallback(server: WebServer; path: string; callback: OnRequestLowLevel)">addCallback(server: WebServer; path: string; callback: OnRequestLowLevel)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">addEvent
-  <li><a class="reference" href="#addEvent%2CWebServer%2Cproc%28cint%2Ccshort%2Cpointer%29" title="addEvent(server: WebServer;
-         callback: proc (fd: cint; events: cshort; arg: pointer) {.cdecl.})">addEvent(server: WebServer;
-         callback: proc (fd: cint; events: cshort; arg: pointer) {.cdecl.})</a></li>
+  <li><a class="reference" href="#addEvent%2CWebServer%2Cproc%28cint%2Ccshort%2Cpointer%29" title="addEvent(server: WebServer; callback: proc (fd: cint; events: cshort;
+    arg: pointer) {.cdecl, gcsafe.})">addEvent(server: WebServer; callback: proc (fd: cint; events: cshort;
+    arg: pointer) {.cdecl, gcsafe.})</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">addHeader
@@ -164,6 +159,10 @@
 <li><a class="reference" href="#newWebServer%2CPort%2Cbool" title="newWebServer(port: Port = Port(8080); enableMultiThreading: bool): WebServer">newWebServer(port: Port = Port(8080); enableMultiThreading: bool): WebServer</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">parseRangeHeader
+  <li><a class="reference" href="#parseRangeHeader%2Cstring%2Cint" title="parseRangeHeader(rangeHeader: string; fileSize: int): Option[(int, int)]">parseRangeHeader(rangeHeader: string; fileSize: int): Option[(int, int)]</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">peekChunk
   <li><a class="reference" href="#peekChunk%2CBodyStream%2Cint" title="peekChunk(stream: BodyStream; maxLen: int): (pointer, int)">peekChunk(stream: BodyStream; maxLen: int): (pointer, int)</a></li>
 
@@ -184,13 +183,22 @@
   <li><a class="reference" href="#runServer%2COnRequest%2CStartupCallback" title="runServer(onRequest: OnRequest; startupCallback: StartupCallback;
           port = Port(3000))">runServer(onRequest: OnRequest; startupCallback: StartupCallback;
           port = Port(3000))</a></li>
+<li><a class="reference" href="#runServer%2COnRequest%2CStartupCallback%2Cstring" title="runServer(onRequest: OnRequest; startupCallback: StartupCallback;
+          port = Port(3000); host: string)">runServer(onRequest: OnRequest; startupCallback: StartupCallback;
+          port = Port(3000); host: string)</a></li>
+<li><a class="reference" href="#runServer%2COnRequest%2CStartupCallback%2Cint%2Cstring" title="runServer(onRequest: OnRequest; startupCallback: StartupCallback;
+          port = Port(3000); threads: int; host = &quot;0.0.0.0&quot;)">runServer(onRequest: OnRequest; startupCallback: StartupCallback;
+          port = Port(3000); threads: int; host = &quot;0.0.0.0&quot;)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">runUnixServer
+  <li><a class="reference" href="#runUnixServer%2COnRequest%2CStartupCallback%2Cstring%2Cint" title="runUnixServer(onRequest: OnRequest; startupCallback: StartupCallback;
+              socketPath: string; mode: int = 0o000000000660)">runUnixServer(onRequest: OnRequest; startupCallback: StartupCallback;
+              socketPath: string; mode: int = 0o000000000660)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">send
-  <li><a class="reference" href="#send%2Cptr.evhttp_request%2Cint%2Cstring%2CHttpHeaders" title="send(req: ptr evhttp_request; code: int; body: string;
-     httpHeaders: HttpHeaders = nil)">send(req: ptr evhttp_request; code: int; body: string;
-     httpHeaders: HttpHeaders = nil)</a></li>
-<li><a class="reference" href="#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders" title="send(req: var Request; code: HttpCode; body: string;
+  <li><a class="reference" href="#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders" title="send(req: var Request; code: HttpCode; body: string;
      httpHeaders: HttpHeaders = nil)">send(req: var Request; code: HttpCode; body: string;
      httpHeaders: HttpHeaders = nil)</a></li>
 <li><a class="reference" href="#send%2CRequest%2Cint%2Cstring%2CHttpHeaders" title="send(req: var Request; code: int; body: string; httpHeaders: HttpHeaders = nil)">send(req: var Request; code: int; body: string; httpHeaders: HttpHeaders = nil)</a></li>
@@ -207,13 +215,13 @@
 
 </ul>
 <ul class="simple nested-toc-section">start
-  <li><a class="reference" href="#start%2CWebServer" title="start(server: var WebServer)">start(server: var WebServer)</a></li>
-<li><a class="reference" href="#start%2CWebServer%2COnRequest%2CStartupCallback" title="start(server: var WebServer; onRequest: OnRequest;
-      startupCallback: StartupCallback = nil)">start(server: var WebServer; onRequest: OnRequest;
+  <li><a class="reference" href="#start%2CWebServer" title="start(server: WebServer)">start(server: WebServer)</a></li>
+<li><a class="reference" href="#start%2CWebServer%2COnRequest%2CStartupCallback" title="start(server: WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback = nil)">start(server: WebServer; onRequest: OnRequest;
       startupCallback: StartupCallback = nil)</a></li>
-<li><a class="reference" href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint" title="start(server: var WebServer; onRequest: OnRequest;
-      startupCallback: StartupCallback; threads: int)">start(server: var WebServer; onRequest: OnRequest;
-      startupCallback: StartupCallback; threads: int)</a></li>
+<li><a class="reference" href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint%2Cstring" title="start(server: WebServer; onRequest: OnRequest; startupCallback: StartupCallback;
+      threads: int; host = &quot;0.0.0.0&quot;)">start(server: WebServer; onRequest: OnRequest; startupCallback: StartupCallback;
+      threads: int; host = &quot;0.0.0.0&quot;)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">startChunk
@@ -222,6 +230,14 @@
 </ul>
 <ul class="simple nested-toc-section">startPartialChunk
   <li><a class="reference" href="#startPartialChunk%2CRequest" title="startPartialChunk(req: Request)">startPartialChunk(req: Request)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">startUnix
+  <li><a class="reference" href="#startUnix%2CWebServer%2COnRequest%2CStartupCallback%2Cstring%2Cint" title="startUnix(server: WebServer; onRequest: OnRequest;
+          startupCallback: StartupCallback = nil; socketPath: string;
+          mode: int = 0o000000000660)">startUnix(server: WebServer; onRequest: OnRequest;
+          startupCallback: StartupCallback = nil; socketPath: string;
+          mode: int = 0o000000000660)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">streamFile
@@ -256,10 +272,7 @@
     
     <div id="tocRoot"></div>
     
-    <p class="module-desc"><p>This module implements a high-performance HTTP server using the Libevent library.</p>
-<p>The server is designed to be used in a non-blocking, event-driven manner, allowing for high concurrency and efficient resource usage. It also includes support for HTTP Range requests when streaming files, enabling partial content delivery for large files.</p>
-<p>The API is flexible and can be used for simple use cases with a single request handler, or more complex scenarios with multiple callbacks for different paths.</p>
-</p>
+    <p class="module-desc">Powpow-based HTTP server for Supranim. Wraps <tt class="docutils literal"><span class="pre"><span class="Identifier">pkg</span><span class="Operator">/</span><span class="Identifier">powpow</span></span></tt> <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpServer</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">MultiThreadHttpServer</span></span></tt>, defines <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt>, routing callbacks, and streaming helpers. This is the sole HTTP backend.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
@@ -273,41 +286,42 @@
   <dt><pre><a href="#BodyStream"><span class="Identifier">BodyStream</span></a> <span class="Other">=</span> <span class="Keyword">object</span></pre></dt>
   <dd>
     
-    Represents a stream for reading the request body in chunks.
+    
     
   </dd>
 </div>
 <div id="OnRequest">
-  <dt><pre><a href="#OnRequest"><span class="Identifier">OnRequest</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span> {.<span class="Identifier">nimcall</span>.}</pre></dt>
+  <dt><pre><a href="#OnRequest"><span class="Identifier">OnRequest</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span> {.<span class="Identifier">nimcall</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
-    Callback type for handling HTTP requests.
+    
     
   </dd>
 </div>
 <div id="OnRequestLowLevel">
-  <dt><pre><a href="#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
+  <dt><pre><a href="#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Identifier">pw</span><span class="Other">.</span><span class="Identifier">HttpRequest</span><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Identifier">pw</span><span class="Other">.</span><span class="Identifier">HttpResponse</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
-    Low-level callback type for handling HTTP requests directly with evhttp_request.
+    
     
   </dd>
 </div>
 <div id="Request">
   <dt><pre><a href="#Request"><span class="Identifier">Request</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">httpMethod</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">EvhttpCmdType</span> <span class="Comment">## The HTTP method (GET, POST, etc.).</span>
-  <span class="Identifier">raw</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span>   <span class="Comment">## The underlying evhttp_request pointer.</span>
-  <span class="Identifier">path</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>              <span class="Comment">## The request path.</span>
-  <span class="Identifier">uri</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Uri</span>                  <span class="Comment">## The parsed URI object.</span>
-  <span class="Identifier">uriQuery</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## Lazily initialized query parameters from the URI.</span>
-  <span class="Identifier">headers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">HttpHeaders</span><span class="Other">]</span> <span class="Comment">## The request headers (lazily initialized).</span>
-  <span class="Identifier">body</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>      <span class="Comment">## The request body (lazily initialized).</span>
-  <span class="Identifier">routeParams</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## The route parameters extracted from the URL.</span>
-  <span class="Identifier">responseSent</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span> <span class="Comment">## Whether a response has already been sent for this request.</span>
-                      <span class="Comment">## This is used to prevent multiple responses.</span></pre></dt>
+  <span class="Identifier">raw</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">pointer</span>
+  <span class="Identifier">httpMethod</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span>
+  <span class="Identifier">path</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Identifier">uri</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Uri</span>
+  <span class="Identifier">uriQuery</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span>
+  <span class="Identifier">headers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">HttpHeaders</span><span class="Other">]</span>
+  <span class="Identifier">body</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
+  <span class="Identifier">routeParams</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span>
+  <span class="Identifier">responseSent</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">powReq</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">pw</span><span class="Other">.</span><span class="Identifier">HttpRequest</span>
+  <span class="Identifier">powRes</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">pw</span><span class="Other">.</span><span class="Identifier">HttpResponse</span></pre></dt>
   <dd>
     
-    Represents an HTTP request.
+    
     
   </dd>
 </div>
@@ -315,22 +329,17 @@
   <dt><pre><a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}</pre></dt>
   <dd>
     
-    Callback type for server startup (optional).
+    
     
   </dd>
 </div>
 <div id="WebServer">
   <dt><pre><a href="#WebServer"><span class="Identifier">WebServer</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
-  <span class="Identifier">base</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">event_base</span>      <span class="Comment">## The underlying event base.</span>
-  <span class="Identifier">httpServer</span><span class="Operator">*</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp</span>    <span class="Comment">## The underlying evhttp server.</span>
-  <span class="Identifier">port</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Port</span>                <span class="Comment">## The port the server listens on.</span>
-  <span class="Identifier">otherOnRequestCallbacks</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Table</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a><span class="Other">]</span> <span class="Comment">## Store other path-specific callbacks. This table is used to inject</span>
-                                                             <span class="Comment">## low-level callbacks for specific paths. It works in both single-threaded and multi-threaded modes.</span>
-  <span class="Identifier">enableMultiThreading</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">workerHttpServers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Keyword">ptr</span> <span class="Identifier">evhttp</span><span class="Other">]</span></pre></dt>
+  <span class="Identifier">port</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Port</span>
+  <span class="Identifier">enableMultiThreading</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
   <dd>
     
-    Represents an HTTP server.
+    
     
   </dd>
 </div>
@@ -341,22 +350,15 @@
   <h1><a class="toc-backref" href="#12">Procs</a></h1>
   <dl class="item">
     <div id="addCallback-procs-all">
-  <div id="addCallback,ptr.evhttp,string,OnRequestLowLevel">
-  <dt><pre><span class="Keyword">proc</span> <a href="#addCallback%2Cptr.evhttp%2Cstring%2COnRequestLowLevel"><span class="Identifier">addCallback</span></a><span class="Other">(</span><span class="Identifier">httpServer</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp</span><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                 <span class="Identifier">callback</span><span class="Other">:</span> <a href="#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-  <dd>
-    
-    
-    
-  </dd>
-</div>
-<div id="addCallback,WebServer,string,OnRequestLowLevel">
+  <div id="addCallback,WebServer,string,OnRequestLowLevel">
   <dt><pre><span class="Keyword">proc</span> <a href="#addCallback%2CWebServer%2Cstring%2COnRequestLowLevel"><span class="Identifier">addCallback</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <a href="#OnRequestLowLevel"><span class="Identifier">OnRequestLowLevel</span></a><span class="Other">)</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    <p>Adds a low-level callback for a specific request path.</p>
+<p>When a request with a matching path is received, the low-level callback is invoked directly instead of going through the normal supranim routing pipeline. The callback receives the powpow <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpRequest</span></span></tt> and <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpResponse</span></span></tt> directly.</p>
+<p>Note: Path matching uses normalized paths (trailing slashes removed, etc.).</p>
+
     
   </dd>
 </div>
@@ -364,13 +366,13 @@
 </div>
 <div id="addEvent-procs-all">
   <div id="addEvent,WebServer,proc(cint,cshort,pointer)">
-  <dt><pre><span class="Keyword">proc</span> <a href="#addEvent%2CWebServer%2Cproc%28cint%2Ccshort%2Cpointer%29"><span class="Identifier">addEvent</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span>
-              <span class="Identifier">callback</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">fd</span><span class="Other">:</span> <span class="Identifier">cint</span><span class="Other">;</span> <span class="Identifier">events</span><span class="Other">:</span> <span class="Identifier">cshort</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span>.}<span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#addEvent%2CWebServer%2Cproc%28cint%2Ccshort%2Cpointer%29"><span class="Identifier">addEvent</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">fd</span><span class="Other">:</span> <span class="Identifier">cint</span><span class="Other">;</span> <span class="Identifier">events</span><span class="Other">:</span> <span class="Identifier">cshort</span><span class="Other">;</span>
+    <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> {.<span class="Identifier">cdecl</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">gcsafe</span></span>.}<span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
+                                       <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     <p>Adds a custom event to the server's event loop.</p>
-<p>This allows you to integrate custom file descriptor events (e.g. for WebSockets or timers) into the same event loop as the HTTP server.</p>
+<p>Allows you to integrate custom file descriptor events (e.g. for WebSockets or timers) into the same event loop as the HTTP server. Internally creates a 30ms interval timer on powpow's timer wheel. In multi-threaded mode this is a no-op (each worker owns its own loop).</p>
 
     
   </dd>
@@ -383,7 +385,7 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Sets a header in the request. This uses the lower-level C API. Note: This does overwrite existing caches in req.headers.
+    Adds a header to the request. No-op in powpow mode (headers are parsed once from the buffer).
     
   </dd>
 </div>
@@ -394,7 +396,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#clearHeaders%2CRequest"><span class="Identifier">clearHeaders</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Clears all headers from the request. This uses the lower-level C API. Note: This also clears the cached headers table.
+    Clears all cached request headers.
     
   </dd>
 </div>
@@ -406,7 +408,7 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Removes len bytes from the buffer (after processing a peeked chunk).
+    Advances the read cursor by <tt class="docutils literal"><span class="pre"><span class="Identifier">len</span></span></tt> bytes, effectively discarding that many bytes from the stream.
     
   </dd>
 </div>
@@ -417,7 +419,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#dropRequest%2CRequest"><span class="Identifier">dropRequest</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Drop the request by closing the connection without sending a response. This can be used in cases where you want to silently ignore a request without responding
+    Drop the provided <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt>
     
   </dd>
 </div>
@@ -428,7 +430,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#endChunk%2CRequest"><span class="Identifier">endChunk</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Ends a chunked HTTP response.
+    Ends a chunked HTTP response. No-op in powpow mode.
     
   </dd>
 </div>
@@ -436,11 +438,11 @@
 </div>
 <div id="findHeader-procs-all">
   <div id="findHeader,Request,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#findHeader%2CRequest%2Cstring"><span class="Identifier">findHeader</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#findHeader%2CRequest%2Cstring"><span class="Identifier">findHeader</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Use the lower-level C API to check if a header exists. This is more efficient than fetching all headers. This does not update any cached headers in <tt class="docutils literal"><span class="pre"><span class="Identifier">req</span><span class="Operator">.</span><span class="Identifier">headers</span></span></tt>.
+    Low-level header lookup using powpow's parser directly. Returns empty string if the header is not present, without materialising the full headers table.
     
   </dd>
 </div>
@@ -452,7 +454,7 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Retrieves the body from <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt> Lazily initializes the body on first access. Then caches it for future accesses.
+    Retrieve body for a <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt>
     
   </dd>
 </div>
@@ -464,7 +466,7 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Returns a BodyStream for reading the request body in chunks.
+    Returns a <tt class="docutils literal"><span class="pre"><span class="Identifier">BodyStream</span></span></tt> for reading the request body in chunks. Eagerly materialises the full body into memory from powpow's parser buffer at construction time.
     
   </dd>
 </div>
@@ -476,7 +478,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Returns return a header from Request
+    Retrieves a single request header by name.
     
   </dd>
 </div>
@@ -488,7 +490,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Retrieves the headers from the HTTP request as a Table. Lazily initializes the headers on first access. Then caches them for future accesses.
+    Lazily retrieves the request headers. On first access the headers are materialised from powpow's parser buffer and cached for subsequent calls.
     
   </dd>
 </div>
@@ -499,7 +501,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#getIp%2CRequest"><span class="Identifier">getIp</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Retrieves the IP address from request
+    Retrieve the IP of a <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt>
     
   </dd>
 </div>
@@ -510,7 +512,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#getMethod%2CRequest"><span class="Identifier">getMethod</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Maps the EvhttpCmdType to a more user-friendly HttpMethod enum. To avoid the mapping overhead use req.httpMethod directly.
+    Returns the HTTP method (GET, POST, PUT, etc.) of the request.
     
   </dd>
 </div>
@@ -521,7 +523,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#getOutputHeaders%2CRequest"><span class="Identifier">getOutputHeaders</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Retrieves the response headers as a raw string. Not supported in powpow mode — returns empty string.
     
   </dd>
 </div>
@@ -533,7 +535,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Returns the parsed query parameters from the request URI as a Table. Lazily initializes on first access. Then caches them for future accesses.
+    Lazily parses and caches the query parameters from the request URI.
     
   </dd>
 </div>
@@ -545,7 +547,7 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Creates a new WebServer instance.
+    Create a new WebServer backed by PowPow
     
   </dd>
 </div>
@@ -554,9 +556,19 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    <p>Creates a new WebServer instance with multi-threading support. When <tt class="docutils literal"><span class="pre"><span class="Identifier">enableMultiThreading</span></span></tt> is true, the server will be started in a thread pool mode which allows handling multiple requests concurrently across multiple CPU cores.</p>
-<p>This is recommended for production use. For development, you can use the single-threaded version for simplicity.</p>
+    Create a new multi-threaded WebServer backed by PowPow
+    
+  </dd>
+</div>
 
+</div>
+<div id="parseRangeHeader-procs-all">
+  <div id="parseRangeHeader,string,int">
+  <dt><pre><span class="Keyword">proc</span> <a href="#parseRangeHeader%2Cstring%2Cint"><span class="Identifier">parseRangeHeader</span></a><span class="Other">(</span><span class="Identifier">rangeHeader</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">fileSize</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Other">(</span><span class="Identifier">int</span><span class="Other">,</span> <span class="Identifier">int</span><span class="Other">)</span><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    
     
   </dd>
 </div>
@@ -568,7 +580,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Returns a pointer and length to the next available chunk (up to maxLen). No copy is performed. The pointer is only valid until the next buffer operation.
+    Returns a pointer and length to the next available chunk (up to <tt class="docutils literal"><span class="pre"><span class="Identifier">maxLen</span></span></tt>). No copy is performed. The pointer is valid until the next drain operation.
     
   </dd>
 </div>
@@ -580,7 +592,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Reads up to maxLen bytes from the stream. Returns empty string when no more data is available.
+    Reads up to <tt class="docutils literal"><span class="pre"><span class="Identifier">maxLen</span></span></tt> bytes from the body stream. Returns an empty string when no more data is available.
     
   </dd>
 </div>
@@ -593,7 +605,9 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Registers a callback to WebServer
+    <p>Registers a low-level callback in a thread-safe manner.</p>
+<p>Same as <tt class="docutils literal"><span class="pre"><span class="Identifier">addCallback</span></span></tt> but with explicit thread-safety guarantees. The callback is stored in the per-server <tt class="docutils literal"><span class="pre"><span class="Identifier">callbackTable</span></span></tt> and checked on every request before the normal handler runs.</p>
+
     
   </dd>
 </div>
@@ -605,7 +619,7 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Removes a header from the request. This uses the lower-level C API. Note: This does update existing caches in req.headers.
+    Removes a header from the request. No-op in powpow mode (headers are parsed once from the buffer).
     
   </dd>
 </div>
@@ -614,50 +628,84 @@
 <div id="runServer-procs-all">
   <div id="runServer,OnRequest,StartupCallback">
   <dt><pre><span class="Keyword">proc</span> <a href="#runServer%2COnRequest%2CStartupCallback"><span class="Identifier">runServer</span></a><span class="Other">(</span><span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span> <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span>
-               <span class="Identifier">port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">3000</span><span class="Other">)</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
-                                    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+               <span class="Identifier">port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">3000</span><span class="Other">)</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span>
+    <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Starts the HTTP server using <tt class="docutils literal"><span class="pre"><span class="Identifier">pkg</span><span class="Operator">/</span><span class="Identifier">libevent</span></span></tt> and runs the request handler.
+    Convenience procedure that creates a single-threaded WebServer, binds it to the given <tt class="docutils literal"><span class="pre"><span class="Identifier">port</span></span></tt>, and starts the event loop.
+    
+  </dd>
+</div>
+<div id="runServer,OnRequest,StartupCallback,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#runServer%2COnRequest%2CStartupCallback%2Cstring"><span class="Identifier">runServer</span></a><span class="Other">(</span><span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span> <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span>
+               <span class="Identifier">port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">3000</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">host</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Convenience procedure that creates a single-threaded WebServer bound to <tt class="docutils literal"><span class="pre"><span class="Identifier">host</span><span class="Punctuation">:</span><span class="Identifier">port</span></span></tt> and starts the event loop.
+    
+  </dd>
+</div>
+<div id="runServer,OnRequest,StartupCallback,int,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#runServer%2COnRequest%2CStartupCallback%2Cint%2Cstring"><span class="Identifier">runServer</span></a><span class="Other">(</span><span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span> <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span>
+               <span class="Identifier">port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">3000</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">threads</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">host</span> <span class="Other">=</span> <span class="StringLit">&quot;0.0.0.0&quot;</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">ResourceExhaustedError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Convenience procedure that creates a multi-threaded WebServer (powpow <tt class="docutils literal"><span class="pre"><span class="Identifier">MultiThreadHttpServer</span></span></tt>) serving <tt class="docutils literal"><span class="pre"><span class="Identifier">onRequest</span></span></tt> on <tt class="docutils literal"><span class="pre"><span class="Identifier">port</span></span></tt> with <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span></span></tt> workers. <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span> <span class="Operator">&lt;=</span> <span class="DecNumber">0</span></span></tt> uses all processors.
+    
+  </dd>
+</div>
+
+</div>
+<div id="runUnixServer-procs-all">
+  <div id="runUnixServer,OnRequest,StartupCallback,string,int">
+  <dt><pre><span class="Keyword">proc</span> <a href="#runUnixServer%2COnRequest%2CStartupCallback%2Cstring%2Cint"><span class="Identifier">runUnixServer</span></a><span class="Other">(</span><span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span> <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span>
+                   <span class="Identifier">socketPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">mode</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">0o000000000660</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Convenience procedure that creates a WebServer bound to the Unix domain socket at <tt class="docutils literal"><span class="pre"><span class="Identifier">socketPath</span></span></tt> and starts the event loop. A stale socket file from a previous run is removed first.
     
   </dd>
 </div>
 
 </div>
 <div id="send-procs-all">
-  <div id="send,ptr.evhttp_request,int,string,HttpHeaders">
-  <dt><pre><span class="Keyword">proc</span> <a href="#send%2Cptr.evhttp_request%2Cint%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">ptr</span> <span class="Identifier">evhttp_request</span><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-          <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-  <dd>
-    
-    Sends an HTTP response directly using evhttp_request.
-    
-  </dd>
-</div>
-<div id="send,Request,HttpCode,string,HttpHeaders">
+  <div id="send,Request,HttpCode,string,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-          <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+          <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Sends an HTTP response using HttpCode enum.
+    Sends an HTTP response using the <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpCode</span></span></tt> enum for the status.
     
   </dd>
 </div>
 <div id="send,Request,int,string,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2Cint%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-          <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+          <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    <p>Sends an HTTP response with a numeric status code.</p>
+<p>Applies any additional headers and delegates to powpow's <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpResponse</span><span class="Operator">.</span><span class="Identifier">send</span></span></tt>. Guards against double-sends via <tt class="docutils literal"><span class="pre"><span class="Identifier">responseSent</span></span></tt>.</p>
+
     
   </dd>
 </div>
 <div id="send,Request,int,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2Cint%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    
+    Sends an HTTP response with a numeric status code and no body.
     
   </dd>
 </div>
@@ -665,10 +713,12 @@
 </div>
 <div id="sendChunk-procs-all">
   <div id="sendChunk,Request,string">
-  <dt><pre><span class="Keyword">proc</span> <a href="#sendChunk%2CRequest%2Cstring"><span class="Identifier">sendChunk</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#sendChunk%2CRequest%2Cstring"><span class="Identifier">sendChunk</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Sends a chunked HTTP response.
+    Sends a chunk of data. In powpow mode this sends a complete HTTP 200 response with the provided data as the full body.
     
   </dd>
 </div>
@@ -677,19 +727,21 @@
 <div id="sendFile-procs-all">
   <div id="sendFile,Request,seq[uint8],HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#sendFile%2CRequest%2Cseq%5Buint8%5D%2CHttpHeaders"><span class="Identifier">sendFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">bytes</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">uint8</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Sends a byte sequence as a file response. Note: This is not zero-copy and is suitable for smaller files.
+    Sends a byte sequence as a file response. Not zero-copy; suitable for smaller in-memory assets.
     
   </dd>
 </div>
 <div id="sendFile,Request,string,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#sendFile%2CRequest%2Cstring%2CHttpHeaders"><span class="Identifier">sendFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">filePath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Sends a file as a single chunk using zero-copy. Note: Does not check for file type. Ensure to set the correct <tt class="docutils literal"><span class="pre"><span class="Identifier">Content</span><span class="Operator">-</span><span class="Keyword">Type</span></span></tt> header.
+    Sends a file using powpow's zero-copy <tt class="docutils literal"><span class="pre"><span class="Identifier">sendFile</span></span></tt> (sendfile syscall). Dynamically determines MIME type from file extension.
     
   </dd>
 </div>
@@ -697,30 +749,33 @@
 </div>
 <div id="start-procs-all">
   <div id="start,WebServer">
-  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                                <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Start the web server with default no-op request handler.
+    Start a WebServer
     
   </dd>
 </div>
 <div id="start,WebServer,OnRequest,StartupCallback">
-  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer%2COnRequest%2CStartupCallback"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
-           <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer%2COnRequest%2CStartupCallback"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
+           <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Starts the web server event loop.
+    Start the PowPow WebServer
     
   </dd>
 </div>
-<div id="start,WebServer,OnRequest,StartupCallback,int">
-  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
-           <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span> <span class="Identifier">threads</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ResourceExhaustedError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<div id="start,WebServer,OnRequest,StartupCallback,int,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint%2Cstring"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
+           <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span> <span class="Identifier">threads</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">host</span> <span class="Other">=</span> <span class="StringLit">&quot;0.0.0.0&quot;</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">ResourceExhaustedError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Starts the web server event loop in a thread pool mode for handling requests concurrently. This is suitable for production use to take advantage of multiple CPU cores and handle high traffic efficiently.
+    Start the PowPow webserver for a specific number of <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span></span></tt> 
     
   </dd>
 </div>
@@ -731,7 +786,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#startChunk%2CRequest"><span class="Identifier">startChunk</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Starts a chunked HTTP response.
+    Begins a chunked HTTP response. No-op in powpow mode (powpow always uses <tt class="docutils literal"><span class="pre"><span class="Identifier">Content</span><span class="Operator">-</span><span class="Identifier">Length</span></span></tt> framing).
     
   </dd>
 </div>
@@ -742,7 +797,22 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#startPartialChunk%2CRequest"><span class="Identifier">startPartialChunk</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Starts a partial content chunked HTTP response. Indicates that the response is for a partial content request (HTTP 206).
+    Begins a partial-content chunked response for HTTP 206. No-op in powpow mode (powpow handles range requests natively in <tt class="docutils literal"><span class="pre"><span class="Identifier">sendFile</span></span></tt> / <tt class="docutils literal"><span class="pre"><span class="Identifier">streamFile</span></span></tt>).
+    
+  </dd>
+</div>
+
+</div>
+<div id="startUnix-procs-all">
+  <div id="startUnix,WebServer,OnRequest,StartupCallback,string,int">
+  <dt><pre><span class="Keyword">proc</span> <a href="#startUnix%2CWebServer%2COnRequest%2CStartupCallback%2Cstring%2Cint"><span class="Identifier">startUnix</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
+               <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span> <span class="Identifier">socketPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+               <span class="Identifier">mode</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">0o000000000660</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Start the PowPow WebServer on a Unix domain socket instead of TCP. Ideal for ultra-low-latency local IPC between microservices on the same machine (no loopback TCP stack). POSIX only.
     
   </dd>
 </div>
@@ -752,15 +822,11 @@
   <div id="streamFile,Request,string,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#streamFile%2CRequest%2Cstring%2CHttpHeaders"><span class="Identifier">streamFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">filePath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                 <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    <p>Streams a file over HTTP using chunked transfer encoding and zero-copy file segments.</p>
-<p>Supports HTTP Range requests for partial content delivery.</p>
-<p>This method is suitable for large files as it streams them in chunks.</p>
-<p>For smaller files consider using <tt class="docutils literal"><span class="pre"><span class="Identifier">sendFile</span></span></tt> which sends the entire file in one go.</p>
-<p>Ensure to set the correct <tt class="docutils literal"><span class="pre"><span class="Identifier">contentType</span></span></tt> for the file being served as it does not check the file type.</p>
-
+    Streams a file using powpow's chunked <tt class="docutils literal"><span class="pre"><span class="Identifier">streamFile</span></span></tt>, which sends 206 Partial Content with byte-range support for media seeking.
     
   </dd>
 </div>
@@ -772,7 +838,9 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Unregister callback safely in both single and multi-thread modes
+    <p>Unregisters a previously registered low-level callback.</p>
+<p>After this call, requests to the given path will be handled by the normal supranim routing pipeline again.</p>
+
     
   </dd>
 </div>
@@ -790,7 +858,7 @@
     <span class="Identifier">inject</span>.}</pre></dt>
   <dd>
     
-    Enables chunked transfer encoding for the response.
+    Wraps a block as a chunked response. In powpow mode the body executes directly (powpow always uses Content-Length framing).
     
   </dd>
 </div>
@@ -806,7 +874,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-08-06 13:45:44 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-09-23 16:58:40 UTC</small>
       </div>
     </div>
   </div>
