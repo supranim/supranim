@@ -143,11 +143,15 @@ proc config*(app: Application, key: string): ConfigValue =
   ## Runtime configuration lookup. `key` has the shape `file.key.path`;
   ## the value is read from the natively-parsed document and wrapped in
   ## a `ConfigValue` — use `getStr`/`getInt`/`getFloat`/`getBool` on it.
-  let x = key.split(".")
-  let id = x[0]
-  let keys = x[1..^1]
-  if likely(app.configs.hasKey(id)):
-    return app.configs[id].get(keys.join("."))
+  ## Unknown files and missing keys return a nil node (check with `isNil`).
+  let dotIdx = key.find('.')
+  if dotIdx <= 0 or dotIdx == key.len - 1:
+    return ConfigValue(format: cfgYaml, yamlNode: nil)
+  let id = key[0 ..< dotIdx]
+  let rest = key[dotIdx + 1 .. ^1]
+  if not system.isNil(app.configs) and app.configs.hasKey(id):
+    return app.configs[id].get(rest)
+  return ConfigValue(format: cfgYaml, yamlNode: nil)
 
 when defined supranimEmbedConfig:
   proc embedConfigs: NimNode {.compileTime.} =

@@ -171,11 +171,16 @@ proc loadConfigurations*(dir: string): OrderedTableRef[string, Configuration] =
 #
 proc get*(conf: Configuration, key: string): ConfigValue =
   ## Dotted-path lookup inside `conf`, dispatching to the native getter.
-  ## Missing-key semantics are the native ones (YAML raises `KeyError`
-  ## on a missing top-level key, TOML/JSON return a nil node).
+  ## Missing keys return a nil node in every format (no raise).
   case conf.format
   of cfgYaml:
-    ConfigValue(format: cfgYaml, yamlNode: conf.yamlDoc.get(key))
+    var node: YamlNode = nil
+    if conf.yamlDoc != nil:
+      try:
+        node = conf.yamlDoc.get(key)
+      except KeyError:
+        node = nil
+    ConfigValue(format: cfgYaml, yamlNode: node)
   of cfgToml:
     ConfigValue(format: cfgToml, tomlNode: conf.tomlDoc.get(key))
   of cfgJson:

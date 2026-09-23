@@ -52,9 +52,8 @@ suite "Application (macro pipeline)":
     check App.config("server.port").getInt == 8080
     # a top-level id that is not present returns nil
     check App.config("missing.key").isNil
-    # a nested key that is missing raises KeyError from the YAML getter
-    expect KeyError:
-      discard App.config("server.unknown")
+    # a nested key that is missing returns nil (no raise) in every format
+    check App.config("server.unknown").isNil
 
   test "initHttpRouter registers routes from the routes: macro":
     initApplication()
