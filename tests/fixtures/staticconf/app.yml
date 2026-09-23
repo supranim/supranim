@@ -1,0 +1,17 @@
+# Fixture: YAML config with a `static` block (compile-time only)
+# and runtime keys.
+static:
+  enable_feature: true
+  debug: false
+  port: 8080
+  ratio: 1.5
+  name: supranim
+  tags:
+    - web
+    - api
+  db:
+    host: localhost
+    pools: 4
+
+url: https://example.com
+ssl: true

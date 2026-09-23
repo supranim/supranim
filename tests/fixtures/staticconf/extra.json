@@ -1,0 +1,9 @@
+{
+  "static": {
+    "enable_feature": true,
+    "retries": 3,
+    "prefix": "extra",
+    "tags": ["json"]
+  },
+  "endpoint": "https://api.example.com"
+}

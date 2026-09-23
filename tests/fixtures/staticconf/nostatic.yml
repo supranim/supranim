@@ -1,0 +1,3 @@
+# Fixture: config file without a `static` block.
+url: https://nostatic.example.com
+port: 1234

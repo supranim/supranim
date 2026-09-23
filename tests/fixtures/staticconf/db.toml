@@ -1,0 +1,14 @@
+# Fixture: TOML config with a `static` block (compile-time only)
+# and runtime keys.
+[static]
+enable_feature = false
+port = 7070
+name = "supra-toml"
+tags = ["queue", "worker"]
+
+[static.db]
+host = "tomlhost"
+pools = 2
+
+[server]
+port = 7071
