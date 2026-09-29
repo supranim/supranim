@@ -1,7 +1,7 @@
 <p align="center">
     <img src="https://raw.githubusercontent.com/supranim/supranim/main/.github/logo.png" width="64px"><br>
     <strong>A MVC web framework for creating REST APIs and beautiful web apps</strong> in Nim<br>
-    Powered by [PowPow](https://github.com/openpeeps/powpow) event notification library.
+    Powered by <a href="https://github.com/openpeeps/powpow">PowPow</a> event notification library.
 </p>
 
 ### Key features
