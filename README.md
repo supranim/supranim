@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/supranim/supranim/main/.github/supranim.png" width="180px"><br>
+    <img src="https://raw.githubusercontent.com/supranim/supranim/main/.github/logo.png" width="110px"><br>
     <strong>A simple web framework for creating REST APIs and beautiful web apps.</strong>,<br>
     a <code>Model</code> <code>View</code> <code>Controller</code> structure and other cool things.
 </p>
