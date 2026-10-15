@@ -1,10 +1,15 @@
 nimTitle	request	supranim/core/request.html	module supranim/core/request		0
-nim	getHttpMethod	supranim/core/request.html#getHttpMethod,Request	proc getHttpMethod(req: var Request): HttpMethod		21
-nim	getUrl	supranim/core/request.html#getUrl,Request	proc getUrl(req: Request): string		25
-nim	getUriPath	supranim/core/request.html#getUriPath,Request	proc getUriPath(req: Request): string		29
-nim	hasCookies	supranim/core/request.html#hasCookies,Request	proc hasCookies(req: var Request): bool		33
-nim	getCookies	supranim/core/request.html#getCookies,Request	proc getCookies(req: var Request): Option[string]		37
-nim	getAgent	supranim/core/request.html#getAgent,Request	proc getAgent(req: var Request): Option[string]		41
-nim	getBrowserName	supranim/core/request.html#getBrowserName,Request	proc getBrowserName(req: var Request): Option[string]		45
-nim	getPlatform	supranim/core/request.html#getPlatform,Request	proc getPlatform(req: var Request): Option[string]		50
-nim	getClientData	supranim/core/request.html#getClientData,Request	proc getClientData(req: var Request): JsonNode		72
+nim	getHttpMethod	supranim/core/request.html#getHttpMethod,Request	proc getHttpMethod(req: var Request): HttpMethod		22
+nim	getUrl	supranim/core/request.html#getUrl,Request	proc getUrl(req: Request): string		26
+nim	getUriPath	supranim/core/request.html#getUriPath,Request	proc getUriPath(req: Request): string		30
+nim	hasCookies	supranim/core/request.html#hasCookies,Request	proc hasCookies(req: var Request): bool		34
+nim	getCookies	supranim/core/request.html#getCookies,Request	proc getCookies(req: var Request): Option[string]		38
+nim	getHost	supranim/core/request.html#getHost,Request	proc getHost(req: var Request): string		42
+nim	effectiveScheme	supranim/core/request.html#effectiveScheme,Request	proc effectiveScheme(req: var Request; trustProxy = false): string		50
+nim	isSecureRequest	supranim/core/request.html#isSecureRequest,Request	proc isSecureRequest(req: var Request; trustProxy = false): bool		66
+nim	shouldEmitSecure	supranim/core/request.html#shouldEmitSecure,Request,CookieSecureMode	proc shouldEmitSecure(req: var Request; mode: CookieSecureMode; trustProxy = false): bool		71
+nim	newCookieForRequest	supranim/core/request.html#newCookieForRequest,Request,string,string,CookieSecureMode,Option[DateTime],string,string	proc newCookieForRequest(req: var Request; name, value: string;\n                    mode: CookieSecureMode = secureAuto; trustProxy = false;\n                    expirationDate: Option[DateTime] = none(DateTime);\n                    maxAge = none(int); domain = ""; path = "/";\n                    httpOnly = true; sameSite = Strict): Cookie		80
+nim	getAgent	supranim/core/request.html#getAgent,Request	proc getAgent(req: var Request): Option[string]		91
+nim	getBrowserName	supranim/core/request.html#getBrowserName,Request	proc getBrowserName(req: var Request): Option[string]		94
+nim	getPlatform	supranim/core/request.html#getPlatform,Request	proc getPlatform(req: var Request): Option[string]		99
+nim	getClientData	supranim/core/request.html#getClientData,Request	proc getClientData(req: var Request): JsonNode		121

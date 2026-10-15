@@ -59,6 +59,13 @@
     <summary><a class="reference reference-toplevel" href="#7" id="57">Types</a></summary>
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#Cookie" title="Cookie = object">Cookie</a></li>
+<li><a class="reference" href="#CookieSecureMode" title="CookieSecureMode = enum
+  secureAuto = &quot;auto&quot;, ## Emit `Secure` only when the effective request scheme is secure
+                        ## (`https`). Plain `http://localhost` omits it, which Safari
+                        ## requires (unlike Chrome/Firefox it does not treat `localhost`
+                        ## as a secure context and drops `Secure` cookies over plain HTTP).
+  secureAlways = &quot;always&quot;,  ## Always emit `Secure`, even over plain HTTP (browsers will drop it).
+  secureNever = &quot;never&quot;      ## Never emit `Secure`, even over HTTPS.">CookieSecureMode</a></li>
 <li><a class="reference" href="#CookiesTable" title="CookiesTable = TableRef[string, Cookie]">CookiesTable</a></li>
 
     </ul>
@@ -72,8 +79,22 @@
   <li><a class="reference" href="#%24%2CCookie" title="`$`(cookie: Cookie): string">`$`(cookie: Cookie): string</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">effectiveSchemeFromHeaders
+  <li><a class="reference" href="#effectiveSchemeFromHeaders%2Cstring%2Cstring%2Cbool%2Cstring" title="effectiveSchemeFromHeaders(xForwardedProto, forwardedHeader: string;
+                           trustProxy: bool; defaultScheme = &quot;http&quot;): string">effectiveSchemeFromHeaders(xForwardedProto, forwardedHeader: string;
+                           trustProxy: bool; defaultScheme = &quot;http&quot;): string</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">expires
   <li><a class="reference" href="#expires%2CCookie" title="expires(cookie: var Cookie)">expires(cookie: var Cookie)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">firstForwardedProto
+  <li><a class="reference" href="#firstForwardedProto%2Cstring" title="firstForwardedProto(value: string): string">firstForwardedProto(value: string): string</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">forwardedHeaderProto
+  <li><a class="reference" href="#forwardedHeaderProto%2Cstring" title="forwardedHeaderProto(value: string): string">forwardedHeaderProto(value: string): string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">getDomain
@@ -92,16 +113,34 @@
   <li><a class="reference" href="#isExpired%2CCookie" title="isExpired(cookie: Cookie): bool">isExpired(cookie: Cookie): bool</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">isLoopbackHost
+  <li><a class="reference" href="#isLoopbackHost%2Cstring" title="isLoopbackHost(host: string): bool">isLoopbackHost(host: string): bool</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">isSecureScheme
+  <li><a class="reference" href="#isSecureScheme%2Cstring" title="isSecureScheme(scheme: string): bool">isSecureScheme(scheme: string): bool</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">newCookie
   <li><a class="reference" href="#newCookie%2Cstring%2Cstring%2COption%5BDateTime%5D%2Cstring%2Cstring" title="newCookie(name, value: string;
           expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
-          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): Cookie">newCookie(name, value: string;
+          domain = &quot;&quot;; path = &quot;/&quot;; secure = false; httpOnly = true;
+          sameSite = Strict): Cookie">newCookie(name, value: string;
           expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
-          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): Cookie</a></li>
+          domain = &quot;&quot;; path = &quot;/&quot;; secure = false; httpOnly = true;
+          sameSite = Strict): Cookie</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">parseCookies
   <li><a class="reference" href="#parseCookies%2Cstring" title="parseCookies(cookies: string): CookiesTable">parseCookies(cookies: string): CookiesTable</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">parseSecureMode
+  <li><a class="reference" href="#parseSecureMode%2Cstring" title="parseSecureMode(s: string): CookieSecureMode">parseSecureMode(s: string): CookieSecureMode</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">shouldEmitSecureScheme
+  <li><a class="reference" href="#shouldEmitSecureScheme%2Cstring%2CCookieSecureMode" title="shouldEmitSecureScheme(scheme: string; mode: CookieSecureMode): bool">shouldEmitSecureScheme(scheme: string; mode: CookieSecureMode): bool</a></li>
 
 </ul>
 
@@ -125,6 +164,20 @@
   <dd>
     
     
+    
+  </dd>
+</div>
+<div id="CookieSecureMode">
+  <dt><pre><a href="#CookieSecureMode"><span class="Identifier">CookieSecureMode</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
+  <span class="Identifier">secureAuto</span> <span class="Other">=</span> <span class="StringLit">&quot;auto&quot;</span><span class="Other">,</span> <span class="Comment">## Emit `Secure` only when the effective request scheme is secure</span>
+                        <span class="Comment">## (`https`). Plain `http://localhost` omits it, which Safari</span>
+                        <span class="Comment">## requires (unlike Chrome/Firefox it does not treat `localhost`</span>
+                        <span class="Comment">## as a secure context and drops `Secure` cookies over plain HTTP).</span>
+  <span class="Identifier">secureAlways</span> <span class="Other">=</span> <span class="StringLit">&quot;always&quot;</span><span class="Other">,</span>  <span class="Comment">## Always emit `Secure`, even over plain HTTP (browsers will drop it).</span>
+  <span class="Identifier">secureNever</span> <span class="Other">=</span> <span class="StringLit">&quot;never&quot;</span>      <span class="Comment">## Never emit `Secure`, even over HTTPS.</span></pre></dt>
+  <dd>
+    
+    Policy for emitting the <tt class="docutils literal"><span class="pre"><span class="Identifier">Secure</span></span></tt> cookie attribute.
     
   </dd>
 </div>
@@ -153,12 +206,49 @@
 </div>
 
 </div>
+<div id="effectiveSchemeFromHeaders-procs-all">
+  <div id="effectiveSchemeFromHeaders,string,string,bool,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#effectiveSchemeFromHeaders%2Cstring%2Cstring%2Cbool%2Cstring"><span class="Identifier">effectiveSchemeFromHeaders</span></a><span class="Other">(</span><span class="Identifier">xForwardedProto</span><span class="Other">,</span> <span class="Identifier">forwardedHeader</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                                <span class="Identifier">trustProxy</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">;</span> <span class="Identifier">defaultScheme</span> <span class="Other">=</span> <span class="StringLit">&quot;http&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Resolves the effective request scheme without touching <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt> (pure and unit-testable). When <tt class="docutils literal"><span class="pre"><span class="Identifier">trustProxy</span></span></tt> is false the proxy headers are ignored so a spoofed <tt class="docutils literal"><span class="pre"><span class="Identifier">X</span><span class="Operator">-</span><span class="Identifier">Forwarded</span><span class="Operator">-</span><span class="Identifier">Proto</span></span></tt> cannot upgrade/downgrade the <tt class="docutils literal"><span class="pre"><span class="Identifier">Secure</span></span></tt> decision.
+    
+  </dd>
+</div>
+
+</div>
 <div id="expires-procs-all">
   <div id="expires,Cookie">
   <dt><pre><span class="Keyword">proc</span> <a href="#expires%2CCookie"><span class="Identifier">expires</span></a><span class="Other">(</span><span class="Identifier">cookie</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Set <tt class="docutils literal"><span class="pre"><span class="Identifier">Cookie</span></span></tt> as expired by pushing expiration to the past. Works for both session cookies (no expiry) and persistent cookies.
+    
+  </dd>
+</div>
+
+</div>
+<div id="firstForwardedProto-procs-all">
+  <div id="firstForwardedProto,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#firstForwardedProto%2Cstring"><span class="Identifier">firstForwardedProto</span></a><span class="Other">(</span><span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Returns the first protocol token of an <tt class="docutils literal"><span class="pre"><span class="Identifier">X</span><span class="Operator">-</span><span class="Identifier">Forwarded</span><span class="Operator">-</span><span class="Identifier">Proto</span></span></tt> header value (<tt class="docutils literal"><span class="pre"><span class="Identifier">https</span><span class="Punctuation">,</span> <span class="Identifier">http</span></span></tt> -&gt; <tt class="docutils literal"><span class="pre"><span class="Identifier">https</span></span></tt>), lowercased.
+    
+  </dd>
+</div>
+
+</div>
+<div id="forwardedHeaderProto-procs-all">
+  <div id="forwardedHeaderProto,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#forwardedHeaderProto%2Cstring"><span class="Identifier">forwardedHeaderProto</span></a><span class="Other">(</span><span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Extracts <tt class="docutils literal"><span class="pre"><span class="Identifier">proto</span><span class="Operator">=&lt;</span><span class="Identifier">scheme</span><span class="Operator">&gt;</span></span></tt> from an RFC 7239 <tt class="docutils literal"><span class="pre"><span class="Identifier">Forwarded</span></span></tt> header. Returns <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;&quot;</span></span></tt> when absent.
     
   </dd>
 </div>
@@ -209,12 +299,34 @@
 </div>
 
 </div>
+<div id="isLoopbackHost-procs-all">
+  <div id="isLoopbackHost,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#isLoopbackHost%2Cstring"><span class="Identifier">isLoopbackHost</span></a><span class="Other">(</span><span class="Identifier">host</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Whether <tt class="docutils literal"><span class="pre"><span class="Identifier">host</span></span></tt> is a loopback/local-development host.
+    
+  </dd>
+</div>
+
+</div>
+<div id="isSecureScheme-procs-all">
+  <div id="isSecureScheme,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#isSecureScheme%2Cstring"><span class="Identifier">isSecureScheme</span></a><span class="Other">(</span><span class="Identifier">scheme</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Whether <tt class="docutils literal"><span class="pre"><span class="Identifier">scheme</span></span></tt> counts as secure (<tt class="docutils literal"><span class="pre"><span class="Identifier">https</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">wss</span></span></tt>, case-insensitive).
+    
+  </dd>
+</div>
+
+</div>
 <div id="newCookie-procs-all">
   <div id="newCookie,string,string,Option[DateTime],string,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#newCookie%2Cstring%2Cstring%2COption%5BDateTime%5D%2Cstring%2Cstring"><span class="Identifier">newCookie</span></a><span class="Other">(</span><span class="Identifier">name</span><span class="Other">,</span> <span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                <span class="Identifier">expirationDate</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">DateTime</span><span class="Other">]</span> <span class="Other">=</span> <span class="Identifier">none</span><span class="Other">(</span><span class="Identifier">DateTime</span><span class="Other">)</span><span class="Other">;</span>
-               <span class="Identifier">maxAge</span> <span class="Other">=</span> <span class="Identifier">none</span><span class="Other">(</span><span class="Identifier">int</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">domain</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">path</span> <span class="Other">=</span> <span class="StringLit">&quot;/&quot;</span><span class="Other">;</span>
-               <span class="Identifier">secure</span><span class="Other">,</span> <span class="Identifier">httpOnly</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span> <span class="Identifier">sameSite</span> <span class="Other">=</span> <span class="Identifier">Strict</span><span class="Other">)</span><span class="Other">:</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+               <span class="Identifier">maxAge</span> <span class="Other">=</span> <span class="Identifier">none</span><span class="Other">(</span><span class="Identifier">int</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">domain</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">path</span> <span class="Other">=</span> <span class="StringLit">&quot;/&quot;</span><span class="Other">;</span> <span class="Identifier">secure</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
+               <span class="Identifier">httpOnly</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span> <span class="Identifier">sameSite</span> <span class="Other">=</span> <span class="Identifier">Strict</span><span class="Other">)</span><span class="Other">:</span> <a href="#Cookie"><span class="Identifier">Cookie</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -236,6 +348,30 @@
 </div>
 
 </div>
+<div id="parseSecureMode-procs-all">
+  <div id="parseSecureMode,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#parseSecureMode%2Cstring"><span class="Identifier">parseSecureMode</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#CookieSecureMode"><span class="Identifier">CookieSecureMode</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Parses <tt class="docutils literal"><span class="pre"><span class="Identifier">auto</span> <span class="Operator">|</span> <span class="Identifier">always</span> <span class="Operator">|</span> <span class="Identifier">never</span></span></tt> (case-insensitive) into <tt class="docutils literal"><span class="pre"><span class="Identifier">CookieSecureMode</span></span></tt>. Unknown values fall back to <tt class="docutils literal"><span class="pre"><span class="Identifier">secureAuto</span></span></tt>.
+    
+  </dd>
+</div>
+
+</div>
+<div id="shouldEmitSecureScheme-procs-all">
+  <div id="shouldEmitSecureScheme,string,CookieSecureMode">
+  <dt><pre><span class="Keyword">proc</span> <a href="#shouldEmitSecureScheme%2Cstring%2CCookieSecureMode"><span class="Identifier">shouldEmitSecureScheme</span></a><span class="Other">(</span><span class="Identifier">scheme</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">mode</span><span class="Other">:</span> <a href="#CookieSecureMode"><span class="Identifier">CookieSecureMode</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Pure <tt class="docutils literal"><span class="pre"><span class="Identifier">Secure</span></span></tt> decision from an already-resolved scheme.
+    
+  </dd>
+</div>
+
+</div>
 
   </dl>
 </div>
@@ -246,7 +382,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-09-29 10:43:25 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-15 18:30:42 UTC</small>
       </div>
     </div>
   </div>

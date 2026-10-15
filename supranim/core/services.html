@@ -137,6 +137,54 @@
 </li>
 <li>
   <details open>
+    <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
+    <ul class="simple simple-toc-section">
+      <ul class="simple nested-toc-section">detectAppConfigFormat
+  <li><a class="reference" href="#detectAppConfigFormat%2Cstring" title="detectAppConfigFormat(dir: string): string">detectAppConfigFormat(dir: string): string</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">dumpServiceConfig
+  <li><a class="reference" href="#dumpServiceConfig%2CJsonNode%2Cstring" title="dumpServiceConfig(doc: JsonNode; ext: string): string">dumpServiceConfig(doc: JsonNode; ext: string): string</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">installServiceConfigs
+  <li><a class="reference" href="#installServiceConfigs%2Cstring%2Cstring%2Cstring" title="installServiceConfigs(serviceFile, projectDir, appConfigDir: string)">installServiceConfigs(serviceFile, projectDir, appConfigDir: string)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">jsonToTomlConfig
+  <li><a class="reference" href="#jsonToTomlConfig%2CJsonNode" title="jsonToTomlConfig(doc: JsonNode): TomlDocument">jsonToTomlConfig(doc: JsonNode): TomlDocument</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">normalizeServiceConfigExt
+  <li><a class="reference" href="#normalizeServiceConfigExt%2Cstring" title="normalizeServiceConfigExt(ext: string): string">normalizeServiceConfigExt(ext: string): string</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">parseServiceConfig
+  <li><a class="reference" href="#parseServiceConfig%2Cstring%2Cstring" title="parseServiceConfig(content, ext: string): JsonNode">parseServiceConfig(content, ext: string): JsonNode</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">providerConfigDir
+  <li><a class="reference" href="#providerConfigDir%2Cstring%2Cstring" title="providerConfigDir(serviceFile, pkgRoot: string): string">providerConfigDir(serviceFile, pkgRoot: string): string</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">providerPackageRoot
+  <li><a class="reference" href="#providerPackageRoot%2Cstring" title="providerPackageRoot(serviceFile: string): string">providerPackageRoot(serviceFile: string): string</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">tomlConfigToJson
+  <li><a class="reference" href="#tomlConfigToJson%2CTomlDocument" title="tomlConfigToJson(doc: TomlDocument): JsonNode">tomlConfigToJson(doc: TomlDocument): JsonNode</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">yamlConfigToJson
+  <li><a class="reference" href="#yamlConfigToJson%2CYAMLObject" title="yamlConfigToJson(doc: YAMLObject): JsonNode">yamlConfigToJson(doc: YAMLObject): JsonNode</a></li>
+
+</ul>
+
+    </ul>
+  </details>
+</li>
+<li>
+  <details open>
     <summary><a class="reference reference-toplevel" href="#17" id="67">Macros</a></summary>
     <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">extractThreadServicesBackend
@@ -344,6 +392,135 @@
 
   </dl>
 </div>
+<div class="section" id="12">
+  <h1><a class="toc-backref" href="#12">Procs</a></h1>
+  <dl class="item">
+    <div id="detectAppConfigFormat-procs-all">
+  <div id="detectAppConfigFormat,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#detectAppConfigFormat%2Cstring"><span class="Identifier">detectAppConfigFormat</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Detects the application's preferred config format by plurality of the files already in <tt class="docutils literal"><span class="pre"><span class="Identifier">dir</span></span></tt>. Ties and empty/missing directories fall back to <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">yml</span></span></tt>.
+    
+  </dd>
+</div>
+
+</div>
+<div id="dumpServiceConfig-procs-all">
+  <div id="dumpServiceConfig,JsonNode,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#dumpServiceConfig%2CJsonNode%2Cstring"><span class="Identifier">dumpServiceConfig</span></a><span class="Other">(</span><span class="Identifier">doc</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">;</span> <span class="Identifier">ext</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Serializes a <tt class="docutils literal"><span class="pre"><span class="Identifier">JsonNode</span></span></tt> config intermediate to format <tt class="docutils literal"><span class="pre"><span class="Identifier">ext</span></span></tt> (normalized). JSON output is pretty-printed for human editing.
+    
+  </dd>
+</div>
+
+</div>
+<div id="installServiceConfigs-procs-all">
+  <div id="installServiceConfigs,string,string,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#installServiceConfigs%2Cstring%2Cstring%2Cstring"><span class="Identifier">installServiceConfigs</span></a><span class="Other">(</span><span class="Identifier">serviceFile</span><span class="Other">,</span> <span class="Identifier">projectDir</span><span class="Other">,</span> <span class="Identifier">appConfigDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
+                                <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Copies the service provider's default <tt class="docutils literal"><span class="pre"><span class="Identifier">config</span><span class="Operator">/*</span></span></tt> files (next to the provider sources, e.g. <tt class="docutils literal"><span class="pre"><span class="Identifier">supranim_session</span><span class="Operator">/</span><span class="Identifier">config</span><span class="Operator">/</span><span class="Identifier">session</span><span class="Operator">.</span><span class="Identifier">yml</span></span></tt>) into the application's config directory (<tt class="docutils literal"><span class="pre"><span class="Identifier">appConfigDir</span></span></tt>, normally <tt class="docutils literal"><span class="pre"><span class="Identifier">configPath</span></span></tt>). Runs at compile time from the <tt class="docutils literal"><span class="pre"><span class="Identifier">initService</span></span></tt> macro as <tt class="docutils literal"><span class="pre"><span class="Identifier">installServiceConfigs</span><span class="Punctuation">(</span><span class="Identifier">svcFile</span><span class="Punctuation">,</span> <span class="Identifier">getProjectPath</span><span class="Punctuation">(</span><span class="Punctuation">)</span><span class="Punctuation">,</span> <span class="Identifier">configPath</span><span class="Punctuation">)</span></span></tt>. Existing files are never overwritten (copy-once: recompiling keeps user edits), and content is converted to the application's preferred format when it differs from the shipped one. <tt class="docutils literal"><span class="pre"><span class="Identifier">projectDir</span></span></tt> is the main project directory: when the compiled project IS the provider package (or its tests), nothing is installed. Never fails the build: I/O or parse problems only emit a note.
+    
+  </dd>
+</div>
+
+</div>
+<div id="jsonToTomlConfig-procs-all">
+  <div id="jsonToTomlConfig,JsonNode">
+  <dt><pre><span class="Keyword">proc</span> <a href="#jsonToTomlConfig%2CJsonNode"><span class="Identifier">jsonToTomlConfig</span></a><span class="Other">(</span><span class="Identifier">doc</span><span class="Other">:</span> <span class="Identifier">JsonNode</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">TomlDocument</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Converts a <tt class="docutils literal"><span class="pre"><span class="Identifier">JsonNode</span></span></tt> intermediate to a TOML document. JSON <tt class="docutils literal"><span class="pre"><span class="Identifier">null</span></span></tt> has no TOML counterpart and is stored as an empty string so the key survives the conversion.
+    
+  </dd>
+</div>
+
+</div>
+<div id="normalizeServiceConfigExt-procs-all">
+  <div id="normalizeServiceConfigExt,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#normalizeServiceConfigExt%2Cstring"><span class="Identifier">normalizeServiceConfigExt</span></a><span class="Other">(</span><span class="Identifier">ext</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Normalizes a config extension (<tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">yaml</span></span></tt> -&gt; <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">yml</span></span></tt>), or <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;&quot;</span></span></tt> for unsupported extensions.
+    
+  </dd>
+</div>
+
+</div>
+<div id="parseServiceConfig-procs-all">
+  <div id="parseServiceConfig,string,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#parseServiceConfig%2Cstring%2Cstring"><span class="Identifier">parseServiceConfig</span></a><span class="Other">(</span><span class="Identifier">content</span><span class="Other">,</span> <span class="Identifier">ext</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">OpenParserTomlError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
+    <span class="Identifier">JsonParsingError</span><span class="Other">,</span> <span class="Identifier">OpenParserYamlError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Parses service config <tt class="docutils literal"><span class="pre"><span class="Identifier">content</span></span></tt> of format <tt class="docutils literal"><span class="pre"><span class="Identifier">ext</span></span></tt> (normalized) into a <tt class="docutils literal"><span class="pre"><span class="Identifier">JsonNode</span></span></tt> intermediate. Uses the VM-safe <tt class="docutils literal"><span class="pre"><span class="Identifier">parseJson</span></span></tt> for JSON (openparser's SIMD JSON lexer cannot run in the NimVM).
+    
+  </dd>
+</div>
+
+</div>
+<div id="providerConfigDir-procs-all">
+  <div id="providerConfigDir,string,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#providerConfigDir%2Cstring%2Cstring"><span class="Identifier">providerConfigDir</span></a><span class="Other">(</span><span class="Identifier">serviceFile</span><span class="Other">,</span> <span class="Identifier">pkgRoot</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Finds the provider's <tt class="docutils literal"><span class="pre"><span class="Identifier">config</span><span class="Operator">/</span></span></tt> directory by walking up from the service source to the package root, returning the first <tt class="docutils literal"><span class="pre"><span class="Identifier">config</span></span></tt> directory holding a supported config file, or <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;&quot;</span></span></tt> when none.
+    
+  </dd>
+</div>
+
+</div>
+<div id="providerPackageRoot-procs-all">
+  <div id="providerPackageRoot,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#providerPackageRoot%2Cstring"><span class="Identifier">providerPackageRoot</span></a><span class="Other">(</span><span class="Identifier">serviceFile</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Returns the provider package root by walking up from <tt class="docutils literal"><span class="pre"><span class="Identifier">serviceFile</span></span></tt> to the first ancestor holding a <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">nimble</span></span></tt> file, or <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;&quot;</span></span></tt> when none is found.
+    
+  </dd>
+</div>
+
+</div>
+<div id="tomlConfigToJson-procs-all">
+  <div id="tomlConfigToJson,TomlDocument">
+  <dt><pre><span class="Keyword">proc</span> <a href="#tomlConfigToJson%2CTomlDocument"><span class="Identifier">tomlConfigToJson</span></a><span class="Other">(</span><span class="Identifier">doc</span><span class="Other">:</span> <span class="Identifier">TomlDocument</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Converts a parsed TOML document to a <tt class="docutils literal"><span class="pre"><span class="Identifier">JsonNode</span></span></tt> intermediate used for cross-format config conversion. TOML datetimes have no JSON counterpart and are kept as their original literal string.
+    
+  </dd>
+</div>
+
+</div>
+<div id="yamlConfigToJson-procs-all">
+  <div id="yamlConfigToJson,YAMLObject">
+  <dt><pre><span class="Keyword">proc</span> <a href="#yamlConfigToJson%2CYAMLObject"><span class="Identifier">yamlConfigToJson</span></a><span class="Other">(</span><span class="Identifier">doc</span><span class="Other">:</span> <span class="Identifier">YAMLObject</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">JsonNode</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Converts a parsed YAML document to a <tt class="docutils literal"><span class="pre"><span class="Identifier">JsonNode</span></span></tt> intermediate used for cross-format config conversion.
+    
+  </dd>
+</div>
+
+</div>
+
+  </dl>
+</div>
 <div class="section" id="17">
   <h1><a class="toc-backref" href="#17">Macros</a></h1>
   <dl class="item">
@@ -376,6 +553,7 @@
     
     <p>Create a new Supranim Service. Supported service types:</p>
 <p><tt class="docutils literal"><span class="pre"><span class="Identifier">Singleton</span></span></tt> services live in the main app as a <tt class="docutils literal"><span class="pre"><span class="Identifier">pkg</span><span class="Operator">/</span><span class="Identifier">threading</span><span class="Operator">/</span><span class="Identifier">once</span></span></tt> singleton. Use <tt class="docutils literal"><span class="pre"><span class="Identifier">state</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for the type and <tt class="docutils literal"><span class="pre"><span class="Identifier">api</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for accessors (<tt class="docutils literal"><span class="pre"><span class="Identifier">backend</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">client</span></span></tt> are accepted as aliases). Top-level fields: <tt class="docutils literal"><span class="pre"><span class="Identifier">description</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">author</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">version</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">autoStart</span></span></tt>.</p>
+<p>When the provider package ships default files in its own <tt class="docutils literal"><span class="pre"><span class="Identifier">config</span><span class="Operator">/</span></span></tt> directory, they are installed into the application's <tt class="docutils literal"><span class="pre"><span class="Identifier">config</span><span class="Operator">/</span></span></tt> directory at compile time (copy-once: existing files are never overwritten; content is converted to the app's preferred <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">yml</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">toml</span></span></tt> or <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">json</span></span></tt> format when it differs).</p>
 <p><tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadService</span></span></tt> services are job-threads: they run user code for as long as they want and talk to the main app through the application-owned <tt class="docutils literal"><span class="pre"><span class="Identifier">Chan</span><span class="Punctuation">[</span><span class="Identifier">ServiceMsg</span><span class="Punctuation">]</span></span></tt>. Use <tt class="docutils literal"><span class="pre"><span class="Identifier">shared</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for types visible on both sides, <tt class="docutils literal"><span class="pre"><span class="Identifier">thread</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for the worker body (the channel is available via <tt class="docutils literal"><span class="pre"><span class="Identifier">get</span><span class="Operator">&lt;</span><span class="Identifier">Name</span><span class="Operator">&gt;</span><span class="Identifier">Channel</span><span class="Punctuation">(</span><span class="Punctuation">)</span></span></tt>), and <tt class="docutils literal"><span class="pre"><span class="Identifier">api</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for the main-thread handles. Top-level fields: <tt class="docutils literal"><span class="pre"><span class="Identifier">queueSize</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">timeoutMs</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">autoStart</span></span></tt>. Cannot be built as a standalone binary.</p>
 <p><tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadPoolService</span></span></tt> services wrap powpow's <tt class="docutils literal"><span class="pre"><span class="Identifier">ThreadPool</span></span></tt>: N anonymous workers run submitted jobs, callbacks fire serialized on the pool dispatch thread. Use <tt class="docutils literal"><span class="pre"><span class="Identifier">shared</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for job/result types and <tt class="docutils literal"><span class="pre"><span class="Identifier">api</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> for submit handles (<tt class="docutils literal"><span class="pre"><span class="Identifier">get</span><span class="Operator">&lt;</span><span class="Identifier">Name</span><span class="Operator">&gt;</span><span class="Identifier">Pool</span><span class="Punctuation">(</span><span class="Punctuation">)</span></span></tt> exposes the raw pool). Top-level fields: <tt class="docutils literal"><span class="pre"><span class="Identifier">poolSize</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">autoStart</span></span></tt>. Cannot be built standalone.</p>
 <p><tt class="docutils literal"><span class="pre"><span class="Identifier">WebService</span></span></tt> services are HTTP microservices over TCP/IP with a dual mode: embedded in an application thread, or compiled as a standalone binary (<tt class="docutils literal"><span class="pre"><span class="Identifier">isMainModule</span></span></tt>). Top-level fields: <tt class="docutils literal"><span class="pre"><span class="Identifier">host</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">port</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">autoStart</span></span></tt>. With a <tt class="docutils literal"><span class="pre"><span class="Identifier">ws</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> block (exclusive with <tt class="docutils literal"><span class="pre"><span class="Identifier">routes</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt>) it runs a standalone WebSocket server instead, in thread or standalone mode alike.</p>
@@ -425,7 +603,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-09-29 10:43:25 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-15 18:30:42 UTC</small>
       </div>
     </div>
   </div>

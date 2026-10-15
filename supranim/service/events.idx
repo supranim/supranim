@@ -1,6 +1,6 @@
 nimTitle	events	supranim/service/events.html	module supranim/service/events		0
-nim	OnInitSingletonCallback`gensym1	supranim/service/events.html#OnInitSingletonCallback`gensym1	type OnInitSingletonCallback`gensym1		526
-nim	getEventEmitterInstance	supranim/service/events.html#getEventEmitterInstance,OnInitSingletonCallback`gensym1,staticbool	proc getEventEmitterInstance(onceCb`gensym1: OnInitSingletonCallback`gensym1 = nil;\n                        initShared`gensym1: static bool = true): ptr EventEmitter		524
+nim	OnInitSingletonCallback`gensym1	supranim/service/events.html#OnInitSingletonCallback`gensym1	type OnInitSingletonCallback`gensym1		768
+nim	getEventEmitterInstance	supranim/service/events.html#getEventEmitterInstance,OnInitSingletonCallback`gensym1,staticbool	proc getEventEmitterInstance(onceCb`gensym1: OnInitSingletonCallback`gensym1 = nil;\n                        initShared`gensym1: static bool = true): ptr EventEmitter		766
 nim	event	supranim/service/events.html#event	proc event(): ptr EventEmitter		24
 nim	init	supranim/service/events.html#init	proc init()		40
 nim	listener	supranim/service/events.html#listener.m,staticstring,untyped	macro listener(eventName: static string; handle: untyped): untyped		47

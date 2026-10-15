@@ -249,6 +249,10 @@
 <li><a class="reference external"
           data-doc-search-tag="cookie: object Cookie" href="supranim/support/cookie.html#Cookie">cookie: object Cookie</a></li>
           </ul></dd>
+<dt><a name="CookieSecureMode" href="#CookieSecureMode"><span>CookieSecureMode:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: enum CookieSecureMode" href="supranim/support/cookie.html#CookieSecureMode">cookie: enum CookieSecureMode</a></li>
+          </ul></dd>
 <dt><a name="CookiesTable" href="#CookiesTable"><span>CookiesTable:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="cookie: type CookiesTable" href="supranim/support/cookie.html#CookiesTable">cookie: type CookiesTable</a></li>
@@ -279,6 +283,10 @@
        middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])" href="supranim/core/router.html#delete%2CHttpRouterInstance%2Cstring%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D">router: proc delete(router: HttpRouterInstance; path: string; callback: Callable;
        middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])</a></li>
           </ul></dd>
+<dt><a name="detectAppConfigFormat" href="#detectAppConfigFormat"><span>detectAppConfigFormat:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc detectAppConfigFormat(dir: string): string" href="supranim/core/services.html#detectAppConfigFormat%2Cstring">services: proc detectAppConfigFormat(dir: string): string</a></li>
+          </ul></dd>
 <dt><a name="directory" href="#directory"><span>directory:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="assets: proc directory(sta: ptr Assets; key: string): TableRef[string, string]" href="supranim/service/assets.html#directory%2Cptr.Assets%2Cstring">assets: proc directory(sta: ptr Assets; key: string): TableRef[string, string]</a></li>
@@ -291,9 +299,23 @@
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc dropRequest(req: var Request)" href="supranim/network/webserver.html#dropRequest%2CRequest">webserver: proc dropRequest(req: var Request)</a></li>
           </ul></dd>
+<dt><a name="dumpServiceConfig" href="#dumpServiceConfig"><span>dumpServiceConfig:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc dumpServiceConfig(doc: JsonNode; ext: string): string" href="supranim/core/services.html#dumpServiceConfig%2CJsonNode%2Cstring">services: proc dumpServiceConfig(doc: JsonNode; ext: string): string</a></li>
+          </ul></dd>
 <dt><a name="DynamicRoute" href="#DynamicRoute"><span>DynamicRoute:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: HttpRouteType.DynamicRoute" href="supranim/core/router.html#DynamicRoute">router: HttpRouteType.DynamicRoute</a></li>
+          </ul></dd>
+<dt><a name="effectiveScheme" href="#effectiveScheme"><span>effectiveScheme:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc effectiveScheme(req: var Request; trustProxy = false): string" href="supranim/core/request.html#effectiveScheme%2CRequest">request: proc effectiveScheme(req: var Request; trustProxy = false): string</a></li>
+          </ul></dd>
+<dt><a name="effectiveSchemeFromHeaders" href="#effectiveSchemeFromHeaders"><span>effectiveSchemeFromHeaders:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc effectiveSchemeFromHeaders(xForwardedProto, forwardedHeader: string;
+                           trustProxy: bool; defaultScheme = &quot;http&quot;): string" href="supranim/support/cookie.html#effectiveSchemeFromHeaders%2Cstring%2Cstring%2Cbool%2Cstring">cookie: proc effectiveSchemeFromHeaders(xForwardedProto, forwardedHeader: string;
+                           trustProxy: bool; defaultScheme = &quot;http&quot;): string</a></li>
           </ul></dd>
 <dt><a name="embedAssets" href="#embedAssets"><span>embedAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -363,9 +385,17 @@
 <li><a class="reference external"
           data-doc-search-tag="logit: proc finish(self: var Logit)" href="supranim/support/logit.html#finish%2CLogit">logit: proc finish(self: var Logit)</a></li>
           </ul></dd>
+<dt><a name="firstForwardedProto" href="#firstForwardedProto"><span>firstForwardedProto:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc firstForwardedProto(value: string): string" href="supranim/support/cookie.html#firstForwardedProto%2Cstring">cookie: proc firstForwardedProto(value: string): string</a></li>
+          </ul></dd>
 <dt><a name="formatForExt" href="#formatForExt"><span>formatForExt:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="config: proc formatForExt(ext: string): ConfigurationFormat" href="supranim/core/config.html#formatForExt%2Cstring">config: proc formatForExt(ext: string): ConfigurationFormat</a></li>
+          </ul></dd>
+<dt><a name="forwardedHeaderProto" href="#forwardedHeaderProto"><span>forwardedHeaderProto:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc forwardedHeaderProto(value: string): string" href="supranim/support/cookie.html#forwardedHeaderProto%2Cstring">cookie: proc forwardedHeaderProto(value: string): string</a></li>
           </ul></dd>
 <dt><a name="freemem" href="#freemem"><span>freemem:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -510,6 +540,10 @@
           data-doc-search-tag="response: proc getHeaders(res: var Response): HttpHeaders" href="supranim/core/response.html#getHeaders%2CResponse">response: proc getHeaders(res: var Response): HttpHeaders</a></li>
           <li><a class="reference external"
           data-doc-search-tag="webserver: proc getHeaders(req: var Request): Option[HttpHeaders]" href="supranim/network/webserver.html#getHeaders%2CRequest">webserver: proc getHeaders(req: var Request): Option[HttpHeaders]</a></li>
+          </ul></dd>
+<dt><a name="getHost" href="#getHost"><span>getHost:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc getHost(req: var Request): string" href="supranim/core/request.html#getHost%2CRequest">request: proc getHost(req: var Request): string</a></li>
           </ul></dd>
 <dt><a name="getHttpMethod" href="#getHttpMethod"><span>getHttpMethod:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -763,6 +797,10 @@
 <li><a class="reference external"
           data-doc-search-tag="application: macro injectSafeThreadCallbacks()" href="supranim/core/application.html#injectSafeThreadCallbacks.m">application: macro injectSafeThreadCallbacks()</a></li>
           </ul></dd>
+<dt><a name="installServiceConfigs" href="#installServiceConfigs"><span>installServiceConfigs:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc installServiceConfigs(serviceFile, projectDir, appConfigDir: string)" href="supranim/core/services.html#installServiceConfigs%2Cstring%2Cstring%2Cstring">services: proc installServiceConfigs(serviceFile, projectDir, appConfigDir: string)</a></li>
+          </ul></dd>
 <dt><a name="InstantiationInfo" href="#InstantiationInfo"><span>InstantiationInfo:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="logit: tuple InstantiationInfo" href="supranim/support/logit.html#InstantiationInfo">logit: tuple InstantiationInfo</a></li>
@@ -775,6 +813,10 @@
 <li><a class="reference external"
           data-doc-search-tag="cookie: proc isExpired(cookie: Cookie): bool" href="supranim/support/cookie.html#isExpired%2CCookie">cookie: proc isExpired(cookie: Cookie): bool</a></li>
           </ul></dd>
+<dt><a name="isLoopbackHost" href="#isLoopbackHost"><span>isLoopbackHost:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc isLoopbackHost(host: string): bool" href="supranim/support/cookie.html#isLoopbackHost%2Cstring">cookie: proc isLoopbackHost(host: string): bool</a></li>
+          </ul></dd>
 <dt><a name="isNil" href="#isNil"><span>isNil:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="config: proc isNil(v: ConfigValue): bool" href="supranim/core/config.html#isNil%2CConfigValue">config: proc isNil(v: ConfigValue): bool</a></li>
@@ -782,6 +824,14 @@
 <dt><a name="isPlainText" href="#isPlainText"><span>isPlainText:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="assets: proc isPlainText(data: openArray[uint8]; sampleSize = 8192): bool" href="supranim/service/assets.html#isPlainText%2CopenArray%5Buint8%5D%2Cint">assets: proc isPlainText(data: openArray[uint8]; sampleSize = 8192): bool</a></li>
+          </ul></dd>
+<dt><a name="isSecureRequest" href="#isSecureRequest"><span>isSecureRequest:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc isSecureRequest(req: var Request; trustProxy = false): bool" href="supranim/core/request.html#isSecureRequest%2CRequest">request: proc isSecureRequest(req: var Request; trustProxy = false): bool</a></li>
+          </ul></dd>
+<dt><a name="isSecureScheme" href="#isSecureScheme"><span>isSecureScheme:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc isSecureScheme(scheme: string): bool" href="supranim/support/cookie.html#isSecureScheme%2Cstring">cookie: proc isSecureScheme(scheme: string): bool</a></li>
           </ul></dd>
 <dt><a name="isServiceStop" href="#isServiceStop"><span>isServiceStop:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -794,6 +844,10 @@
 <dt><a name="JsonString" href="#JsonString"><span>JsonString:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: type JsonString" href="supranim/core/application.html#JsonString">application: type JsonString</a></li>
+          </ul></dd>
+<dt><a name="jsonToTomlConfig" href="#jsonToTomlConfig"><span>jsonToTomlConfig:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc jsonToTomlConfig(doc: JsonNode): TomlDocument" href="supranim/core/services.html#jsonToTomlConfig%2CJsonNode">services: proc jsonToTomlConfig(doc: JsonNode): TomlDocument</a></li>
           </ul></dd>
 <dt><a name="listAssetsDir" href="#listAssetsDir"><span>listAssetsDir:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -887,9 +941,23 @@
 <li><a class="reference external"
           data-doc-search-tag="cookie: proc newCookie(name, value: string;
           expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
-          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): Cookie" href="supranim/support/cookie.html#newCookie%2Cstring%2Cstring%2COption%5BDateTime%5D%2Cstring%2Cstring">cookie: proc newCookie(name, value: string;
+          domain = &quot;&quot;; path = &quot;/&quot;; secure = false; httpOnly = true;
+          sameSite = Strict): Cookie" href="supranim/support/cookie.html#newCookie%2Cstring%2Cstring%2COption%5BDateTime%5D%2Cstring%2Cstring">cookie: proc newCookie(name, value: string;
           expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);
-          domain = &quot;&quot;; path = &quot;/&quot;; secure, httpOnly = true; sameSite = Strict): Cookie</a></li>
+          domain = &quot;&quot;; path = &quot;/&quot;; secure = false; httpOnly = true;
+          sameSite = Strict): Cookie</a></li>
+          </ul></dd>
+<dt><a name="newCookieForRequest" href="#newCookieForRequest"><span>newCookieForRequest:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc newCookieForRequest(req: var Request; name, value: string;
+                    mode: CookieSecureMode = secureAuto; trustProxy = false;
+                    expirationDate: Option[DateTime] = none(DateTime);
+                    maxAge = none(int); domain = &quot;&quot;; path = &quot;/&quot;;
+                    httpOnly = true; sameSite = Strict): Cookie" href="supranim/core/request.html#newCookieForRequest%2CRequest%2Cstring%2Cstring%2CCookieSecureMode%2COption%5BDateTime%5D%2Cstring%2Cstring">request: proc newCookieForRequest(req: var Request; name, value: string;
+                    mode: CookieSecureMode = secureAuto; trustProxy = false;
+                    expirationDate: Option[DateTime] = none(DateTime);
+                    maxAge = none(int); domain = &quot;&quot;; path = &quot;/&quot;;
+                    httpOnly = true; sameSite = Strict): Cookie</a></li>
           </ul></dd>
 <dt><a name="newHttpRouter" href="#newHttpRouter"><span>newHttpRouter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -904,6 +972,10 @@
 <dt><a name="normalizePath" href="#normalizePath"><span>normalizePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="http: proc normalizePath(path: string): string" href="supranim/support/http.html#normalizePath%2Cstring">http: proc normalizePath(path: string): string</a></li>
+          </ul></dd>
+<dt><a name="normalizeServiceConfigExt" href="#normalizeServiceConfigExt"><span>normalizeServiceConfigExt:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc normalizeServiceConfigExt(ext: string): string" href="supranim/core/services.html#normalizeServiceConfigExt%2Cstring">services: proc normalizeServiceConfigExt(ext: string): string</a></li>
           </ul></dd>
 <dt><a name="OnInitSingletonCallback%60gensym1" href="#OnInitSingletonCallback%60gensym1"><span>OnInitSingletonCallback`gensym1:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -965,6 +1037,14 @@
                closureHandle: NimNode = nil)" href="supranim/core/router.html#parseRouteNode%2Cstring%2Cstring%2CNimNode%2CNimNode%2CNimNode">router: proc parseRouteNode(verb, routePath: string; middlewares, afterwares: var NimNode;
                closureHandle: NimNode = nil)</a></li>
           </ul></dd>
+<dt><a name="parseSecureMode" href="#parseSecureMode"><span>parseSecureMode:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc parseSecureMode(s: string): CookieSecureMode" href="supranim/support/cookie.html#parseSecureMode%2Cstring">cookie: proc parseSecureMode(s: string): CookieSecureMode</a></li>
+          </ul></dd>
+<dt><a name="parseServiceConfig" href="#parseServiceConfig"><span>parseServiceConfig:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc parseServiceConfig(content, ext: string): JsonNode" href="supranim/core/services.html#parseServiceConfig%2Cstring%2Cstring">services: proc parseServiceConfig(content, ext: string): JsonNode</a></li>
+          </ul></dd>
 <dt><a name="patch" href="#patch"><span>patch:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc patch(router: HttpRouterInstance; path: string; callback: Callable;
@@ -1012,6 +1092,14 @@
 <dt><a name="preparePath" href="#preparePath"><span>preparePath:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc preparePath(path: string; prefix = &quot;&quot;): string" href="supranim/core/router.html#preparePath%2Cstring%2Cstring">router: proc preparePath(path: string; prefix = &quot;&quot;): string</a></li>
+          </ul></dd>
+<dt><a name="providerConfigDir" href="#providerConfigDir"><span>providerConfigDir:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc providerConfigDir(serviceFile, pkgRoot: string): string" href="supranim/core/services.html#providerConfigDir%2Cstring%2Cstring">services: proc providerConfigDir(serviceFile, pkgRoot: string): string</a></li>
+          </ul></dd>
+<dt><a name="providerPackageRoot" href="#providerPackageRoot"><span>providerPackageRoot:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc providerPackageRoot(serviceFile: string): string" href="supranim/core/services.html#providerPackageRoot%2Cstring">services: proc providerPackageRoot(serviceFile: string): string</a></li>
           </ul></dd>
 <dt><a name="put" href="#put"><span>put:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1223,6 +1311,18 @@
 <li><a class="reference external"
           data-doc-search-tag="router: macro searchRouteWs()" href="supranim/core/router.html#searchRouteWs.m">router: macro searchRouteWs()</a></li>
           </ul></dd>
+<dt><a name="secureAlways" href="#secureAlways"><span>secureAlways:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: CookieSecureMode.secureAlways" href="supranim/support/cookie.html#secureAlways">cookie: CookieSecureMode.secureAlways</a></li>
+          </ul></dd>
+<dt><a name="secureAuto" href="#secureAuto"><span>secureAuto:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: CookieSecureMode.secureAuto" href="supranim/support/cookie.html#secureAuto">cookie: CookieSecureMode.secureAuto</a></li>
+          </ul></dd>
+<dt><a name="secureNever" href="#secureNever"><span>secureNever:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: CookieSecureMode.secureNever" href="supranim/support/cookie.html#secureNever">cookie: CookieSecureMode.secureNever</a></li>
+          </ul></dd>
 <dt><a name="send" href="#send"><span>send:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc send(req: var Request; code: HttpCode; body: string;
@@ -1322,6 +1422,14 @@
 <dt><a name="setParams" href="#setParams"><span>setParams:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="controller: proc setParams(req: var Request; params: sink Table[string, string])" href="supranim/controller.html#setParams%2CRequest%2CsinkTable%5Bstring%2Cstring%5D">controller: proc setParams(req: var Request; params: sink Table[string, string])</a></li>
+          </ul></dd>
+<dt><a name="shouldEmitSecure" href="#shouldEmitSecure"><span>shouldEmitSecure:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="request: proc shouldEmitSecure(req: var Request; mode: CookieSecureMode; trustProxy = false): bool" href="supranim/core/request.html#shouldEmitSecure%2CRequest%2CCookieSecureMode">request: proc shouldEmitSecure(req: var Request; mode: CookieSecureMode; trustProxy = false): bool</a></li>
+          </ul></dd>
+<dt><a name="shouldEmitSecureScheme" href="#shouldEmitSecureScheme"><span>shouldEmitSecureScheme:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cookie: proc shouldEmitSecureScheme(scheme: string; mode: CookieSecureMode): bool" href="supranim/support/cookie.html#shouldEmitSecureScheme%2Cstring%2CCookieSecureMode">cookie: proc shouldEmitSecureScheme(scheme: string; mode: CookieSecureMode): bool</a></li>
           </ul></dd>
 <dt><a name="Singleton" href="#Singleton"><span>Singleton:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1425,6 +1533,10 @@
 <li><a class="reference external"
           data-doc-search-tag="services: ServiceType.ThreadService" href="supranim/core/services.html#ThreadService">services: ServiceType.ThreadService</a></li>
           </ul></dd>
+<dt><a name="tomlConfigToJson" href="#tomlConfigToJson"><span>tomlConfigToJson:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc tomlConfigToJson(doc: TomlDocument): JsonNode" href="supranim/core/services.html#tomlConfigToJson%2CTomlDocument">services: proc tomlConfigToJson(doc: TomlDocument): JsonNode</a></li>
+          </ul></dd>
 <dt><a name="toString" href="#toString"><span>toString:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="response: proc toString(headers: HttpHeaders): string" href="supranim/core/response.html#toString%2CHttpHeaders">response: proc toString(headers: HttpHeaders): string</a></li>
@@ -1511,11 +1623,15 @@
    middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])" href="supranim/core/router.html#ws%2CHttpRouterInstance%2Cstring%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D">router: proc ws(router: HttpRouterInstance; path: string; callback: Callable;
    middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])</a></li>
           </ul></dd>
+<dt><a name="yamlConfigToJson" href="#yamlConfigToJson"><span>yamlConfigToJson:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="services: proc yamlConfigToJson(doc: YAMLObject): JsonNode" href="supranim/core/services.html#yamlConfigToJson%2CYAMLObject">services: proc yamlConfigToJson(doc: YAMLObject): JsonNode</a></li>
+          </ul></dd>
 </dl>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-09-29 10:43:25 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-15 18:30:42 UTC</small>
       </div>
     </div>
   </div>

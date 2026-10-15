@@ -1,11 +1,22 @@
 nimTitle	cookie	supranim/support/cookie.html	module supranim/support/cookie		0
 nim	Cookie	supranim/support/cookie.html#Cookie	object Cookie		19
 nim	CookiesTable	supranim/support/cookie.html#CookiesTable	type CookiesTable		26
-nim	newCookie	supranim/support/cookie.html#newCookie,string,string,Option[DateTime],string,string	proc newCookie(name, value: string;\n          expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);\n          domain = ""; path = "/"; secure, httpOnly = true; sameSite = Strict): Cookie		30
-nim	getName	supranim/support/cookie.html#getName,Cookie	proc getName(cookie: Cookie): string		47
-nim	getValue	supranim/support/cookie.html#getValue,Cookie	proc getValue(cookie: Cookie): string		48
-nim	getDomain	supranim/support/cookie.html#getDomain,Cookie	proc getDomain(cookie: Cookie): string		49
-nim	isExpired	supranim/support/cookie.html#isExpired,Cookie	proc isExpired(cookie: Cookie): bool		51
-nim	expires	supranim/support/cookie.html#expires,Cookie	proc expires(cookie: var Cookie)		55
-nim	parseCookies	supranim/support/cookie.html#parseCookies,string	proc parseCookies(cookies: string): CookiesTable		60
-nim	`$`	supranim/support/cookie.html#$,Cookie	proc `$`(cookie: Cookie): string		69
+nim	secureAuto	supranim/support/cookie.html#secureAuto	CookieSecureMode.secureAuto		28
+nim	secureAlways	supranim/support/cookie.html#secureAlways	CookieSecureMode.secureAlways		28
+nim	secureNever	supranim/support/cookie.html#secureNever	CookieSecureMode.secureNever		28
+nim	CookieSecureMode	supranim/support/cookie.html#CookieSecureMode	enum CookieSecureMode		28
+nim	parseSecureMode	supranim/support/cookie.html#parseSecureMode,string	proc parseSecureMode(s: string): CookieSecureMode		40
+nim	isLoopbackHost	supranim/support/cookie.html#isLoopbackHost,string	proc isLoopbackHost(host: string): bool		48
+nim	firstForwardedProto	supranim/support/cookie.html#firstForwardedProto,string	proc firstForwardedProto(value: string): string		72
+nim	forwardedHeaderProto	supranim/support/cookie.html#forwardedHeaderProto,string	proc forwardedHeaderProto(value: string): string		79
+nim	isSecureScheme	supranim/support/cookie.html#isSecureScheme,string	proc isSecureScheme(scheme: string): bool		89
+nim	effectiveSchemeFromHeaders	supranim/support/cookie.html#effectiveSchemeFromHeaders,string,string,bool,string	proc effectiveSchemeFromHeaders(xForwardedProto, forwardedHeader: string;\n                           trustProxy: bool; defaultScheme = "http"): string		94
+nim	shouldEmitSecureScheme	supranim/support/cookie.html#shouldEmitSecureScheme,string,CookieSecureMode	proc shouldEmitSecureScheme(scheme: string; mode: CookieSecureMode): bool		107
+nim	newCookie	supranim/support/cookie.html#newCookie,string,string,Option[DateTime],string,string	proc newCookie(name, value: string;\n          expirationDate: Option[DateTime] = none(DateTime); maxAge = none(int);\n          domain = ""; path = "/"; secure = false; httpOnly = true;\n          sameSite = Strict): Cookie		117
+nim	getName	supranim/support/cookie.html#getName,Cookie	proc getName(cookie: Cookie): string		134
+nim	getValue	supranim/support/cookie.html#getValue,Cookie	proc getValue(cookie: Cookie): string		135
+nim	getDomain	supranim/support/cookie.html#getDomain,Cookie	proc getDomain(cookie: Cookie): string		136
+nim	isExpired	supranim/support/cookie.html#isExpired,Cookie	proc isExpired(cookie: Cookie): bool		138
+nim	expires	supranim/support/cookie.html#expires,Cookie	proc expires(cookie: var Cookie)		142
+nim	parseCookies	supranim/support/cookie.html#parseCookies,string	proc parseCookies(cookies: string): CookiesTable		147
+nim	`$`	supranim/support/cookie.html#$,Cookie	proc `$`(cookie: Cookie): string		156

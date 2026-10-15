@@ -20,6 +20,16 @@ nim	ServiceManagerThreadServices	supranim/core/services.html#ServiceManagerThrea
 nim	ServiceManagerThreadServicesClients	supranim/core/services.html#ServiceManagerThreadServicesClients	const ServiceManagerThreadServicesClients		203
 nim	initRouter	supranim/core/services.html#initRouter.t	template initRouter(): untyped		212
 nim	initChannelRouter	supranim/core/services.html#initChannelRouter.t	template initChannelRouter()		285
-nim	initService	supranim/core/services.html#initService.m,untyped,untyped	macro initService(serviceIdentifier, serviceConfig: untyped)		300
-nim	extractThreadServicesBackend	supranim/core/services.html#extractThreadServicesBackend.m	macro extractThreadServicesBackend()		1063
-nim	extractThreadServicesClient	supranim/core/services.html#extractThreadServicesClient.m	macro extractThreadServicesClient()		1079
+nim	normalizeServiceConfigExt	supranim/core/services.html#normalizeServiceConfigExt,string	proc normalizeServiceConfigExt(ext: string): string		316
+nim	yamlConfigToJson	supranim/core/services.html#yamlConfigToJson,YAMLObject	proc yamlConfigToJson(doc: YAMLObject): JsonNode		325
+nim	tomlConfigToJson	supranim/core/services.html#tomlConfigToJson,TomlDocument	proc tomlConfigToJson(doc: TomlDocument): JsonNode		347
+nim	jsonToTomlConfig	supranim/core/services.html#jsonToTomlConfig,JsonNode	proc jsonToTomlConfig(doc: JsonNode): TomlDocument		368
+nim	parseServiceConfig	supranim/core/services.html#parseServiceConfig,string,string	proc parseServiceConfig(content, ext: string): JsonNode		392
+nim	dumpServiceConfig	supranim/core/services.html#dumpServiceConfig,JsonNode,string	proc dumpServiceConfig(doc: JsonNode; ext: string): string		404
+nim	detectAppConfigFormat	supranim/core/services.html#detectAppConfigFormat,string	proc detectAppConfigFormat(dir: string): string		415
+nim	providerPackageRoot	supranim/core/services.html#providerPackageRoot,string	proc providerPackageRoot(serviceFile: string): string		435
+nim	providerConfigDir	supranim/core/services.html#providerConfigDir,string,string	proc providerConfigDir(serviceFile, pkgRoot: string): string		447
+nim	installServiceConfigs	supranim/core/services.html#installServiceConfigs,string,string,string	proc installServiceConfigs(serviceFile, projectDir, appConfigDir: string)		467
+nim	initService	supranim/core/services.html#initService.m,untyped,untyped	macro initService(serviceIdentifier, serviceConfig: untyped)		530
+nim	extractThreadServicesBackend	supranim/core/services.html#extractThreadServicesBackend.m	macro extractThreadServicesBackend()		1305
+nim	extractThreadServicesClient	supranim/core/services.html#extractThreadServicesClient.m	macro extractThreadServicesClient()		1321
