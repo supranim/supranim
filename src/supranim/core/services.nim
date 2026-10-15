@@ -12,7 +12,7 @@ import std/[os, macros, macrocache, tables, sequtils,
 import pkg/checksums/md5
 import pkg/threading/once
 import pkg/threading/channels
-import pkg/openparser/[yaml, json]
+import pkg/openparser/[yaml, toml, json]
 
 import pkg/kapsis/framework
 import pkg/kapsis/interactive/prompts
@@ -26,7 +26,7 @@ from std/httpcore import HttpCode
 from pkg/powpow import HttpMethod
 
 export macros, macrocache, tables, once, options
-export yaml, json
+export yaml, toml, json
 
 type
   ServiceType* = enum
@@ -145,7 +145,7 @@ var
   index* {.compileTime.} = genSym(nskVar, "IndexRoute")
   routerInstance* {.compileTime.} = genSym(nskVar, "RouterInstance")
 
-proc setServiceField(fieldName: string, value: NimNode) {.compileTime.} =
+proc setServiceField(fieldName: string, value: NimNode) =
   ## Assign a top-level `field = value` pair onto `StaticService`,
   ## validating it against the current service type.
   case fieldName
@@ -297,6 +297,236 @@ template initChannelRouter* =
       let pathMethod = replace(routeHandle[3].strVal, "Http").toUpperAscii
   loadQueuedRoutes()
 
+#
+# Automatic service configuration install
+#
+# When a service provider ships default configuration files in its own
+# `config/` directory (next to its `service/`, `controller/` etc.), the
+# `initService` macro copies them into the application's `config/`
+# directory at compile time. Copy-once semantics: when the application
+# already has the same base name in any supported format, the file is
+# left untouched, so recompiling never overwrites user edits. When the
+# application prefers another format (e.g. its `config/` holds `.toml`
+# files while the service ships `.yml`), the content is converted via
+# openparser instead of being copied verbatim.
+#
+const
+  serviceConfigExtensions = [".yml", ".yaml", ".toml", ".json"]
+
+proc normalizeServiceConfigExt*(ext: string): string =
+  ## Normalizes a config extension (`.yaml` -> `.yml`), or `""` for
+  ## unsupported extensions.
+  case ext.toLowerAscii
+  of ".yml", ".yaml": ".yml"
+  of ".toml": ".toml"
+  of ".json": ".json"
+  else: ""
+
+proc yamlConfigToJson*(doc: YAMLObject): JsonNode =
+  ## Converts a parsed YAML document to a `JsonNode` intermediate used
+  ## for cross-format config conversion.
+  proc convert(n: YamlNode): JsonNode =
+    case n.kind
+    of yamlInteger: result = newJInt(n.intValue)
+    of yamlFloat: result = newJFloat(n.floatValue)
+    of yamlString: result = newJString(n.strValue)
+    of yamlBoolean: result = newJBool(n.boolValue)
+    of yamlNull: result = newJNull()
+    of yamlArray:
+      result = newJArray()
+      for item in n.arrValue:
+        result.add(convert(item))
+    of yamlObject:
+      result = newJObject()
+      for k, v in n.objValue:
+        result[k] = convert(v)
+  result = newJObject()
+  for k, v in doc:
+    result[k] = convert(v)
+
+proc tomlConfigToJson*(doc: TomlDocument): JsonNode =
+  ## Converts a parsed TOML document to a `JsonNode` intermediate used
+  ## for cross-format config conversion. TOML datetimes have no JSON
+  ## counterpart and are kept as their original literal string.
+  proc convert(n: TomlNode): JsonNode =
+    case n.kind
+    of tvkString: result = newJString(n.strVal)
+    of tvkInteger: result = newJInt(n.intVal)
+    of tvkFloat: result = newJFloat(n.floatVal)
+    of tvkBoolean: result = newJBool(n.boolVal)
+    of tvkDateTime: result = newJString(n.dateRaw)
+    of tvkArray:
+      result = newJArray()
+      for item in n.arrayVal:
+        result.add(convert(item))
+    of tvkTable:
+      result = newJObject()
+      for k, v in n.tableVal:
+        result[k] = convert(v)
+  convert(doc)
+
+proc jsonToTomlConfig*(doc: JsonNode): TomlDocument =
+  ## Converts a `JsonNode` intermediate to a TOML document. JSON `null`
+  ## has no TOML counterpart and is stored as an empty string so the key
+  ## survives the conversion.
+  proc convert(n: JsonNode): TomlNode =
+    case n.kind
+    of JString: result = newTomlString(n.getStr)
+    of JInt: result = newTomlInteger(n.getBiggestInt)
+    of JFloat: result = newTomlFloat(n.getFloat)
+    of JBool: result = newTomlBoolean(n.getBool)
+    of JNull: result = newTomlString("")
+    of JArray:
+      result = newTomlArray()
+      for item in n.elems:
+        result.arrayVal.add(convert(item))
+    of JObject:
+      result = newTomlTable()
+      for k, v in n.fields:
+        result.tableVal[k] = convert(v)
+  let root = convert(doc)
+  # `convert` already returns a table for object documents; guard
+  # against scalar roots (invalid as a config file anyway).
+  if root.kind == tvkTable: root else: newTomlTable()
+
+proc parseServiceConfig*(content, ext: string): JsonNode =
+  ## Parses service config `content` of format `ext` (normalized) into a
+  ## `JsonNode` intermediate. Uses the VM-safe `parseJson` for JSON
+  ## (openparser's SIMD JSON lexer cannot run in the NimVM).
+  case ext
+  of ".toml":
+    tomlConfigToJson(parseTOML(content))
+  of ".json":
+    parseJson(content)
+  else:
+    yamlConfigToJson(parseYAML(content))
+
+proc dumpServiceConfig*(doc: JsonNode, ext: string): string =
+  ## Serializes a `JsonNode` config intermediate to format `ext`
+  ## (normalized). JSON output is pretty-printed for human editing.
+  case ext
+  of ".toml":
+    dumpTOML(jsonToTomlConfig(doc))
+  of ".json":
+    pretty(doc)
+  else:
+    dump(doc).string
+
+proc detectAppConfigFormat*(dir: string): string =
+  ## Detects the application's preferred config format by plurality of
+  ## the files already in `dir`. Ties and empty/missing directories
+  ## fall back to `.yml`.
+  var counts = initOrderedTable[string, int]()
+  counts[".yml"] = 0
+  counts[".toml"] = 0
+  counts[".json"] = 0
+  if dirExists(dir):
+    for kind, path in walkDir(dir):
+      if kind != pcFile: continue
+      let ext = normalizeServiceConfigExt(path.splitFile.ext)
+      if ext.len > 0 and counts.hasKey(ext):
+        counts[ext] += 1
+  if counts[".toml"] > counts[".yml"] and counts[".toml"] >= counts[".json"]:
+    return ".toml"
+  if counts[".json"] > counts[".yml"] and counts[".json"] > counts[".toml"]:
+    return ".json"
+  ".yml"
+
+proc providerPackageRoot*(serviceFile: string): string =
+  ## Returns the provider package root by walking up from `serviceFile`
+  ## to the first ancestor holding a `.nimble` file, or `""` when none
+  ## is found.
+  var dir = parentDir(serviceFile)
+  while dir.len > 0 and dir != parentDir(dir):
+    for kind, path in walkDir(dir):
+      if kind == pcFile and path.endsWith(".nimble"):
+        return dir
+    dir = parentDir(dir)
+  ""
+
+proc providerConfigDir*(serviceFile, pkgRoot: string): string =
+  ## Finds the provider's `config/` directory by walking up from the
+  ## service source to the package root, returning the first `config`
+  ## directory holding a supported config file, or `""` when none.
+  var dir = parentDir(serviceFile)
+  let top =
+    if pkgRoot.len > 0: pkgRoot
+    else: parentDir(dir)
+  while true:
+    let cand = dir / "config"
+    if dirExists(cand):
+      for kind, path in walkDir(cand):
+        if kind == pcFile and
+            normalizeServiceConfigExt(path.splitFile.ext).len > 0:
+          return cand
+    if dir == top or dir == parentDir(dir):
+      break
+    dir = parentDir(dir)
+  ""
+
+proc installServiceConfigs*(serviceFile, projectDir,
+    appConfigDir: string) =
+  ## Copies the service provider's default `config/*` files (next to the
+  ## provider sources, e.g. `supranim_session/config/session.yml`) into
+  ## the application's config directory (`appConfigDir`, normally
+  ## `configPath`). Runs at compile time from the `initService` macro
+  ## as `installServiceConfigs(svcFile, getProjectPath(), configPath)`.
+  ## Existing files are never overwritten (copy-once: recompiling keeps
+  ## user edits), and content is converted to the application's preferred
+  ## format when it differs from the shipped one. `projectDir` is the main
+  ## project directory: when the compiled project IS the provider package
+  ## (or its tests), nothing is installed. Never fails the build: I/O or
+  ## parse problems only emit a note.
+  try:
+    let pkgRoot = providerPackageRoot(serviceFile)
+    if pkgRoot.len > 0 and
+        projectDir.startsWith(pkgRoot & $DirSep):
+      # Compiling the provider package itself (or its tests), not an
+      # application using it: nothing to install.
+      return
+    let pkgConfigDir = providerConfigDir(serviceFile, pkgRoot)
+    if pkgConfigDir.len == 0:
+      return
+    var provided: seq[(string, string, string)] = @[]
+    for kind, path in walkDir(pkgConfigDir):
+      if kind != pcFile: continue
+      let f = path.splitFile
+      if normalizeServiceConfigExt(f.ext).len == 0: continue
+      provided.add((f.name, path, normalizeServiceConfigExt(f.ext)))
+    if provided.len == 0:
+      return
+    if not dirExists(appConfigDir):
+      createDir(appConfigDir)
+    let preferred = detectAppConfigFormat(appConfigDir)
+    for (base, srcPath, srcExt) in provided:
+      var alreadyExists = false
+      for ext in serviceConfigExtensions:
+        if fileExists(appConfigDir / base & ext):
+          alreadyExists = true
+          break
+      if alreadyExists:
+        continue
+      let dstExt =
+        if srcExt == ".yml" and preferred == ".yml" and srcPath.endsWith(".yaml"):
+          ".yaml"
+        else:
+          preferred
+      let dstPath = appConfigDir / base & dstExt
+      if srcExt == preferred:
+        writeFile(dstPath, readFile(srcPath))
+      else:
+        try:
+          writeFile(dstPath,
+            dumpServiceConfig(parseServiceConfig(readFile(srcPath), srcExt), preferred))
+        except CatchableError as e:
+          echo "supranim initService: could not convert `" & srcPath &
+            "` to `" & dstExt & "` (" & e.msg & "), copying verbatim."
+          writeFile(appConfigDir / base & srcExt, readFile(srcPath))
+          continue
+      echo "supranim initService: installed config `" & dstPath & "`"
+  except CatchableError as e:
+    echo "supranim initService: skipping config install (" & e.msg & ")"
+
 macro initService*(serviceIdentifier, serviceConfig: untyped) =
   ## Create a new Supranim Service. Supported service types:
   ##
@@ -304,6 +534,12 @@ macro initService*(serviceIdentifier, serviceConfig: untyped) =
   ## singleton. Use `state do:` for the type and `api do:` for accessors
   ## (`backend`/`client` are accepted as aliases). Top-level fields:
   ## `description`, `author`, `version`, `autoStart`.
+  ##
+  ## When the provider package ships default files in its own `config/`
+  ## directory, they are installed into the application's `config/`
+  ## directory at compile time (copy-once: existing files are never
+  ## overwritten; content is converted to the app's preferred `.yml`,
+  ## `.toml` or `.json` format when it differs).
   ##
   ## `ThreadService` services are job-threads: they run user code for as
   ## long as they want and talk to the main app through the
@@ -331,7 +567,13 @@ macro initService*(serviceIdentifier, serviceConfig: untyped) =
   ## local IPC.
   ##
   ## https://dev.to/vearutop/using-nginx-as-a-proxy-to-multiple-unix-sockets-3c7a
-  let initInfo: (string, int, int) = instantiationInfo(fullPaths = true)
+  # Install the provider's default `config/*` files into the
+  # application's `config/` directory (copy-once, format-converting).
+  # The provider source is located via the call-site line info of the
+  # service identifier (note: `instantiationInfo` is unreliable here and
+  # yields `???` in this macro context).
+  let svcFile = lineInfoObj(serviceIdentifier).filename
+  installServiceConfigs(svcFile, getProjectPath(), configPath)
   var
     clientSideRoutePaths: seq[(string, HttpMethod, Autolinked)]
     serviceNameStr: string

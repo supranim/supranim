@@ -15,5 +15,6 @@ tests/tests
 tests/*.o
 tests/*.d
 tests/data
+tests/config
 tests/test_*
 !tests/*.nim

@@ -1,0 +1,10 @@
+# Fixture default config installed by the initService compile-time
+# config installer (see test_service_config.nim).
+greeting: hello-fixture
+port: 4321
+nested:
+  enabled: true
+  ratio: 1.5
+  tags:
+    - a
+    - b
