@@ -9,6 +9,7 @@
 import std/[macros, macrocache, asyncdispatch, strutils,
           tables, uri, sequtils, options]
 
+import std/httpcore except HttpMethod
 import pkg/openparser/json
 import ./core/[request, response, router, fileserver]
 import ./support/cookie
@@ -18,7 +19,8 @@ from ./network/webserver import streamFile
 
 export json, uri, request, response, tables,
         asyncdispatch, options, streamFile
-export fileserver, getQuery
+export fileserver, getQuery, Http200, Http201,
+        Http400, Http404, Http500, Http502, HttpCode
 
 type
   BodyData* = TableRef[string, string]
