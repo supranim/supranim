@@ -417,14 +417,15 @@ template initStartCommand*(v: Values, createDirs = true) =
     let runtimePath = App.applicationPaths.getInstallationPath()
     displayInfo(span("Runtime path:"), cyanSpan(runtimePath))
     when not defined supranimEmbedConfig:
-      if not dirExists(runtimePath / "config"):
-        # create runtime config directory and copy default config files.
-        createDir(runtimePath / "config")
-        for file in walkFiles(configPath / "*"):
-          let f = file.splitFile
-          if f.ext.toLowerAscii in configFileExtensions:
-            let dest = runtimePath / "config" / f.name & f.ext
-            if not fileExists(dest): copyFile(file, dest)
+      # Seed the runtime config directory from the compiled-in defaults.
+      # Existing files are never touched; new defaults (e.g. configs added
+      # by recipes after the first run) are backfilled automatically.
+      createDir(runtimePath / "config")
+      for file in walkFiles(configPath / "*"):
+        let f = file.splitFile
+        if f.ext.toLowerAscii in configFileExtensions:
+          let dest = runtimePath / "config" / f.name & f.ext
+          if not fileExists(dest): copyFile(file, dest)
     appInitialized = true
 
 template cli*(app: Application, cliCommands) {.dirty.} =
