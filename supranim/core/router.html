@@ -233,6 +233,12 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
       middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">unregisterRoute
+  <li><a class="reference" href="#unregisterRoute%2CHttpRouterInstance%2Csink%2CHttpMethod" title="unregisterRoute(router: HttpRouterInstance; autolinked: sink (string, string);
+                httpMethod: HttpMethod)">unregisterRoute(router: HttpRouterInstance; autolinked: sink (string, string);
+                httpMethod: HttpMethod)</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">ws
   <li><a class="reference" href="#ws%2CHttpRouterInstance%2Cstring%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D" title="ws(router: HttpRouterInstance; path: string; callback: Callable;
    middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])">ws(router: HttpRouterInstance; path: string; callback: Callable;
@@ -706,6 +712,19 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </div>
 
 </div>
+<div id="unregisterRoute-procs-all">
+  <div id="unregisterRoute,HttpRouterInstance,sink,HttpMethod">
+  <dt><pre><span class="Keyword">proc</span> <a href="#unregisterRoute%2CHttpRouterInstance%2Csink%2CHttpMethod"><span class="Identifier">unregisterRoute</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span>
+                     <span class="Identifier">autolinked</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Remove a previously registered <tt class="docutils literal"><span class="pre"><span class="Identifier">Route</span></span></tt> from the <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpRouterInstance</span></span></tt>. The <tt class="docutils literal"><span class="pre"><span class="Identifier">autolinked</span></span></tt> tuple must carry the same original path string used at registration time (for example the tuple returned by <tt class="docutils literal"><span class="pre"><span class="Identifier">autolinkController</span></span></tt>). Removing an unknown route is a no-op.
+    
+  </dd>
+</div>
+
+</div>
 <div id="ws-procs-all">
   <div id="ws,HttpRouterInstance,string,Callable,seq[Middleware],seq[Afterware]">
   <dt><pre><span class="Keyword">proc</span> <a href="#ws%2CHttpRouterInstance%2Cstring%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D"><span class="Identifier">ws</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a><span class="Other">;</span>
@@ -791,7 +810,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-15 18:30:42 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-16 09:37:20 UTC</small>
       </div>
     </div>
   </div>
