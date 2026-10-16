@@ -7,8 +7,11 @@
 #
 
 ## Environment loader for `.env.yml`.
-## Reads `rootPath/.env.yml`, parses database credentials, and sets
-## `database.*` env vars for the current process.
+## Reads `rootPath/.env.yml`, flattens every value to dotted
+## `key.subkey` process env entries (sequences use numeric indices),
+## then promotes the `database.local.*` (or `database.prod.*` in
+## release builds) section to the short `database.*` keys the
+## database providers read.
 ##
 ## This module also owns multi-format application configuration:
 ## `.yml`/`.yaml`, `.toml` and `.json` files are parsed natively into a
@@ -60,15 +63,44 @@ const
   configFileExtensions* = [".yml", ".yaml", ".toml", ".json"]
     ## File extensions recognized as configuration files.
 
+proc flattenEnv(node: YamlNode, prefix: string) =
+  ## Stores `node` and its children as dotted `prefix` env entries.
+  ## Mappings recurse (`database.local.address`), sequences use numeric
+  ## indices (`servers.0.host`), scalars are stringified, `null` is empty.
+  case node.kind
+  of yamlObject:
+    for key, child in node.objValue:
+      let name = if prefix.len == 0: key else: prefix & "." & key
+      flattenEnv(child, name)
+  of yamlArray:
+    for i, child in node.arrValue:
+      flattenEnv(child, prefix & "." & $i)
+  of yamlString:
+    putEnv(prefix, node.strValue)
+  of yamlInteger:
+    putEnv(prefix, $node.intValue)
+  of yamlFloat:
+    putEnv(prefix, $node.floatValue)
+  of yamlBoolean:
+    putEnv(prefix, $node.boolValue)
+  of yamlNull:
+    putEnv(prefix, "")
+
 proc loadEnv* =
   ## Loads environment variables from the `.env.yml` file in the project root directory.
-  ## 
+  ## Every value becomes a flattened dotted env entry, e.g. `jwt.secret`,
+  ## `database.local.user`. The active database section (`local` in dev,
+  ## `prod` in release builds) is also promoted to the short
+  ## `database.user`, `database.name`, `database.password`,
+  ## `database.port` keys.
   if not fileExists(rootPath / ".env.yml"):
     raise newException(SupranimEnvLoader,
         "Configuration file '.env.yml' not found in project root directory.")
   let
     envContents = readFile(rootPath / ".env.yml")
     ymlEnv = parseYAML(envContents)
+  for key, node in ymlEnv:
+    flattenEnv(node, key)
   when not defined release:
     let
       dbUser = ymlEnv.get("database.local.user").getStr
@@ -342,8 +374,15 @@ proc ensureStaticFile(dir, file: string) {.compileTime.} =
     except CatchableError:
       discard
   if hits.len == 0:
+    var hint = ""
+    try:
+      if not dirExists(dir):
+        hint = " Directory `" & dir & "` not found." &
+          " Did you forget to `git add tests/fixtures`?"
+    except CatchableError:
+      discard
     raise newException(ConfigError,
-      "Unknown static configuration file `" & file & "` in `" & dir & "`.")
+      "Unknown static configuration file `" & file & "` in `" & dir & "`." & hint)
   if hits.len > 1:
     raise newException(ConfigError,
       "Duplicate static configuration `" & file & "`: `" &
