@@ -241,6 +241,45 @@ proc registerRoute*(router: HttpRouterInstance, path: string,
   registerRoute(router, (autolinked[1], autolinked[2]), httpMethod,
               callback, middlewares, afterwares, routeParams = rp)
 
+proc unregisterRoute*(router: HttpRouterInstance,
+  autolinked: sink (string, string),
+  httpMethod: HttpMethod
+) =
+  ## Remove a previously registered `Route` from the `HttpRouterInstance`.
+  ## The `autolinked` tuple must carry the same original path string used
+  ## at registration time (for example the tuple returned by
+  ## `autolinkController`). Removing an unknown route is a no-op.
+  writeWith rw:
+    let path = autolinked[1] # the original path string used to define the route
+    case httpMethod
+    of HttpGet:
+      if router.httpGet.hasKey(path):
+        router.httpGet.del(path)
+    of HttpPost:
+      if router.httpPost.hasKey(path):
+        router.httpPost.del(path)
+    of HttpPut:
+      if router.httpPut.hasKey(path):
+        router.httpPut.del(path)
+    of HttpPatch:
+      if router.httpPatch.hasKey(path):
+        router.httpPatch.del(path)
+    of HttpHead:
+      if router.httpHead.hasKey(path):
+        router.httpHead.del(path)
+    of HttpDelete:
+      if router.httpDelete.hasKey(path):
+        router.httpDelete.del(path)
+    of HttpTrace:
+      if router.httpTrace.hasKey(path):
+        router.httpTrace.del(path)
+    of HttpOptions:
+      if router.httpOptions.hasKey(path):
+        router.httpOptions.del(path)
+    of HttpConnect:
+      if router.httpConnect.hasKey(path):
+        router.httpConnect.del(path)
+
 #
 # Verb helpers
 #
