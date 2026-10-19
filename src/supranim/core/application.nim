@@ -165,7 +165,7 @@ when defined supranimEmbedConfig:
       let
         key = newLit(entry.name)
         ext = newLit(entry.ext)
-        content = newLit(staticRead(entry.path))
+        content = newLit(readFile(entry.path))
         cfg = newLit(entry.path)
       add result, quote do:
         try:
@@ -173,6 +173,43 @@ when defined supranimEmbedConfig:
           App.configs[`key`].stripStatic()
         except ConfigError as e:
           displayError(e.msg & "\n" & `cfg`, quitProcess = true)
+
+macro seedEmbeddedEnvSample*(destFile: string): untyped =
+  ## Emits a `writeFile` seeding `destFile` with the project's
+  ## `.env.sample` baked into the binary at compile time.
+  ## Emits nothing when the project has no `.env.sample`, and never
+  ## touches an existing file. This is what lets a binary built on
+  ## another machine (e.g. a GH Action runner without the project
+  ## sources) bootstrap a fresh runtime directory on first `start`.
+  result = newStmtList()
+  let samplePath = rootPath / ".env.sample"
+  if fileExists(samplePath):
+    let content = newLit(readFile(samplePath))
+    result = quote do:
+      if not fileExists(`destFile`):
+        writeFile(`destFile`, `content`)
+
+macro seedEmbeddedConfigs*(runtimePath: string): untyped =
+  ## Emits one guarded `writeFile` per project config file, seeding
+  ## `<runtimePath>/config/<name><ext>` from the contents baked into
+  ## the binary at compile time. Existing files are never touched.
+  ## Duplicate base names are left for the runtime loader to report,
+  ## exactly as it does today.
+  result = newStmtList()
+  var entries: seq[ConfigEntry] = @[]
+  try:
+    entries = scanConfigDir(configPath)
+  except ConfigError:
+    return
+  for entry in entries:
+    let
+      fname = newLit(entry.name & entry.ext)
+      content = newLit(readFile(entry.path))
+    result.add quote do:
+      block:
+        let dest = `runtimePath` / "config" / `fname`
+        if not fileExists(dest):
+          writeFile(dest, `content`)
 
 #
 # ApplicationObject API
@@ -321,7 +358,6 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
     # skip the loading of local config files.
     when not compileOption("app", "lib"):
       # Application Initialization via Kapsis CLI
-      loadEnv() # read `.env.yml` config file
       when defined supranimEmbedConfig:
         # config files are embedded into the binary at compile time
         add result, embedConfigs()
@@ -416,16 +452,46 @@ template initStartCommand*(v: Values, createDirs = true) =
     # try to initialize the application
     let runtimePath = App.applicationPaths.getInstallationPath()
     displayInfo(span("Runtime path:"), cyanSpan(runtimePath))
+    # Seed the runtime `.env` on first run (existing files are never
+    # touched), then load it into the process environment. The project's
+    # own `.env` wins when the sources are present (local dev); otherwise
+    # the `.env.sample` baked into the binary seeds a fresh runtime, so a
+    # binary built on another machine (e.g. a GH Action runner) bootstraps
+    # without the project sources.
+    let runtimeEnv = runtimePath / ".env"
+    if not fileExists(runtimeEnv):
+      if fileExists(rootPath / ".env"):
+        copyFile(rootPath / ".env", runtimeEnv)
+      else:
+        seedEmbeddedEnvSample(runtimeEnv)
+        if not fileExists(runtimeEnv) and fileExists(rootPath / ".env.sample"):
+          copyFile(rootPath / ".env.sample", runtimeEnv)
+    try:
+      loadEnv(runtimePath)
+    except SupranimEnvLoader as e:
+      displayError(e.msg, quitProcess = true)
     when not defined supranimEmbedConfig:
-      # Seed the runtime config directory from the compiled-in defaults.
-      # Existing files are never touched; new defaults (e.g. configs added
-      # by recipes after the first run) are backfilled automatically.
+      # Seed the runtime config directory from the project sources when
+      # present (local dev), backfilled from the configs baked into the
+      # binary (covers binaries built elsewhere, e.g. a GH Action
+      # runner). Existing files are never touched; new defaults (e.g.
+      # configs added by recipes after the first run) are backfilled
+      # automatically.
       createDir(runtimePath / "config")
-      for file in walkFiles(configPath / "*"):
-        let f = file.splitFile
-        if f.ext.toLowerAscii in configFileExtensions:
-          let dest = runtimePath / "config" / f.name & f.ext
-          if not fileExists(dest): copyFile(file, dest)
+      if dirExists(configPath):
+        for file in walkFiles(configPath / "*"):
+          let f = file.splitFile
+          if f.ext.toLowerAscii in configFileExtensions:
+            let dest = runtimePath / "config" / f.name & f.ext
+            if not fileExists(dest): copyFile(file, dest)
+      seedEmbeddedConfigs(runtimePath)
+      # `App.init` loaded configs before the installation path was
+      # known; refresh from the now-seeded runtime directory so the
+      # service providers below see the real configuration.
+      try:
+        App.configs = loadConfigurations(runtimePath / "config")
+      except ConfigError as e:
+        displayError(e.msg, quitProcess = true)
     appInitialized = true
 
 template cli*(app: Application, cliCommands) {.dirty.} =

@@ -6,12 +6,10 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
-## Environment loader for `.env.yml`.
-## Reads `rootPath/.env.yml`, flattens every value to dotted
-## `key.subkey` process env entries (sequences use numeric indices),
-## then promotes the `database.local.*` (or `database.prod.*` in
-## release builds) section to the short `database.*` keys the
-## database providers read.
+## Environment loader for `.env`.
+## Reads `<installDir>/.env` (dotenv `KEY=value` format) at runtime and
+## exports every entry to the process environment (existing shell vars win).
+## Release builds additionally overlay `<installDir>/.env.production`.
 ##
 ## This module also owns multi-format application configuration:
 ## `.yml`/`.yaml`, `.toml` and `.json` files are parsed natively into a
@@ -20,6 +18,7 @@
 
 import std/[macros, os, tables, strutils, algorithm]
 import pkg/openparser/[json, yaml, toml]
+from pkg/openparser/dotenv import loadDotenv
 
 import ./paths
 
@@ -63,61 +62,24 @@ const
   configFileExtensions* = [".yml", ".yaml", ".toml", ".json"]
     ## File extensions recognized as configuration files.
 
-proc flattenEnv(node: YamlNode, prefix: string) =
-  ## Stores `node` and its children as dotted `prefix` env entries.
-  ## Mappings recurse (`database.local.address`), sequences use numeric
-  ## indices (`servers.0.host`), scalars are stringified, `null` is empty.
-  case node.kind
-  of yamlObject:
-    for key, child in node.objValue:
-      let name = if prefix.len == 0: key else: prefix & "." & key
-      flattenEnv(child, name)
-  of yamlArray:
-    for i, child in node.arrValue:
-      flattenEnv(child, prefix & "." & $i)
-  of yamlString:
-    putEnv(prefix, node.strValue)
-  of yamlInteger:
-    putEnv(prefix, $node.intValue)
-  of yamlFloat:
-    putEnv(prefix, $node.floatValue)
-  of yamlBoolean:
-    putEnv(prefix, $node.boolValue)
-  of yamlNull:
-    putEnv(prefix, "")
-
-proc loadEnv* =
-  ## Loads environment variables from the `.env.yml` file in the project root directory.
-  ## Every value becomes a flattened dotted env entry, e.g. `jwt.secret`,
-  ## `database.local.user`. The active database section (`local` in dev,
-  ## `prod` in release builds) is also promoted to the short
-  ## `database.user`, `database.name`, `database.password`,
-  ## `database.port` keys.
-  if not fileExists(rootPath / ".env.yml"):
+proc loadEnv*(dir: string) =
+  ## Loads process environment from `<dir>/.env` (dotenv `KEY=value`
+  ## format: `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`, `JWT_SECRET`, ...).
+  ## Variables already present in the process environment (e.g. exported
+  ## by the shell or the platform) are never overwritten by the file.
+  ## In release builds `<dir>/.env.production` is layered on top when
+  ## present, so production credentials live outside the dev file.
+  let envFile = dir / ".env"
+  if not fileExists(envFile):
     raise newException(SupranimEnvLoader,
-        "Configuration file '.env.yml' not found in project root directory.")
-  let
-    envContents = readFile(rootPath / ".env.yml")
-    ymlEnv = parseYAML(envContents)
-  for key, node in ymlEnv:
-    flattenEnv(node, key)
-  when not defined release:
-    let
-      dbUser = ymlEnv.get("database.local.user").getStr
-      dbName = ymlEnv.get("database.local.name").getStr
-      dbPassword = ymlEnv.get("database.local.password").getStr
-      dbPort = ymlEnv.get("database.local.port").getStr
-  else:
-    let
-      dbUser = ymlEnv.get("database.prod.user").getStr
-      dbName = ymlEnv.get("database.prod.name").getStr
-      dbPassword = ymlEnv.get("database.prod.password").getStr
-      dbPort = ymlEnv.get("database.prod.port").getStr
-  
-  putEnv("database.user", dbUser)
-  putEnv("database.name", dbName)
-  putEnv("database.password", dbPassword)
-  putEnv("database.port", dbPort)
+      "Configuration file '.env' not found in `" & dir & "`. " &
+      "Create one (e.g. from the project's `.env.sample`) or " &
+      "provide the variables via the process environment.")
+  loadDotenv(envFile)
+  when defined release:
+    let prodFile = dir / ".env.production"
+    if fileExists(prodFile):
+      loadDotenv(prodFile, override = true)
 
 #
 # Multi-format configuration loading
@@ -174,11 +136,17 @@ type
 proc scanConfigDir*(dir: string): seq[ConfigEntry] =
   ## Discovers configuration files in `dir`. The same base name in two
   ## formats (e.g. `app.yml` + `app.toml`) raises `ConfigError`.
+  ## Uses `walkDir` (not `walkFiles`) so this also runs at compile time
+  ## inside macros, where glob-based iteration is unavailable.
   result = @[]
   if not dirExists(dir):
     return
-  for path in walkFiles(dir / "*"):
+  for kind, path in walkDir(dir):
+    if kind != pcFile:
+      continue
     let f = path.splitFile
+    if f.name.startsWith('.'):
+      continue
     if f.ext.toLowerAscii in configFileExtensions:
       for prev in result:
         if prev.name == f.name:
