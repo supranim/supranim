@@ -47,7 +47,7 @@ type
   #   # udpServer*: UdpServer
   #     # A UDP socket for network communication
 
-  ApplicationAssetsHandler* = proc (req: var Request, res: var Response, hasFoundResource: var bool) {.closure.}
+  ApplicationAssetsHandler* = proc (req: var Request, res: var Response, foundRes: var bool) {.closure.}
   ApplicationThreadCallback* = proc (app: ptr ApplicationObject) {.closure.}
 
   ServiceMsg* = object
@@ -557,6 +557,108 @@ template services*(app: Application, servicesStmt) {.inject.} =
     # add result, newCall(ident"extractThreadServicesBackend")
     # add result, newCall(ident"extractThreadServicesClient")
   preloadServices(servicesStmt)
+
+macro initApp*(body: untyped): untyped =
+  ## Minimal DSL for the main application file. Wraps the standard
+  ## initializer (`App.init`) and forwards each section to the matching
+  ## template, so current behavior is unchanged — only the shape changes:
+  ##
+  ## .. code-block:: nim
+  ##   initApp:
+  ##     cli do:
+  ##       start path(project):
+  ##         initStartCommand(v, createDirs = false)
+  ##     services do:
+  ##       storage.init(App)
+  ##     embedAssets: true
+  ##
+  ## `cli do:` / `services do:` sections are forwarded to the `App.cli` /
+  ## `App.services` templates. `embedAssets: true` enables the predefined release assets
+  ## handler (embedded bundle + disk `/assets` + theme fallback when the
+  ## app provides `resolvePublicAsset`); omit it or set `false` for no
+  ## handler. Anything after this macro (`App.run`, etc.) stays as is.
+  ##
+  ## Any other statements (e.g. `startCommand`/`updateCommand` handler
+  ## procs, which kapsis resolves by command-name convention and which
+  ## need the imports `App.init` injects) are emitted verbatim, in order,
+  ## between `App.init()` and the section expansions. Anything after this
+  ## macro (`App.run`, etc.) stays as is.
+  result = newStmtList()
+  add result, quote do:
+    App.init()
+  var sections = newSeq[NimNode]()
+  if body.kind == nnkStmtList:
+    for s in body:
+      sections.add(s)
+  else:
+    sections.add(body)
+  let
+    assetsSym = ident"assets"
+    resolveSym = ident"resolvePublicAsset"
+  for section in sections:
+    if section.kind in {nnkCommand, nnkCall} and section.len >= 2:
+      var secName = ""
+      let head = section[0]
+      if head.kind == nnkIdent:
+        secName = head.strVal
+      elif head.kind == nnkDotExpr and head[^1].kind == nnkIdent:
+        secName = head[^1].strVal
+      if secName in ["cli", "services"]:
+        let last = section[^1]
+        var inner: NimNode
+        if last.kind == nnkDo:
+          inner = last[^1]
+        elif last.kind in {nnkStmtList, nnkStmtListExpr}:
+          inner = last
+        else:
+          error("initApp: expected `cli do:` / `services do:` with a body block", section)
+        # NOTE: built manually, not via `quote do:`, so the generated
+        # `App.cli do:` / `App.services do:` call has exactly the
+        # parser-native shape (`nnkCall[dotExpr, stmtList]`).
+        add result, newCall(
+          nnkDotExpr.newTree(ident"App", ident(secName)),
+          inner
+        )
+        continue
+    if (section.kind == nnkExprColonExpr and section[0].kind == nnkIdent and
+        section[0].strVal == "embedAssets") or
+        (section.kind in {nnkCommand, nnkCall} and section.len == 2 and
+        section[0].kind == nnkIdent and section[0].strVal == "embedAssets"):
+      # `embedAssets: true` parses as a call whose argument is the
+      # `true` statement, not as an `nnkExprColonExpr`.
+      var flag = section[1]
+      if flag.kind in {nnkStmtList, nnkStmtListExpr} and flag.len == 1:
+        flag = flag[0]
+      var enabled = false
+      if flag.kind in {nnkIdent, nnkSym}:
+        enabled = flag.strVal == "true"
+      else:
+        enabled = repr(flag).strip() == "true"
+      if enabled:
+        add result, quote do:
+          when defined release:
+            import pkg/supranim/service/assets
+            `assetsSym`.embedAssets("assets")
+            `assetsSym`.embedDirectory("storage/icons", "icons")
+            `assetsSym`.preloadBundle("assets")
+            `assetsSym`.preloadBundle("icons")
+            App.withAssetsHandler:
+              proc (req: var Request, res: var Response, foundRes: var bool) =
+                when defined release:
+                  req.sendEmbeddedAsset(req.path, res.getHeaders(), foundRes)
+                if not foundRes and req.path.startsWith("/assets/"):
+                  req.sendAssets(req.path, res.getHeaders(), foundRes)
+                  if not foundRes:
+                    when compiles(`resolveSym`(req.path)):
+                      let themeAsset = `resolveSym`(req.path)
+                      if themeAsset.len > 0:
+                        req.sendAssetFile(themeAsset, res.getHeaders())
+                        foundRes = true
+      continue
+    # Anything else (command handler procs, comments, pragmas) passes
+    # through verbatim in order: after `App.init()`'s imports, before the
+    # `App.cli` registration below when placed before the `cli` section.
+    add result, section
 
 template withAssetsHandler*(app: Application, handler: ApplicationAssetsHandler) =
   ## Inject a custom assets handler into the application. This allows you to define

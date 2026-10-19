@@ -173,13 +173,13 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                     req.resp(Http403, getDefault(Http403), res.getHeaders())
                     return
               when defined supraFileserver:
-                var hasFoundResource: bool
+                var foundRes: bool
                 if app.assetsHandler != nil:
-                  app.assetsHandler(req, res, hasFoundResource)
+                  app.assetsHandler(req, res, foundRes)
                 else:
                   if startsWith(path, "/assets"):
-                    req.sendAssets(path, res.getHeaders(), hasFoundResource)
-                if not hasFoundResource:
+                    req.sendAssets(path, res.getHeaders(), foundRes)
+                if not foundRes:
                   invoke4xxHandler(path, req, res)
               else:
                 invoke4xxHandler(path, req, res)

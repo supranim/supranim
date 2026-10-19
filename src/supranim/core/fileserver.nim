@@ -19,7 +19,7 @@ import ../service/assets
 from ../core/application import storagePath
 
 proc sendEmbeddedAsset*(req: var Request, path: string, 
-                headers: HttpHeaders, hasFoundResource: var bool) =
+                headers: HttpHeaders, foundRes: var bool) =
   ## Serves static assets from embedded resources
   let path = normalizedPath(path)
   let splitPath = path.splitFile
@@ -29,21 +29,21 @@ proc sendEmbeddedAsset*(req: var Request, path: string,
     try:
       if staticAssets().directory("assets").hasFile(path):
         req.send(200, staticAssets().directory("assets").getFile(path), headers)
-        hasFoundResource = true
+        foundRes = true
       elif staticAssets().hasAsset(path):
         req.sendFile(staticAssets().get(path), headers)
-        hasFoundResource = true
+        foundRes = true
     except StaticAssetsError:
-      hasFoundResource = false
+      foundRes = false
 
 proc sendAssets*(req: var Request, path: string, 
-        headers: HttpHeaders, hasFoundResource: var bool) =
+        headers: HttpHeaders, foundRes: var bool) =
   ## Serves static assets from /assets path
   let path = normalizedPath(path)
   if fileExists(storagePath / path):
     headers.add("Content-Type", mimedb.getMimeType(path.splitFile.ext[1..^1]).get("application/octet-stream"))
     req.sendFile(storagePath / path, headers)
-    hasFoundResource = true
+    foundRes = true
 
 proc sendAssets*(req: var Request, basePath, path: string,
         headers: HttpHeaders): bool =
