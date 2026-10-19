@@ -127,22 +127,39 @@ proc attachHandler(server: WebServer, onRequest: OnRequest,
         res.status(Http200).send("")
 
 proc start*(server: WebServer, onRequest: OnRequest,
-              startupCallback: StartupCallback = nil) =
+              startupCallback: StartupCallback = nil,
+              host = "0.0.0.0",
+              options = pw.defaultHttpServerOptions()) =
   ## Start the PowPow WebServer
   server.attachHandler(onRequest, startupCallback)
-  server.powServer.listen("0.0.0.0", server.port.int)
+  server.powServer.applyOptions(options)
+  server.powServer.listen(host, server.port.int)
+  server.powServer.getLoop().run()
+  server.powServer.close()
+  server.powServer.getLoop().close()
+
+proc startUnix*(server: WebServer, onRequest: OnRequest,
+              startupCallback: StartupCallback = nil,
+              socketPath: string,
+              options = pw.defaultHttpServerOptions()) =
+  ## Serve HTTP over a Unix domain socket at `socketPath` instead of TCP.
+  ## Single-threaded: powpow worker pools do not support Unix sockets.
+  server.attachHandler(onRequest, startupCallback)
+  server.powServer.applyOptions(options)
+  server.powServer.listenUnix(socketPath)
   server.powServer.getLoop().run()
   server.powServer.close()
   server.powServer.getLoop().close()
 
 proc start*(server: WebServer, onRequest: OnRequest,
               startupCallback: StartupCallback,
-              threads: int, host = "0.0.0.0") =
+              threads: int, host = "0.0.0.0",
+              options = pw.defaultHttpServerOptions()) =
   ## Start the PowPow webserver for a specific number of `threads` 
   when not compileOption("threads"):
     {.error: "Multi-threaded Supranim requires threads support. Use `--threads:on`".}
   let nThreads = if threads > 0: threads else: countProcessors()
-  server.powMultiServer = pw.newHttpServer(nThreads)
+  server.powMultiServer = pw.newHttpServer(nThreads, options)
   if startupCallback != nil:
     startupCallback()
   server.powMultiServer.start(

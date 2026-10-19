@@ -187,24 +187,44 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
               invoke4xxHandler(path, req, res)
 
       event().emit("app.startup")
-      
+
+      let
+        srvPortRaw = app.config("app.server.port").getInt
+        srvPort = if srvPortRaw == 0: Port(8000) else: Port(srvPortRaw)
+        srvHostRaw = app.config("app.server.address").getStr
+        srvHost = if srvHostRaw.len == 0: "127.0.0.1" else: srvHostRaw
+        srvThreads = app.config("app.server.threads").getInt.int
+        srvUnix = app.config("app.server.unix").getBool
+        srvOptions = app.loadServerOptions()
+
       when defined supranimUseGlobalOnRequest:
-        app.server = newWebServer(Port(app.config("server.port").getInt))
+        app.server = newWebServer(srvPort)
       else:
-        app.server = newWebServer(Port(app.config("server.port").getInt), true)
-      
+        if srvUnix:
+          # Powpow worker pools cannot listen on Unix sockets,
+          # so Unix mode always uses the single-threaded server.
+          app.server = newWebServer(srvPort)
+        else:
+          app.server = newWebServer(srvPort, true)
+
       optionalBlock
 
       when not compiles(startupCallback()):
         injectSafeThreadCallbacks()
-      
+
       when defined supranimUseGlobalOnRequest:
-        app.server.start(onRequest)
+        app.server.start(onRequest, host = srvHost, options = srvOptions)
       else:
-        when compiles(startupCallback()):
-          app.server.start(onRequest, startupCallback, threads = countProcessors())
+        if srvUnix:
+          when compiles(startupCallback()):
+            app.server.startUnix(onRequest, startupCallback, srvHost, srvOptions)
+          else:
+            app.server.startUnix(onRequest, nil, srvHost, srvOptions)
         else:
-          app.server.start(onRequest, nil, threads = countProcessors())
+          when compiles(startupCallback()):
+            app.server.start(onRequest, startupCallback, threads = srvThreads, host = srvHost, options = srvOptions)
+          else:
+            app.server.start(onRequest, nil, threads = srvThreads, host = srvHost, options = srvOptions)
 
 template run*(app: Application) =
   ## Runs the Supranim application server without an optional block.

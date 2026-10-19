@@ -15,6 +15,8 @@ import pkg/openparser/[json, yaml, toml]
 
 import ../network/webserver
 import ./[config, paths, request, response, router]
+import pkg/powpow/proto/httpserver
+export httpserver.HttpServerOptions
 
 import ../support/uuid
 
@@ -152,6 +154,27 @@ proc config*(app: Application, key: string): ConfigValue =
   if not system.isNil(app.configs) and app.configs.hasKey(id):
     return app.configs[id].get(rest)
   return ConfigValue(format: cfgYaml, yamlNode: nil)
+
+proc loadServerOptions*(app: Application, prefix = "app.server"): HttpServerOptions =
+  ## Builds powpow `HttpServerOptions` from `<prefix>.*` runtime config
+  ## (`max_body_size`, `read_timeout_ms`, ...). Missing keys keep the
+  ## powpow defaults from `defaultHttpServerOptions()`.
+  result = defaultHttpServerOptions()
+  template opt(key: string, dst: untyped) =
+    block:
+      let v = app.config(prefix & "." & key)
+      if not v.isNil:
+        dst = typeof(dst)(v.getInt)
+  opt("max_body_size", result.maxBodySize)
+  opt("max_stream_body_size", result.maxStreamBodySize)
+  opt("max_file_size", result.maxFileSize)
+  opt("max_field_size", result.maxFieldSize)
+  opt("max_connections", result.maxConnections)
+  opt("max_pipeline_depth", result.maxPipelineDepth)
+  opt("read_timeout_ms", result.readTimeoutMs)
+  opt("ws_idle_timeout_ms", result.wsIdleTimeoutMs)
+  opt("timeout_sweep_ms", result.timeoutSweepMs)
+  opt("keep_alive_timeout_ms", result.keepAliveMs)
 
 when defined supranimEmbedConfig:
   proc embedConfigs: NimNode {.compileTime.} =
