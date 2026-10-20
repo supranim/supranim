@@ -558,7 +558,7 @@ template services*(app: Application, servicesStmt) {.inject.} =
     # add result, newCall(ident"extractThreadServicesClient")
   preloadServices(servicesStmt)
 
-macro initApp*(body: untyped): untyped =
+macro initApp*(args: varargs[untyped]): untyped =
   ## Minimal DSL for the main application file. Wraps the standard
   ## initializer (`App.init`) and forwards each section to the matching
   ## template, so current behavior is unchanged — only the shape changes:
@@ -575,6 +575,16 @@ macro initApp*(body: untyped): untyped =
   ##       assets.embedDirectory("storage/icons", "icons")
   ##       assets.preloadBundle("assets")
   ##       assets.preloadBundle("icons")
+  ##
+  ## Apps that skip the default config loading (like StupidGreen) pass
+  ## the flag through and provide the init body as a `config` section:
+  ##
+  ## .. code-block:: nim
+  ##   initApp(skipLocalConfig = true):
+  ##     config do:
+  ##       App.configs["app"] = parseConfiguration(".toml", "...")
+  ##     cli do:
+  ##       ...
   ##
   ## `cli do:` / `services do:` sections are forwarded to the `App.cli` /
   ## `App.services` templates. The `assets` section holds the user's own
@@ -593,15 +603,65 @@ macro initApp*(body: untyped): untyped =
   ## need the imports `App.init` injects) are emitted verbatim, in order,
   ## between `App.init()` and the section expansions. Anything after this
   ## macro (`App.run`, etc.) stays as is.
+  var
+    skipLocalConfig = false
+    skipGiven = false
+    mainBody: NimNode = nil
+  if args.len == 0:
+    error("initApp expects a body block")
+  for opt in args[0 .. ^2]:
+    # `initApp:` alone passes just the body; anything before the final
+    # node must be a `skipLocalConfig = <bool>` option.
+    if args.len == 1:
+      break
+    if opt.kind != nnkExprEqExpr or opt[0].kind != nnkIdent or
+        opt[0].strVal != "skipLocalConfig":
+      error("initApp accepts only a `skipLocalConfig = true|false` option", opt)
+    skipGiven = true
+    if opt[1].kind in {nnkIdent, nnkSym}:
+      skipLocalConfig = opt[1].strVal == "true"
+    else:
+      skipLocalConfig = repr(opt[1]).strip() == "true"
+  mainBody = args[^1]
+  if mainBody.kind == nnkDo:
+    mainBody = mainBody[^1]
+  if mainBody.kind != nnkStmtList:
+    error("initApp expects a body block", args)
   result = newStmtList()
-  add result, quote do:
-    App.init()
-  var sections = newSeq[NimNode]()
-  if body.kind == nnkStmtList:
-    for s in body:
-      sections.add(s)
+  var configBody: NimNode = nil
+  for section in mainBody:
+    if section.kind in {nnkCommand, nnkCall} and section.len == 2 and
+        section[0].kind == nnkIdent and section[0].strVal == "config":
+      if configBody != nil:
+        error("initApp accepts only one `config do:` section", section)
+      let last = section[^1]
+      if last.kind == nnkDo:
+        configBody = last[^1]
+      elif last.kind in {nnkStmtList, nnkStmtListExpr}:
+        configBody = last
+      else:
+        error("initApp: expected `config do:` with a body block", section)
+  if configBody == nil and not skipGiven:
+    add result, quote do:
+      App.init()
   else:
-    sections.add(body)
+    # NOTE: built manually so the node matches the parser-native shape
+    # of `App.init(skipLocalConfig = true) do: ...`
+    # (`nnkCall[dotExpr, exprEqExpr?, stmtList?]`).
+    var initCall = nnkCall.newTree(
+      nnkDotExpr.newTree(ident"App", ident"init"))
+    if skipGiven:
+      initCall.add nnkExprEqExpr.newTree(
+        ident"skipLocalConfig", newLit(skipLocalConfig))
+    if configBody != nil:
+      initCall.add configBody
+    add result, initCall
+  var sections = newSeq[NimNode]()
+  for s in mainBody:
+    if s.kind in {nnkCommand, nnkCall} and s.len == 2 and
+        s[0].kind == nnkIdent and s[0].strVal == "config":
+      continue
+    sections.add(s)
   let resolveSym = ident"resolvePublicAsset"
   for section in sections:
     if section.kind in {nnkCommand, nnkCall} and section.len >= 2:
