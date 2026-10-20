@@ -105,25 +105,25 @@ suite "queue worker":
     var m = newTaskManager(poolSize = 2)
     let wid = startQueueWorker(m, queueName = "t1", intervalMs = 100, batch = 5)
     check m.hasTask(wid)
-    check waitDone(handled == @[7])
-    sleep(300) # let the settle delete land
-    check queueCount("t1") == 0
+    # Settle (row delete) can lag the handle under load; wait for both.
+    check waitDone((handled == @[7]) and queueCount("t1") == 0)
     check failedCount() == 0
     stopQueueWorker(m)
     m.close()
 
   test "delayed dispatch waits for availability":
     wipeTables()
-    dispatchWorkHello(WorkHelloPayload(n: 9), delay = 2, onQueue = "t2")
+    # Generous delay: on a stalled CI runner the "not due yet" checks
+    # below can execute well after sleep(1000) returns, so a tight
+    # delay-vs-sleep margin flakes (job already due and handled).
+    dispatchWorkHello(WorkHelloPayload(n: 9), delay = 5, onQueue = "t2")
     var m = newTaskManager(poolSize = 2)
     discard startQueueWorker(m, queueName = "t2", intervalMs = 100, batch = 5)
     sleep(1000)
     withLock testLock:
       check handled.len == 0 # not due yet
     check queueCount("t2") == 1
-    check waitDone(handled == @[9])
-    sleep(300)
-    check queueCount("t2") == 0
+    check waitDone((handled == @[9]) and queueCount("t2") == 0)
     stopQueueWorker(m)
     m.close()
 
