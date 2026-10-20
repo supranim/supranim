@@ -374,6 +374,12 @@ macro init*(appInstance; skipLocalConfig: static bool = false, initBody: untyped
     import pkg/kapsis/interactive/prompts
 
   add result, newCall(ident"initApplication")
+  let skipLit = ident(if skipLocalConfig: "true" else: "false")
+  add result, quote do:
+    # Remember the local-config mode for `initStartCommand`: apps that
+    # seed `App.configs` in memory (`skipLocalConfig = true`) must not
+    # have it replaced from the runtime config directory later.
+    appSkipLocalConfig = `skipLit`
   if not skipLocalConfig:
     # Some Supranim-based apps may want to skip the loading of local configuration files
     # when the structure of the application is different from the default one.
@@ -467,6 +473,12 @@ var appInitialized* = false
   # If the application is not initialized, it will not start
   # the server and will exit instead to prevent unintended execution.
 
+var appSkipLocalConfig* = false
+  # Whether the application skips the default local configuration files
+  # (set by `App.init(skipLocalConfig = true)`). `initStartCommand` honors
+  # it by leaving the runtime config directory alone, so in-memory seeds
+  # are never replaced from files.
+
 template initStartCommand*(v: Values, createDirs = true) =
   ## Kapsis `init` command handler
   displayInfo("Initializing application...")
@@ -494,27 +506,29 @@ template initStartCommand*(v: Values, createDirs = true) =
     except SupranimEnvLoader as e:
       displayError(e.msg, quitProcess = true)
     when not defined supranimEmbedConfig:
-      # Seed the runtime config directory from the project sources when
-      # present (local dev), backfilled from the configs baked into the
-      # binary (covers binaries built elsewhere, e.g. a GH Action
-      # runner). Existing files are never touched; new defaults (e.g.
-      # configs added by recipes after the first run) are backfilled
-      # automatically.
-      createDir(runtimePath / "config")
-      if dirExists(configPath):
-        for file in walkFiles(configPath / "*"):
-          let f = file.splitFile
-          if f.ext.toLowerAscii in configFileExtensions:
-            let dest = runtimePath / "config" / f.name & f.ext
-            if not fileExists(dest): copyFile(file, dest)
-      seedEmbeddedConfigs(runtimePath)
-      # `App.init` loaded configs before the installation path was
-      # known; refresh from the now-seeded runtime directory so the
-      # service providers below see the real configuration.
-      try:
-        App.configs = loadConfigurations(runtimePath / "config")
-      except ConfigError as e:
-        displayError(e.msg, quitProcess = true)
+      if not appSkipLocalConfig:
+        # Seed the runtime config directory from the project sources when
+        # present (local dev), backfilled from the configs baked into the
+        # binary (covers binaries built elsewhere, e.g. a GH Action
+        # runner). Existing files are never touched; new defaults (e.g.
+        # configs added by recipes after the first run) are backfilled
+        # automatically. Skipped for in-memory-config apps
+        # (`skipLocalConfig = true`), which keep reading from memory.
+        createDir(runtimePath / "config")
+        if dirExists(configPath):
+          for file in walkFiles(configPath / "*"):
+            let f = file.splitFile
+            if f.ext.toLowerAscii in configFileExtensions:
+              let dest = runtimePath / "config" / f.name & f.ext
+              if not fileExists(dest): copyFile(file, dest)
+        seedEmbeddedConfigs(runtimePath)
+        # `App.init` loaded configs before the installation path was
+        # known; refresh from the now-seeded runtime directory so the
+        # service providers below see the real configuration.
+        try:
+          App.configs = loadConfigurations(runtimePath / "config")
+        except ConfigError as e:
+          displayError(e.msg, quitProcess = true)
     appInitialized = true
 
 template cli*(app: Application, cliCommands) {.dirty.} =
