@@ -17,9 +17,15 @@ suite "WebServer (powpow backend)":
     check server.enableMultiThreading == false
 
   test "newWebServer honors port and threading flag":
-    let server = newWebServer(Port(9090), true)
-    check server.port == Port(9090)
-    check server.enableMultiThreading == true
+    when defined(windows):
+      # powpow's worker-pool server is POSIX-only
+      let server = newWebServer(Port(9090))
+      check server.port == Port(9090)
+      check server.enableMultiThreading == false
+    else:
+      let server = newWebServer(Port(9090), true)
+      check server.port == Port(9090)
+      check server.enableMultiThreading == true
 
   test "parseRangeHeader parses inclusive ranges":
     check parseRangeHeader("bytes=0-99", 1000) == some((0, 99))

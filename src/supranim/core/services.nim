@@ -1154,7 +1154,11 @@ macro initService*(serviceIdentifier, serviceConfig: untyped) =
             # Start the web server
             onRequestHandle()
             if threads > 1:
-              webserver.runServer(onRequest, nil, port, threads, host)
+              when defined(windows):
+                # powpow worker pools are POSIX-only
+                webserver.runServer(onRequest, nil, port, host)
+              else:
+                webserver.runServer(onRequest, nil, port, threads, host)
             else:
               webserver.runServer(onRequest, nil, port, host)
         else:
@@ -1170,8 +1174,13 @@ macro initService*(serviceIdentifier, serviceConfig: untyped) =
                     webserver.runUnixServer(onRequest, nil,
                       `svcSocketPath`, `svcSocketMode`)
                   elif `svcThreads` > 1:
-                    webserver.runServer(onRequest, nil,
-                      Port(`svcThreadPort`), `svcThreads`, `svcHost`)
+                    when defined(windows):
+                      # powpow worker pools are POSIX-only
+                      webserver.runServer(onRequest, nil,
+                        Port(`svcThreadPort`), `svcHost`)
+                    else:
+                      webserver.runServer(onRequest, nil,
+                        Port(`svcThreadPort`), `svcThreads`, `svcHost`)
                   else:
                     webserver.runServer(onRequest, nil,
                       Port(`svcThreadPort`), `svcHost`)

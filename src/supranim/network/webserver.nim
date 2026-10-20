@@ -27,7 +27,10 @@ type
     port*: Port
     enableMultiThreading*: bool
     powServer: pw.HttpServer
-    powMultiServer: pw.MultiThreadHttpServer
+    when not defined(windows):
+      # powpow's worker-pool server is POSIX-only (it relies on
+      # fork/SO_REUSEPORT semantics unavailable on Windows).
+      powMultiServer: pw.MultiThreadHttpServer
     callbackTable: TableRef[string, OnRequestLowLevel]
     callbackLock: Lock
 
@@ -71,13 +74,15 @@ proc newWebServer*(port: Port = Port(8080)): WebServer =
   result.callbackTable = newTable[string, OnRequestLowLevel]()
   initLock(result.callbackLock)
 
-proc newWebServer*(port: Port = Port(8080), enableMultiThreading: bool): WebServer =
-  ## Create a new multi-threaded WebServer backed by PowPow
-  new(result)
-  result.port = port
-  result.enableMultiThreading = enableMultiThreading
-  result.callbackTable = newTable[string, OnRequestLowLevel]()
-  initLock(result.callbackLock)
+when not defined(windows):
+  proc newWebServer*(port: Port = Port(8080), enableMultiThreading: bool): WebServer =
+    ## Create a new multi-threaded WebServer backed by PowPow.
+    ## POSIX only: powpow's worker-pool server is unavailable on Windows.
+    new(result)
+    result.port = port
+    result.enableMultiThreading = enableMultiThreading
+    result.callbackTable = newTable[string, OnRequestLowLevel]()
+    initLock(result.callbackLock)
 
 proc start*(server: WebServer) =
   ## Start a WebServer
@@ -138,65 +143,68 @@ proc start*(server: WebServer, onRequest: OnRequest,
   server.powServer.close()
   server.powServer.getLoop().close()
 
-proc startUnix*(server: WebServer, onRequest: OnRequest,
-              startupCallback: StartupCallback = nil,
-              socketPath: string,
-              options = pw.defaultHttpServerOptions()) =
-  ## Serve HTTP over a Unix domain socket at `socketPath` instead of TCP.
-  ## Single-threaded: powpow worker pools do not support Unix sockets.
-  server.attachHandler(onRequest, startupCallback)
-  server.powServer.applyOptions(options)
-  server.powServer.listenUnix(socketPath)
-  server.powServer.getLoop().run()
-  server.powServer.close()
-  server.powServer.getLoop().close()
+when not defined(windows):
+  proc startUnix*(server: WebServer, onRequest: OnRequest,
+                startupCallback: StartupCallback = nil,
+                socketPath: string,
+                options = pw.defaultHttpServerOptions()) =
+    ## Serve HTTP over a Unix domain socket at `socketPath` instead of TCP.
+    ## Single-threaded: powpow worker pools do not support Unix sockets.
+    server.attachHandler(onRequest, startupCallback)
+    server.powServer.applyOptions(options)
+    server.powServer.listenUnix(socketPath)
+    server.powServer.getLoop().run()
+    server.powServer.close()
+    server.powServer.getLoop().close()
 
-proc start*(server: WebServer, onRequest: OnRequest,
-              startupCallback: StartupCallback,
-              threads: int, host = "0.0.0.0",
-              options = pw.defaultHttpServerOptions()) =
-  ## Start the PowPow webserver for a specific number of `threads` 
-  when not compileOption("threads"):
-    {.error: "Multi-threaded Supranim requires threads support. Use `--threads:on`".}
-  let nThreads = if threads > 0: threads else: countProcessors()
-  server.powMultiServer = pw.newHttpServer(nThreads, options)
-  if startupCallback != nil:
-    startupCallback()
-  server.powMultiServer.start(
-    proc(req: pw.HttpRequest, res: pw.HttpResponse) {.gcsafe.} =
-      let normPath = normalizeCallbackPath(req.getPath())
-      var cbFound: OnRequestLowLevel = nil
-      acquire(server.callbackLock)
-      if server.callbackTable.hasKey(normPath):
-        cbFound = server.callbackTable[normPath]
-      release(server.callbackLock)
-      if cbFound != nil:
-        cbFound(req, res)
-        return
-      var uriStr = req.getUrl()
-      var parsedUri = parseUri(uriStr)
-      var sReq = Request(
-        raw: cast[pointer](req),
-        httpMethod: req.getMethod(),
-        path: req.getPath(),
-        uri: parsedUri,
-        routeParams: initTable[string, string](),
-        responseSent: false,
-        powReq: req,
-        powRes: res,
-        clientIp: req.getClientIp(),
-        headersFetched: false,
-        headersCache: newHttpHeaders(),
-      )
-      if parsedUri.query.len > 0:
-        var qTable = newTable[string, string]()
-        for (k, v) in decodeQuery(parsedUri.query):
-          qTable[k] = v
-        sReq.uriQuery = qTable
-      onRequest(sReq)
-      if not sReq.responseSent:
-        res.status(Http200).send(""),
-    host, server.port.int)
+when not defined(windows):
+  proc start*(server: WebServer, onRequest: OnRequest,
+                startupCallback: StartupCallback,
+                threads: int, host = "0.0.0.0",
+                options = pw.defaultHttpServerOptions()) =
+    ## Start the PowPow webserver for a specific number of `threads`.
+    ## POSIX only: powpow's worker-pool server is unavailable on Windows.
+    when not compileOption("threads"):
+      {.error: "Multi-threaded Supranim requires threads support. Use `--threads:on`".}
+    let nThreads = if threads > 0: threads else: countProcessors()
+    server.powMultiServer = pw.newHttpServer(nThreads, options)
+    if startupCallback != nil:
+      startupCallback()
+    server.powMultiServer.start(
+      proc(req: pw.HttpRequest, res: pw.HttpResponse) {.gcsafe.} =
+        let normPath = normalizeCallbackPath(req.getPath())
+        var cbFound: OnRequestLowLevel = nil
+        acquire(server.callbackLock)
+        if server.callbackTable.hasKey(normPath):
+          cbFound = server.callbackTable[normPath]
+        release(server.callbackLock)
+        if cbFound != nil:
+          cbFound(req, res)
+          return
+        var uriStr = req.getUrl()
+        var parsedUri = parseUri(uriStr)
+        var sReq = Request(
+          raw: cast[pointer](req),
+          httpMethod: req.getMethod(),
+          path: req.getPath(),
+          uri: parsedUri,
+          routeParams: initTable[string, string](),
+          responseSent: false,
+          powReq: req,
+          powRes: res,
+          clientIp: req.getClientIp(),
+          headersFetched: false,
+          headersCache: newHttpHeaders(),
+        )
+        if parsedUri.query.len > 0:
+          var qTable = newTable[string, string]()
+          for (k, v) in decodeQuery(parsedUri.query):
+            qTable[k] = v
+          sReq.uriQuery = qTable
+        onRequest(sReq)
+        if not sReq.responseSent:
+          res.status(Http200).send(""),
+      host, server.port.int)
 
 proc send*(req: var Request, code: int, body: string, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response with a numeric status code.
@@ -401,16 +409,18 @@ proc runServer*(onRequest: OnRequest,
   var server = newWebServer(port)
   server.start(onRequest, startupCallback)
 
-proc runServer*(onRequest: OnRequest,
-            startupCallback: StartupCallback, port = Port(3000),
-            threads: int, host = "0.0.0.0") =
-  ## Convenience procedure that creates a multi-threaded WebServer
-  ## (powpow `MultiThreadHttpServer`) serving `onRequest` on `port`
-  ## with `threads` workers. `threads <= 0` uses all processors.
-  when not compileOption("threads"):
-    {.error: "Multi-threaded Supranim requires threads support. Use `--threads:on`".}
-  var server = newWebServer(port, enableMultiThreading = true)
-  server.start(onRequest, startupCallback, threads, host)
+when not defined(windows):
+  proc runServer*(onRequest: OnRequest,
+              startupCallback: StartupCallback, port = Port(3000),
+              threads: int, host = "0.0.0.0") =
+    ## Convenience procedure that creates a multi-threaded WebServer
+    ## (powpow `MultiThreadHttpServer`) serving `onRequest` on `port`
+    ## with `threads` workers. `threads <= 0` uses all processors.
+    ## POSIX only: powpow's worker-pool server is unavailable on Windows.
+    when not compileOption("threads"):
+      {.error: "Multi-threaded Supranim requires threads support. Use `--threads:on`".}
+    var server = newWebServer(port, enableMultiThreading = true)
+    server.start(onRequest, startupCallback, threads, host)
 
 proc runServer*(onRequest: OnRequest,
             startupCallback: StartupCallback, port = Port(3000),

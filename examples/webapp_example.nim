@@ -26,5 +26,10 @@ proc onRequest(req: var Request) =
     else:
       req.resp(Http404, "not found")
 
-var server = newWebServer(enableMultiThreading = true)
-server.start(onRequest, nil, threads = 6) # default 8080
+when defined(windows):
+  # powpow's worker-pool server is POSIX-only
+  var server = newWebServer()
+  server.start(onRequest, nil) # default 8080
+else:
+  var server = newWebServer(enableMultiThreading = true)
+  server.start(onRequest, nil, threads = 6) # default 8080

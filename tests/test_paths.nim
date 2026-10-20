@@ -15,7 +15,8 @@ suite "ApplicationPaths":
   test "basePath and rootPath constants are set":
     check basePath.len > 0
     check rootPath.len > 0
-    check basePath.startsWith("/")
+    check isAbsolute(basePath)
+    check isAbsolute(rootPath)
 
   test "init with an existing dir and createDirs":
     let dir = setupDir()

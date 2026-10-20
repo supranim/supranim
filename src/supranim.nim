@@ -199,6 +199,10 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
 
       when defined supranimUseGlobalOnRequest:
         app.server = newWebServer(srvPort)
+      elif defined(windows):
+        # Powpow worker pools are POSIX-only, so Windows always uses
+        # the single-threaded server.
+        app.server = newWebServer(srvPort)
       else:
         if srvUnix:
           # Powpow worker pools cannot listen on Unix sockets,
@@ -214,6 +218,11 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
 
       when defined supranimUseGlobalOnRequest:
         app.server.start(onRequest, host = srvHost, options = srvOptions)
+      elif defined(windows):
+        when compiles(startupCallback()):
+          app.server.start(onRequest, startupCallback, host = srvHost, options = srvOptions)
+        else:
+          app.server.start(onRequest, nil, host = srvHost, options = srvOptions)
       else:
         if srvUnix:
           when compiles(startupCallback()):
