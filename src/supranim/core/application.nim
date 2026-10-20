@@ -31,6 +31,7 @@ export Configuration, ConfigurationFormat, ConfigValue, ConfigError,
   get, isNil, getStr, getInt, getFloat, getBool,
   putStr, putInt, putFloat, putBool,
   staticConfig, staticConfigFromDir
+
 # NOTE: `threading/channels` is intentionally NOT re-exported here.
 # It provides generic `send`/`recv` overloads that would leak into every
 # importer and break overload resolution in macro-generated code.
@@ -589,6 +590,18 @@ macro initApp*(args: varargs[untyped]): untyped =
   ##       assets.embedDirectory("storage/icons", "icons")
   ##       assets.preloadBundle("assets")
   ##       assets.preloadBundle("icons")
+  ##     run do(app: Application):
+  ##       app.server.registerCallback("/ws",
+  ##         proc (req: HttpRequest, res: HttpResponse) {.gcsafe.} =
+  ##           discard websocketUpgrade(res, req, onOpen = onOpenCallback,
+  ##             onClose = onClose, onError = onError))
+  ##
+  ## The `(app: Application)` parameter on a `do` block is optional.
+  ## `services` and `run` sections invoke a parameterized block with the
+  ## application instance, so `app` inside the body is a real binding —
+  ## a template parameter alone is NOT a lexical binding (a bare `app`
+  ## would resolve to the caller's `app` package instead). `cli`
+  ## sections always forward the bare command declarations.
   ##
   ## Apps that skip the default config loading (like StupidGreen) pass
   ## the flag through and provide the init body as a `config` section:
@@ -600,8 +613,9 @@ macro initApp*(args: varargs[untyped]): untyped =
   ##     cli do:
   ##       ...
   ##
-  ## `cli do:` / `services do:` sections are forwarded to the `App.cli` /
-  ## `App.services` templates. The `serveAssets:` section holds the user's
+  ## `cli do:` / `services do:` / `run do:` sections are forwarded to the
+  ## `App.cli` / `App.services` / `App.run` templates, in body order
+  ## (so `run` goes last, after the services it needs). The `serveAssets:` section holds the user's
   ## own embed statements, emitted verbatim under `when defined release`
   ## (after an automatic `import pkg/supranim/service/assets`), followed
   ## by the predefined handler: embedded bundle, disk fallback under the
@@ -683,22 +697,33 @@ macro initApp*(args: varargs[untyped]): untyped =
         secName = head.strVal
       elif head.kind == nnkDotExpr and head[^1].kind == nnkIdent:
         secName = head[^1].strVal
-      if secName in ["cli", "services"]:
+      if secName in ["cli", "services", "run"]:
         let last = section[^1]
-        var inner: NimNode
-        if last.kind == nnkDo:
-          inner = last[^1]
-        elif last.kind in {nnkStmtList, nnkStmtListExpr}:
-          inner = last
+        if last.kind == nnkDo and secName != "cli":
+          # A parameterized `do(app: Application):` is forwarded INTACT
+          # and *invoked* with the application instance. The receiver
+          # templates splice their block as a bare statement, where a
+          # standalone proc literal would be discarded (compile error) —
+          # so `newCall(dotExpr, doNode)` alone is not enough. Capital
+          # `App` is the only correct argument: lowercase `app` at the
+          # emission scope would resolve to the caller's `app` package.
+          add result, newCall(
+            nnkDotExpr.newTree(ident"App", ident(secName)),
+            newCall(last, ident"App")
+          )
+        elif last.kind in {nnkStmtList, nnkStmtListExpr} or
+            (last.kind == nnkDo and secName == "cli"):
+          # Bare bodies — and `cli` declarations, which kapsis needs raw
+          # — are forwarded unwrapped, preserving the parser-native
+          # `nnkCall[dotExpr, stmtList]` shape (built manually, not via
+          # `quote do:`).
+          let inner = if last.kind == nnkDo: last[^1] else: last
+          add result, newCall(
+            nnkDotExpr.newTree(ident"App", ident(secName)),
+            inner
+          )
         else:
-          error("initApp: expected `cli do:` / `services do:` with a body block", section)
-        # NOTE: built manually, not via `quote do:`, so the generated
-        # `App.cli do:` / `App.services do:` call has exactly the
-        # parser-native shape (`nnkCall[dotExpr, stmtList]`).
-        add result, newCall(
-          nnkDotExpr.newTree(ident"App", ident(secName)),
-          inner
-        )
+          error("initApp: expected `cli do:` / `services do:` / `run do:` with a body block", section)
         continue
       if secName == "serveAssets":
         # `serveAssets:` section: the body holds the user's own embed
