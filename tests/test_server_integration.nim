@@ -1,12 +1,17 @@
 #
 # Integration tests for the Supranim HTTP server (powpow backend).
 #
-# A real powpow WebServer is started in a forked child process and probed
-# over HTTP using std/httpclient. Fork is used instead of threads because
-# the powpow event loop is not `gcsafe`-annotated.
+# A real powpow WebServer is started in a child and probed over HTTP
+# using std/httpclient. POSIX uses fork (the powpow event loop is not
+# `gcsafe`-annotated, so no threads); Windows respawns the test binary
+# with `--supranim-serve`, since fork does not exist there.
 #
 import std/unittest
-import std/[os, httpcore, net, posix, tables, strutils, options]
+import std/[os, httpcore, net, tables, strutils, options]
+when defined(windows):
+  import std/osproc
+else:
+  import std/posix
 
 import pkg/powpow as pw
 
@@ -16,6 +21,7 @@ import supranim/core/[router, request, response]
 
 var
   gPort: Port
+  gRouterObj: HttpRouterInstance
   gRouter: ptr HttpRouterInstance
   gFilePathStore: string
   gFilePath: ptr string
@@ -102,41 +108,70 @@ proc serverEntry() =
   server.addCallback("/raw", rawCb)
   server.start(onRequest, nil)
 
-#
-# Setup: build the router, write a temp file, fork the server child
-#
-var rt = newHttpRouter()
-rt.registerRoute("/hello", HttpGet, helloHandler)
-rt.registerRoute("/users/{id:id}", HttpGet, usersHandler)
-rt.registerRoute("/echo-query", HttpGet, queryHandler)
-rt.registerRoute("/echo-body", HttpPost, bodyHandler)
-rt.registerRoute("/json", HttpGet, jsonHandler)
-rt.registerRoute("/echo-header", HttpGet, headerHandler)
-rt.registerRoute("/cookie", HttpGet, cookieHandler)
-rt.registerRoute("/file", HttpGet, fileHandler)
-rt.registerRoute("/protected", HttpGet, helloHandler, middlewares = @[mw403])
-rt.registerRoute("/redirect", HttpGet, helloHandler, middlewares = @[mw302])
+proc buildState(port: Port, filePath: string) =
+  ## Builds the router and points the globals at the given port/file.
+  ## Runs in both the test process and the server child (each process
+  ## builds its own copy).
+  var rt = newHttpRouter()
+  rt.registerRoute("/hello", HttpGet, helloHandler)
+  rt.registerRoute("/users/{id:id}", HttpGet, usersHandler)
+  rt.registerRoute("/echo-query", HttpGet, queryHandler)
+  rt.registerRoute("/echo-body", HttpPost, bodyHandler)
+  rt.registerRoute("/json", HttpGet, jsonHandler)
+  rt.registerRoute("/echo-header", HttpGet, headerHandler)
+  rt.registerRoute("/cookie", HttpGet, cookieHandler)
+  rt.registerRoute("/file", HttpGet, fileHandler)
+  rt.registerRoute("/protected", HttpGet, helloHandler, middlewares = @[mw403])
+  rt.registerRoute("/redirect", HttpGet, helloHandler, middlewares = @[mw302])
+  gRouterObj = rt
+  gRouter = addr gRouterObj
+  gFilePathStore = filePath
+  gFilePath = addr gFilePathStore
+  gPort = port
 
-gRouter = cast[ptr HttpRouterInstance](addr rt)
-gFilePathStore = tempDir("supranim_int_file_") / "asset.txt"
-writeFile(gFilePathStore, "file-content-123")
-gFilePath = addr gFilePathStore
-gPort = getFreePort()
-
-let childPid = fork()
-check childPid >= 0
-if childPid == 0:
-  serverEntry()
-  quit(0)
-else:
+#
+# Setup: build the router, write a temp file, start the server child
+#
+when defined(windows):
+  # No fork on Windows: respawn this binary as the server child.
+  var childProc: Process = nil
+  if paramCount() >= 3 and paramStr(1) == "--supranim-serve":
+    buildState(Port(parseInt(paramStr(2))), paramStr(3))
+    serverEntry()
+    quit(0)
+  let srvFile = tempDir("supranim_int_file_") / "asset.txt"
+  writeFile(srvFile, "file-content-123")
+  let srvPort = getFreePort()
+  buildState(srvPort, srvFile)
+  childProc = startProcess(getAppFilename(),
+    args = ["--supranim-serve", $srvPort.int, srvFile])
   proc cleanup() {.noconv.} =
-    var status: cint
-    removeFile(gFilePathStore)
-    discard kill(childPid, SIGKILL)
-    discard waitpid(childPid, status, 0)
+    removeFile(srvFile)
+    if childProc != nil:
+      if childProc.running:
+        childProc.terminate()
+        discard childProc.waitForExit(5000)
+      childProc.close()
   addQuitProc(cleanup)
-
-check waitForTcp(gPort)
+  check waitForTcp(srvPort)
+else:
+  let srvFile = tempDir("supranim_int_file_") / "asset.txt"
+  writeFile(srvFile, "file-content-123")
+  let srvPort = getFreePort()
+  buildState(srvPort, srvFile)
+  let childPid = fork()
+  check childPid >= 0
+  if childPid == 0:
+    serverEntry()
+    quit(0)
+  else:
+    proc cleanup() {.noconv.} =
+      var status: cint
+      removeFile(srvFile)
+      discard kill(childPid, SIGKILL)
+      discard waitpid(childPid, status, 0)
+    addQuitProc(cleanup)
+  check waitForTcp(srvPort)
 
 proc baseUrl(): string =
   "http://127.0.0.1:" & $gPort
