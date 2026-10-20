@@ -584,7 +584,7 @@ macro initApp*(args: varargs[untyped]): untyped =
   ##         initStartCommand(v, createDirs = false)
   ##     services do:
   ##       storage.init(App)
-  ##     assets "/static": # optional public path, default "/assets"
+  ##     serveAssets "/static": # optional public URL prefix, default "/assets"
   ##       assets.embedAssets("assets")
   ##       assets.embedDirectory("storage/icons", "icons")
   ##       assets.preloadBundle("assets")
@@ -601,16 +601,14 @@ macro initApp*(args: varargs[untyped]): untyped =
   ##       ...
   ##
   ## `cli do:` / `services do:` sections are forwarded to the `App.cli` /
-  ## `App.services` templates. The `assets` section holds the user's own
-  ## embed statements, emitted verbatim under `when defined release`
+  ## `App.services` templates. The `serveAssets:` section holds the user's
+  ## own embed statements, emitted verbatim under `when defined release`
   ## (after an automatic `import pkg/supranim/service/assets`), followed
-  ## by the predefined assets handler: embedded bundle, disk `/assets`
-  ## fallback, then theme fallback when the app provides
-  ## `resolvePublicAsset`. A custom public path remaps embedded lookups
-  ## from the bundle namespace (`/<lastPathPart(embedDir)>/...`, taken
-  ## from the first `embedAssets`/`embedDirectory` call) onto the URL
-  ## prefix. Omit the section for no handler. Anything after this macro
-  ## (`App.run`, etc.) stays as is.
+  ## by the predefined handler: embedded bundle, disk fallback under the
+  ## public path (default `/assets/`, overridable via
+  ## `serveAssets "/static":`), then theme fallback when the app provides
+  ## `resolvePublicAsset`. Omit the section for no handler. Anything
+  ## after this macro (`App.run`, etc.) stays as is.
   ##
   ## Any other statements (e.g. `startCommand`/`updateCommand` handler
   ## procs, which kapsis resolves by command-name convention and which
@@ -702,106 +700,56 @@ macro initApp*(args: varargs[untyped]): untyped =
           inner
         )
         continue
-      if secName == "assets":
-        # `assets` section: the body holds the user's own embed statements
-        # (`assets.embedAssets(...)`, `assets.embedDirectory(...)`,
-        # `assets.preloadBundle(...)`), emitted verbatim under
-        # `when defined release`, followed by the predefined assets
-        # handler. An optional public path (`assets "/static":`) exposes
-        # the bundle under a custom URL prefix instead of `/assets`.
+      if secName == "serveAssets":
+        # `serveAssets:` section: the body holds the user's own embed
+        # statements (`assets.embedAssets(...)`,
+        # `assets.embedDirectory(...)`, `assets.preloadBundle(...)`),
+        # emitted verbatim under `when defined release` (after an
+        # automatic `import pkg/supranim/service/assets`), followed by
+        # the predefined handler: embedded bundle, disk fallback under
+        # the public path, then theme fallback when the app provides
+        # `resolvePublicAsset`. An optional path (`serveAssets "/static":`)
+        # changes the served URL prefix. A lone `serveAssets: true`
+        # installs just the handler (bundling done elsewhere).
         let last = section[^1]
-        var assetsBody: NimNode
+        var serveBody: NimNode
         if last.kind == nnkDo:
-          assetsBody = last[^1]
+          serveBody = last[^1]
         elif last.kind in {nnkStmtList, nnkStmtListExpr}:
-          assetsBody = last
+          serveBody = last
         else:
-          error("initApp: expected `assets:` / `assets \"<path>\":` with a body block", section)
+          error("initApp: expected `serveAssets:` with a body block", section)
         var pubPath = "/assets"
         if section.len > 2:
           if section.len == 3 and section[1].kind == nnkStrLit:
             pubPath = section[1].strVal
           else:
-            error("initApp `assets` accepts one optional public path, e.g. `assets \"/static\":`", section)
+            error("initApp `serveAssets:` accepts one optional public path, e.g. `serveAssets \"/static\":`", section)
         if not pubPath.startsWith("/"):
           pubPath = "/" & pubPath
         while pubPath.len > 1 and pubPath.endsWith("/"):
           pubPath = pubPath[0 .. ^2]
         let guard = if pubPath == "/": "/" else: pubPath & "/"
-        # The bundle key namespace follows the embedded directory
-        # (`supra bundle.assets` keys files as `/<lastPathPart(dir)>/...`),
-        # taken from the first `embedAssets`/`embedDirectory` call.
-        var bundlePrefix = "/assets"
-        for stmt in assetsBody:
-          if stmt.kind in {nnkCommand, nnkCall} and stmt.len >= 2:
-            let h = stmt[0]
-            if h.kind == nnkDotExpr and h[0].kind == nnkIdent and
-                h[0].strVal == "assets" and h[1].kind == nnkIdent and
-                h[1].strVal in ["embedAssets", "embedDirectory"] and
-                stmt[1].kind == nnkStrLit and stmt[1].strVal.len > 0:
-              bundlePrefix = "/" & lastPathPart(stmt[1].strVal)
-              break
-        # A lone `assets: true` means "default handler, bundling done
-        # elsewhere": no user statements to emit.
-        var userStmts = assetsBody
-        if assetsBody.kind == nnkStmtList and assetsBody.len == 1:
-          let only = assetsBody[0]
-          let isTrue =
-            (only.kind in {nnkIdent, nnkSym} and only.strVal == "true") or
-            (only.kind notin {nnkIdent, nnkSym} and repr(only).strip() == "true")
-          if isTrue:
-            userStmts = newStmtList()
-        let
-          guardLit = newLit(guard)
-          bundleLit = newLit(bundlePrefix)
-          plenLit = newLit(pubPath.len)
-        # When the public path equals the bundle namespace (the default
-        # `/assets` case), keep Sunday's exact shape: the embedded bundle
-        # is probed with the raw path for every request. Otherwise the
-        # embedded probe is scoped inside the public-path guard so the
-        # bundle namespace does not leak onto other URLs.
-        if pubPath == bundlePrefix:
-          add result, quote do:
-            when defined release:
-              import pkg/supranim/service/assets
-              `userStmts`
-              App.withAssetsHandler:
-                proc (req: var Request, res: var Response, foundRes: var bool) =
-                  let assetKey =
-                    if req.path.startsWith(`guardLit`):
-                      `bundleLit` & req.path[`plenLit` .. ^1]
-                    else:
-                      req.path
-                  when defined release:
-                    req.sendEmbeddedAsset(assetKey, res.getHeaders(), foundRes)
-                  if not foundRes and req.path.startsWith(`guardLit`):
-                    req.sendAssets(req.path, res.getHeaders(), foundRes)
-                    if not foundRes:
-                      when compiles(`resolveSym`(req.path)):
-                        let themeAsset = `resolveSym`(req.path)
-                        if themeAsset.len > 0:
-                          req.sendAssetFile(themeAsset, res.getHeaders())
-                          foundRes = true
-        else:
-          add result, quote do:
-            when defined release:
-              import pkg/supranim/service/assets
-              `userStmts`
-              App.withAssetsHandler:
-                proc (req: var Request, res: var Response, foundRes: var bool) =
-                  if req.path.startsWith(`guardLit`):
-                    when defined release:
-                      req.sendEmbeddedAsset(
-                        `bundleLit` & req.path[`plenLit` .. ^1],
-                        res.getHeaders(), foundRes)
-                    if not foundRes:
-                      req.sendAssets(req.path, res.getHeaders(), foundRes)
-                      if not foundRes:
-                        when compiles(`resolveSym`(req.path)):
-                          let themeAsset = `resolveSym`(req.path)
-                          if themeAsset.len > 0:
-                            req.sendAssetFile(themeAsset, res.getHeaders())
-                            foundRes = true
+        if serveBody.kind == nnkStmtList and serveBody.len == 1 and
+            repr(serveBody[0]).strip() == "true":
+          serveBody = newStmtList()
+        let guardLit = newLit(guard)
+        add result, quote do:
+          when defined release:
+            import pkg/supranim/service/assets
+            `serveBody`
+            App.withAssetsHandler:
+              proc (req: var Request, res: var Response, foundRes: var bool) =
+                when defined release:
+                  req.sendEmbeddedAsset(req.path, res.getHeaders(), foundRes)
+                if not foundRes and req.path.startsWith(`guardLit`):
+                  req.sendAssets(req.path, res.getHeaders(), foundRes)
+                  if not foundRes:
+                    when compiles(`resolveSym`(req.path)):
+                      let themeAsset = `resolveSym`(req.path)
+                      if themeAsset.len > 0:
+                        req.sendAssetFile(themeAsset, res.getHeaders())
+                        foundRes = true
         continue
     # Anything else (command handler procs, comments, pragmas) passes
     # through verbatim in order: after `App.init()`'s imports, before the
