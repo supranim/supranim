@@ -1,42 +1,45 @@
 nimTitle	application	supranim/core/application.html	module supranim/core/application		0
-nim	JsonString	supranim/core/application.html#JsonString	type JsonString		39
-nim	Services	supranim/core/application.html#Services	object Services		41
-nim	ApplicationAssetsHandler	supranim/core/application.html#ApplicationAssetsHandler	type ApplicationAssetsHandler		48
-nim	ApplicationThreadCallback	supranim/core/application.html#ApplicationThreadCallback	type ApplicationThreadCallback		49
-nim	ServiceMsg	supranim/core/application.html#ServiceMsg	object ServiceMsg		51
-nim	AppConfigDefect	supranim/core/application.html#AppConfigDefect	object AppConfigDefect		92
-nim	info	supranim/core/application.html#info,string,int	proc info(str: string; indentSize = 0)		94
-nim	App	supranim/core/application.html#App	var App		101
-nim	Application	supranim/core/application.html#Application	type Application		105
-nim	initApplication	supranim/core/application.html#initApplication	proc initApplication()		108
-nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		115
-nim	AppInstance	supranim/core/application.html#AppInstance_2	proc AppInstance(): Application		121
-nim	getApplication	supranim/core/application.html#getApplication	proc getApplication(): Application		126
-nim	app	supranim/core/application.html#app_2	proc app(): Application		131
-nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Application): ApplicationPaths		135
-nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): ConfigValue		142
-nim	seedEmbeddedEnvSample	supranim/core/application.html#seedEmbeddedEnvSample.m,string	macro seedEmbeddedEnvSample(destFile: string): untyped		177
-nim	seedEmbeddedConfigs	supranim/core/application.html#seedEmbeddedConfigs.m,string	macro seedEmbeddedConfigs(runtimePath: string): untyped		192
-nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		217
-nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		299
-nim	loadEventQueues	supranim/core/application.html#loadEventQueues	proc loadEventQueues(): NimNode		308
-nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		341
-nim	SafeThreadVarSeq	supranim/core/application.html#SafeThreadVarSeq	const SafeThreadVarSeq		408
-nim	withThreadCallback	supranim/core/application.html#withThreadCallback.m,untyped,untyped	macro withThreadCallback(appInstance, callback: untyped)		413
-nim	injectSafeThreadCallbacks	supranim/core/application.html#injectSafeThreadCallbacks.m	macro injectSafeThreadCallbacks()		419
-nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		442
-nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		447
-nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		497
-nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		516
-nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		538
-nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		544
-nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		548
-nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		552
-nim	ServiceStopAction	supranim/core/application.html#ServiceStopAction	const ServiceStopAction		555
-nim	registerServiceChan	supranim/core/application.html#registerServiceChan,Application,string,Chan[ServiceMsg]	proc registerServiceChan(app: Application; name: string; ch: Chan[ServiceMsg])		560
-nim	hasServiceChan	supranim/core/application.html#hasServiceChan,Application,string	proc hasServiceChan(app: Application; name: string): bool		565
-nim	getServiceChan	supranim/core/application.html#getServiceChan,Application,string	proc getServiceChan(app: Application; name: string): Chan[ServiceMsg]		569
-nim	sendServiceMsg	supranim/core/application.html#sendServiceMsg,Application,string,string,string,int64	proc sendServiceMsg(app: Application; name, action: string; payload: string = "";\n               id: int64 = 0): bool		574
-nim	recvServiceMsg	supranim/core/application.html#recvServiceMsg,Application,string	proc recvServiceMsg(app: Application; name: string): ServiceMsg		582
-nim	tryRecvServiceMsg	supranim/core/application.html#tryRecvServiceMsg,Application,string,ServiceMsg	proc tryRecvServiceMsg(app: Application; name: string; dst: var ServiceMsg): bool		587
-nim	isServiceStop	supranim/core/application.html#isServiceStop.t,ServiceMsg	template isServiceStop(msg: ServiceMsg): bool		593
+nim	JsonString	supranim/core/application.html#JsonString	type JsonString		42
+nim	Services	supranim/core/application.html#Services	object Services		44
+nim	ApplicationAssetsHandler	supranim/core/application.html#ApplicationAssetsHandler	type ApplicationAssetsHandler		51
+nim	ApplicationThreadCallback	supranim/core/application.html#ApplicationThreadCallback	type ApplicationThreadCallback		52
+nim	ServiceMsg	supranim/core/application.html#ServiceMsg	object ServiceMsg		54
+nim	AppConfigDefect	supranim/core/application.html#AppConfigDefect	object AppConfigDefect		95
+nim	info	supranim/core/application.html#info,string,int	proc info(str: string; indentSize = 0)		97
+nim	App	supranim/core/application.html#App	var App		104
+nim	Application	supranim/core/application.html#Application	type Application		108
+nim	initApplication	supranim/core/application.html#initApplication	proc initApplication()		111
+nim	appInstance	supranim/core/application.html#appInstance	proc appInstance(): Application		118
+nim	AppInstance	supranim/core/application.html#AppInstance_2	proc AppInstance(): Application		124
+nim	getApplication	supranim/core/application.html#getApplication	proc getApplication(): Application		129
+nim	app	supranim/core/application.html#app_2	proc app(): Application		134
+nim	paths	supranim/core/application.html#paths,Application	proc paths(app: Application): ApplicationPaths		138
+nim	config	supranim/core/application.html#config,Application,string	proc config(app: Application; key: string): ConfigValue		145
+nim	loadServerOptions	supranim/core/application.html#loadServerOptions,Application,string	proc loadServerOptions(app: Application; prefix = "app.server"): HttpServerOptions		159
+nim	seedEmbeddedEnvSample	supranim/core/application.html#seedEmbeddedEnvSample.m,string	macro seedEmbeddedEnvSample(destFile: string): untyped		201
+nim	seedEmbeddedConfigs	supranim/core/application.html#seedEmbeddedConfigs.m,string	macro seedEmbeddedConfigs(runtimePath: string): untyped		216
+nim	initHttpRouter	supranim/core/application.html#initHttpRouter.t	template initHttpRouter()		241
+nim	loadEventListeners	supranim/core/application.html#loadEventListeners	proc loadEventListeners(): NimNode		323
+nim	loadEventQueues	supranim/core/application.html#loadEventQueues	proc loadEventQueues(): NimNode		332
+nim	init	supranim/core/application.html#init.m,,staticbool,untyped	macro init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)		365
+nim	SafeThreadVarSeq	supranim/core/application.html#SafeThreadVarSeq	const SafeThreadVarSeq		438
+nim	withThreadCallback	supranim/core/application.html#withThreadCallback.m,untyped,untyped	macro withThreadCallback(appInstance, callback: untyped)		443
+nim	injectSafeThreadCallbacks	supranim/core/application.html#injectSafeThreadCallbacks.m	macro injectSafeThreadCallbacks()		449
+nim	appInitialized	supranim/core/application.html#appInitialized	var appInitialized		472
+nim	appSkipLocalConfig	supranim/core/application.html#appSkipLocalConfig	var appSkipLocalConfig		477
+nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	template initStartCommand(v: Values; createDirs = true)		483
+nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		535
+nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		554
+nim	initApp	supranim/core/application.html#initApp.m,varargs[untyped]	macro initApp(args: varargs[untyped]): untyped		576
+nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		784
+nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		790
+nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		794
+nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		798
+nim	ServiceStopAction	supranim/core/application.html#ServiceStopAction	const ServiceStopAction		801
+nim	registerServiceChan	supranim/core/application.html#registerServiceChan,Application,string,Chan[ServiceMsg]	proc registerServiceChan(app: Application; name: string; ch: Chan[ServiceMsg])		806
+nim	hasServiceChan	supranim/core/application.html#hasServiceChan,Application,string	proc hasServiceChan(app: Application; name: string): bool		811
+nim	getServiceChan	supranim/core/application.html#getServiceChan,Application,string	proc getServiceChan(app: Application; name: string): Chan[ServiceMsg]		815
+nim	sendServiceMsg	supranim/core/application.html#sendServiceMsg,Application,string,string,string,int64	proc sendServiceMsg(app: Application; name, action: string; payload: string = "";\n               id: int64 = 0): bool		820
+nim	recvServiceMsg	supranim/core/application.html#recvServiceMsg,Application,string	proc recvServiceMsg(app: Application; name: string): ServiceMsg		828
+nim	tryRecvServiceMsg	supranim/core/application.html#tryRecvServiceMsg,Application,string,ServiceMsg	proc tryRecvServiceMsg(app: Application; name: string; dst: var ServiceMsg): bool		833
+nim	isServiceStop	supranim/core/application.html#isServiceStop.t,ServiceMsg	template isServiceStop(msg: ServiceMsg): bool		839

@@ -103,6 +103,10 @@
 <li><a class="reference external"
           data-doc-search-tag="application: type ApplicationThreadCallback" href="supranim/core/application.html#ApplicationThreadCallback">application: type ApplicationThreadCallback</a></li>
           </ul></dd>
+<dt><a name="appSkipLocalConfig" href="#appSkipLocalConfig"><span>appSkipLocalConfig:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: var appSkipLocalConfig" href="supranim/core/application.html#appSkipLocalConfig">application: var appSkipLocalConfig</a></li>
+          </ul></dd>
 <dt><a name="AssetsImportStmt" href="#AssetsImportStmt"><span>AssetsImportStmt:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="assets: const AssetsImportStmt" href="supranim/service/assets.html#AssetsImportStmt">assets: const AssetsImportStmt</a></li>
@@ -757,6 +761,10 @@
           <li><a class="reference external"
           data-doc-search-tag="logger: proc init()" href="supranim/service/logger.html#init">logger: proc init()</a></li>
           </ul></dd>
+<dt><a name="initApp" href="#initApp"><span>initApp:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: macro initApp(args: varargs[untyped]): untyped" href="supranim/core/application.html#initApp.m%2Cvarargs%5Buntyped%5D">application: macro initApp(args: varargs[untyped]): untyped</a></li>
+          </ul></dd>
 <dt><a name="initApplication" href="#initApplication"><span>initApplication:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: proc initApplication()" href="supranim/core/application.html#initApplication">application: proc initApplication()</a></li>
@@ -872,6 +880,10 @@
 <dt><a name="loadEventQueues" href="#loadEventQueues"><span>loadEventQueues:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="application: proc loadEventQueues(): NimNode" href="supranim/core/application.html#loadEventQueues">application: proc loadEventQueues(): NimNode</a></li>
+          </ul></dd>
+<dt><a name="loadServerOptions" href="#loadServerOptions"><span>loadServerOptions:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="application: proc loadServerOptions(app: Application; prefix = &quot;app.server&quot;): HttpServerOptions" href="supranim/core/application.html#loadServerOptions%2CApplication%2Cstring">application: proc loadServerOptions(app: Application; prefix = &quot;app.server&quot;): HttpServerOptions</a></li>
           </ul></dd>
 <dt><a name="log" href="#log"><span>log:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1348,8 +1360,8 @@
 <dt><a name="sendAssets" href="#sendAssets"><span>sendAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="fileserver: proc sendAssets(req: var Request; path: string; headers: HttpHeaders;
-           hasFoundResource: var bool)" href="supranim/core/fileserver.html#sendAssets%2CRequest%2Cstring%2CHttpHeaders%2Cbool">fileserver: proc sendAssets(req: var Request; path: string; headers: HttpHeaders;
-           hasFoundResource: var bool)</a></li>
+           foundRes: var bool)" href="supranim/core/fileserver.html#sendAssets%2CRequest%2Cstring%2CHttpHeaders%2Cbool">fileserver: proc sendAssets(req: var Request; path: string; headers: HttpHeaders;
+           foundRes: var bool)</a></li>
           <li><a class="reference external"
           data-doc-search-tag="fileserver: proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool" href="supranim/core/fileserver.html#sendAssets%2CRequest%2Cstring%2Cstring%2CHttpHeaders">fileserver: proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool</a></li>
           </ul></dd>
@@ -1364,8 +1376,8 @@
 <dt><a name="sendEmbeddedAsset" href="#sendEmbeddedAsset"><span>sendEmbeddedAsset:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="fileserver: proc sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;
-                  hasFoundResource: var bool)" href="supranim/core/fileserver.html#sendEmbeddedAsset%2CRequest%2Cstring%2CHttpHeaders%2Cbool">fileserver: proc sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;
-                  hasFoundResource: var bool)</a></li>
+                  foundRes: var bool)" href="supranim/core/fileserver.html#sendEmbeddedAsset%2CRequest%2Cstring%2CHttpHeaders%2Cbool">fileserver: proc sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;
+                  foundRes: var bool)</a></li>
           </ul></dd>
 <dt><a name="sendFile" href="#sendFile"><span>sendFile:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1455,13 +1467,15 @@
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc start(server: WebServer)" href="supranim/network/webserver.html#start%2CWebServer">webserver: proc start(server: WebServer)</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="webserver: proc start(server: WebServer; onRequest: OnRequest;
-      startupCallback: StartupCallback = nil)" href="supranim/network/webserver.html#start%2CWebServer%2COnRequest%2CStartupCallback">webserver: proc start(server: WebServer; onRequest: OnRequest;
-      startupCallback: StartupCallback = nil)</a></li>
-          <li><a class="reference external"
           data-doc-search-tag="webserver: proc start(server: WebServer; onRequest: OnRequest; startupCallback: StartupCallback;
-      threads: int; host = &quot;0.0.0.0&quot;)" href="supranim/network/webserver.html#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint%2Cstring">webserver: proc start(server: WebServer; onRequest: OnRequest; startupCallback: StartupCallback;
-      threads: int; host = &quot;0.0.0.0&quot;)</a></li>
+      threads: int; host = &quot;0.0.0.0&quot;; options = pw.defaultHttpServerOptions())" href="supranim/network/webserver.html#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint%2Cstring">webserver: proc start(server: WebServer; onRequest: OnRequest; startupCallback: StartupCallback;
+      threads: int; host = &quot;0.0.0.0&quot;; options = pw.defaultHttpServerOptions())</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="webserver: proc start(server: WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback = nil; host = &quot;0.0.0.0&quot;;
+      options = pw.defaultHttpServerOptions())" href="supranim/network/webserver.html#start%2CWebServer%2COnRequest%2CStartupCallback%2Cstring">webserver: proc start(server: WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback = nil; host = &quot;0.0.0.0&quot;;
+      options = pw.defaultHttpServerOptions())</a></li>
           <li><a class="reference external"
           data-doc-search-tag="logit: proc start(self: var Logit)" href="supranim/support/logit.html#start%2CLogit">logit: proc start(self: var Logit)</a></li>
           </ul></dd>
@@ -1475,6 +1489,12 @@
           </ul></dd>
 <dt><a name="startUnix" href="#startUnix"><span>startUnix:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
+          data-doc-search-tag="webserver: proc startUnix(server: WebServer; onRequest: OnRequest;
+          startupCallback: StartupCallback = nil; socketPath: string;
+          options = pw.defaultHttpServerOptions())" href="supranim/network/webserver.html#startUnix%2CWebServer%2COnRequest%2CStartupCallback%2Cstring">webserver: proc startUnix(server: WebServer; onRequest: OnRequest;
+          startupCallback: StartupCallback = nil; socketPath: string;
+          options = pw.defaultHttpServerOptions())</a></li>
+          <li><a class="reference external"
           data-doc-search-tag="webserver: proc startUnix(server: WebServer; onRequest: OnRequest;
           startupCallback: StartupCallback = nil; socketPath: string;
           mode: int = 0o000000000660)" href="supranim/network/webserver.html#startUnix%2CWebServer%2COnRequest%2CStartupCallback%2Cstring%2Cint">webserver: proc startUnix(server: WebServer; onRequest: OnRequest;
@@ -1645,7 +1665,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-19 18:28:47 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-20 20:22:36 UTC</small>
       </div>
     </div>
   </div>

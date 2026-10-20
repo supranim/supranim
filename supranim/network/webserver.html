@@ -79,7 +79,8 @@
 <li><a class="reference" href="#StartupCallback" title="StartupCallback = proc () {.gcsafe.}">StartupCallback</a></li>
 <li><a class="reference" href="#WebServer" title="WebServer = ref object
   port*: Port
-  enableMultiThreading*: bool">WebServer</a></li>
+  enableMultiThreading*: bool
+  when not defined(windows):">WebServer</a></li>
 
     </ul>
   </details>
@@ -216,12 +217,14 @@
 </ul>
 <ul class="simple nested-toc-section">start
   <li><a class="reference" href="#start%2CWebServer" title="start(server: WebServer)">start(server: WebServer)</a></li>
-<li><a class="reference" href="#start%2CWebServer%2COnRequest%2CStartupCallback" title="start(server: WebServer; onRequest: OnRequest;
-      startupCallback: StartupCallback = nil)">start(server: WebServer; onRequest: OnRequest;
-      startupCallback: StartupCallback = nil)</a></li>
+<li><a class="reference" href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cstring" title="start(server: WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback = nil; host = &quot;0.0.0.0&quot;;
+      options = pw.defaultHttpServerOptions())">start(server: WebServer; onRequest: OnRequest;
+      startupCallback: StartupCallback = nil; host = &quot;0.0.0.0&quot;;
+      options = pw.defaultHttpServerOptions())</a></li>
 <li><a class="reference" href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint%2Cstring" title="start(server: WebServer; onRequest: OnRequest; startupCallback: StartupCallback;
-      threads: int; host = &quot;0.0.0.0&quot;)">start(server: WebServer; onRequest: OnRequest; startupCallback: StartupCallback;
-      threads: int; host = &quot;0.0.0.0&quot;)</a></li>
+      threads: int; host = &quot;0.0.0.0&quot;; options = pw.defaultHttpServerOptions())">start(server: WebServer; onRequest: OnRequest; startupCallback: StartupCallback;
+      threads: int; host = &quot;0.0.0.0&quot;; options = pw.defaultHttpServerOptions())</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">startChunk
@@ -238,6 +241,11 @@
           mode: int = 0o000000000660)">startUnix(server: WebServer; onRequest: OnRequest;
           startupCallback: StartupCallback = nil; socketPath: string;
           mode: int = 0o000000000660)</a></li>
+<li><a class="reference" href="#startUnix%2CWebServer%2COnRequest%2CStartupCallback%2Cstring" title="startUnix(server: WebServer; onRequest: OnRequest;
+          startupCallback: StartupCallback = nil; socketPath: string;
+          options = pw.defaultHttpServerOptions())">startUnix(server: WebServer; onRequest: OnRequest;
+          startupCallback: StartupCallback = nil; socketPath: string;
+          options = pw.defaultHttpServerOptions())</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">streamFile
@@ -336,7 +344,8 @@
 <div id="WebServer">
   <dt><pre><a href="#WebServer"><span class="Identifier">WebServer</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">port</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Port</span>
-  <span class="Identifier">enableMultiThreading</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
+  <span class="Identifier">enableMultiThreading</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Keyword">when</span> <span class="Keyword">not</span> <span class="Identifier">defined</span><span class="Other">(</span><span class="Identifier">windows</span><span class="Other">)</span><span class="Other">:</span></pre></dt>
   <dd>
     
     
@@ -556,7 +565,7 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Create a new multi-threaded WebServer backed by PowPow
+    Create a new multi-threaded WebServer backed by PowPow. POSIX only: powpow's worker-pool server is unavailable on Windows.
     
   </dd>
 </div>
@@ -628,8 +637,8 @@
 <div id="runServer-procs-all">
   <div id="runServer,OnRequest,StartupCallback">
   <dt><pre><span class="Keyword">proc</span> <a href="#runServer%2COnRequest%2CStartupCallback"><span class="Identifier">runServer</span></a><span class="Other">(</span><span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span> <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span>
-               <span class="Identifier">port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">3000</span><span class="Other">)</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span>
-    <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+               <span class="Identifier">port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">3000</span><span class="Other">)</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span>
+    <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Convenience procedure that creates a single-threaded WebServer, binds it to the given <tt class="docutils literal"><span class="pre"><span class="Identifier">port</span></span></tt>, and starts the event loop.
@@ -639,7 +648,7 @@
 <div id="runServer,OnRequest,StartupCallback,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#runServer%2COnRequest%2CStartupCallback%2Cstring"><span class="Identifier">runServer</span></a><span class="Other">(</span><span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span> <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span>
                <span class="Identifier">port</span> <span class="Other">=</span> <span class="Identifier">Port</span><span class="Other">(</span><span class="DecNumber">3000</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">host</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -654,7 +663,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Convenience procedure that creates a multi-threaded WebServer (powpow <tt class="docutils literal"><span class="pre"><span class="Identifier">MultiThreadHttpServer</span></span></tt>) serving <tt class="docutils literal"><span class="pre"><span class="Identifier">onRequest</span></span></tt> on <tt class="docutils literal"><span class="pre"><span class="Identifier">port</span></span></tt> with <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span></span></tt> workers. <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span> <span class="Operator">&lt;=</span> <span class="DecNumber">0</span></span></tt> uses all processors.
+    Convenience procedure that creates a multi-threaded WebServer (powpow <tt class="docutils literal"><span class="pre"><span class="Identifier">MultiThreadHttpServer</span></span></tt>) serving <tt class="docutils literal"><span class="pre"><span class="Identifier">onRequest</span></span></tt> on <tt class="docutils literal"><span class="pre"><span class="Identifier">port</span></span></tt> with <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span></span></tt> workers. <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span> <span class="Operator">&lt;=</span> <span class="DecNumber">0</span></span></tt> uses all processors. POSIX only: powpow's worker-pool server is unavailable on Windows.
     
   </dd>
 </div>
@@ -664,7 +673,7 @@
   <div id="runUnixServer,OnRequest,StartupCallback,string,int">
   <dt><pre><span class="Keyword">proc</span> <a href="#runUnixServer%2COnRequest%2CStartupCallback%2Cstring%2Cint"><span class="Identifier">runUnixServer</span></a><span class="Other">(</span><span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span> <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span>
                    <span class="Identifier">socketPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">mode</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">0o000000000660</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -678,7 +687,7 @@
   <div id="send,Request,HttpCode,string,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2CHttpCode%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
           <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -689,7 +698,7 @@
 <div id="send,Request,int,string,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2Cint%2Cstring%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">body</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
           <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -701,7 +710,7 @@
 </div>
 <div id="send,Request,int,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#send%2CRequest%2Cint%2CHttpHeaders"><span class="Identifier">send</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">httpHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -714,7 +723,7 @@
 <div id="sendChunk-procs-all">
   <div id="sendChunk,Request,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#sendChunk%2CRequest%2Cstring"><span class="Identifier">sendChunk</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -727,7 +736,7 @@
 <div id="sendFile-procs-all">
   <div id="sendFile,Request,seq[uint8],HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#sendFile%2CRequest%2Cseq%5Buint8%5D%2CHttpHeaders"><span class="Identifier">sendFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">bytes</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">uint8</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -737,7 +746,7 @@
 </div>
 <div id="sendFile,Request,string,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#sendFile%2CRequest%2Cstring%2CHttpHeaders"><span class="Identifier">sendFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">filePath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">OpenParserJsonError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">OpenParserJsonError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -749,18 +758,19 @@
 </div>
 <div id="start-procs-all">
   <div id="start,WebServer">
-  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
-                                <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span>
+    <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Start a WebServer
     
   </dd>
 </div>
-<div id="start,WebServer,OnRequest,StartupCallback">
-  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer%2COnRequest%2CStartupCallback"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
-           <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+<div id="start,WebServer,OnRequest,StartupCallback,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cstring"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
+           <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span> <span class="Identifier">host</span> <span class="Other">=</span> <span class="StringLit">&quot;0.0.0.0&quot;</span><span class="Other">;</span>
+           <span class="Identifier">options</span> <span class="Other">=</span> <span class="Identifier">pw</span><span class="Other">.</span><span class="Identifier">defaultHttpServerOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -770,12 +780,13 @@
 </div>
 <div id="start,WebServer,OnRequest,StartupCallback,int,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#start%2CWebServer%2COnRequest%2CStartupCallback%2Cint%2Cstring"><span class="Identifier">start</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
-           <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span> <span class="Identifier">threads</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">host</span> <span class="Other">=</span> <span class="StringLit">&quot;0.0.0.0&quot;</span><span class="Other">)</span> {.
+           <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a><span class="Other">;</span> <span class="Identifier">threads</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">host</span> <span class="Other">=</span> <span class="StringLit">&quot;0.0.0.0&quot;</span><span class="Other">;</span>
+           <span class="Identifier">options</span> <span class="Other">=</span> <span class="Identifier">pw</span><span class="Other">.</span><span class="Identifier">defaultHttpServerOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">ResourceExhaustedError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Start the PowPow webserver for a specific number of <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span></span></tt> 
+    Start the PowPow webserver for a specific number of <tt class="docutils literal"><span class="pre"><span class="Identifier">threads</span></span></tt>. POSIX only: powpow's worker-pool server is unavailable on Windows.
     
   </dd>
 </div>
@@ -808,11 +819,23 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#startUnix%2CWebServer%2COnRequest%2CStartupCallback%2Cstring%2Cint"><span class="Identifier">startUnix</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
                <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span> <span class="Identifier">socketPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                <span class="Identifier">mode</span><span class="Other">:</span> <span class="Identifier">int</span> <span class="Other">=</span> <span class="DecNumber">0o000000000660</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Start the PowPow WebServer on a Unix domain socket instead of TCP. Ideal for ultra-low-latency local IPC between microservices on the same machine (no loopback TCP stack). POSIX only.
+    
+  </dd>
+</div>
+<div id="startUnix,WebServer,OnRequest,StartupCallback,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#startUnix%2CWebServer%2COnRequest%2CStartupCallback%2Cstring"><span class="Identifier">startUnix</span></a><span class="Other">(</span><span class="Identifier">server</span><span class="Other">:</span> <a href="#WebServer"><span class="Identifier">WebServer</span></a><span class="Other">;</span> <span class="Identifier">onRequest</span><span class="Other">:</span> <a href="#OnRequest"><span class="Identifier">OnRequest</span></a><span class="Other">;</span>
+               <span class="Identifier">startupCallback</span><span class="Other">:</span> <a href="#StartupCallback"><span class="Identifier">StartupCallback</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span> <span class="Identifier">socketPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+               <span class="Identifier">options</span> <span class="Other">=</span> <span class="Identifier">pw</span><span class="Other">.</span><span class="Identifier">defaultHttpServerOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span> <span class="Identifier">NetError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Serve HTTP over a Unix domain socket at <tt class="docutils literal"><span class="pre"><span class="Identifier">socketPath</span></span></tt> instead of TCP. Single-threaded: powpow worker pools do not support Unix sockets.
     
   </dd>
 </div>
@@ -822,7 +845,7 @@
   <div id="streamFile,Request,string,HttpHeaders">
   <dt><pre><span class="Keyword">proc</span> <a href="#streamFile%2CRequest%2Cstring%2CHttpHeaders"><span class="Identifier">streamFile</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">filePath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                 <span class="Identifier">resHeaders</span><span class="Other">:</span> <span class="Identifier">HttpHeaders</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">OpenParserJsonError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">OpenParserJsonError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -874,7 +897,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-19 18:28:46 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-20 20:22:36 UTC</small>
       </div>
     </div>
   </div>

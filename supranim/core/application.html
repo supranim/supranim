@@ -64,7 +64,7 @@
       <li><a class="reference" href="#AppConfigDefect" title="AppConfigDefect = object of CatchableError">AppConfigDefect</a></li>
 <li><a class="reference" href="#Application" title="Application = ptr ApplicationObject">Application</a></li>
 <li><a class="reference" href="#ApplicationAssetsHandler" title="ApplicationAssetsHandler = proc (req: var Request; res: var Response;
-                                 hasFoundResource: var bool) {.closure.}">ApplicationAssetsHandler</a></li>
+                                 foundRes: var bool) {.closure.}">ApplicationAssetsHandler</a></li>
 <li><a class="reference" href="#ApplicationThreadCallback" title="ApplicationThreadCallback = proc (app: ptr ApplicationObject) {.closure.}">ApplicationThreadCallback</a></li>
 <li><a class="reference" href="#JsonString" title="JsonString = string">JsonString</a></li>
 <li><a class="reference" href="#ServiceMsg" title="ServiceMsg = object
@@ -82,6 +82,7 @@
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#App" title="App: ptr ApplicationObject">App</a></li>
 <li><a class="reference" href="#appInitialized" title="appInitialized = false">appInitialized</a></li>
+<li><a class="reference" href="#appSkipLocalConfig" title="appSkipLocalConfig = false">appSkipLocalConfig</a></li>
 
     </ul>
   </details>
@@ -156,6 +157,10 @@
   <li><a class="reference" href="#loadEventQueues" title="loadEventQueues(): NimNode">loadEventQueues(): NimNode</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">loadServerOptions
+  <li><a class="reference" href="#loadServerOptions%2CApplication%2Cstring" title="loadServerOptions(app: Application; prefix = &quot;app.server&quot;): HttpServerOptions">loadServerOptions(app: Application; prefix = &quot;app.server&quot;): HttpServerOptions</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">paths
   <li><a class="reference" href="#paths%2CApplication" title="paths(app: Application): ApplicationPaths">paths(app: Application): ApplicationPaths</a></li>
 
@@ -188,6 +193,10 @@
     <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">init
   <li><a class="reference" href="#init.m%2C%2Cstaticbool%2Cuntyped" title="init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)">init(appInstance; skipLocalConfig: static bool = false; initBody: untyped = nil)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">initApp
+  <li><a class="reference" href="#initApp.m%2Cvarargs%5Buntyped%5D" title="initApp(args: varargs[untyped]): untyped">initApp(args: varargs[untyped]): untyped</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">injectSafeThreadCallbacks
@@ -281,7 +290,7 @@
 </div>
 <div id="ApplicationAssetsHandler">
   <dt><pre><a href="#ApplicationAssetsHandler"><span class="Identifier">ApplicationAssetsHandler</span></a> <span class="Other">=</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">;</span>
-                                 <span class="Identifier">hasFoundResource</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">bool</span><span class="Other">)</span> {.<span class="Identifier">closure</span>.}</pre></dt>
+                                 <span class="Identifier">foundRes</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">bool</span><span class="Other">)</span> {.<span class="Identifier">closure</span>.}</pre></dt>
   <dd>
     
     
@@ -339,6 +348,14 @@
 </div>
 <div id="appInitialized">
   <dt><pre><a href="#appInitialized"><span class="Identifier">appInitialized</span></a> <span class="Other">=</span> <span class="Identifier">false</span></pre></dt>
+  <dd>
+    
+    
+    
+  </dd>
+</div>
+<div id="appSkipLocalConfig">
+  <dt><pre><a href="#appSkipLocalConfig"><span class="Identifier">appSkipLocalConfig</span></a> <span class="Other">=</span> <span class="Identifier">false</span></pre></dt>
   <dd>
     
     
@@ -533,6 +550,18 @@
 </div>
 
 </div>
+<div id="loadServerOptions-procs-all">
+  <div id="loadServerOptions,Application,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#loadServerOptions%2CApplication%2Cstring"><span class="Identifier">loadServerOptions</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">;</span> <span class="Identifier">prefix</span> <span class="Other">=</span> <span class="StringLit">&quot;app.server&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">HttpServerOptions</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Builds powpow <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpServerOptions</span></span></tt> from <tt class="docutils literal"><span class="pre"><span class="Operator">&lt;</span><span class="Identifier">prefix</span><span class="Operator">&gt;.*</span></span></tt> runtime config (<tt class="docutils literal"><span class="pre"><span class="Identifier">max_body_size</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">read_timeout_ms</span></span></tt>, ...). Missing keys keep the powpow defaults from <tt class="docutils literal"><span class="pre"><span class="Identifier">defaultHttpServerOptions</span><span class="Punctuation">(</span><span class="Punctuation">)</span></span></tt>.
+    
+  </dd>
+</div>
+
+</div>
 <div id="paths-procs-all">
   <div id="paths,Application">
   <dt><pre><span class="Keyword">proc</span> <a href="#paths%2CApplication"><span class="Identifier">paths</span></a><span class="Other">(</span><span class="Identifier">app</span><span class="Other">:</span> <a href="#Application"><span class="Identifier">Application</span></a><span class="Other">)</span><span class="Other">:</span> <a href="paths.html#ApplicationPaths"><span class="Identifier">ApplicationPaths</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
@@ -607,6 +636,40 @@
   <dd>
     
     Initializes Supranim application instance. This macro is responsible for setting up the application, loading configurations, initializing services, and preparing the app to handle incoming requests. The <tt class="docutils literal"><span class="pre"><span class="Identifier">initBody</span></span></tt> parameter allows injection of custom initialization code during the application setup process.
+    
+  </dd>
+</div>
+
+</div>
+<div id="initApp-macros-all">
+  <div id="initApp.m,varargs[untyped]">
+  <dt><pre><span class="Keyword">macro</span> <a href="#initApp.m%2Cvarargs%5Buntyped%5D"><span class="Identifier">initApp</span></a><span class="Other">(</span><span class="Identifier">args</span><span class="Other">:</span> <span class="Identifier">varargs</span><span class="Other">[</span><span class="Identifier">untyped</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
+  <dd>
+    
+    Minimal DSL for the main application file. Wraps the standard initializer (<tt class="docutils literal"><span class="pre"><span class="Identifier">App</span><span class="Operator">.</span><span class="Identifier">init</span></span></tt>) and forwards each section to the matching template, so current behavior is unchanged — only the shape changes:<pre class="listing"><span class="Identifier">initApp</span><span class="Punctuation">:</span>
+  <span class="Identifier">cli</span> <span class="Keyword">do</span><span class="Punctuation">:</span>
+    <span class="Identifier">start</span> <span class="Identifier">path</span><span class="Punctuation">(</span><span class="Identifier">project</span><span class="Punctuation">)</span><span class="Punctuation">:</span>
+      <span class="Identifier">initStartCommand</span><span class="Punctuation">(</span><span class="Identifier">v</span><span class="Punctuation">,</span> <span class="Identifier">createDirs</span> <span class="Operator">=</span> <span class="Identifier">false</span><span class="Punctuation">)</span>
+  <span class="Identifier">services</span> <span class="Keyword">do</span><span class="Punctuation">:</span>
+    <span class="Identifier">storage</span><span class="Operator">.</span><span class="Identifier">init</span><span class="Punctuation">(</span><span class="Identifier">App</span><span class="Punctuation">)</span>
+  <span class="Identifier">serveAssets</span> <span class="StringLit">&quot;/static&quot;</span><span class="Punctuation">:</span> <span class="Comment"># optional public URL prefix, default &quot;/assets&quot;</span>
+    <span class="Identifier">assets</span><span class="Operator">.</span><span class="Identifier">embedAssets</span><span class="Punctuation">(</span><span class="StringLit">&quot;assets&quot;</span><span class="Punctuation">)</span>
+    <span class="Identifier">assets</span><span class="Operator">.</span><span class="Identifier">embedDirectory</span><span class="Punctuation">(</span><span class="StringLit">&quot;storage/icons&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;icons&quot;</span><span class="Punctuation">)</span>
+    <span class="Identifier">assets</span><span class="Operator">.</span><span class="Identifier">preloadBundle</span><span class="Punctuation">(</span><span class="StringLit">&quot;assets&quot;</span><span class="Punctuation">)</span>
+    <span class="Identifier">assets</span><span class="Operator">.</span><span class="Identifier">preloadBundle</span><span class="Punctuation">(</span><span class="StringLit">&quot;icons&quot;</span><span class="Punctuation">)</span>
+  <span class="Identifier">run</span> <span class="Keyword">do</span><span class="Punctuation">(</span><span class="Identifier">app</span><span class="Punctuation">:</span> <span class="Identifier">Application</span><span class="Punctuation">)</span><span class="Punctuation">:</span>
+    <span class="Identifier">app</span><span class="Operator">.</span><span class="Identifier">server</span><span class="Operator">.</span><span class="Identifier">registerCallback</span><span class="Punctuation">(</span><span class="StringLit">&quot;/ws&quot;</span><span class="Punctuation">,</span>
+      <span class="Keyword">proc</span> <span class="Punctuation">(</span><span class="Identifier">req</span><span class="Punctuation">:</span> <span class="Identifier">HttpRequest</span><span class="Punctuation">,</span> <span class="Identifier">res</span><span class="Punctuation">:</span> <span class="Identifier">HttpResponse</span><span class="Punctuation">)</span> <span class="Punctuation">{</span><span class="Operator">.</span><span class="Identifier">gcsafe</span><span class="Operator">.</span><span class="Punctuation">}</span> <span class="Operator">=</span>
+        <span class="Keyword">discard</span> <span class="Identifier">websocketUpgrade</span><span class="Punctuation">(</span><span class="Identifier">res</span><span class="Punctuation">,</span> <span class="Identifier">req</span><span class="Punctuation">,</span> <span class="Identifier">onOpen</span> <span class="Operator">=</span> <span class="Identifier">onOpenCallback</span><span class="Punctuation">,</span>
+          <span class="Identifier">onClose</span> <span class="Operator">=</span> <span class="Identifier">onClose</span><span class="Punctuation">,</span> <span class="Identifier">onError</span> <span class="Operator">=</span> <span class="Identifier">onError</span><span class="Punctuation">)</span><span class="Punctuation">)</span></pre><p>The <tt class="docutils literal"><span class="pre"><span class="Punctuation">(</span><span class="Identifier">app</span><span class="Punctuation">:</span> <span class="Identifier">Application</span><span class="Punctuation">)</span></span></tt> parameter on a <tt class="docutils literal"><span class="pre"><span class="Keyword">do</span></span></tt> block is optional. <tt class="docutils literal"><span class="pre"><span class="Identifier">services</span></span></tt> and <tt class="docutils literal"><span class="pre"><span class="Identifier">run</span></span></tt> sections invoke a parameterized block with the application instance, so <tt class="docutils literal"><span class="pre"><span class="Identifier">app</span></span></tt> inside the body is a real binding — a template parameter alone is NOT a lexical binding (a bare <tt class="docutils literal"><span class="pre"><span class="Identifier">app</span></span></tt> would resolve to the caller's <tt class="docutils literal"><span class="pre"><span class="Identifier">app</span></span></tt> package instead). <tt class="docutils literal"><span class="pre"><span class="Identifier">cli</span></span></tt> sections always forward the bare command declarations.</p>
+<p>Apps that skip the default config loading (like StupidGreen) pass the flag through and provide the init body as a <tt class="docutils literal"><span class="pre"><span class="Identifier">config</span></span></tt> section:</p>
+<pre class="listing"><span class="Identifier">initApp</span><span class="Punctuation">(</span><span class="Identifier">skipLocalConfig</span> <span class="Operator">=</span> <span class="Identifier">true</span><span class="Punctuation">)</span><span class="Punctuation">:</span>
+  <span class="Identifier">config</span> <span class="Keyword">do</span><span class="Punctuation">:</span>
+    <span class="Identifier">App</span><span class="Operator">.</span><span class="Identifier">configs</span><span class="Punctuation">[</span><span class="StringLit">&quot;app&quot;</span><span class="Punctuation">]</span> <span class="Operator">=</span> <span class="Identifier">parseConfiguration</span><span class="Punctuation">(</span><span class="StringLit">&quot;.toml&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;...&quot;</span><span class="Punctuation">)</span>
+  <span class="Identifier">cli</span> <span class="Keyword">do</span><span class="Punctuation">:</span>
+    <span class="Operator">...</span></pre><p><tt class="docutils literal"><span class="pre"><span class="Identifier">cli</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> / <tt class="docutils literal"><span class="pre"><span class="Identifier">services</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> / <tt class="docutils literal"><span class="pre"><span class="Identifier">run</span> <span class="Keyword">do</span><span class="Punctuation">:</span></span></tt> sections are forwarded to the <tt class="docutils literal"><span class="pre"><span class="Identifier">App</span><span class="Operator">.</span><span class="Identifier">cli</span></span></tt> / <tt class="docutils literal"><span class="pre"><span class="Identifier">App</span><span class="Operator">.</span><span class="Identifier">services</span></span></tt> / <tt class="docutils literal"><span class="pre"><span class="Identifier">App</span><span class="Operator">.</span><span class="Identifier">run</span></span></tt> templates, in body order (so <tt class="docutils literal"><span class="pre"><span class="Identifier">run</span></span></tt> goes last, after the services it needs). The <tt class="docutils literal"><span class="pre"><span class="Identifier">serveAssets</span><span class="Punctuation">:</span></span></tt> section holds the user's own embed statements, emitted verbatim under <tt class="docutils literal"><span class="pre"><span class="Keyword">when</span> <span class="Identifier">defined</span> <span class="Identifier">release</span></span></tt> (after an automatic <tt class="docutils literal"><span class="pre"><span class="Keyword">import</span> <span class="Identifier">pkg</span><span class="Operator">/</span><span class="Identifier">supranim</span><span class="Operator">/</span><span class="Identifier">service</span><span class="Operator">/</span><span class="Identifier">assets</span></span></tt>), followed by the predefined handler: embedded bundle, disk fallback under the public path (default <tt class="docutils literal"><span class="pre"><span class="Operator">/</span><span class="Identifier">assets</span><span class="Operator">/</span></span></tt>, overridable via <tt class="docutils literal"><span class="pre"><span class="Identifier">serveAssets</span> <span class="StringLit">&quot;/static&quot;</span><span class="Punctuation">:</span></span></tt>), then theme fallback when the app provides <tt class="docutils literal"><span class="pre"><span class="Identifier">resolvePublicAsset</span></span></tt>. Omit the section for no handler. Anything after this macro (<tt class="docutils literal"><span class="pre"><span class="Identifier">App</span><span class="Operator">.</span><span class="Identifier">run</span></span></tt>, etc.) stays as is.</p>
+<p>Any other statements (e.g. <tt class="docutils literal"><span class="pre"><span class="Identifier">startCommand</span></span></tt>/<tt class="docutils literal"><span class="pre"><span class="Identifier">updateCommand</span></span></tt> handler procs, which kapsis resolves by command-name convention and which need the imports <tt class="docutils literal"><span class="pre"><span class="Identifier">App</span><span class="Operator">.</span><span class="Identifier">init</span></span></tt> injects) are emitted verbatim, in order, between <tt class="docutils literal"><span class="pre"><span class="Identifier">App</span><span class="Operator">.</span><span class="Identifier">init</span><span class="Punctuation">(</span><span class="Punctuation">)</span></span></tt> and the section expansions. Anything after this macro (<tt class="docutils literal"><span class="pre"><span class="Identifier">App</span><span class="Operator">.</span><span class="Identifier">run</span></span></tt>, etc.) stays as is.</p>
+
     
   </dd>
 </div>
@@ -744,7 +807,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-19 18:28:46 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-20 20:22:36 UTC</small>
       </div>
     </div>
   </div>

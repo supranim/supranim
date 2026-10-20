@@ -31,5 +31,5 @@ nim	providerPackageRoot	supranim/core/services.html#providerPackageRoot,string	p
 nim	providerConfigDir	supranim/core/services.html#providerConfigDir,string,string	proc providerConfigDir(serviceFile, pkgRoot: string): string		447
 nim	installServiceConfigs	supranim/core/services.html#installServiceConfigs,string,string,string	proc installServiceConfigs(serviceFile, projectDir, appConfigDir: string)		467
 nim	initService	supranim/core/services.html#initService.m,untyped,untyped	macro initService(serviceIdentifier, serviceConfig: untyped)		530
-nim	extractThreadServicesBackend	supranim/core/services.html#extractThreadServicesBackend.m	macro extractThreadServicesBackend()		1305
-nim	extractThreadServicesClient	supranim/core/services.html#extractThreadServicesClient.m	macro extractThreadServicesClient()		1321
+nim	extractThreadServicesBackend	supranim/core/services.html#extractThreadServicesBackend.m	macro extractThreadServicesBackend()		1314
+nim	extractThreadServicesClient	supranim/core/services.html#extractThreadServicesClient.m	macro extractThreadServicesClient()		1330
