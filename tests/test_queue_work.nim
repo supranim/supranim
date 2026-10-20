@@ -163,8 +163,10 @@ suite "queue worker":
           "created_at": $queueNowUnix()}).exec()
     var m = newTaskManager(poolSize = 2)
     discard startQueueWorker(m, queueName = "t4", intervalMs = 100, batch = 5)
-    check waitDone(failedCount() == 1)
-    check queueCount("t4") == 0
+    # Settle is INSERT-into-failed then DELETE-from-queue (two
+    # statements), so wait for both to land: failedCount fires right
+    # after the insert, before the delete is visible under load.
+    check waitDone(failedCount() == 1 and queueCount("t4") == 0)
     block:
       withDBPool do:
         let rows = Models.table(FailedQueueJobs).selectAll().getAll()

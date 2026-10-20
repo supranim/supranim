@@ -12,7 +12,7 @@ requires "threading >= 0.2.1"
 requires "semver >= 1.2.3"
 requires "kapsis >= 0.4.0"
 
-requires "powpow >= 0.2.3"
+requires "powpow >= 0.2.4"
 requires "supranim_tasks >= 0.1.0"
 requires "ozark >= 0.2.0"
 requires "emitter >= 0.3.0"
