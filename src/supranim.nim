@@ -26,14 +26,14 @@ import pkg/powpow
 import pkg/kapsis/framework
 import pkg/kapsis/interactive/prompts
 
-import ./supranim/core/[application, router, fileserver, utils]
+import ./supranim/core/[application, router, fileserver, utils, paths]
 import ./supranim/controller
 import ./supranim/network/[webserver, websocket]
 import ./supranim/service/events
 
 export application, webserver, websocket,
         router, fileserver, strutils,
-        prompts
+        prompts, paths
 
 export events, countProcessors, controller
 export Domain, Port, `$`, releaseUnusedMemory

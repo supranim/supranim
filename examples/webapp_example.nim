@@ -26,5 +26,5 @@ proc onRequest(req: var Request) =
     else:
       req.resp(Http404, "not found")
 
-var server = newWebServer()
-server.start(onRequest) # default 8080
+var server = newWebServer(enableMultiThreading = true)
+server.start(onRequest, nil, threads = 6) # default 8080

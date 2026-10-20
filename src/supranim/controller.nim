@@ -17,7 +17,9 @@ import ./support/cookie
 from ./core/application import appInstance
 from ./network/webserver import streamFile
 
-export json, uri, request, response, tables,
+export json except json
+
+export uri, request, response, tables,
         asyncdispatch, options, streamFile
 export fileserver, getQuery, Http200, Http201,
         Http400, Http404, Http500, Http502, HttpCode
