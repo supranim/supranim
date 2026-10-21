@@ -30,15 +30,15 @@ nim	initStartCommand	supranim/core/application.html#initStartCommand.t,Values	te
 nim	cli	supranim/core/application.html#cli.t,Application,	template cli(app: Application; cliCommands)		528
 nim	services	supranim/core/application.html#services.t,Application,	template services(app: Application; servicesStmt)		547
 nim	initApp	supranim/core/application.html#initApp.m,varargs[untyped]	macro initApp(args: varargs[untyped]): untyped		569
-nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		788
-nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		794
-nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		798
-nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		802
-nim	ServiceStopAction	supranim/core/application.html#ServiceStopAction	const ServiceStopAction		805
-nim	registerServiceChan	supranim/core/application.html#registerServiceChan,Application,string,Chan[ServiceMsg]	proc registerServiceChan(app: Application; name: string; ch: Chan[ServiceMsg])		810
-nim	hasServiceChan	supranim/core/application.html#hasServiceChan,Application,string	proc hasServiceChan(app: Application; name: string): bool		815
-nim	getServiceChan	supranim/core/application.html#getServiceChan,Application,string	proc getServiceChan(app: Application; name: string): Chan[ServiceMsg]		819
-nim	sendServiceMsg	supranim/core/application.html#sendServiceMsg,Application,string,string,string,int64	proc sendServiceMsg(app: Application; name, action: string; payload: string = "";\n               id: int64 = 0): bool		824
-nim	recvServiceMsg	supranim/core/application.html#recvServiceMsg,Application,string	proc recvServiceMsg(app: Application; name: string): ServiceMsg		832
-nim	tryRecvServiceMsg	supranim/core/application.html#tryRecvServiceMsg,Application,string,ServiceMsg	proc tryRecvServiceMsg(app: Application; name: string; dst: var ServiceMsg): bool		837
-nim	isServiceStop	supranim/core/application.html#isServiceStop.t,ServiceMsg	template isServiceStop(msg: ServiceMsg): bool		843
+nim	withAssetsHandler	supranim/core/application.html#withAssetsHandler.t,Application,ApplicationAssetsHandler	template withAssetsHandler(app: Application; handler: ApplicationAssetsHandler)		791
+nim	getPort	supranim/core/application.html#getPort,Application	proc getPort(app: Application): lent Port		797
+nim	getUuid	supranim/core/application.html#getUuid,Application	proc getUuid(app: Application): lent Uuid		801
+nim	getAddress	supranim/core/application.html#getAddress,Application	proc getAddress(app: Application): lent string		805
+nim	ServiceStopAction	supranim/core/application.html#ServiceStopAction	const ServiceStopAction		808
+nim	registerServiceChan	supranim/core/application.html#registerServiceChan,Application,string,Chan[ServiceMsg]	proc registerServiceChan(app: Application; name: string; ch: Chan[ServiceMsg])		813
+nim	hasServiceChan	supranim/core/application.html#hasServiceChan,Application,string	proc hasServiceChan(app: Application; name: string): bool		818
+nim	getServiceChan	supranim/core/application.html#getServiceChan,Application,string	proc getServiceChan(app: Application; name: string): Chan[ServiceMsg]		822
+nim	sendServiceMsg	supranim/core/application.html#sendServiceMsg,Application,string,string,string,int64	proc sendServiceMsg(app: Application; name, action: string; payload: string = "";\n               id: int64 = 0): bool		827
+nim	recvServiceMsg	supranim/core/application.html#recvServiceMsg,Application,string	proc recvServiceMsg(app: Application; name: string): ServiceMsg		835
+nim	tryRecvServiceMsg	supranim/core/application.html#tryRecvServiceMsg,Application,string,ServiceMsg	proc tryRecvServiceMsg(app: Application; name: string; dst: var ServiceMsg): bool		840
+nim	isServiceStop	supranim/core/application.html#isServiceStop.t,ServiceMsg	template isServiceStop(msg: ServiceMsg): bool		846
