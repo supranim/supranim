@@ -41,13 +41,6 @@ export Configuration, ConfigurationFormat, ConfigValue, ConfigError,
 type
   JsonString* = string  # an alias for JSON string
 
-  Services* = object
-    services: Table[string, pointer]
-
-  # ApplicationUDP* = object
-  #   # udpServer*: UdpServer
-  #     # A UDP socket for network communication
-
   ApplicationAssetsHandler* = proc (req: var Request, res: var Response, foundRes: var bool) {.closure.}
   ApplicationThreadCallback* = proc (app: ptr ApplicationObject) {.closure.}
 
@@ -615,7 +608,10 @@ macro initApp*(args: varargs[untyped]): untyped =
   ##
   ## `cli do:` / `services do:` / `run do:` sections are forwarded to the
   ## `App.cli` / `App.services` / `App.run` templates, in body order
-  ## (so `run` goes last, after the services it needs). The `serveAssets:` section holds the user's
+  ## (so `run` goes last, after the services it needs). The `run` section
+  ## is optional: when omitted, a default `App.run()` is appended
+  ## automatically so the server starts with no custom startup block.
+  ## The `serveAssets:` section holds the user's
   ## own embed statements, emitted verbatim under `when defined release`
   ## (after an automatic `import pkg/supranim/service/assets`), followed
   ## by the predefined handler: embedded bundle, disk fallback under the
@@ -689,6 +685,7 @@ macro initApp*(args: varargs[untyped]): untyped =
       continue
     sections.add(s)
   let resolveSym = ident"resolvePublicAsset"
+  var hasRunSection = false
   for section in sections:
     if section.kind in {nnkCommand, nnkCall} and section.len >= 2:
       var secName = ""
@@ -698,6 +695,8 @@ macro initApp*(args: varargs[untyped]): untyped =
       elif head.kind == nnkDotExpr and head[^1].kind == nnkIdent:
         secName = head[^1].strVal
       if secName in ["cli", "services", "run"]:
+        if secName == "run":
+          hasRunSection = true
         let last = section[^1]
         if last.kind == nnkDo and secName != "cli":
           # A parameterized `do(app: Application):` is forwarded INTACT
@@ -780,6 +779,11 @@ macro initApp*(args: varargs[untyped]): untyped =
     # through verbatim in order: after `App.init()`'s imports, before the
     # `App.cli` registration below when placed before the `cli` section.
     add result, section
+
+  if not hasRunSection:
+    # No `run do:` section: start the server with the default (empty)
+    # startup block, exactly like a trailing `App.run()`.
+    add result, newCall(nnkDotExpr.newTree(ident"App", ident"run"))
 
 template withAssetsHandler*(app: Application, handler: ApplicationAssetsHandler) =
   ## Inject a custom assets handler into the application. This allows you to define
