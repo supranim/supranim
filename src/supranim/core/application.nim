@@ -612,13 +612,14 @@ macro initApp*(args: varargs[untyped]): untyped =
   ## is optional: when omitted, a default `App.run()` is appended
   ## automatically so the server starts with no custom startup block.
   ## The `serveAssets:` section holds the user's
-  ## own embed statements, emitted verbatim under `when defined release`
-  ## (after an automatic `import pkg/supranim/service/assets`), followed
-  ## by the predefined handler: embedded bundle, disk fallback under the
-  ## public path (default `/assets/`, overridable via
-  ## `serveAssets "/static":`), then theme fallback when the app provides
-  ## `resolvePublicAsset`. Omit the section for no handler. Anything
-  ## after this macro (`App.run`, etc.) stays as is.
+  ## own embed statements, emitted verbatim
+  ## (after an automatic `import pkg/supranim/service/assets`). The
+  ## predefined handler is always installed: embedded bundle in
+  ## release, disk fallback under the public path (default `/assets/`,
+  ## overridable via `serveAssets "/static":`), then theme fallback
+  ## when the app provides `resolvePublicAsset` (it receives the
+  ## request path with the public prefix stripped). Omit the section
+  ## for no handler. Anything after this macro stays as is.
   ##
   ## Any other statements (e.g. `startCommand`/`updateCommand` handler
   ## procs, which kapsis resolves by command-name convention and which
@@ -724,15 +725,17 @@ macro initApp*(args: varargs[untyped]): untyped =
         else:
           error("initApp: expected `cli do:` / `services do:` / `run do:` with a body block", section)
         continue
+      var guardLit = newLit("/assets/")
       if secName == "serveAssets":
         # `serveAssets:` section: the body holds the user's own embed
         # statements (`assets.embedAssets(...)`,
         # `assets.embedDirectory(...)`, `assets.preloadBundle(...)`),
-        # emitted verbatim under `when defined release` (after an
-        # automatic `import pkg/supranim/service/assets`), followed by
-        # the predefined handler: embedded bundle, disk fallback under
-        # the public path, then theme fallback when the app provides
-        # `resolvePublicAsset`. An optional path (`serveAssets "/static":`)
+        # emitted verbatim (after an automatic
+        # `import pkg/supranim/service/assets`). The predefined handler
+        # is always installed: embedded bundle in release, disk fallback
+        # under the public path, then theme fallback when the app provides
+        # `resolvePublicAsset` (it receives the request path with the
+        # public prefix stripped). An optional path (`serveAssets "/static":`)
         # changes the served URL prefix. A lone `serveAssets: true`
         # installs just the handler (bundling done elsewhere).
         let last = section[^1]
@@ -757,24 +760,24 @@ macro initApp*(args: varargs[untyped]): untyped =
         if serveBody.kind == nnkStmtList and serveBody.len == 1 and
             repr(serveBody[0]).strip() == "true":
           serveBody = newStmtList()
-        let guardLit = newLit(guard)
+        guardLit.strVal = guard
         add result, quote do:
-          when defined release:
-            import pkg/supranim/service/assets
-            `serveBody`
-            App.withAssetsHandler:
-              proc (req: var Request, res: var Response, foundRes: var bool) =
-                when defined release:
-                  req.sendEmbeddedAsset(req.path, res.getHeaders(), foundRes)
-                if not foundRes and req.path.startsWith(`guardLit`):
-                  req.sendAssets(req.path, res.getHeaders(), foundRes)
-                  if not foundRes:
-                    when compiles(`resolveSym`(req.path)):
-                      let themeAsset = `resolveSym`(req.path)
-                      if themeAsset.len > 0:
-                        req.sendAssetFile(themeAsset, res.getHeaders())
-                        foundRes = true
-        continue
+          import pkg/supranim/service/assets
+          `serveBody`
+      add result, quote do:
+        App.withAssetsHandler:
+          proc (req: var Request, res: var Response, foundRes: var bool) =
+            when defined release:
+              req.sendEmbeddedAsset(req.path, res.getHeaders(), foundRes)
+            if not foundRes and req.path.startsWith(`guardLit`):
+              req.sendAssets(req.path, res.getHeaders(), foundRes)
+              if not foundRes:
+                when compiles(`resolveSym`(req.path[`guardLit`.len .. ^1])):
+                  let themeAsset = `resolveSym`(req.path[`guardLit`.len .. ^1])
+                  if themeAsset.len > 0:
+                    req.sendAssetFile(themeAsset, res.getHeaders())
+                    foundRes = true
+      continue
     # Anything else (command handler procs, comments, pragmas) passes
     # through verbatim in order: after `App.init()`'s imports, before the
     # `App.cli` registration below when placed before the `cli` section.
