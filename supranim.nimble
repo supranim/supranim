@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.12"
+version       = "0.1.13"
 author        = "OpenPeeps"
 description   = "A full-featured web framework for Nim"
 license       = "LGPL-3.0-or-later"
@@ -17,7 +17,7 @@ requires "supranim_tasks >= 0.1.0"
 requires "ozark >= 0.2.0"
 requires "emitter >= 0.3.0"
 requires "nimcypher >= 0.1.0"
-requires "openparser#HEAD"
+requires "openparser >= 0.4.2"
 requires "mimedb >= 0.1.1"
 requires "flysystem >= 0.2.3"
 
