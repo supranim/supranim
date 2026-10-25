@@ -17,7 +17,7 @@ requires "supranim_tasks >= 0.1.0"
 requires "ozark >= 0.2.0"
 requires "emitter >= 0.3.0"
 requires "nimcypher >= 0.1.0"
-requires "openparser >= 0.4.1"
+requires "openparser#HEAD"
 requires "mimedb >= 0.1.1"
 requires "flysystem >= 0.2.3"
 

@@ -2,7 +2,7 @@
 # Unit tests for supranim/core/router
 #
 import std/unittest
-import std/[httpcore, tables]
+import std/[httpcore, tables, typedthreads]
 
 import supranim/core/router
 import supranim/core/request
@@ -22,6 +22,12 @@ proc mw302(req: var Request, res: var Response): HttpCode {.nimcall.} =
 
 proc newRes(): Response =
   Response(headers: newHttpHeaders())
+
+var sharedTestRouter: HttpRouterInstance
+  ## Router shared across worker threads in the thread-safety suite.
+  ## A module global (not a thread-arg copy) so workers never copy the
+  ## shared ref: `checkExists` takes the router by `var`, binding to
+  ## this global with zero refcount traffic.
 
 suite "HttpRouter":
   test "newHttpRouter initializes all method tables":
@@ -146,3 +152,46 @@ suite "HttpRouter":
     var req = default(Request)
     var res = newRes()
     rt.call4xx(req, res)
+
+suite "HttpRouter thread safety":
+  test "concurrent dynamic route lookups return correct params":
+    # Regression test: dynamic route matching used to run a mutable RegexVM
+    # stored on the shared route object, so concurrent workers racing in
+    # `checkExists` (under the router read lock) corrupted each other's
+    # match state. Matching now runs JIT code on per-thread contexts, with
+    # no shared mutable VM state.
+    sharedTestRouter = newHttpRouter()
+    sharedTestRouter.registerRoute("/users/{id:id}", HttpGet, handler)
+    sharedTestRouter.registerRoute("/users/{id:id}/posts/{slug:slug}", HttpGet, handler)
+
+    const NumThreads = 8
+    const ItersPerThread = 1000
+
+    type WorkerArg = tuple[seed: int, fails: ptr int]
+
+    var failCounts: array[NumThreads, int]
+    var args: array[NumThreads, WorkerArg]
+    var threads: array[NumThreads, Thread[WorkerArg]]
+
+    proc worker(a: WorkerArg) {.thread.} =
+      {.gcsafe.}:
+        var localFails = 0
+        for i in 0 ..< ItersPerThread:
+          let id = (a.seed + i) mod 100000
+          let hit = sharedTestRouter.checkExists("/users/" & $id, HttpGet)
+          if not hit.exists or hit.params.getOrDefault("id") != $id:
+            inc localFails
+          let slugHit = sharedTestRouter.checkExists(
+            "/users/" & $id & "/posts/hello-world", HttpGet)
+          if not slugHit.exists or
+              slugHit.params.getOrDefault("id") != $id or
+              slugHit.params.getOrDefault("slug") != "hello-world":
+            inc localFails
+        a.fails[] = localFails
+
+    for t in 0 ..< NumThreads:
+      args[t] = (t * ItersPerThread, addr failCounts[t])
+      createThread(threads[t], worker, args[t])
+    joinThreads(threads)
+    for t in 0 ..< NumThreads:
+      check failCounts[t] == 0

@@ -10,15 +10,22 @@
 ## It allows defining routes with dynamic parameters via regex patterns,
 ## supports route-specific middleware and afterware hooks, and provides
 ## compile-time macros to register routes in a declarative way
-## 
-## The Router is using `pkg/regex` for dynamic route matching, which allows for powerful
+##
+## The Router is using `pkg/openparser/regex` for dynamic route matching, which allows for powerful
 ## parameter extraction and flexible route definitions.
+##
+## Dynamic route patterns are JIT-compiled to native code at registration:
+## the generated code is immutable and shared across workers, while every
+## worker thread executes it on a private JIT context — so route lookups
+## stay safe under the router's read lock with no shared mutable VM state.
 
 import std/[critbits, tables, macros, options,
         macrocache, strutils, sequtils, enumutils]
 
 import pkg/openparser/regex
-import pkg/threading/rwlock
+from pkg/openparser/regex/jit/compiler import CompiledJit, JitCtx,
+  compileRegex, newJitCtx, jitExecIn, jitCapturesIn
+import std/locks
 
 import std/httpcore except HttpMethod
 
@@ -43,8 +50,12 @@ type
   HttpRoute* = ref object of RootObj
     path: string
       # The `path` is the original path string used to define the route.
-    regexPath: RegexVM
-      # The `regexPath` is used to match dynamic routes with parameters.
+    jit: CompiledJit
+      # The JIT-compiled route pattern. The generated code is immutable,
+      # so workers share it while executing on per-thread contexts.
+    prog: Program
+      # The compiled program, kept for the interpreter fallback when JIT
+      # compilation is unavailable for the pattern or the platform.
     httpMethod: HttpMethod
       # The HTTP method (GET, POST, etc.) associated with this route.
     callback*: Callable
@@ -72,7 +83,8 @@ type
 
   HttpRouterError* = object of CatchableError
 
-var rw = createRwLock()
+var rw: Lock
+initLock(rw)
 # var Router*: HttpRouterInstance
 # A thread local singleton instance of `HttpRouterInstance`
 # that is used to register routes and error handlers.
@@ -130,12 +142,18 @@ proc newHttpRoute(autolinked: (string, string),
           httpMethod: HttpMethod, callback: Callable,
           routeParams: seq[(string, bool)] = @[]): HttpRoute =
   # Create a new `HttpRoute`
-  let isDynamic = routeParams.len > 0
   result = HttpRoute(
     path: autolinked[1],
     httpMethod: httpMethod,
     callback: callback,
   )
+  # Pin the route cell: workers share route objects across threads and
+  # Nim refcounting is not atomic, so concurrent copies could otherwise
+  # drift the count down to a premature zero. The pin keeps the count
+  # above zero for the process lifetime; unregistering removes the
+  # table entry but intentionally does not unpin (same as the old
+  # interpreter VMs, which were never freed either).
+  GC_ref(result)
 
 proc newHttpRoute(autolinked: (string, string),
                   httpMethod: HttpMethod, callback: Callable,
@@ -151,14 +169,20 @@ proc newHttpRoute(autolinked: (string, string),
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
-  # result.regexPath = re(autolinked[0])
-  result.regexPath = regex.initRegexVM(regex.compile(autolinked[0]))
+  let prog = regex.compile(autolinked[0])
+  result.prog = prog
+  result.jit = compileRegex(prog)
   if isDynamic:
     result.routePatterns = newOrderedTable[string, RoutePattern]()
     for (name, isOptional) in routeParams:
       result.routePatterns[name] = (key: name, reKey: "", isOptional: isOptional)
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
+  # Pin the route cell: workers share route objects across threads and
+  # Nim refcounting is not atomic, so concurrent copies could otherwise
+  # drift the count down to a premature zero. The pin keeps the count
+  # above zero for the process lifetime (see newHttpRoute above).
+  GC_ref(result)
 
 
 proc newWsRoute(autolinked: (string, string), httpMethod: HttpMethod, callback: Callable,
@@ -174,13 +198,17 @@ proc newWsRoute(autolinked: (string, string), httpMethod: HttpMethod, callback: 
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
-  result.regexPath = regex.initRegexVM(regex.compile(autolinked[0]))
+  let prog = regex.compile(autolinked[0])
+  result.prog = prog
+  result.jit = compileRegex(prog)
   if isDynamic:
     result.routePatterns = newOrderedTable[string, RoutePattern]()
     for (name, isOptional) in routeParams:
       result.routePatterns[name] = (key: name, reKey: "", isOptional: isOptional)
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
+  # Pin the route cell (see newHttpRoute above).
+  GC_ref(result)
 
 proc registerRoute*(router: HttpRouterInstance,
   autolinked: sink (string, string),
@@ -192,7 +220,7 @@ proc registerRoute*(router: HttpRouterInstance,
   routeParams: seq[(string, bool)] = @[]
 ) =
   ## Register a new `Route` in the `HttpRouterInstance` based on the given parameters
-  writeWith rw:
+  withLock rw:
     let path = autolinked[1] # the original path string used to define the route
     if isWebSocket:
       let routeObject = newWsRoute(autolinked, HttpGet, callback, middlewares, afterwares, routeParams)
@@ -249,7 +277,7 @@ proc unregisterRoute*(router: HttpRouterInstance,
   ## The `autolinked` tuple must carry the same original path string used
   ## at registration time (for example the tuple returned by
   ## `autolinkController`). Removing an unknown route is a no-op.
-  writeWith rw:
+  withLock rw:
     let path = autolinked[1] # the original path string used to define the route
     case httpMethod
     of HttpGet:
@@ -623,6 +651,68 @@ group "/account":
   parseRoutesScope(body, "", @[], @[])
   result = newStmtList()
 
+var threadJitCtxs {.threadvar.}: Table[int, ptr JitCtx]
+  ## The calling thread's private JIT execution contexts (backtrack stack
+  ## + capture buffer), one per capture-slot count. Sharing compiled route
+  ## code across workers is safe because every thread matches through its
+  ## own contexts. Contexts cannot be shared across slot counts: the
+  ## generated code derives the stack base from the stack size baked in
+  ## at compile time, so entry layouts must agree.
+
+proc getThreadJitCtx(slotsNeeded: int): ptr JitCtx =
+  ## Return the calling thread's JIT context for `slotsNeeded` capture
+  ## slots, allocating and caching it on first use.
+  let found = threadJitCtxs.getOrDefault(slotsNeeded, nil)
+  if found != nil:
+    return found
+  let ctx = newJitCtx(slotsNeeded)
+  if ctx != nil:
+    threadJitCtxs[slotsNeeded] = ctx
+  ctx
+
+proc matchRouteJIT*(route: HttpRoute, requestPath: string,
+                    params: var Table[string, string]): bool =
+  ## Full-match an anchored route pattern against `requestPath` using the
+  ## regex JIT, extracting dynamic params into `params`.
+  ##
+  ## Thread-safe: the shared, immutable JIT code runs on the calling
+  ## thread's private context, so concurrent workers can match the same
+  ## route object while holding only the router read lock.
+  ##
+  ## Falls back to a per-call interpreter VM when JIT compilation is
+  ## unavailable for the pattern or the platform.
+  if route.jit.fn != nil:
+    let ctx = getThreadJitCtx(route.jit.numSlots)
+    if ctx != nil:
+      if jitExecIn(route.jit, ctx, requestPath, 0) == requestPath.len:
+        if route.httpRouteType == DynamicRoute:
+          let caps = jitCapturesIn(ctx)
+          var idx = 1
+          for name, _ in route.routePatterns:
+            let slot = (idx - 1) * 2
+            if slot + 1 < caps.len:
+              let lo = caps[slot]
+              let hi = caps[slot + 1]
+              if lo >= 0 and hi >= lo:
+                params[name] = requestPath[lo ..< hi]
+            inc idx
+        return true
+      return false
+    # Context allocation failed — fall through to the interpreter.
+  var vm = regex.initRegexVM(route.prog)
+  defer: regex.closeRegexVM(vm)
+  let m = vm.find(requestPath)
+  if m.matched and m.start == 0 and m.stop == requestPath.len:
+    if route.httpRouteType == DynamicRoute:
+      var idx = 1
+      for name, _ in route.routePatterns:
+        let g = m.group(idx)
+        if g.matched:
+          params[name] = g.str(requestPath)
+        inc idx
+    return true
+  return false
+
 macro searchRoute(httpMethod: static string) =
   result = newStmtList()
   let verb = ident httpMethod
@@ -631,17 +721,8 @@ macro searchRoute(httpMethod: static string) =
       result.route = router.`verb`[requestPath]
     else:
       for k, r in router.`verb`:
-        let match = r.regexPath.find(requestPath)
-        if match.matched:
+        if matchRouteJIT(r, requestPath, result.params):
           result.route = r
-          # Map indexed capture groups to param names using routePatterns
-          if r.httpRouteType == DynamicRoute:
-            var idx = 1
-            for name, _ in r.routePatterns:
-              let g = match.group(idx)
-              if g.matched:
-                result.params[name] = g.str(requestPath)
-              inc idx
           break
 
 macro searchRouteWs*() =
@@ -652,25 +733,17 @@ macro searchRouteWs*() =
       result.route = router.httpWS[requestPath]
     else:
       for k, r in router.httpWS:
-        let match = r.regexPath.find(requestPath)
-        if match.matched:
+        if matchRouteJIT(r, requestPath, result.params):
           result.route = r
-          if r.httpRouteType == DynamicRoute:
-            var idx = 1
-            for name, _ in r.routePatterns:
-              let g = match.group(idx)
-              if g.matched:
-                result.params[name] = g.str(requestPath)
-              inc idx
           break
 
 type
   RouteCheckResult* = tuple[exists: bool, route: HttpRoute, params: Table[string, string]]
 
-proc checkExists*(router: HttpRouterInstance,
+proc checkExists*(router: var HttpRouterInstance,
             requestPath: string, httpMethod: HttpMethod): RouteCheckResult =
   ## Check if a route exists for the given request path and HTTP method
-  readWith rw:
+  withLock rw:
     case httpMethod
       of HttpGet:     searchRoute("httpGet")
       of HttpPost:    searchRoute("httpPost")
@@ -684,9 +757,9 @@ proc checkExists*(router: HttpRouterInstance,
     result.exists =
       likely(result.route != nil)
 
-proc checkWsExists*(router: HttpRouterInstance, requestPath: string): RouteCheckResult =
+proc checkWsExists*(router: var HttpRouterInstance, requestPath: string): RouteCheckResult =
   ## Check if a WebSocket route exists for the given request path
-  readWith rw:
+  withLock rw:
     searchRouteWs()
     result.exists = likely(result.route != nil)
 
