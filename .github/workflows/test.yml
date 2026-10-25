@@ -4,4 +4,4 @@ jobs:
   test:
     uses: nimbase/setup-nim-action/.github/workflows/test_clue.yml@main
     with:
-      cache: false
+      os: '[{"os":"ubuntu-latest"}]'
