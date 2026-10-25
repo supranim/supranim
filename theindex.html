@@ -175,13 +175,13 @@
           </ul></dd>
 <dt><a name="checkExists" href="#checkExists"><span>checkExists:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc checkExists(router: HttpRouterInstance; requestPath: string;
-            httpMethod: HttpMethod): RouteCheckResult" href="supranim/core/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: HttpRouterInstance; requestPath: string;
+          data-doc-search-tag="router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
+            httpMethod: HttpMethod): RouteCheckResult" href="supranim/core/router.html#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod">router: proc checkExists(router: var HttpRouterInstance; requestPath: string;
             httpMethod: HttpMethod): RouteCheckResult</a></li>
           </ul></dd>
 <dt><a name="checkWsExists" href="#checkWsExists"><span>checkWsExists:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="router: proc checkWsExists(router: HttpRouterInstance; requestPath: string): RouteCheckResult" href="supranim/core/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: HttpRouterInstance; requestPath: string): RouteCheckResult</a></li>
+          data-doc-search-tag="router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): RouteCheckResult" href="supranim/core/router.html#checkWsExists%2CHttpRouterInstance%2Cstring">router: proc checkWsExists(router: var HttpRouterInstance; requestPath: string): RouteCheckResult</a></li>
           </ul></dd>
 <dt><a name="clearHeaders" href="#clearHeaders"><span>clearHeaders:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -920,6 +920,12 @@
 <dt><a name="malloc_trim" href="#malloc_trim"><span>malloc_trim:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="utils: proc malloc_trim(pad: csize_t = 0): bool" href="supranim/core/utils.html#malloc_trim%2Ccsize_t">utils: proc malloc_trim(pad: csize_t = 0): bool</a></li>
+          </ul></dd>
+<dt><a name="matchRouteJIT" href="#matchRouteJIT"><span>matchRouteJIT:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc matchRouteJIT(route: HttpRoute; requestPath: string;
+              params: var Table[string, string]): bool" href="supranim/core/router.html#matchRouteJIT%2CHttpRoute%2Cstring%2CTable%5Bstring%2Cstring%5D">router: proc matchRouteJIT(route: HttpRoute; requestPath: string;
+              params: var Table[string, string]): bool</a></li>
           </ul></dd>
 <dt><a name="MaxReqResSize" href="#MaxReqResSize"><span>MaxReqResSize:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1661,7 +1667,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-25 11:31:15 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-25 23:29:27 UTC</small>
       </div>
     </div>
   </div>
