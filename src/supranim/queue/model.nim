@@ -9,7 +9,7 @@
 ## Ozark models backing Supranim's Laravel-like job queues.
 ##
 ## Times are Unix epochs (`BigInt`) so rows stay portable across
-## the `psql` and `sqlite` drivers and remain easy to compare and
+## the `psql`, `mysql` and `sqlite` drivers and remain easy to compare and
 ## order with the query builder. Payloads are JSON documents
 ## stored as `Text`.
 ##

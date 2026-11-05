@@ -20,12 +20,12 @@
 ## Driver-agnostic by construction: the worker is a template expanded
 ## in application scope (same trick as the `job` macro and
 ## `controller.isAuth`), so `withDBPool` and the `sql` query builder
-## resolve against whichever ozark driver the app imported. Import a
-## driver before use (models are only needed for `dispatch*` and
-## table setup):
+## resolve against whichever ozark driver the app imported (`psql`,
+## `mysql` or `sqlite`). Import a driver before use (models are only
+## needed for `dispatch*` and table setup):
 ##
 ## .. code-block:: nim
-##   import pkg/ozark/driver/sqlite
+##   import pkg/ozark/driver/sqlite # or psql / mysql
 ##   import pkg/supranim/service/queue_work
 ##
 ##   startQueueWorker(getJobsPool(), queueName = "emails")

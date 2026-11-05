@@ -176,9 +176,10 @@ when isMainModule:
   assert isSlug("my-blog-post")
 
   # Full match vs find
-  let m = scanUUID("550e8400-e29b-41d4-a716-446655440000")
+  const uuidSample = "550e8400-e29b-41d4-a716-446655440000"
+  let m = scanUUID(uuidSample)
   if m.matched:
-    echo m.capture(input)   # whole match
+    echo m.capture(uuidSample)   # whole match
 
   # Find all mentions in text
   let mentions = scanMentionAll("Hey @alice and @bob!")

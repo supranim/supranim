@@ -26,9 +26,12 @@ suite "Response":
     check getContentType() == "application/json; charset=utf-8"
 
   test "getDefault":
-    check getDefault(Http403) == "Forbidden"
+    check "Forbidden" in getDefault(Http403)
     check getDefault(Http404).len > 0
-    check getDefault(Http500) == ""
+    check "Not Found" in getDefault(Http404)
+    check "Bad Request" in getDefault(Http400)
+    check "Internal Server Error" in getDefault(Http500)
+    check getDefault(Http500).len > 0
 
   test "json template prepares a JSON response":
     applyJson()

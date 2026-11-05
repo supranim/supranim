@@ -6,7 +6,7 @@
 
 ### Key features
 - Fast, modern and simple to use.
-- Built-in ORM supporting PostgreSQL (with plans for MySQL and SQLite)
+- Built-in ORM supporting PostgreSQL, MySQL and SQLite (via Ozark)
 - Middleware support for handling requests and responses
 - Easy routing with support for parameters and wildcards
 - Service Providers for wrapping and managing external services

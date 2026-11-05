@@ -24,6 +24,27 @@ import std/strutils
 import pkg/nimcypher
 export nimcypher
 
+import ./nanoid
+
+proc generateSessionId*(size: static int = 32): string =
+  ## Generates a URL-safe session identifier using NanoID.
+  ## Default 32 chars; session cookies use 42 chars via `support/session`.
+  nanoid.generate(size = size)
+
+proc isStrongPassword*(password: string, minLen = 8): bool =
+  ## Minimal strong-password check (length + lower + upper + digit).
+  ## `hashPassword` / `verifyPassword` (Argon2id) are available via
+  ## the `nimcypher` re-export above. For entropy-based scoring use
+  ## `pkg/valido.isStrongPassword` (blackpaper backend).
+  if password.len < minLen: return false
+  var hasLower, hasUpper, hasDigit: bool
+  for c in password:
+    if c in {'a'..'z'}: hasLower = true
+    elif c in {'A'..'Z'}: hasUpper = true
+    elif c in {'0'..'9'}: hasDigit = true
+    if hasLower and hasUpper and hasDigit: return true
+  false
+
 proc boxKeys*: (string, string) =
   ## Generates a new X25519 keypair as hex strings.
   ## Returns `(publicKey, secretKey)`.

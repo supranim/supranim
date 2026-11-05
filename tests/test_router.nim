@@ -128,13 +128,13 @@ suite "HttpRouter":
     check route.resolveMiddleware(req, res) == Http302
     check res.middlewareIndex == 1
 
-  test "resolveAfterware returns Http202 when there is no afterware":
+  test "resolveAfterware returns Http204 when there is no afterware":
     var rt = newHttpRouter()
     rt.registerRoute("/plain", HttpGet, handler)
     let route = rt.checkExists("/plain", HttpGet).route
     var req = default(Request)
     var res = newRes()
-    check route.resolveAfterware(req, res) == Http202
+    check route.resolveAfterware(req, res) == Http204
 
   test "resolveAfterware chains Http204 afterwares":
     var rt = newHttpRouter()

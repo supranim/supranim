@@ -20,7 +20,7 @@
 ## stay safe under the router's read lock with no shared mutable VM state.
 
 import std/[critbits, tables, macros, options,
-        macrocache, strutils, sequtils, enumutils]
+        macrocache, strutils, enumutils]
 
 import pkg/openparser/regex
 from pkg/openparser/regex/jit/compiler import CompiledJit, JitCtx,
@@ -141,18 +141,27 @@ proc newHttpRouter*: HttpRouterInstance =
 proc newHttpRoute(autolinked: (string, string),
           httpMethod: HttpMethod, callback: Callable,
           routeParams: seq[(string, bool)] = @[]): HttpRoute =
-  # Create a new `HttpRoute`
+  # Create a new `HttpRoute` (used for error handlers, never matched).
+  # Fully initializes the `httpRouteType` discriminator; `prog`/`jit`
+  # are compiled only when a regex pattern is present (error routes
+  # use an empty pattern and are never matched via `matchRouteJIT`).
+  let isDynamic = routeParams.len > 0
   result = HttpRoute(
     path: autolinked[1],
     httpMethod: httpMethod,
     callback: callback,
+    httpRouteType: if isDynamic: DynamicRoute else: StaticRoute,
+    hasMiddleware: false,
+    hasAfterware: false
   )
-  # Pin the route cell: workers share route objects across threads and
-  # Nim refcounting is not atomic, so concurrent copies could otherwise
-  # drift the count down to a premature zero. The pin keeps the count
-  # above zero for the process lifetime; unregistering removes the
-  # table entry but intentionally does not unpin (same as the old
-  # interpreter VMs, which were never freed either).
+  if autolinked[0].len > 0:
+    let prog = regex.compile(autolinked[0])
+    result.prog = prog
+    result.jit = compileRegex(prog)
+  if isDynamic:
+    result.routePatterns = newOrderedTable[string, RoutePattern]()
+    for (name, isOptional) in routeParams:
+      result.routePatterns[name] = (key: name, reKey: "", isOptional: isOptional)
   GC_ref(result)
 
 proc newHttpRoute(autolinked: (string, string),
@@ -307,6 +316,58 @@ proc unregisterRoute*(router: HttpRouterInstance,
     of HttpConnect:
       if router.httpConnect.hasKey(path):
         router.httpConnect.del(path)
+
+proc unregisterWsRoute*(router: HttpRouterInstance, path: string) =
+  ## Remove a previously registered WebSocket route. No-op when missing.
+  withLock rw:
+    if router.httpWS.hasKey(path):
+      router.httpWS.del(path)
+
+proc hasRoute*(router: HttpRouterInstance, path: string,
+    httpMethod: HttpMethod): bool =
+  ## True when an exact path is registered for `httpMethod`.
+  ## Dynamic-pattern matches are not considered; use `checkExists` for those.
+  withLock rw:
+    case httpMethod
+    of HttpGet: result = router.httpGet.hasKey(path)
+    of HttpPost: result = router.httpPost.hasKey(path)
+    of HttpPut: result = router.httpPut.hasKey(path)
+    of HttpPatch: result = router.httpPatch.hasKey(path)
+    of HttpHead: result = router.httpHead.hasKey(path)
+    of HttpDelete: result = router.httpDelete.hasKey(path)
+    of HttpTrace: result = router.httpTrace.hasKey(path)
+    of HttpOptions: result = router.httpOptions.hasKey(path)
+    of HttpConnect: result = router.httpConnect.hasKey(path)
+
+proc replaceRoute*(router: HttpRouterInstance,
+  autolinked: sink (string, string),
+  httpMethod: HttpMethod,
+  callback: Callable,
+  middlewares: seq[Middleware] = @[],
+  afterwares: seq[Afterware] = @[],
+  isWebSocket = false,
+  routeParams: seq[(string, bool)] = @[]
+) =
+  ## Explicit overwrite registration. Unlike `registerRoute` (which keeps
+  ## the first registration and ignores duplicates), this always replaces.
+  withLock rw:
+    let path = autolinked[1]
+    if isWebSocket:
+      router.httpWS[path] = newWsRoute(autolinked, HttpGet,
+        callback, middlewares, afterwares, routeParams)
+      return
+    let routeObject = newHttpRoute(autolinked, httpMethod, callback,
+      middlewares, afterwares, routeParams)
+    case httpMethod
+    of HttpGet: router.httpGet[path] = routeObject
+    of HttpPost: router.httpPost[path] = routeObject
+    of HttpPut: router.httpPut[path] = routeObject
+    of HttpPatch: router.httpPatch[path] = routeObject
+    of HttpHead: router.httpHead[path] = routeObject
+    of HttpDelete: router.httpDelete[path] = routeObject
+    of HttpTrace: router.httpTrace[path] = routeObject
+    of HttpOptions: router.httpOptions[path] = routeObject
+    of HttpConnect: router.httpConnect[path] = routeObject
 
 #
 # Verb helpers
@@ -742,20 +803,76 @@ type
 
 proc checkExists*(router: var HttpRouterInstance,
             requestPath: string, httpMethod: HttpMethod): RouteCheckResult =
-  ## Check if a route exists for the given request path and HTTP method
+  ## Check if a route exists for the given request path and HTTP method.
+  ## `HEAD` falls back to `GET` when no explicit `HEAD` route is
+  ## registered (standard HTTP semantics: same headers, no body).
   withLock rw:
     case httpMethod
       of HttpGet:     searchRoute("httpGet")
       of HttpPost:    searchRoute("httpPost")
       of HttpPut:     searchRoute("httpPut")
       of HttpPatch:   searchRoute("httpPatch")
-      of HttpHead:    searchRoute("httpHead")
+      of HttpHead:
+        searchRoute("httpHead")
+        if result.route.isNil:
+          # Fallback to GET table (exact + dynamic).
+          if likely(router.httpGet.hasKey(requestPath)):
+            result.route = router.httpGet[requestPath]
+          else:
+            for k, r in router.httpGet:
+              if matchRouteJIT(r, requestPath, result.params):
+                result.route = r
+                break
       of HttpDelete:  searchRoute("httpDelete")
       of HttpTrace:   searchRoute("httpTrace")
       of HttpOptions: searchRoute("httpOptions")
       of HttpConnect: searchRoute("httpConnect")
     result.exists =
       likely(result.route != nil)
+
+proc allowedMethods*(router: var HttpRouterInstance,
+    requestPath: string): seq[HttpMethod] =
+  ## Returns every method with a route matching `requestPath`
+  ## (exact match first, then dynamic patterns). Used for `405`
+  ## handling and `Allow` headers. Single lock, no nested `checkExists`.
+  withLock rw:
+    template tryTable(tbl, meth: untyped) =
+      block:
+        var matched = false
+        if tbl.hasKey(requestPath):
+          matched = true
+        else:
+          var tmp = initTable[string, string]()
+          for k, r in tbl:
+            if matchRouteJIT(r, requestPath, tmp):
+              matched = true
+              break
+        if matched:
+          result.add(meth)
+    tryTable(router.httpGet, HttpGet)
+    tryTable(router.httpPost, HttpPost)
+    tryTable(router.httpPut, HttpPut)
+    tryTable(router.httpPatch, HttpPatch)
+    tryTable(router.httpHead, HttpHead)
+    tryTable(router.httpDelete, HttpDelete)
+    tryTable(router.httpTrace, HttpTrace)
+    tryTable(router.httpOptions, HttpOptions)
+    tryTable(router.httpConnect, HttpConnect)
+
+proc isMethodNotAllowed*(router: var HttpRouterInstance,
+    requestPath: string, httpMethod: HttpMethod): bool =
+  ## True when `requestPath` exists for another method but not for
+  ## `httpMethod` (i.e. the correct status is `405`, not `404`).
+  ## `HEAD` is never "not allowed" when `GET` exists (fallback).
+  let hit = router.checkExists(requestPath, httpMethod)
+  if hit.exists:
+    return false
+  if httpMethod == HttpHead:
+    var tmpGet = router.checkExists(requestPath, HttpGet)
+    if tmpGet.exists:
+      return false
+  let allowed = router.allowedMethods(requestPath)
+  result = allowed.len > 0
 
 proc checkWsExists*(router: var HttpRouterInstance, requestPath: string): RouteCheckResult =
   ## Check if a WebSocket route exists for the given request path
@@ -766,13 +883,24 @@ proc checkWsExists*(router: var HttpRouterInstance, requestPath: string): RouteC
 #
 # Middleware API
 #
-proc getMiddlewares(route: HttpRoute): seq[Middleware] =
-  result = route.middlewares
+proc getMiddlewares*(route: HttpRoute): seq[Middleware] =
+  ## Returns the route middlewares, or `@[]` when none.
+  ## (`getMiddlewares` is public for introspection; the request path
+  ## uses `resolveMiddleware` directly.)
+  if route.hasMiddleware:
+    result = route.middlewares
+
+proc getAfterwares*(route: HttpRoute): seq[Afterware] =
+  ## Returns the route afterwares, or `@[]` when none.
+  if route.hasAfterware:
+    result = route.afterwares
 
 proc resolveMiddleware*(route: HttpRoute,
     req: var Request, res: var Response): HttpCode =
   ## Checks a `route` if has any implemented middlewares
   if route.hasMiddleware:
+    if res.middlewareIndex > route.middlewares.high:
+      return Http204
     result = route.middlewares[res.middlewareIndex](req, res)
     case result
     of Http204:
@@ -789,8 +917,12 @@ proc resolveMiddleware*(route: HttpRoute,
 proc resolveAfterware*(route: HttpRoute,
   req: var Request, res: var Response): HttpCode =
   ## Resolve an `Afterware` handle after a request
-  ## has been made
+  ## has been made. Returns `Http204` when the chain completes
+  ## (including when there is no afterware), so callers can treat
+  ## any non-`204` as a short-circuit.
   if route.hasAfterware:
+    if res.afterwareIndex > route.afterwares.high:
+      return Http204
     result = route.afterwares[res.afterwareIndex](req, res)
     case result
     of Http204:
@@ -799,7 +931,7 @@ proc resolveAfterware*(route: HttpRoute,
         return route.resolveAfterware(req, res)
       return result
     else: return # result
-  result = Http202
+  result = Http204
 
 
 #
@@ -807,28 +939,119 @@ proc resolveAfterware*(route: HttpRoute,
 #
 proc errorHandler*(router: HttpRouterInstance,
     code: HttpCode, callback: Callable) =
-  ## Register an error handler for a specific HTTP status code
-  let httpRoute = newHttpRoute(("", "4xx"), HttpGet, callback)
-  case code
-  of Http400, Http404:
-    router.httpErrors["4xx"] = httpRoute
-  else: discard
+  ## Register an error handler for a specific HTTP status code.
+  ## Stores under the specific key (`"404"`, `"500"`, ...) and also under
+  ## the generic `"4xx"` / `"5xx"` fallback (first registration wins for
+  ## the generic slot, so `initRouterErrorHandlers` stays stable).
+  ## Unknown codes outside 400..599 are stored under their numeric key only.
+  let httpRoute = newHttpRoute(("", $code.int), HttpGet, callback)
+  let key = $code.int
+  router.httpErrors[key] = httpRoute
+  if code.int in 400 .. 499:
+    if not router.httpErrors.hasKey("4xx"):
+      router.httpErrors["4xx"] = httpRoute
+  elif code.int in 500 .. 599:
+    if not router.httpErrors.hasKey("5xx"):
+      router.httpErrors["5xx"] = httpRoute
+
+proc hasErrorHandler*(router: HttpRouterInstance, code: HttpCode): bool =
+  ## True when a specific or generic handler exists for `code`.
+  let key = $code.int
+  if router.httpErrors.hasKey(key):
+    return true
+  if code.int in 400 .. 499:
+    return router.httpErrors.hasKey("4xx")
+  if code.int in 500 .. 599:
+    return router.httpErrors.hasKey("5xx")
+  false
+
+proc callError*(router: HttpRouterInstance,
+    code: HttpCode,
+    req: var Request, res: var Response): bool {.discardable.} =
+  ## Runs the most specific handler for `code` (specific key, then
+  ## `"4xx"` / `"5xx"` fallback). Returns true when a handler ran,
+  ## false when none is registered (never raises).
+  let key = $code.int
+  if router.httpErrors.hasKey(key):
+    router.httpErrors[key].callback(req, res)
+    return true
+  if code.int in 400 .. 499 and router.httpErrors.hasKey("4xx"):
+    router.httpErrors["4xx"].callback(req, res)
+    return true
+  if code.int in 500 .. 599 and router.httpErrors.hasKey("5xx"):
+    router.httpErrors["5xx"].callback(req, res)
+    return true
+  false
 
 when defined supraMicroservice:
   proc call4xx*(router: HttpRouterInstance,
                 req: ptr Request, res: ptr Response) {.discardable.} =
-    ## Run the `4xx` callback
-    router.httpErrors["4xx"].callback(req, res)
+    ## Run the `4xx` callback. Safe no-op when none is registered
+    ## (never raises `KeyError`).
+    if router.httpErrors.hasKey("4xx"):
+      router.httpErrors["4xx"].callback(req, res)
+
+  proc call5xx*(router: HttpRouterInstance,
+                req: ptr Request, res: ptr Response) {.discardable.} =
+    ## Run the `5xx` callback. Safe no-op when none is registered.
+    if router.httpErrors.hasKey("5xx"):
+      router.httpErrors["5xx"].callback(req, res)
+
+  proc callError*(router: HttpRouterInstance, code: HttpCode,
+                req: ptr Request, res: ptr Response): bool {.discardable.} =
+    ## Ptr overload for microservice mode. Tries specific key, then
+    ## `"4xx"` / `"5xx"` fallback. Returns true when a handler ran.
+    let key = $code.int
+    if router.httpErrors.hasKey(key):
+      router.httpErrors[key].callback(req, res)
+      return true
+    if code.int in 400 .. 499 and router.httpErrors.hasKey("4xx"):
+      router.httpErrors["4xx"].callback(req, res)
+      return true
+    if code.int in 500 .. 599 and router.httpErrors.hasKey("5xx"):
+      router.httpErrors["5xx"].callback(req, res)
+      return true
+    false
 elif compileOption("app", "lib"):
   proc call4xx*(router: HttpRouterInstance,
                 req: ptr Request, res: ptr Response) {.cdecl, discardable.} =
-    ## Run the `4xx` callback
-    router.httpErrors["4xx"].callback(req, res)
+    ## Run the `4xx` callback. Safe no-op when none is registered.
+    if router.httpErrors.hasKey("4xx"):
+      router.httpErrors["4xx"].callback(req, res)
+
+  proc call5xx*(router: HttpRouterInstance,
+                req: ptr Request, res: ptr Response) {.cdecl, discardable.} =
+    ## Run the `5xx` callback. Safe no-op when none is registered.
+    if router.httpErrors.hasKey("5xx"):
+      router.httpErrors["5xx"].callback(req, res)
+
+  proc callError*(router: HttpRouterInstance, code: HttpCode,
+                req: ptr Request, res: ptr Response): bool {.cdecl, discardable.} =
+    ## Ptr overload for `--app:lib` mode. See `var` overload above.
+    let key = $code.int
+    if router.httpErrors.hasKey(key):
+      router.httpErrors[key].callback(req, res)
+      return true
+    if code.int in 400 .. 499 and router.httpErrors.hasKey("4xx"):
+      router.httpErrors["4xx"].callback(req, res)
+      return true
+    if code.int in 500 .. 599 and router.httpErrors.hasKey("5xx"):
+      router.httpErrors["5xx"].callback(req, res)
+      return true
+    false
 else:
   proc call4xx*(router: HttpRouterInstance,
                 req: var Request, res: var Response) {.discardable.} =
-    ## Run the `4xx` callback
-    router.httpErrors["4xx"].callback(req, res)
+    ## Run the `4xx` callback. Safe no-op when none is registered
+    ## (never raises `KeyError`).
+    if router.httpErrors.hasKey("4xx"):
+      router.httpErrors["4xx"].callback(req, res)
+
+  proc call5xx*(router: HttpRouterInstance,
+                req: var Request, res: var Response) {.discardable.} =
+    ## Run the `5xx` callback. Safe no-op when none is registered.
+    if router.httpErrors.hasKey("5xx"):
+      router.httpErrors["5xx"].callback(req, res)
 
 template initRouterErrorHandlers* =
   ## Initialize default error handlers for the router. This is called during

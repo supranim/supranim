@@ -14,14 +14,14 @@
 ## A `queue:work` process executes them on a `ThreadPoolService`
 ## pool via the `service/queue_work` bridge (`startQueueWorker`).
 ##
-## Queue job files must also import an ozark driver (`psql` or
+## Queue job files must also import an ozark driver (`psql`, `mysql` or
 ## `sqlite`, same as any app code touching the database) for
 ## `withDBPool` / `Models`, plus their models:
 ##
 ## .. code-block:: nim
 ##   import pkg/supranim/service/queue
 ##   import pkg/supranim/queue/model
-##   import pkg/ozark/driver/psql
+##   import pkg/ozark/driver/psql # or mysql / sqlite
 ##
 ##   job SendWelcomeEmail:
 ##     queue = "emails"

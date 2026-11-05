@@ -13,6 +13,7 @@ import std/httpcore except HttpMethod
 import pkg/openparser/json
 import ./core/[request, response, router, fileserver]
 import ./support/cookie
+import ./support/session as coreSessionStore
 
 from ./core/application import appInstance
 from ./network/webserver import streamFile
@@ -49,44 +50,58 @@ proc getFields*(req: var Request): seq[(string, string)] =
   if body.isSome:
     return toSeq(body.get().decodeQuery)
 
-proc getFieldsJson*(req: Request): JsonNode =
+proc getFieldsJson*(req: var Request): JsonNode =
+  ## Parses the request body as JSON. Returns `nil` when the body
+  ## is missing or invalid (never raises).
+  let body = req.getBody().get("")
+  if body.len == 0: return nil
   try:
-    # result = fromJson(req.root.body.get())
-    discard
+    result = json.fromJson(body)
   except json.OpenParserJsonError:
-    discard
+    result = nil
+  except CatchableError:
+    result = nil
 
 proc getSomeBodyData*(req: var Request): SomeBodyData =
   ## Returns the body fields from `Request`.
   ## When called for the first time it will decode the body
   ## and store the result in `BodyData` table.
-  ## 
+  ##
   ## If `BodyData` is already set, it will return the
   ## existing table.
   var res = BodyData()
-  for x in req.getBody.get().decodeQuery:
+  for x in req.getBody().get("").decodeQuery:
     res[x[0]] = x[1]
   some(res)
 
 proc getBodyDataJson*(req: var Request): SomeBodyData =
-  ## Returns the body fields from `Request`.
-  ## When called for the first time it will decode the body
-  ## and store the result in `BodyData` table.
+  ## Returns JSON body fields as a string table.
+  ## Only meaningful when the body is a JSON object; other shapes
+  ## and invalid JSON yield `none` (never raises).
   ##
   ## Note this must be called only when the provided body is JSON.
   ## Invalid JSON will be rejected and the returned value
   ## will be `none`.
-  # if req.BodyData.isNone():
-  #   try:
-  #     var res = BodyData()
-  #     let jsondata = json.fromJson(req.root.body.get())
-  #     if likely(jsondata != nil):
-  #       for k, v in jsondata:
-  #         res[k] = v.getStr()
-  #     req.BodyData = some(res)
-  #     return req.BodyData
-  #   except json.JsonError: discard
-  discard
+  let body = req.getBody().get("")
+  if body.len == 0: return none(BodyData)
+  try:
+    let node = json.fromJson(body)
+    if node.isNil or node.kind != JObject:
+      return none(BodyData)
+    var res = BodyData()
+    for k, v in node:
+      case v.kind
+      of JString: res[k] = v.getStr()
+      of JInt: res[k] = $v.getInt()
+      of JFloat: res[k] = $v.getFloat()
+      of JBool: res[k] = $v.getBool()
+      of JNull: res[k] = ""
+      else: res[k] = $v
+    return some(res)
+  except json.OpenParserJsonError:
+    return none(BodyData)
+  except CatchableError:
+    return none(BodyData)
 
 proc getFieldsTable*(req: var Request): SomeBodyData {.inline.} =
   ## An alias of `getSomeBodyData`
@@ -98,11 +113,17 @@ proc getFieldsTableJson*(req: var Request): SomeBodyData {.inline.} =
 
 proc getBodyData*[T: BodyData|JsonNode](req: var Request, dataType: typedesc[T]): Option[T] =
   ## Returns the body data from `Request` as `JsonNode`
-  # result = json.fromJson(req.getRequestBody())
   when T is BodyData:
     result = req.getSomeBodyData()
   elif T is JsonNode:
-    return some(json.fromJson(req.getBody.get()))
+    let body = req.getBody().get("")
+    if body.len == 0: return none(JsonNode)
+    try:
+      return some(json.fromJson(body))
+    except json.OpenParserJsonError:
+      return none(JsonNode)
+    except CatchableError:
+      return none(JsonNode)
 
 proc getQueryTable*(req: var Request): TableRef[string, string] {.inline.} =
   ## Retrieve query parameters as a table
@@ -206,17 +227,24 @@ template redirectTo*(controllerIdentName: typed) =
   go controllerIdentName
 
 template isAuth*(): bool =
-  var authorized = false
-  withDBPool do:
-    let ssid {.inject.} = req.getClientId()
-    if not ssid.isNone:
-      let anySessions =
-        Models.table(UserSessions).selectAll()
-          .where("session_id", ssid.get()).getAll()
-      authorized = not anySessions.isEmpty()
-    else:
-      authorized = false
-  authorized
+  ## Returns true when the request carries a valid, non-expired
+  ## session from the core in-memory store (`support/session`).
+  ##
+  ## Previously this template required `withDBPool` + `Models.table(UserSessions)`
+  ## in scope (provided by `supranim-session`/ozark) and failed to compile
+  ## in plain core apps. DB-backed authentication now lives in
+  ## `supranim-session` (`isAuthenticated`, `withDBUserSession`); this core
+  ## check is cookie + in-memory store only. For persistent users, call
+  ## `session.getSessionFromRequest(req)` then verify against your DB.
+  var isAuthResult = false
+  block:
+    try:
+      let ssidOpt = req.getClientId()
+      if ssidOpt.isSome:
+        isAuthResult = coreSessionStore.defaultStoreInit().hasSession(ssidOpt.get())
+    except CatchableError:
+      discard
+  isAuthResult
 
 #
 # Paths

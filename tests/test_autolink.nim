@@ -58,9 +58,6 @@ suite "autolinkController":
     expect ValueError:
       discard autolinkController("/a/{b:slug?x}", HttpGet)
 
-  test "pattern missing closing brace currently crashes with IndexDefect":
-    # NOTE: `autolinkController` indexes past the end of the path when the
-    # closing `}` is missing, raising an IndexDefect instead of a ValueError.
-    # This asserts the current (buggy) behaviour so it is visible in tests.
-    expect IndexDefect:
+  test "pattern missing closing brace raises ValueError":
+    expect ValueError:
       discard autolinkController("/a/{b:id", HttpGet)

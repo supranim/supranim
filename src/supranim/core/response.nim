@@ -25,7 +25,6 @@ type
     isStreaming*: bool
 
 const
-  HeaderHttpRedirect = "Location: $1"
   contentTypeHtml = "text/html; charset=utf-8"
   contentTypeJson = "application/json; charset=utf-8"
   contentTypeCalendar = "text/calendar; charset=utf-8"
@@ -48,15 +47,37 @@ proc getDefaultPage(title, heading, msg: string): string =
   )
 
 proc getDefault*(code: HttpCode): string =
-  ## Returns a default error page by `code`
+  ## Returns a default error page by `code`.
+  ## Every known error code returns a minimal HTML page (never `""`),
+  ## so `req.resp(code, getDefault(code))` is always safe.
   case code
+  of Http400:
+    result = getDefaultPage("400 - Bad Request", "400 | Bad Request",
+      "The request could not be understood by the server.")
+  of Http401:
+    result = getDefaultPage("401 - Unauthorized", "401 | Unauthorized",
+      "Authentication is required to access this resource.")
   of Http403:
-    result = getDefaultPage("403 - Forbidden", "403 | Forbidden", "Lorem ipsum")
-    return "Forbidden"
+    result = getDefaultPage("403 - Forbidden", "403 | Forbidden",
+      "You do not have permission to access this resource.")
   of Http404:
-    result = getDefaultPage("404 - Not found", "404 | Not found", "Lorem ipsum")
+    result = getDefaultPage("404 - Not Found", "404 | Not Found",
+      "The requested resource could not be found.")
+  of Http405:
+    result = getDefaultPage("405 - Method Not Allowed", "405 | Method Not Allowed",
+      "The HTTP method is not allowed for this resource.")
+  of Http500:
+    result = getDefaultPage("500 - Internal Server Error", "500 | Internal Server Error",
+      "Something went wrong on the server.")
+  of Http502:
+    result = getDefaultPage("502 - Bad Gateway", "502 | Bad Gateway",
+      "The server received an invalid response from upstream.")
+  of Http503:
+    result = getDefaultPage("503 - Service Unavailable", "503 | Service Unavailable",
+      "The server is temporarily unavailable.")
   else:
-    result = "" # todo
+    result = getDefaultPage($code.int & " - Error", $code.int & " | Error",
+      "An error occurred while processing the request.")
 
 proc toString*(headers: HttpHeaders): string =
   ## Converts HttpHeaders to string format
@@ -69,7 +90,6 @@ proc resp*(req: var Request, code: HttpCode,
         body: sink string, headers: HttpHeaders = nil) =
   ## Responds with the specified HttpCode and body.
   var serverDate = now().utc().format("ddd, dd MMM yyyy HH:mm:ss 'GMT'")
-  let bodyLen = $body.len
   var headers =
     if headers != nil: headers
     else: newHttpHeaders()
@@ -104,9 +124,10 @@ template redirect*(target: string, code = Http303) {.dirty.} =
   req.resp(code, emptyResponseBody, res.headers)
   return # blocks code execution
 
-template redirect301*(target:string) =
-  ## Set a HTTP Redirect with a ``Http301`` Moved Permanently status code
-  # req.resp(Http301, emptyResponseBody, HeaderHttpRedirect % [target])
+template redirect301*(target: string) {.dirty.} =
+  ## Set a HTTP redirect with a ``Http301`` Moved Permanently status code.
+  res.addHeader("Location", target)
+  req.resp(Http301, emptyResponseBody, res.headers)
   return # blocks code execution
 
 #

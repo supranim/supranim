@@ -57,26 +57,45 @@ proc autolinkController*(routePath: string,
     of '{':
       # parse a named regex pattern
       inc(i) # skip {
-      var p: RoutePattern
-      i += routePath.parseUntil(p.key, {':'}, i)
       if i >= routePath.len:
         when nimvm:
-          error("Invalid pattern missing ending `}`")
+          error("Invalid pattern missing ending `}` in `" & routePath & "`")
         else:
-          raise newException(ValueError, "Invalid pattern missing ending `}`")
+          raise newException(ValueError, "Invalid pattern missing ending `}` in `" & routePath & "`")
+      var p: RoutePattern
+      i += routePath.parseUntil(p.key, {':'}, i)
+      if i >= routePath.len or routePath[i] != ':':
+        when nimvm:
+          error("Invalid pattern missing `:` or ending `}` in `" & routePath & "`")
+        else:
+          raise newException(ValueError, "Invalid pattern missing `:` or ending `}` in `" & routePath & "`")
       else:
         inc(i) # skip :
+        if i >= routePath.len:
+          when nimvm:
+            error("Invalid pattern missing regex and ending `}` in `" & routePath & "`")
+          else:
+            raise newException(ValueError, "Invalid pattern missing regex and ending `}` in `" & routePath & "`")
         i += routePath.parseUntil(p.reKey, {'}', '?'}, i)
+        if i >= routePath.len:
+          when nimvm:
+            error("Invalid pattern missing ending `}` in `" & routePath & "`")
+          else:
+            raise newException(ValueError, "Invalid pattern missing ending `}` in `" & routePath & "`")
         p.isOptional = routePath[i] == '?'
         if p.isOptional:
-          if likely(routePath[i+1] == '}'):
-            inc(i, 2) # ?
-          else:
+          if i + 1 >= routePath.len or routePath[i+1] != '}':
             when nimvm:
-              error("Invalid optional pattern missing ending `}`")
+              error("Invalid optional pattern missing ending `}` in `" & routePath & "`")
             else:
-              raise newException(ValueError, "Invalid optional pattern missing ending `}`")
+              raise newException(ValueError, "Invalid optional pattern missing ending `}` in `" & routePath & "`")
+          inc(i, 2) # ?}
         else:
+          if routePath[i] != '}':
+            when nimvm:
+              error("Invalid pattern missing ending `}` in `" & routePath & "`")
+            else:
+              raise newException(ValueError, "Invalid pattern missing ending `}` in `" & routePath & "`")
           inc(i) # }
         if likely(RegexPatterns.hasKey(p.reKey)):
           add patterns, (p.key, p)
