@@ -92,17 +92,21 @@ var defaultStore {.global.}: SessionStore
 var defaultStoreLock {.global.}: Lock
 initLock(defaultStoreLock)
 
-proc defaultStoreInit*(): SessionStore =
+proc defaultStoreInit*(): SessionStore {.gcsafe.} =
   ## Returns the process-global default store, creating it on first use.
-  withLock(defaultStoreLock):
-    if defaultStore.isNil:
-      defaultStore = newSessionStore()
-    result = defaultStore
+  ## Lock-guarded; the `gcsafe` blocks assert manual safety for the
+  ## shared global (same pattern as `supranim-session`'s singleton).
+  {.gcsafe.}:
+    withLock(defaultStoreLock):
+      if defaultStore.isNil:
+        defaultStore = newSessionStore()
+      result = defaultStore
 
-proc setDefaultSessionStore*(store: SessionStore) =
+proc setDefaultSessionStore*(store: SessionStore) {.gcsafe.} =
   ## Replaces the process-global default store (useful in tests).
-  withLock(defaultStoreLock):
-    defaultStore = store
+  {.gcsafe.}:
+    withLock(defaultStoreLock):
+      defaultStore = store
 
 proc sessionCookieName*(store: SessionStore): string =
   ## Resolves the cookie name, falling back to `ssid`.

@@ -9,6 +9,10 @@
 ## WebSocket re-export for Supranim.
 ## Thin wrapper over `pkg/powpow` WebSocket primitives, exposing connection
 ## types and `websocketUpgrade` for route handlers.
+##
+## For the framework layer (named rooms, broadcast, session-aware upgrade
+## middleware), see `supranim/support/ws` (`WsHub`, `joinRoom`,
+## `broadcast`, `requireWsSession`, `upgradeWs`).
 
 import pkg/powpow as pw
 export pw.WsConnection, pw.WsFrameKind

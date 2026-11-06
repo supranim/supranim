@@ -47,8 +47,8 @@ type
     responseSent*: bool
     powReq*: pw.HttpRequest
     powRes*: pw.HttpResponse
-    headersFetched: bool
-    headersCache: HttpHeaders
+    headersFetched*: bool
+    headersCache*: HttpHeaders
 
 when defined supranimUseGlobalOnRequest:
   type

@@ -11,8 +11,8 @@
 - Easy routing with support for parameters and wildcards
 - Service Providers for wrapping and managing external services
 - Built-in support for sessions and cookies
-- Support for WebSockets for real-time communication.
-- Ready-to-use templating engine for rendering HTML.
+- Support for WebSockets for real-time communication (rooms, broadcast and session-aware upgrades via `support/ws`).
+- HTML view helpers in core (`support/view`) plus a full Tim templating engine via the starter template.
 - Modular architecture for easy extension and customization.
 
 ### About
