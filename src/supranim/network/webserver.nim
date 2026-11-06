@@ -206,6 +206,20 @@ when not defined(windows):
           res.status(Http200).send(""),
       host, server.port.int)
 
+proc stop*(server: WebServer) =
+  ## Stops a running server: a blocking `start`/`startUnix` call returns
+  ## afterwards. Safe on a fresh server and safe to call more than once.
+  ## Stops the multi-threaded pool server when present, else the
+  ## single-threaded server. For graceful shutdown call it from a request
+  ## handler, a timer, or your own `SIGINT`/`SIGTERM` handler — the
+  ## library installs no signal handlers itself so hosts stay in control.
+  when not defined(windows):
+    if server.powMultiServer != nil:
+      server.powMultiServer.close()
+      return
+  if server.powServer != nil:
+    server.powServer.stop()
+
 proc send*(req: var Request, code: int, body: string, httpHeaders: HttpHeaders = nil) =
   ## Sends an HTTP response with a numeric status code.
   ## 

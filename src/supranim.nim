@@ -128,20 +128,22 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
                     else:
                       req.resp(Http500, "Internal Server Error")
                 else:
-                  when not defined supraMicroservice:
-                    try: 
+                  try:
+                    when defined supraMicroservice:
+                      runtimeCheck.route.callback(req.addr, res.addr)
+                    else:
                       runtimeCheck.route.callback(req, res)
-                    except Exception as e:
-                      displayError("Error processing request: " & e.msg & "\n" & e.getStackTrace())
-                      req.resp(Http500, "Internal Server Error", res.getHeaders())
-                      return
+                  except Exception as e:
+                    displayError("Error processing request: " & e.msg & "\n" & e.getStackTrace())
+                    req.resp(Http500, "Internal Server Error", res.getHeaders())
+                    return
                   discard runtimeCheck.route.resolveAfterware(req, res)
-                  if not req.responseSent:
+                  if not req.responseSent and not res.isStreaming:
                     let body = res.getBody()
                     if body.len > 0:
-                      req.resp(res.getCode, body, res.headers)
+                      req.resp(res.getCode, body, res.getHeaders)
                     else:
-                      req.resp(Http500, "Internal Server Error", res.headers)
+                      req.resp(Http500, "Internal Server Error", res.getHeaders)
             else:
               req.resp(Http403, getDefault(Http403), res.getHeaders)
           of false:
@@ -193,7 +195,11 @@ template run*(app: Application, optionalBlock: untyped) {.dirty.} =
         srvPort = if srvPortRaw == 0: Port(8000) else: Port(srvPortRaw)
         srvHostRaw = app.config("app.server.address").getStr
         srvHost = if srvHostRaw.len == 0: "127.0.0.1" else: srvHostRaw
-        srvThreads = app.config("app.server.threads").getInt.int
+        srvThreadsRaw = app.config("app.server.threads").getInt.int
+        # Clamp worker threads: `<= 0` lets `start` fall back to
+        # `countProcessors()`; absurd values are capped so a config
+        # typo cannot spawn thousands of workers.
+        srvThreads = if srvThreadsRaw > 256: 256 else: srvThreadsRaw
         srvUnix = app.config("app.server.unix").getBool
         srvOptions = app.loadServerOptions()
 

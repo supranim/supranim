@@ -1047,8 +1047,8 @@ macro initService*(serviceIdentifier, serviceConfig: untyped) =
                         runtimeCheck.route.callback(req, res)
                         req.resp(res.getCode, res.getBody, res.getHeaders)
                       else:
-                        discard # todo
-                  else: req.respond(501, newErrorResponse(501, "Not implemented"))
+                        req.resp(Http403, getDefault(Http403), res.getHeaders())
+                  else: req.respond(404, newErrorResponse(404, "Not found"))
     
     # if StaticService.serviceType == ThreadService:
     #   if StaticService.autoStart:
