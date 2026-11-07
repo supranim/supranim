@@ -19,9 +19,11 @@ suite "model facade":
     check getTableName("Users") == "users"
 
   test "facade re-exports query, collection and migration":
-    # migration driver ids cover all three backends
+    # migration driver ids cover all three backends; mysql id exists
+    # only in ozark > 0.2.0, so tolerate the registry release.
     check OzarkMigrationDriverPgsql == 1
-    check OzarkMigrationDriverMysql == 2
+    when declared(OzarkMigrationDriverMysql):
+      check OzarkMigrationDriverMysql == 2
     check OzarkMigrationDriverSqlite == 3
 
   test "sqlite round-trip via facade (prepare/insert/select)":

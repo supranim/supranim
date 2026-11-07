@@ -47,7 +47,15 @@ type
   Middleware* = proc(req: var Request, res: var Response): HttpCode {.nimcall.}
   Afterware* = Middleware
 
-  HttpRoute* = ref object of RootObj
+  # `{.acyclic.}`: routes and routers form a tree (tables/seqs/strings
+  # procs only, no back-references), so the cycle collector can skip
+  # them. This matters for threaded serving: ORC's cycle roots are
+  # thread-local, so sharing a cyclic ref across workers corrupts the
+  # collector (`unregisterCycle` SIGSEGV). Acyclic shared refs only do
+  # refcount inc/dec; combined with the `GC_ref` pin at creation (count
+  # never reaches zero for process-lifetime routes) concurrent lookups
+  # under the router lock stay crash-free.
+  HttpRoute* {.acyclic.} = ref object of RootObj
     path: string
       # The `path` is the original path string used to define the route.
     jit: CompiledJit
@@ -73,9 +81,9 @@ type
         afterwares: seq[Afterware]
       else: discard
   
-  HttpRouteWs* = ref object of HttpRoute
+  HttpRouteWs* {.acyclic.} = ref object of HttpRoute
 
-  HttpRouterInstance* = ref object
+  HttpRouterInstance* {.acyclic.} = ref object
     httpGet*, httpPost*, httpPut*, httpHead*,
       httpConnect*, httpDelete*, httpPatch*,
       httpTrace*, httpOptions*, httpErrors*: TableRef[string, HttpRoute]
