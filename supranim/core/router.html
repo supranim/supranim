@@ -74,7 +74,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   proc (req: ptr Request; res: ptr Response): void {.cdecl, gcsafe.}
  else:
   proc (req: var Request; res: var Response): void {.nimcall, gcsafe.})">Callable</a></li>
-<li><a class="reference" href="#HttpRoute" title="HttpRoute = ref object of RootObj
+<li><a class="reference" href="#HttpRoute" title="HttpRoute {.acyclic.} = ref object of RootObj
   callback*: Callable        ## The callback procedure that will be executed when this route is matched.
   case
   of DynamicRoute:
@@ -89,13 +89,13 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   else:
     nil">HttpRoute</a></li>
 <li><a class="reference" href="#HttpRouterError" title="HttpRouterError = object of CatchableError">HttpRouterError</a></li>
-<li><a class="reference" href="#HttpRouterInstance" title="HttpRouterInstance = ref object
+<li><a class="reference" href="#HttpRouterInstance" title="HttpRouterInstance {.acyclic.} = ref object
   httpGet*, httpPost*, httpPut*, httpHead*, httpConnect*, httpDelete*,
   httpPatch*, httpTrace*, httpOptions*, httpErrors*: TableRef[string, HttpRoute]
   httpWS*: TableRef[string, HttpRouteWs]">HttpRouterInstance</a></li>
 <li><a class="reference" href="#HttpRouteType" title="HttpRouteType = enum
   StaticRoute, DynamicRoute">HttpRouteType</a></li>
-<li><a class="reference" href="#HttpRouteWs" title="HttpRouteWs = ref object of HttpRoute">HttpRouteWs</a></li>
+<li><a class="reference" href="#HttpRouteWs" title="HttpRouteWs {.acyclic.} = ref object of HttpRoute">HttpRouteWs</a></li>
 <li><a class="reference" href="#Middleware" title="Middleware = proc (req: var Request; res: var Response): HttpCode {.nimcall.}">Middleware</a></li>
 <li><a class="reference" href="#RouteCheckResult" title="RouteCheckResult = tuple[exists: bool, route: HttpRoute,
                          params: Table[string, string]]">RouteCheckResult</a></li>
@@ -386,7 +386,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   </dd>
 </div>
 <div id="HttpRoute">
-  <dt><pre><a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
+  <dt><pre><a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a> {.<span class="Identifier">acyclic</span>.} <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
   <span class="Identifier">callback</span><span class="Operator">*</span><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a>        <span class="Comment">## The callback procedure that will be executed when this route is matched.</span>
   <span class="Keyword">case</span>
   <span class="Keyword">of</span> <span class="Identifier">DynamicRoute</span><span class="Other">:</span>
@@ -415,7 +415,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   </dd>
 </div>
 <div id="HttpRouterInstance">
-  <dt><pre><a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+  <dt><pre><a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a> {.<span class="Identifier">acyclic</span>.} <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">httpGet</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpPost</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpPut</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpHead</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpConnect</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpDelete</span><span class="Operator">*</span><span class="Other">,</span>
   <span class="Identifier">httpPatch</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpTrace</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpOptions</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpErrors</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a><span class="Other">]</span>
   <span class="Identifier">httpWS</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#HttpRouteWs"><span class="Identifier">HttpRouteWs</span></a><span class="Other">]</span></pre></dt>
@@ -435,7 +435,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   </dd>
 </div>
 <div id="HttpRouteWs">
-  <dt><pre><a href="#HttpRouteWs"><span class="Identifier">HttpRouteWs</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a></pre></dt>
+  <dt><pre><a href="#HttpRouteWs"><span class="Identifier">HttpRouteWs</span></a> {.<span class="Identifier">acyclic</span>.} <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a></pre></dt>
   <dd>
     
     
@@ -1026,7 +1026,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 00:21:39 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 00:36:09 UTC</small>
       </div>
     </div>
   </div>
