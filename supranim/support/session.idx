@@ -1,0 +1,43 @@
+nimTitle	session	supranim/support/session.html	module supranim/support/session		0
+nim	SessionConfig	supranim/support/session.html#SessionConfig	object SessionConfig		41
+nim	Session	supranim/support/session.html#Session	type Session		52
+nim	SessionStore	supranim/support/session.html#SessionStore	type SessionStore		63
+nim	defaultSessionConfig	supranim/support/session.html#defaultSessionConfig	proc defaultSessionConfig(): SessionConfig		69
+nim	newSessionStore	supranim/support/session.html#newSessionStore	proc newSessionStore(config = defaultSessionConfig()): SessionStore		83
+nim	defaultStoreInit	supranim/support/session.html#defaultStoreInit	proc defaultStoreInit(): SessionStore		95
+nim	setDefaultSessionStore	supranim/support/session.html#setDefaultSessionStore,SessionStore	proc setDefaultSessionStore(store: SessionStore)		105
+nim	sessionCookieName	supranim/support/session.html#sessionCookieName,SessionStore	proc sessionCookieName(store: SessionStore): string		111
+nim	isExpired	supranim/support/session.html#isExpired,Session,SessionStore	proc isExpired(s: Session; store: SessionStore): bool		116
+nim	createSession	supranim/support/session.html#createSession,SessionStore	proc createSession(store: SessionStore; userId = none(string)): Session		120
+nim	getSession	supranim/support/session.html#getSession,SessionStore,string	proc getSession(store: SessionStore; id: string): Session		141
+nim	hasSession	supranim/support/session.html#hasSession,SessionStore,string	proc hasSession(store: SessionStore; id: string): bool		155
+nim	destroySession	supranim/support/session.html#destroySession,SessionStore,string	proc destroySession(store: SessionStore; id: string)		159
+nim	destroySession	supranim/support/session.html#destroySession,SessionStore,Session	proc destroySession(store: SessionStore; s: Session)		164
+nim	touchSession	supranim/support/session.html#touchSession,SessionStore,Session	proc touchSession(store: SessionStore; s: Session)		169
+nim	renewSessionId	supranim/support/session.html#renewSessionId,SessionStore,Session	proc renewSessionId(store: SessionStore; s: Session): string		175
+nim	cleanupExpired	supranim/support/session.html#cleanupExpired,SessionStore	proc cleanupExpired(store: SessionStore): int		189
+nim	sessionCount	supranim/support/session.html#sessionCount,SessionStore	proc sessionCount(store: SessionStore): int		206
+nim	setUserId	supranim/support/session.html#setUserId,Session,string	proc setUserId(s: Session; userId: string)		213
+nim	getUserId	supranim/support/session.html#getUserId,Session	proc getUserId(s: Session): Option[string]		217
+nim	setPayloadValue	supranim/support/session.html#setPayloadValue,Session,string,string	proc setPayloadValue(s: Session; key, value: string)		221
+nim	getPayloadValue	supranim/support/session.html#getPayloadValue,Session,string	proc getPayloadValue(s: Session; key: string): Option[string]		225
+nim	genCSRF	supranim/support/session.html#genCSRF,Session,string	proc genCSRF(s: Session; formId: string): string		232
+nim	validateCSRF	supranim/support/session.html#validateCSRF,Session,string,string	proc validateCSRF(s: Session; formId, clientToken: string): bool		239
+nim	notify	supranim/support/session.html#notify,Session,string,string	proc notify(s: Session; msg: string; path = "/")		248
+nim	getNotifications	supranim/support/session.html#getNotifications,Session,string	proc getNotifications(s: Session; path: string): seq[string]		254
+nim	getSessionIdFromRequest	supranim/support/session.html#getSessionIdFromRequest,Request,SessionStore	proc getSessionIdFromRequest(req: var Request; store: SessionStore): Option[string]		262
+nim	getSessionIdFromRequest	supranim/support/session.html#getSessionIdFromRequest,Request	proc getSessionIdFromRequest(req: var Request): Option[string]		274
+nim	buildSessionCookie	supranim/support/session.html#buildSessionCookie,Request,string,SessionStore	proc buildSessionCookie(req: var Request; id: string; store: SessionStore): Cookie		278
+nim	getSessionFromRequest	supranim/support/session.html#getSessionFromRequest,Request,SessionStore	proc getSessionFromRequest(req: var Request; store: SessionStore): Session		288
+nim	getSessionFromRequest	supranim/support/session.html#getSessionFromRequest,Request	proc getSessionFromRequest(req: var Request): Session		295
+nim	initSessionWithHeaders	supranim/support/session.html#initSessionWithHeaders,Request,Response,SessionStore	proc initSessionWithHeaders(req: var Request; res: var Response; store: SessionStore): Session		299
+nim	initSessionWithHeaders	supranim/support/session.html#initSessionWithHeaders,Request,Response	proc initSessionWithHeaders(req: var Request; res: var Response): Session		319
+nim	destroySessionWithHeaders	supranim/support/session.html#destroySessionWithHeaders,Request,Response,SessionStore,Session	proc destroySessionWithHeaders(req: var Request; res: var Response;\n                          store: SessionStore; s: Session)		324
+nim	renewSessionWithHeaders	supranim/support/session.html#renewSessionWithHeaders,Request,Response,SessionStore,Session	proc renewSessionWithHeaders(req: var Request; res: var Response;\n                        store: SessionStore; s: Session)		334
+nim	withSession	supranim/support/session.html#withSession.t,SessionStore,untyped	template withSession(store: SessionStore; body: untyped)		341
+nim	withSession	supranim/support/session.html#withSession.t,untyped	template withSession(body: untyped)		353
+nimgrp	initsessionwithheaders	supranim/support/session.html#initSessionWithHeaders-procs-all	proc		299
+nimgrp	destroysession	supranim/support/session.html#destroySession-procs-all	proc		159
+nimgrp	getsessionidfromrequest	supranim/support/session.html#getSessionIdFromRequest-procs-all	proc		262
+nimgrp	getsessionfromrequest	supranim/support/session.html#getSessionFromRequest-procs-all	proc		288
+nimgrp	withsession	supranim/support/session.html#withSession-templates-all	template		341

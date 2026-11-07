@@ -3,6 +3,6 @@ nim	RoutePattern	supranim/core/autolink.html#RoutePattern	tuple RoutePattern		20
 nim	Autolinked	supranim/core/autolink.html#Autolinked	tuple Autolinked		26
 nim	RoutePatternsTable	supranim/core/autolink.html#RoutePatternsTable	type RoutePatternsTable		30
 nim	autolinkController	supranim/core/autolink.html#autolinkController,string,HttpMethod	proc autolinkController(routePath: string; httpMethod: HttpMethod;\n                   isWebSocket = false): Autolinked		46
-nim	RouteSegment	supranim/core/autolink.html#RouteSegment	tuple RouteSegment		144
-nim	routeSegments	supranim/core/autolink.html#routeSegments,string	proc routeSegments(routePath: string): seq[RouteSegment]		148
-nim	clientUrlExpr	supranim/core/autolink.html#clientUrlExpr,NimNode,string	proc clientUrlExpr(base: NimNode; routePath: string): NimNode		175
+nim	RouteSegment	supranim/core/autolink.html#RouteSegment	tuple RouteSegment		163
+nim	routeSegments	supranim/core/autolink.html#routeSegments,string	proc routeSegments(routePath: string): seq[RouteSegment]		167
+nim	clientUrlExpr	supranim/core/autolink.html#clientUrlExpr,NimNode,string	proc clientUrlExpr(base: NimNode; routePath: string): NimNode		194

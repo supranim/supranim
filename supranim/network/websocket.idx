@@ -1,7 +1,7 @@
 nimTitle	websocket	supranim/network/websocket.html	module supranim/network/websocket		0
-nim	WebSocketConnection	supranim/network/websocket.html#WebSocketConnection	type WebSocketConnection		24
-nim	WebSocketFrameKind	supranim/network/websocket.html#WebSocketFrameKind	type WebSocketFrameKind		25
-nim	OpenCb	supranim/network/websocket.html#OpenCb	type OpenCb		26
-nim	MessageCb	supranim/network/websocket.html#MessageCb	type MessageCb		27
-nim	CloseCb	supranim/network/websocket.html#CloseCb	type CloseCb		28
-nim	ErrorCb	supranim/network/websocket.html#ErrorCb	type ErrorCb		29
+nim	WebSocketConnection	supranim/network/websocket.html#WebSocketConnection	type WebSocketConnection		28
+nim	WebSocketFrameKind	supranim/network/websocket.html#WebSocketFrameKind	type WebSocketFrameKind		29
+nim	OpenCb	supranim/network/websocket.html#OpenCb	type OpenCb		30
+nim	MessageCb	supranim/network/websocket.html#MessageCb	type MessageCb		31
+nim	CloseCb	supranim/network/websocket.html#CloseCb	type CloseCb		32
+nim	ErrorCb	supranim/network/websocket.html#ErrorCb	type ErrorCb		33

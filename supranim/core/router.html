@@ -16,10 +16,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- CSS -->
-<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.2.12">
+<link rel="stylesheet" type="text/css" href="../../nimdoc.out.css?v=2.4.0">
 
 <!-- JS -->
-<script type="text/javascript" src="../../dochack.js?v=2.2.12"></script>
+<script type="text/javascript" src="../../dochack.js?v=2.4.0"></script>
 </head>
 <body>
   <div class="document" id="documentId">
@@ -31,28 +31,34 @@
       <div class="row">
   <div class="three columns">
     <div class="theme-select-wrapper">
-      <label for="theme-select">Theme:&nbsp;</label>
-      <select id="theme-select" onchange="setTheme(this.value)">
-        <option value="auto">🌗 Match OS</option>
-        <option value="dark">🌑 Dark</option>
-        <option value="light">🌕 Light</option>
-      </select>
-    </div>
+  <label for="theme-select">Theme:&nbsp;</label>
+  <select id="theme-select" onchange="setTheme(this.value)">
+    <option value="auto">🌗 Match OS</option>
+    <option value="dark">🌑 Dark</option>
+    <option value="light">🌕 Light</option>
+  </select>
+</div>
+
     <div id="global-links">
-      <ul class="simple">
-        <li><a id="indexLink" href="../../theindex.html">Index</a></li>
-      </ul>
-    </div>
-    <div id="searchInputDiv">
-      Search: <input type="search" id="searchInput" oninput="search()"/>
-    </div>
-    <div>
-      Group by:
-      <select onchange="groupBy(this.value)">
-        <option value="section">Section</option>
-        <option value="type">Type</option>
-      </select>
-    </div>
+  
+  <ul class="simple">
+  <li><a id="indexLink" href="../../theindex.html">Index</a></li>
+</ul>
+
+</div>
+
+      <div id="searchInputDiv">
+  Search: <input type="search" id="searchInput" oninput="search()"/>
+</div>
+
+    <div class="search-groupby">
+  Group by:
+  <select onchange="groupBy(this.value)">
+    <option value="section">Section</option>
+    <option value="type">Type</option>
+  </select>
+</div>
+
     <ul class="simple simple-toc" id="toc-list">
   <li>
   <a class="reference reference-toplevel" href="#6" id="56">Imports</a>
@@ -111,7 +117,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <details open>
     <summary><a class="reference reference-toplevel" href="#10" id="60">Consts</a></summary>
     <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#DefaultHttpError" title="DefaultHttpError: Callable = :anonymous_5502926927">DefaultHttpError</a></li>
+      <li><a class="reference" href="#DefaultHttpError" title="DefaultHttpError: Callable = :anonymous_5435818060">DefaultHttpError</a></li>
 <li><a class="reference" href="#httpMethods" title="httpMethods = [&quot;get&quot;, &quot;post&quot;, &quot;put&quot;, &quot;patch&quot;, &quot;head&quot;, &quot;delete&quot;, &quot;trace&quot;,
                &quot;options&quot;, &quot;connect&quot;, &quot;ws&quot;]">httpMethods</a></li>
 
@@ -122,8 +128,24 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <details open>
     <summary><a class="reference reference-toplevel" href="#12" id="62">Procs</a></summary>
     <ul class="simple simple-toc-section">
-      <ul class="simple nested-toc-section">call4xx
+      <ul class="simple nested-toc-section">allowedMethods
+  <li><a class="reference" href="#allowedMethods%2CHttpRouterInstance%2Cstring" title="allowedMethods(router: var HttpRouterInstance; requestPath: string): seq[
+    HttpMethod]">allowedMethods(router: var HttpRouterInstance; requestPath: string): seq[
+    HttpMethod]</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">call4xx
   <li><a class="reference" href="#call4xx%2CHttpRouterInstance%2CRequest%2CResponse" title="call4xx(router: HttpRouterInstance; req: var Request; res: var Response)">call4xx(router: HttpRouterInstance; req: var Request; res: var Response)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">call5xx
+  <li><a class="reference" href="#call5xx%2CHttpRouterInstance%2CRequest%2CResponse" title="call5xx(router: HttpRouterInstance; req: var Request; res: var Response)">call5xx(router: HttpRouterInstance; req: var Request; res: var Response)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">callError
+  <li><a class="reference" href="#callError%2CHttpRouterInstance%2CHttpCode%2CRequest%2CResponse" title="callError(router: HttpRouterInstance; code: HttpCode; req: var Request;
+          res: var Response): bool">callError(router: HttpRouterInstance; code: HttpCode; req: var Request;
+          res: var Response): bool</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">checkExists
@@ -158,10 +180,32 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">getAfterwares
+  <li><a class="reference" href="#getAfterwares%2CHttpRoute" title="getAfterwares(route: HttpRoute): seq[Afterware]">getAfterwares(route: HttpRoute): seq[Afterware]</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">getMiddlewares
+  <li><a class="reference" href="#getMiddlewares%2CHttpRoute" title="getMiddlewares(route: HttpRoute): seq[Middleware]">getMiddlewares(route: HttpRoute): seq[Middleware]</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">hasErrorHandler
+  <li><a class="reference" href="#hasErrorHandler%2CHttpRouterInstance%2CHttpCode" title="hasErrorHandler(router: HttpRouterInstance; code: HttpCode): bool">hasErrorHandler(router: HttpRouterInstance; code: HttpCode): bool</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">hasRoute
+  <li><a class="reference" href="#hasRoute%2CHttpRouterInstance%2Cstring%2CHttpMethod" title="hasRoute(router: HttpRouterInstance; path: string; httpMethod: HttpMethod): bool">hasRoute(router: HttpRouterInstance; path: string; httpMethod: HttpMethod): bool</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">head
   <li><a class="reference" href="#head%2CHttpRouterInstance%2Cstring%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D" title="head(router: HttpRouterInstance; path: string; callback: Callable;
      middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])">head(router: HttpRouterInstance; path: string; callback: Callable;
      middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">isMethodNotAllowed
+  <li><a class="reference" href="#isMethodNotAllowed%2CHttpRouterInstance%2Cstring%2CHttpMethod" title="isMethodNotAllowed(router: var HttpRouterInstance; requestPath: string;
+                   httpMethod: HttpMethod): bool">isMethodNotAllowed(router: var HttpRouterInstance; requestPath: string;
+                   httpMethod: HttpMethod): bool</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">matchRouteJIT
@@ -225,6 +269,18 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
               afterwares: seq[Afterware] = @[])</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">replaceRoute
+  <li><a class="reference" href="#replaceRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D%2Cseq%5B%5D" title="replaceRoute(router: HttpRouterInstance; autolinked: sink (string, string);
+             httpMethod: HttpMethod; callback: Callable;
+             middlewares: seq[Middleware] = @[];
+             afterwares: seq[Afterware] = @[]; isWebSocket = false;
+             routeParams: seq[(string, bool)] = @[])">replaceRoute(router: HttpRouterInstance; autolinked: sink (string, string);
+             httpMethod: HttpMethod; callback: Callable;
+             middlewares: seq[Middleware] = @[];
+             afterwares: seq[Afterware] = @[]; isWebSocket = false;
+             routeParams: seq[(string, bool)] = @[])</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">resolveAfterware
   <li><a class="reference" href="#resolveAfterware%2CHttpRoute%2CRequest%2CResponse" title="resolveAfterware(route: HttpRoute; req: var Request; res: var Response): HttpCode">resolveAfterware(route: HttpRoute; req: var Request; res: var Response): HttpCode</a></li>
 
@@ -243,6 +299,10 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <li><a class="reference" href="#unregisterRoute%2CHttpRouterInstance%2Csink%2CHttpMethod" title="unregisterRoute(router: HttpRouterInstance; autolinked: sink (string, string);
                 httpMethod: HttpMethod)">unregisterRoute(router: HttpRouterInstance; autolinked: sink (string, string);
                 httpMethod: HttpMethod)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">unregisterWsRoute
+  <li><a class="reference" href="#unregisterWsRoute%2CHttpRouterInstance%2Cstring" title="unregisterWsRoute(router: HttpRouterInstance; path: string)">unregisterWsRoute(router: HttpRouterInstance; path: string)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">ws
@@ -428,7 +488,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <h1><a class="toc-backref" href="#10">Consts</a></h1>
   <dl class="item">
     <div id="DefaultHttpError">
-  <dt><pre><a href="#DefaultHttpError"><span class="Identifier">DefaultHttpError</span></a><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a> <span class="Other">=</span> <span class="Operator">:anonymous_5502926927</span></pre></dt>
+  <dt><pre><a href="#DefaultHttpError"><span class="Identifier">DefaultHttpError</span></a><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a> <span class="Other">=</span> <span class="Operator">:anonymous_5435818060</span></pre></dt>
   <dd>
     
     
@@ -450,13 +510,51 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 <div class="section" id="12">
   <h1><a class="toc-backref" href="#12">Procs</a></h1>
   <dl class="item">
-    <div id="call4xx-procs-all">
+    <div id="allowedMethods-procs-all">
+  <div id="allowedMethods,HttpRouterInstance,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#allowedMethods%2CHttpRouterInstance%2Cstring"><span class="Identifier">allowedMethods</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">requestPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span>
+    <span class="Identifier">HttpMethod</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">DynasmError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+                  <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Returns every method with a route matching <tt class="docutils literal"><span class="pre"><span class="Identifier">requestPath</span></span></tt> (exact match first, then dynamic patterns). Used for <tt class="docutils literal"><span class="pre"><span class="DecNumber">405</span></span></tt> handling and <tt class="docutils literal"><span class="pre"><span class="Identifier">Allow</span></span></tt> headers. Single lock, no nested <tt class="docutils literal"><span class="pre"><span class="Identifier">checkExists</span></span></tt>.
+    
+  </dd>
+</div>
+
+</div>
+<div id="call4xx-procs-all">
   <div id="call4xx,HttpRouterInstance,Request,Response">
   <dt><pre><span class="Keyword">proc</span> <a href="#call4xx%2CHttpRouterInstance%2CRequest%2CResponse"><span class="Identifier">call4xx</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">)</span> {.
     <span class="Identifier">discardable</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Run the <tt class="docutils literal"><span class="pre"><span class="DecNumber">4</span><span class="Identifier">xx</span></span></tt> callback
+    Run the <tt class="docutils literal"><span class="pre"><span class="DecNumber">4</span><span class="Identifier">xx</span></span></tt> callback. Safe no-op when none is registered (never raises <tt class="docutils literal"><span class="pre"><span class="Identifier">KeyError</span></span></tt>).
+    
+  </dd>
+</div>
+
+</div>
+<div id="call5xx-procs-all">
+  <div id="call5xx,HttpRouterInstance,Request,Response">
+  <dt><pre><span class="Keyword">proc</span> <a href="#call5xx%2CHttpRouterInstance%2CRequest%2CResponse"><span class="Identifier">call5xx</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">)</span> {.
+    <span class="Identifier">discardable</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Run the <tt class="docutils literal"><span class="pre"><span class="DecNumber">5</span><span class="Identifier">xx</span></span></tt> callback. Safe no-op when none is registered.
+    
+  </dd>
+</div>
+
+</div>
+<div id="callError-procs-all">
+  <div id="callError,HttpRouterInstance,HttpCode,Request,Response">
+  <dt><pre><span class="Keyword">proc</span> <a href="#callError%2CHttpRouterInstance%2CHttpCode%2CRequest%2CResponse"><span class="Identifier">callError</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span> <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span>
+               <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span class="Identifier">discardable</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Runs the most specific handler for <tt class="docutils literal"><span class="pre"><span class="Identifier">code</span></span></tt> (specific key, then <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;4xx&quot;</span></span></tt> / <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;5xx&quot;</span></span></tt> fallback). Returns true when a handler ran, false when none is registered (never raises).
     
   </dd>
 </div>
@@ -470,7 +568,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Check if a route exists for the given request path and HTTP method
+    Check if a route exists for the given request path and HTTP method. <tt class="docutils literal"><span class="pre"><span class="Identifier">HEAD</span></span></tt> falls back to <tt class="docutils literal"><span class="pre"><span class="Identifier">GET</span></span></tt> when no explicit <tt class="docutils literal"><span class="pre"><span class="Identifier">HEAD</span></span></tt> route is registered (standard HTTP semantics: same headers, no body).
     
   </dd>
 </div>
@@ -521,11 +619,12 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </div>
 <div id="errorHandler-procs-all">
   <div id="errorHandler,HttpRouterInstance,HttpCode,Callable">
-  <dt><pre><span class="Keyword">proc</span> <a href="#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable"><span class="Identifier">errorHandler</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable"><span class="Identifier">errorHandler</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">OpenParserRegexError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">DynasmError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Register an error handler for a specific HTTP status code
+    Register an error handler for a specific HTTP status code. Stores under the specific key (<tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;404&quot;</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;500&quot;</span></span></tt>, ...) and also under the generic <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;4xx&quot;</span></span></tt> / <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;5xx&quot;</span></span></tt> fallback (first registration wins for the generic slot, so <tt class="docutils literal"><span class="pre"><span class="Identifier">initRouterErrorHandlers</span></span></tt> stays stable). Unknown codes outside 400..599 are stored under their numeric key only.
     
   </dd>
 </div>
@@ -545,6 +644,54 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </div>
 
 </div>
+<div id="getAfterwares-procs-all">
+  <div id="getAfterwares,HttpRoute">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getAfterwares%2CHttpRoute"><span class="Identifier">getAfterwares</span></a><span class="Other">(</span><span class="Identifier">route</span><span class="Other">:</span> <a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#Afterware"><span class="Identifier">Afterware</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Returns the route afterwares, or <tt class="docutils literal"><span class="pre"><span class="Operator">@</span><span class="Punctuation">[</span><span class="Punctuation">]</span></span></tt> when none.
+    
+  </dd>
+</div>
+
+</div>
+<div id="getMiddlewares-procs-all">
+  <div id="getMiddlewares,HttpRoute">
+  <dt><pre><span class="Keyword">proc</span> <a href="#getMiddlewares%2CHttpRoute"><span class="Identifier">getMiddlewares</span></a><span class="Other">(</span><span class="Identifier">route</span><span class="Other">:</span> <a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#Middleware"><span class="Identifier">Middleware</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Returns the route middlewares, or <tt class="docutils literal"><span class="pre"><span class="Operator">@</span><span class="Punctuation">[</span><span class="Punctuation">]</span></span></tt> when none. (<tt class="docutils literal"><span class="pre"><span class="Identifier">getMiddlewares</span></span></tt> is public for introspection; the request path uses <tt class="docutils literal"><span class="pre"><span class="Identifier">resolveMiddleware</span></span></tt> directly.)
+    
+  </dd>
+</div>
+
+</div>
+<div id="hasErrorHandler-procs-all">
+  <div id="hasErrorHandler,HttpRouterInstance,HttpCode">
+  <dt><pre><span class="Keyword">proc</span> <a href="#hasErrorHandler%2CHttpRouterInstance%2CHttpCode"><span class="Identifier">hasErrorHandler</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">code</span><span class="Other">:</span> <span class="Identifier">HttpCode</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    True when a specific or generic handler exists for <tt class="docutils literal"><span class="pre"><span class="Identifier">code</span></span></tt>.
+    
+  </dd>
+</div>
+
+</div>
+<div id="hasRoute-procs-all">
+  <div id="hasRoute,HttpRouterInstance,string,HttpMethod">
+  <dt><pre><span class="Keyword">proc</span> <a href="#hasRoute%2CHttpRouterInstance%2Cstring%2CHttpMethod"><span class="Identifier">hasRoute</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    True when an exact path is registered for <tt class="docutils literal"><span class="pre"><span class="Identifier">httpMethod</span></span></tt>. Dynamic-pattern matches are not considered; use <tt class="docutils literal"><span class="pre"><span class="Identifier">checkExists</span></span></tt> for those.
+    
+  </dd>
+</div>
+
+</div>
 <div id="head-procs-all">
   <div id="head,HttpRouterInstance,string,Callable,seq[Middleware],seq[Afterware]">
   <dt><pre><span class="Keyword">proc</span> <a href="#head%2CHttpRouterInstance%2Cstring%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D"><span class="Identifier">head</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a><span class="Other">;</span>
@@ -554,6 +701,20 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <dd>
     
     Register a <tt class="docutils literal"><span class="pre"><span class="Identifier">HEAD</span></span></tt> route. Shortcut for <tt class="docutils literal"><span class="pre"><span class="Identifier">registerRoute</span><span class="Punctuation">(</span><span class="Identifier">path</span><span class="Punctuation">,</span> <span class="Identifier">HttpHead</span><span class="Punctuation">,</span> <span class="Operator">...</span><span class="Punctuation">)</span></span></tt>.
+    
+  </dd>
+</div>
+
+</div>
+<div id="isMethodNotAllowed-procs-all">
+  <div id="isMethodNotAllowed,HttpRouterInstance,string,HttpMethod">
+  <dt><pre><span class="Keyword">proc</span> <a href="#isMethodNotAllowed%2CHttpRouterInstance%2Cstring%2CHttpMethod"><span class="Identifier">isMethodNotAllowed</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">requestPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                        <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">DynasmError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    True when <tt class="docutils literal"><span class="pre"><span class="Identifier">requestPath</span></span></tt> exists for another method but not for <tt class="docutils literal"><span class="pre"><span class="Identifier">httpMethod</span></span></tt> (i.e. the correct status is <tt class="docutils literal"><span class="pre"><span class="DecNumber">405</span></span></tt>, not <tt class="docutils literal"><span class="pre"><span class="DecNumber">404</span></span></tt>). <tt class="docutils literal"><span class="pre"><span class="Identifier">HEAD</span></span></tt> is never &quot;not allowed&quot; when <tt class="docutils literal"><span class="pre"><span class="Identifier">GET</span></span></tt> exists (fallback).
     
   </dd>
 </div>
@@ -700,13 +861,30 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 </div>
 
 </div>
+<div id="replaceRoute-procs-all">
+  <div id="replaceRoute,HttpRouterInstance,sink,HttpMethod,Callable,seq[Middleware],seq[Afterware],seq[]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#replaceRoute%2CHttpRouterInstance%2Csink%2CHttpMethod%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D%2Cseq%5B%5D"><span class="Identifier">replaceRoute</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span>
+                  <span class="Identifier">autolinked</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span><span class="Other">;</span>
+                  <span class="Identifier">callback</span><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a><span class="Other">;</span> <span class="Identifier">middlewares</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#Middleware"><span class="Identifier">Middleware</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span>
+                  <span class="Identifier">afterwares</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#Afterware"><span class="Identifier">Afterware</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">isWebSocket</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
+                  <span class="Identifier">routeParams</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">bool</span><span class="Other">)</span><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">OpenParserRegexError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">DynasmError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Explicit overwrite registration. Unlike <tt class="docutils literal"><span class="pre"><span class="Identifier">registerRoute</span></span></tt> (which keeps the first registration and ignores duplicates), this always replaces.
+    
+  </dd>
+</div>
+
+</div>
 <div id="resolveAfterware-procs-all">
   <div id="resolveAfterware,HttpRoute,Request,Response">
   <dt><pre><span class="Keyword">proc</span> <a href="#resolveAfterware%2CHttpRoute%2CRequest%2CResponse"><span class="Identifier">resolveAfterware</span></a><span class="Other">(</span><span class="Identifier">route</span><span class="Other">:</span> <a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a><span class="Other">;</span> <span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="../network/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">res</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="response.html#Response"><span class="Identifier">Response</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">HttpCode</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Resolve an <tt class="docutils literal"><span class="pre"><span class="Identifier">Afterware</span></span></tt> handle after a request has been made
+    Resolve an <tt class="docutils literal"><span class="pre"><span class="Identifier">Afterware</span></span></tt> handle after a request has been made. Returns <tt class="docutils literal"><span class="pre"><span class="Identifier">Http204</span></span></tt> when the chain completes (including when there is no afterware), so callers can treat any non-<tt class="docutils literal"><span class="pre"><span class="DecNumber">204</span></span></tt> as a short-circuit.
     
   </dd>
 </div>
@@ -746,6 +924,18 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <dd>
     
     Remove a previously registered <tt class="docutils literal"><span class="pre"><span class="Identifier">Route</span></span></tt> from the <tt class="docutils literal"><span class="pre"><span class="Identifier">HttpRouterInstance</span></span></tt>. The <tt class="docutils literal"><span class="pre"><span class="Identifier">autolinked</span></span></tt> tuple must carry the same original path string used at registration time (for example the tuple returned by <tt class="docutils literal"><span class="pre"><span class="Identifier">autolinkController</span></span></tt>). Removing an unknown route is a no-op.
+    
+  </dd>
+</div>
+
+</div>
+<div id="unregisterWsRoute-procs-all">
+  <div id="unregisterWsRoute,HttpRouterInstance,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#unregisterWsRoute%2CHttpRouterInstance%2Cstring"><span class="Identifier">unregisterWsRoute</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Remove a previously registered WebSocket route. No-op when missing.
     
   </dd>
 </div>
@@ -836,7 +1026,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-10-25 23:52:05 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 00:21:39 UTC</small>
       </div>
     </div>
   </div>

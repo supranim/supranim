@@ -1,7 +1,13 @@
 nimTitle	fileserver	supranim/core/fileserver.html	module supranim/core/fileserver		0
-nim	sendEmbeddedAsset	supranim/core/fileserver.html#sendEmbeddedAsset,Request,string,HttpHeaders,bool	proc sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;\n                  foundRes: var bool)		21
-nim	sendAssets	supranim/core/fileserver.html#sendAssets,Request,string,HttpHeaders,bool	proc sendAssets(req: var Request; path: string; headers: HttpHeaders;\n           foundRes: var bool)		39
-nim	sendAssets	supranim/core/fileserver.html#sendAssets,Request,string,string,HttpHeaders	proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool		48
-nim	sendAssetFile	supranim/core/fileserver.html#sendAssetFile,Request,string,HttpHeaders	proc sendAssetFile(req: var Request; filepath: string; headers: HttpHeaders)		64
-nim	sendDownloadable	supranim/core/fileserver.html#sendDownloadable,Request,string,HttpHeaders	proc sendDownloadable(req: var Request; filepath: string; headers: HttpHeaders)		77
-nimgrp	sendassets	supranim/core/fileserver.html#sendAssets-procs-all	proc		39
+nim	isTraversalPath	supranim/core/fileserver.html#isTraversalPath,string	proc isTraversalPath(path: string): bool		22
+nim	mimeFor	supranim/core/fileserver.html#mimeFor,string	proc mimeFor(ext: string): string		31
+nim	fileETag	supranim/core/fileserver.html#fileETag,int64,Time	proc fileETag(size: int64; mtime: Time): string		39
+nim	httpDate	supranim/core/fileserver.html#httpDate,Time	proc httpDate(t: Time): string		44
+nim	setStaticCacheHeaders	supranim/core/fileserver.html#setStaticCacheHeaders,HttpHeaders,string,string	proc setStaticCacheHeaders(headers: HttpHeaders; etag, lastModified: string)		48
+nim	notModified	supranim/core/fileserver.html#notModified,Request,string	proc notModified(req: var Request; etag: string): bool		56
+nim	sendEmbeddedAsset	supranim/core/fileserver.html#sendEmbeddedAsset,Request,string,HttpHeaders,bool	proc sendEmbeddedAsset(req: var Request; path: string; headers: HttpHeaders;\n                  foundRes: var bool)		65
+nim	sendAssets	supranim/core/fileserver.html#sendAssets,Request,string,HttpHeaders,bool	proc sendAssets(req: var Request; path: string; headers: HttpHeaders;\n           foundRes: var bool)		110
+nim	sendAssets	supranim/core/fileserver.html#sendAssets,Request,string,string,HttpHeaders	proc sendAssets(req: var Request; basePath, path: string; headers: HttpHeaders): bool		119
+nim	sendAssetFile	supranim/core/fileserver.html#sendAssetFile,Request,string,HttpHeaders	proc sendAssetFile(req: var Request; filepath: string; headers: HttpHeaders)		137
+nim	sendDownloadable	supranim/core/fileserver.html#sendDownloadable,Request,string,HttpHeaders	proc sendDownloadable(req: var Request; filepath: string; headers: HttpHeaders)		150
+nimgrp	sendassets	supranim/core/fileserver.html#sendAssets-procs-all	proc		110
