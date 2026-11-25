@@ -327,6 +327,12 @@
        middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])" href="supranim/core/router.html#delete%2CHttpRouterInstance%2Cstring%2CCallable%2Cseq%5BMiddleware%5D%2Cseq%5BAfterware%5D">router: proc delete(router: HttpRouterInstance; path: string; callback: Callable;
        middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])</a></li>
           </ul></dd>
+<dt><a name="deriveFastMatcher" href="#deriveFastMatcher"><span>deriveFastMatcher:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc deriveFastMatcher(path: string; routeParams: seq[(string, bool)]): tuple[
+    prefix, name: string, kind: FastParamKind]" href="supranim/core/router.html#deriveFastMatcher%2Cstring%2Cseq%5B%5D">router: proc deriveFastMatcher(path: string; routeParams: seq[(string, bool)]): tuple[
+    prefix, name: string, kind: FastParamKind]</a></li>
+          </ul></dd>
 <dt><a name="destroySession" href="#destroySession"><span>destroySession:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="session: proc destroySession(store: SessionStore; s: Session)" href="supranim/support/session.html#destroySession%2CSessionStore%2CSession">session: proc destroySession(store: SessionStore; s: Session)</a></li>
@@ -389,6 +395,10 @@
 <li><a class="reference external"
           data-doc-search-tag="webserver: proc endChunk(req: Request)" href="supranim/network/webserver.html#endChunk%2CRequest">webserver: proc endChunk(req: Request)</a></li>
           </ul></dd>
+<dt><a name="ensureUri" href="#ensureUri"><span>ensureUri:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc ensureUri(req: var Request)" href="supranim/network/webserver.html#ensureUri%2CRequest">webserver: proc ensureUri(req: var Request)</a></li>
+          </ul></dd>
 <dt><a name="ERROR" href="#ERROR"><span>ERROR:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="logit: LogLevel.ERROR" href="supranim/support/logit.html#ERROR">logit: LogLevel.ERROR</a></li>
@@ -425,6 +435,10 @@
 <li><a class="reference external"
           data-doc-search-tag="services: macro extractThreadServicesClient()" href="supranim/core/services.html#extractThreadServicesClient.m">services: macro extractThreadServicesClient()</a></li>
           </ul></dd>
+<dt><a name="FastParamKind" href="#FastParamKind"><span>FastParamKind:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: enum FastParamKind" href="supranim/core/router.html#FastParamKind">router: enum FastParamKind</a></li>
+          </ul></dd>
 <dt><a name="FATAL" href="#FATAL"><span>FATAL:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="logit: LogLevel.FATAL" href="supranim/support/logit.html#FATAL">logit: LogLevel.FATAL</a></li>
@@ -456,6 +470,46 @@
 <dt><a name="forwardedHeaderProto" href="#forwardedHeaderProto"><span>forwardedHeaderProto:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="cookie: proc forwardedHeaderProto(value: string): string" href="supranim/support/cookie.html#forwardedHeaderProto%2Cstring">cookie: proc forwardedHeaderProto(value: string): string</a></li>
+          </ul></dd>
+<dt><a name="fpAlphaSlug" href="#fpAlphaSlug"><span>fpAlphaSlug:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpAlphaSlug" href="supranim/core/router.html#fpAlphaSlug">router: FastParamKind.fpAlphaSlug</a></li>
+          </ul></dd>
+<dt><a name="fpAny" href="#fpAny"><span>fpAny:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpAny" href="supranim/core/router.html#fpAny">router: FastParamKind.fpAny</a></li>
+          </ul></dd>
+<dt><a name="fpAnySlug" href="#fpAnySlug"><span>fpAnySlug:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpAnySlug" href="supranim/core/router.html#fpAnySlug">router: FastParamKind.fpAnySlug</a></li>
+          </ul></dd>
+<dt><a name="fpHex" href="#fpHex"><span>fpHex:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpHex" href="supranim/core/router.html#fpHex">router: FastParamKind.fpHex</a></li>
+          </ul></dd>
+<dt><a name="fpId" href="#fpId"><span>fpId:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpId" href="supranim/core/router.html#fpId">router: FastParamKind.fpId</a></li>
+          </ul></dd>
+<dt><a name="fpNone" href="#fpNone"><span>fpNone:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpNone" href="supranim/core/router.html#fpNone">router: FastParamKind.fpNone</a></li>
+          </ul></dd>
+<dt><a name="fpSlug" href="#fpSlug"><span>fpSlug:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpSlug" href="supranim/core/router.html#fpSlug">router: FastParamKind.fpSlug</a></li>
+          </ul></dd>
+<dt><a name="fpUuid" href="#fpUuid"><span>fpUuid:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpUuid" href="supranim/core/router.html#fpUuid">router: FastParamKind.fpUuid</a></li>
+          </ul></dd>
+<dt><a name="fpWord" href="#fpWord"><span>fpWord:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpWord" href="supranim/core/router.html#fpWord">router: FastParamKind.fpWord</a></li>
+          </ul></dd>
+<dt><a name="fpWordDots" href="#fpWordDots"><span>fpWordDots:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: FastParamKind.fpWordDots" href="supranim/core/router.html#fpWordDots">router: FastParamKind.fpWordDots</a></li>
           </ul></dd>
 <dt><a name="freemem" href="#freemem"><span>freemem:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1055,6 +1109,10 @@
 <li><a class="reference external"
           data-doc-search-tag="utils: proc malloc_trim(pad: csize_t = 0): bool" href="supranim/core/utils.html#malloc_trim%2Ccsize_t">utils: proc malloc_trim(pad: csize_t = 0): bool</a></li>
           </ul></dd>
+<dt><a name="matchFastClass" href="#matchFastClass"><span>matchFastClass:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="router: proc matchFastClass(kind: FastParamKind; s: string): bool" href="supranim/core/router.html#matchFastClass%2CFastParamKind%2Cstring">router: proc matchFastClass(kind: FastParamKind; s: string): bool</a></li>
+          </ul></dd>
 <dt><a name="matchRouteJIT" href="#matchRouteJIT"><span>matchRouteJIT:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="router: proc matchRouteJIT(route: HttpRoute; requestPath: string;
@@ -1248,6 +1306,10 @@
           data-doc-search-tag="http: proc post(H: typedesc[Http]; uri: Uri | string; httpForm: HttpForm): HttpResponse" href="supranim/support/http.html#post%2Ctypedesc%5BHttp%5D%2C%2CHttpForm">http: proc post(H: typedesc[Http]; uri: Uri | string; httpForm: HttpForm): HttpResponse</a></li>
           <li><a class="reference external"
           data-doc-search-tag="http: proc post(H: typedesc[Http]; uri: Uri | string; body: string = &quot;&quot;): HttpResponse" href="supranim/support/http.html#post%2Ctypedesc%5BHttp%5D%2C%2Cstring">http: proc post(H: typedesc[Http]; uri: Uri | string; body: string = &quot;&quot;): HttpResponse</a></li>
+          </ul></dd>
+<dt><a name="powReqUrl" href="#powReqUrl"><span>powReqUrl:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="webserver: proc powReqUrl(req: Request): string" href="supranim/network/webserver.html#powReqUrl%2CRequest">webserver: proc powReqUrl(req: Request): string</a></li>
           </ul></dd>
 <dt><a name="preloadAssets" href="#preloadAssets"><span>preloadAssets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1897,7 +1959,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-19 12:48:02 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-25 11:07:14 UTC</small>
       </div>
     </div>
   </div>

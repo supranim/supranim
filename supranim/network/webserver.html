@@ -75,6 +75,7 @@
   httpMethod*: HttpMethod
   path*: string
   uri*: Uri
+  uriParsed*: bool
   uriQuery*: TableRef[string, string]
   headers*: Option[HttpHeaders]
   body*: Option[string]
@@ -127,6 +128,10 @@
   <li><a class="reference" href="#endChunk%2CRequest" title="endChunk(req: Request)">endChunk(req: Request)</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">ensureUri
+  <li><a class="reference" href="#ensureUri%2CRequest" title="ensureUri(req: var Request)">ensureUri(req: var Request)</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">findHeader
   <li><a class="reference" href="#findHeader%2CRequest%2Cstring" title="findHeader(req: Request; name: string): string">findHeader(req: Request; name: string): string</a></li>
 
@@ -174,6 +179,10 @@
 </ul>
 <ul class="simple nested-toc-section">peekChunk
   <li><a class="reference" href="#peekChunk%2CBodyStream%2Cint" title="peekChunk(stream: BodyStream; maxLen: int): (pointer, int)">peekChunk(stream: BodyStream; maxLen: int): (pointer, int)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">powReqUrl
+  <li><a class="reference" href="#powReqUrl%2CRequest" title="powReqUrl(req: Request): string">powReqUrl(req: Request): string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">readChunk
@@ -332,6 +341,7 @@
   <span class="Identifier">httpMethod</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span>
   <span class="Identifier">path</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">uri</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Uri</span>
+  <span class="Identifier">uriParsed</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
   <span class="Identifier">uriQuery</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">headers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">HttpHeaders</span><span class="Other">]</span>
   <span class="Identifier">body</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
@@ -459,6 +469,17 @@
 </div>
 
 </div>
+<div id="ensureUri-procs-all">
+  <div id="ensureUri,Request">
+  <dt><pre><span class="Keyword">proc</span> <a href="#ensureUri%2CRequest"><span class="Identifier">ensureUri</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Parse the request URI once, on first need. Routing never triggers this: the hot path works off <tt class="docutils literal"><span class="pre"><span class="Identifier">req</span><span class="Operator">.</span><span class="Identifier">path</span></span></tt> directly (<tt class="docutils literal"><span class="pre"><span class="Identifier">getUriPath</span></span></tt>).
+    
+  </dd>
+</div>
+
+</div>
 <div id="findHeader-procs-all">
   <div id="findHeader,Request,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#findHeader%2CRequest%2Cstring"><span class="Identifier">findHeader</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
@@ -524,7 +545,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#getIp%2CRequest"><span class="Identifier">getIp</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Retrieve the IP of a <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt>
+    Retrieve the IP of a <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt> (resolved once per request, then cached).
     
   </dd>
 </div>
@@ -558,7 +579,7 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Lazily parses and caches the query parameters from the request URI.
+    Lazily parses and caches the query parameters from the request URI. Reads the raw query straight from the powpow parser, so the full URI is never materialized on this path.
     
   </dd>
 </div>
@@ -604,6 +625,17 @@
   <dd>
     
     Returns a pointer and length to the next available chunk (up to <tt class="docutils literal"><span class="pre"><span class="Identifier">maxLen</span></span></tt>). No copy is performed. The pointer is valid until the next drain operation.
+    
+  </dd>
+</div>
+
+</div>
+<div id="powReqUrl-procs-all">
+  <div id="powReqUrl,Request">
+  <dt><pre><span class="Keyword">proc</span> <a href="#powReqUrl%2CRequest"><span class="Identifier">powReqUrl</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Raw <tt class="docutils literal"><span class="pre"><span class="Identifier">path</span><span class="Punctuation">[</span><span class="Operator">?</span><span class="Identifier">query</span><span class="Punctuation">]</span></span></tt> straight from the powpow parser, or <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;&quot;</span></span></tt> when unavailable (e.g. hand-built requests in tests).
     
   </dd>
 </div>
@@ -923,7 +955,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-19 12:48:01 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-25 11:07:13 UTC</small>
       </div>
     </div>
   </div>

@@ -259,7 +259,7 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#getUriPath%2CRequest"><span class="Identifier">getUriPath</span></a><span class="Other">(</span><span class="Identifier">req</span><span class="Other">:</span> <a href="../network/webserver.html#Request"><span class="Identifier">Request</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Returns <tt class="docutils literal"><span class="pre"><span class="Identifier">Uri</span></span></tt> path from <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt>
+    Returns <tt class="docutils literal"><span class="pre"><span class="Identifier">Uri</span></span></tt> path from <tt class="docutils literal"><span class="pre"><span class="Identifier">Request</span></span></tt>. Server requests carry the path eagerly, so this never parses the URI on the routing hot path.
     
   </dd>
 </div>
@@ -346,7 +346,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-19 12:48:02 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-25 11:07:13 UTC</small>
       </div>
     </div>
   </div>

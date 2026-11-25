@@ -74,6 +74,17 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   proc (req: ptr Request; res: ptr Response): void {.cdecl, gcsafe.}
  else:
   proc (req: var Request; res: var Response): void {.nimcall, gcsafe.})">Callable</a></li>
+<li><a class="reference" href="#FastParamKind" title="FastParamKind = enum
+  fpNone,                   ## no fast matcher; use the regex JIT
+  fpId,                     ## `[0-9]+`
+  fpSlug,                   ## `[0-9A-Za-z-_]+`
+  fpAnySlug,                ## `[0-9A-Za-z-_/]+`
+  fpAlphaSlug,              ## `[A-Za-z-_]+`
+  fpUuid,                   ## `8-4-4-4-12` hex with dashes
+  fpHex,                    ## `[0-9a-fA-F]+`
+  fpWord,                   ## `\w+`
+  fpWordDots,               ## `[\w.]+`
+  fpAny                      ## `.+` (any non-empty input without `\n`)">FastParamKind</a></li>
 <li><a class="reference" href="#HttpRoute" title="HttpRoute {.acyclic.} = ref object of RootObj
   callback*: Callable        ## The callback procedure that will be executed when this route is matched.
   case
@@ -92,7 +103,10 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
 <li><a class="reference" href="#HttpRouterInstance" title="HttpRouterInstance {.acyclic.} = ref object
   httpGet*, httpPost*, httpPut*, httpHead*, httpConnect*, httpDelete*,
   httpPatch*, httpTrace*, httpOptions*, httpErrors*: TableRef[string, HttpRoute]
-  httpWS*: TableRef[string, HttpRouteWs]">HttpRouterInstance</a></li>
+  httpWS*: TableRef[string, HttpRouteWs]
+  dynGet*, dynPost*, dynPut*, dynHead*, dynConnect*, dynDelete*, dynPatch*,
+  dynTrace*, dynOptions*: seq[HttpRoute]
+  dynWS*: seq[HttpRouteWs]">HttpRouterInstance</a></li>
 <li><a class="reference" href="#HttpRouteType" title="HttpRouteType = enum
   StaticRoute, DynamicRoute">HttpRouteType</a></li>
 <li><a class="reference" href="#HttpRouteWs" title="HttpRouteWs {.acyclic.} = ref object of HttpRoute">HttpRouteWs</a></li>
@@ -117,7 +131,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <details open>
     <summary><a class="reference reference-toplevel" href="#10" id="60">Consts</a></summary>
     <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#DefaultHttpError" title="DefaultHttpError: Callable = :anonymous_5603590220">DefaultHttpError</a></li>
+      <li><a class="reference" href="#DefaultHttpError" title="DefaultHttpError: Callable = :anonymous_5603590247">DefaultHttpError</a></li>
 <li><a class="reference" href="#httpMethods" title="httpMethods = [&quot;get&quot;, &quot;post&quot;, &quot;put&quot;, &quot;patch&quot;, &quot;head&quot;, &quot;delete&quot;, &quot;trace&quot;,
                &quot;options&quot;, &quot;connect&quot;, &quot;ws&quot;]">httpMethods</a></li>
 
@@ -170,6 +184,12 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
        middlewares: seq[Middleware] = @[]; afterwares: seq[Afterware] = @[])</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">deriveFastMatcher
+  <li><a class="reference" href="#deriveFastMatcher%2Cstring%2Cseq%5B%5D" title="deriveFastMatcher(path: string; routeParams: seq[(string, bool)]): tuple[
+    prefix, name: string, kind: FastParamKind]">deriveFastMatcher(path: string; routeParams: seq[(string, bool)]): tuple[
+    prefix, name: string, kind: FastParamKind]</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">errorHandler
   <li><a class="reference" href="#errorHandler%2CHttpRouterInstance%2CHttpCode%2CCallable" title="errorHandler(router: HttpRouterInstance; code: HttpCode; callback: Callable)">errorHandler(router: HttpRouterInstance; code: HttpCode; callback: Callable)</a></li>
 
@@ -206,6 +226,10 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <li><a class="reference" href="#isMethodNotAllowed%2CHttpRouterInstance%2Cstring%2CHttpMethod" title="isMethodNotAllowed(router: var HttpRouterInstance; requestPath: string;
                    httpMethod: HttpMethod): bool">isMethodNotAllowed(router: var HttpRouterInstance; requestPath: string;
                    httpMethod: HttpMethod): bool</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">matchFastClass
+  <li><a class="reference" href="#matchFastClass%2CFastParamKind%2Cstring" title="matchFastClass(kind: FastParamKind; s: string): bool">matchFastClass(kind: FastParamKind; s: string): bool</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">matchRouteJIT
@@ -385,6 +409,24 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     
   </dd>
 </div>
+<div id="FastParamKind">
+  <dt><pre><a href="#FastParamKind"><span class="Identifier">FastParamKind</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
+  <span class="Identifier">fpNone</span><span class="Other">,</span>                   <span class="Comment">## no fast matcher; use the regex JIT</span>
+  <span class="Identifier">fpId</span><span class="Other">,</span>                     <span class="Comment">## `[0-9]+`</span>
+  <span class="Identifier">fpSlug</span><span class="Other">,</span>                   <span class="Comment">## `[0-9A-Za-z-_]+`</span>
+  <span class="Identifier">fpAnySlug</span><span class="Other">,</span>                <span class="Comment">## `[0-9A-Za-z-_/]+`</span>
+  <span class="Identifier">fpAlphaSlug</span><span class="Other">,</span>              <span class="Comment">## `[A-Za-z-_]+`</span>
+  <span class="Identifier">fpUuid</span><span class="Other">,</span>                   <span class="Comment">## `8-4-4-4-12` hex with dashes</span>
+  <span class="Identifier">fpHex</span><span class="Other">,</span>                    <span class="Comment">## `[0-9a-fA-F]+`</span>
+  <span class="Identifier">fpWord</span><span class="Other">,</span>                   <span class="Comment">## `\w+`</span>
+  <span class="Identifier">fpWordDots</span><span class="Other">,</span>               <span class="Comment">## `[\w.]+`</span>
+  <span class="Identifier">fpAny</span>                      <span class="Comment">## `.+` (any non-empty input without `\n`)</span></pre></dt>
+  <dd>
+    
+    Single-trailing-param fast matcher. Mirrors the <tt class="docutils literal"><span class="pre"><span class="Identifier">RegexPatterns</span></span></tt> classes in <tt class="docutils literal"><span class="pre"><span class="Identifier">autolink</span><span class="Operator">.</span><span class="Identifier">nim</span></span></tt> without invoking the regex engine: when a dynamic route has exactly one non-optional trailing placeholder with one of these classes, matching is a prefix compare plus a char-class scan.
+    
+  </dd>
+</div>
 <div id="HttpRoute">
   <dt><pre><a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a> {.<span class="Identifier">acyclic</span>.} <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
   <span class="Identifier">callback</span><span class="Operator">*</span><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a>        <span class="Comment">## The callback procedure that will be executed when this route is matched.</span>
@@ -418,7 +460,10 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <dt><pre><a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a> {.<span class="Identifier">acyclic</span>.} <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">httpGet</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpPost</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpPut</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpHead</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpConnect</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpDelete</span><span class="Operator">*</span><span class="Other">,</span>
   <span class="Identifier">httpPatch</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpTrace</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpOptions</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">httpErrors</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a><span class="Other">]</span>
-  <span class="Identifier">httpWS</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#HttpRouteWs"><span class="Identifier">HttpRouteWs</span></a><span class="Other">]</span></pre></dt>
+  <span class="Identifier">httpWS</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#HttpRouteWs"><span class="Identifier">HttpRouteWs</span></a><span class="Other">]</span>
+  <span class="Identifier">dynGet</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">dynPost</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">dynPut</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">dynHead</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">dynConnect</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">dynDelete</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">dynPatch</span><span class="Operator">*</span><span class="Other">,</span>
+  <span class="Identifier">dynTrace</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">dynOptions</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#HttpRoute"><span class="Identifier">HttpRoute</span></a><span class="Other">]</span>
+  <span class="Identifier">dynWS</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#HttpRouteWs"><span class="Identifier">HttpRouteWs</span></a><span class="Other">]</span></pre></dt>
   <dd>
     
     
@@ -488,7 +533,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <h1><a class="toc-backref" href="#10">Consts</a></h1>
   <dl class="item">
     <div id="DefaultHttpError">
-  <dt><pre><a href="#DefaultHttpError"><span class="Identifier">DefaultHttpError</span></a><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a> <span class="Other">=</span> <span class="Operator">:anonymous_5603590220</span></pre></dt>
+  <dt><pre><a href="#DefaultHttpError"><span class="Identifier">DefaultHttpError</span></a><span class="Other">:</span> <a href="#Callable"><span class="Identifier">Callable</span></a> <span class="Other">=</span> <span class="Operator">:anonymous_5603590247</span></pre></dt>
   <dd>
     
     
@@ -564,7 +609,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <div id="checkExists,HttpRouterInstance,string,HttpMethod">
   <dt><pre><span class="Keyword">proc</span> <a href="#checkExists%2CHttpRouterInstance%2Cstring%2CHttpMethod"><span class="Identifier">checkExists</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">requestPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                  <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span><span class="Other">)</span><span class="Other">:</span> <a href="#RouteCheckResult"><span class="Identifier">RouteCheckResult</span></a> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">DynasmError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">DynasmError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -612,6 +657,19 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <dd>
     
     Register a <tt class="docutils literal"><span class="pre"><span class="Identifier">DELETE</span></span></tt> route. Shortcut for <tt class="docutils literal"><span class="pre"><span class="Identifier">registerRoute</span><span class="Punctuation">(</span><span class="Identifier">path</span><span class="Punctuation">,</span> <span class="Identifier">HttpDelete</span><span class="Punctuation">,</span> <span class="Operator">...</span><span class="Punctuation">)</span></span></tt>.
+    
+  </dd>
+</div>
+
+</div>
+<div id="deriveFastMatcher-procs-all">
+  <div id="deriveFastMatcher,string,seq[]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#deriveFastMatcher%2Cstring%2Cseq%5B%5D"><span class="Identifier">deriveFastMatcher</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">routeParams</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">bool</span><span class="Other">)</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span>
+    <span class="Identifier">prefix</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">kind</span><span class="Other">:</span> <a href="#FastParamKind"><span class="Identifier">FastParamKind</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Derive a regex-free matcher from the original route <tt class="docutils literal"><span class="pre"><span class="Identifier">path</span></span></tt> when it is a single non-optional trailing placeholder with a fast-mirrorable class (e.g. <tt class="docutils literal"><span class="pre"><span class="StringLit">&quot;/users/{id:id}&quot;</span></span></tt> → <tt class="docutils literal"><span class="pre"><span class="Punctuation">(</span><span class="StringLit">&quot;/users/&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;id&quot;</span><span class="Punctuation">,</span> <span class="Identifier">fpId</span><span class="Punctuation">)</span></span></tt>). Returns <tt class="docutils literal"><span class="pre"><span class="Punctuation">(</span><span class="StringLit">&quot;&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;&quot;</span><span class="Punctuation">,</span> <span class="Identifier">fpNone</span><span class="Punctuation">)</span></span></tt> for anything else (multi-param, mid-path or optional params, <tt class="docutils literal"><span class="pre"><span class="Identifier">semver</span></span></tt>/custom classes), which keeps using the regex JIT.
     
   </dd>
 </div>
@@ -710,11 +768,23 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
   <div id="isMethodNotAllowed,HttpRouterInstance,string,HttpMethod">
   <dt><pre><span class="Keyword">proc</span> <a href="#isMethodNotAllowed%2CHttpRouterInstance%2Cstring%2CHttpMethod"><span class="Identifier">isMethodNotAllowed</span></a><span class="Other">(</span><span class="Identifier">router</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="#HttpRouterInstance"><span class="Identifier">HttpRouterInstance</span></a><span class="Other">;</span> <span class="Identifier">requestPath</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                         <span class="Identifier">httpMethod</span><span class="Other">:</span> <span class="Identifier">HttpMethod</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">DynasmError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">DynasmError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     True when <tt class="docutils literal"><span class="pre"><span class="Identifier">requestPath</span></span></tt> exists for another method but not for <tt class="docutils literal"><span class="pre"><span class="Identifier">httpMethod</span></span></tt> (i.e. the correct status is <tt class="docutils literal"><span class="pre"><span class="DecNumber">405</span></span></tt>, not <tt class="docutils literal"><span class="pre"><span class="DecNumber">404</span></span></tt>). <tt class="docutils literal"><span class="pre"><span class="Identifier">HEAD</span></span></tt> is never &quot;not allowed&quot; when <tt class="docutils literal"><span class="pre"><span class="Identifier">GET</span></span></tt> exists (fallback).
+    
+  </dd>
+</div>
+
+</div>
+<div id="matchFastClass-procs-all">
+  <div id="matchFastClass,FastParamKind,string">
+  <dt><pre><span class="Keyword">proc</span> <a href="#matchFastClass%2CFastParamKind%2Cstring"><span class="Identifier">matchFastClass</span></a><span class="Other">(</span><span class="Identifier">kind</span><span class="Other">:</span> <a href="#FastParamKind"><span class="Identifier">FastParamKind</span></a><span class="Other">;</span> <span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span class="Identifier">inline</span><span class="Other">,</span> <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    True when the whole of <tt class="docutils literal"><span class="pre"><span class="Identifier">s</span></span></tt> matches the class. All classes require at least one char; <tt class="docutils literal"><span class="pre"><span class="Identifier">fpNone</span></span></tt> never matches (falls back to the regex JIT).
     
   </dd>
 </div>
@@ -728,9 +798,8 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    <p>Full-match an anchored route pattern against <tt class="docutils literal"><span class="pre"><span class="Identifier">requestPath</span></span></tt> using the regex JIT, extracting dynamic params into <tt class="docutils literal"><span class="pre"><span class="Identifier">params</span></span></tt>.</p>
-<p>Thread-safe: the shared, immutable JIT code runs on the calling thread's private context, so concurrent workers can match the same route object while holding only the router read lock.</p>
-<p>Falls back to a per-call interpreter VM when JIT compilation is unavailable for the pattern or the platform.</p>
+    <p>Full-match an anchored route pattern against <tt class="docutils literal"><span class="pre"><span class="Identifier">requestPath</span></span></tt>, extracting dynamic params into <tt class="docutils literal"><span class="pre"><span class="Identifier">params</span></span></tt>.</p>
+<p>Single-trailing-param routes (<tt class="docutils literal"><span class="pre"><span class="Operator">/</span><span class="Identifier">users</span><span class="Operator">/</span><span class="Punctuation">{</span><span class="Identifier">id</span><span class="Punctuation">:</span><span class="Identifier">id</span><span class="Punctuation">}</span></span></tt>) take a regex-free fast path: a prefix compare plus a char-class scan. Everything else runs on the regex JIT with the calling thread's private context, so concurrent workers can match the same route object while holding only the router read lock. Falls back to a per-call interpreter VM when JIT compilation is unavailable for the pattern or the platform.</p>
 
     
   </dd>
@@ -1026,7 +1095,7 @@ elif compileOption(&quot;app&quot;, &quot;lib&quot;):
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-19 12:48:02 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-25 11:07:13 UTC</small>
       </div>
     </div>
   </div>
