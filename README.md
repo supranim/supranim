@@ -33,5 +33,5 @@ Check the official documentation: https://docs.supranim.com
 - 🤘 Use Supranim in your next awesome project!
 
 ### 🎩 License
-LGPL-3.0 license. [Made by Humans from OpenPeeps](https://github.com/openpeeps).<br>
+MIT license. [Made by Humans from OpenPeeps](https://github.com/openpeeps).<br>
 Copyright &copy; 2025 OpenPeeps & Contributors &mdash; All rights reserved.
