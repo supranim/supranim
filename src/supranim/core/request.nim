@@ -14,7 +14,8 @@ import pkg/openparser/json
 import ../support/cookie
 
 from ../network/webserver import Request, send, getIp, getHeaders,
-        getMethod, getHeader, findHeader, getQuery, getBody, HttpMethod
+        getMethod, getHeader, findHeader, getQuery, getBody, ensureUri,
+        powReqUrl, HttpMethod
 
 export Request, send, getIp, getHeaders, HttpMethod,
       getHeader, findHeader, `$`, getQuery, getBody
@@ -25,11 +26,21 @@ proc getHttpMethod*(req: var Request): HttpMethod =
 
 proc getUrl*(req: Request): string =
   ## Returns a string `Uri` from `Request`
-  result = $(req.uri)
+  if req.uri.path.len > 0 or req.uri.query.len > 0 or
+      req.uri.hostname.len > 0:
+    result = $(req.uri)
+  else:
+    result = req.powReqUrl()
+    if result.len == 0 and req.path.len > 0:
+      result = req.path
 
 proc getUriPath*(req: Request): string =
-  ## Returns `Uri` path from `Request`
-  result = req.uri.path
+  ## Returns `Uri` path from `Request`. Server requests carry the path
+  ## eagerly, so this never parses the URI on the routing hot path.
+  if req.path.len > 0:
+    result = req.path
+  else:
+    result = req.uri.path
 
 proc hasCookies*(req: var Request): bool =
   ## Check if `Request` contains Cookies header
@@ -45,6 +56,7 @@ proc getHost*(req: var Request): string =
   let h = req.getHeader("host")
   if h.isSome and h.get().strip().len > 0:
     return h.get().strip()
+  req.ensureUri()
   result = req.uri.hostname
 
 proc effectiveScheme*(req: var Request, trustProxy = false): string =

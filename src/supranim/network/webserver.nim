@@ -10,7 +10,7 @@
 ## Wraps `pkg/powpow` `HttpServer`/`MultiThreadHttpServer`, defines `Request`,
 ## routing callbacks, and streaming helpers. This is the sole HTTP backend.
 
-import std/[tables, options, uri, strutils, strscans, sequtils, cpuinfo, locks, os]
+import std/[tables, options, uri, strutils, strscans, cpuinfo, locks, os, atomics]
 import std/httpcore except HttpMethod
 import pkg/powpow as pw
 import supranim/support/http
@@ -33,13 +33,22 @@ type
       powMultiServer: pw.MultiThreadHttpServer
     callbackTable: TableRef[string, OnRequestLowLevel]
     callbackLock: Lock
+    hasCallbacks: Atomic[bool]
+      # Set while `callbackTable` is non-empty so the per-request hot path
+      # can skip normalization + locking entirely (relaxed load).
 
   Request* = object
     raw*: pointer
     httpMethod*: HttpMethod
     clientIp: string
+    clientIpFetched: bool
+      # Lazily resolved via `getIp`; the accept-time address is already
+      # cached per connection inside powpow, so this only skips the copy.
     path*: string
     uri*: Uri
+    uriParsed*: bool
+      # Lazily parsed from the powpow request on first need (`getQuery`,
+      # `getHost`, ...). Routing uses `path` directly and never parses.
     uriQuery*: TableRef[string, string]
     headers*: Option[HttpHeaders]
     body*: Option[string]
@@ -73,6 +82,7 @@ proc newWebServer*(port: Port = Port(8080)): WebServer =
   result.enableMultiThreading = false
   result.callbackTable = newTable[string, OnRequestLowLevel]()
   initLock(result.callbackLock)
+  result.hasCallbacks.store(false, moRelaxed)
 
 when not defined(windows):
   proc newWebServer*(port: Port = Port(8080), enableMultiThreading: bool): WebServer =
@@ -83,6 +93,7 @@ when not defined(windows):
     result.enableMultiThreading = enableMultiThreading
     result.callbackTable = newTable[string, OnRequestLowLevel]()
     initLock(result.callbackLock)
+    result.hasCallbacks.store(false, moRelaxed)
 
 proc start*(server: WebServer) =
   ## Start a WebServer
@@ -98,35 +109,27 @@ proc attachHandler(server: WebServer, onRequest: OnRequest,
     startupCallback()
   server.powServer.handler =
     proc(req: pw.HttpRequest, res: pw.HttpResponse) {.gcsafe.} =
-      let normPath = normalizeCallbackPath(req.getPath())
-      var cbFound: OnRequestLowLevel = nil
-      acquire(server.callbackLock)
-      if server.callbackTable.hasKey(normPath):
-        cbFound = server.callbackTable[normPath]
-      release(server.callbackLock)
-      if cbFound != nil:
-        cbFound(req, res)
-        return
-      var uriStr = req.getUrl()
-      var parsedUri = parseUri(uriStr)
+      if server.hasCallbacks.load(moRelaxed):
+        let normPath = normalizeCallbackPath(req.getPath())
+        var cbFound: OnRequestLowLevel = nil
+        acquire(server.callbackLock)
+        if server.callbackTable.hasKey(normPath):
+          cbFound = server.callbackTable[normPath]
+        release(server.callbackLock)
+        if cbFound != nil:
+          cbFound(req, res)
+          return
+      # Minimal per-request setup: `path` is the only eagerly copied field
+      # (the parser buffer is recycled, so the lent view must be copied).
+      # URI, query table, client IP and headers all materialize lazily on
+      # first access; routing via `getUriPath` never parses the URI.
       var sReq = Request(
         raw: cast[pointer](req),
         httpMethod: req.getMethod(),
         path: req.getPath(),
-        uri: parsedUri,
-        routeParams: initTable[string, string](),
-        responseSent: false,
         powReq: req,
         powRes: res,
-        clientIp: req.getClientIp(),
-        headersFetched: false,
-        headersCache: newHttpHeaders(),
       )
-      if parsedUri.query.len > 0:
-        var qTable = newTable[string, string]()
-        for (k, v) in decodeQuery(parsedUri.query):
-          qTable[k] = v
-        sReq.uriQuery = qTable
       onRequest(sReq)
       if not sReq.responseSent:
         res.status(Http200).send("")
@@ -172,35 +175,24 @@ when not defined(windows):
       startupCallback()
     server.powMultiServer.start(
       proc(req: pw.HttpRequest, res: pw.HttpResponse) {.gcsafe.} =
-        let normPath = normalizeCallbackPath(req.getPath())
-        var cbFound: OnRequestLowLevel = nil
-        acquire(server.callbackLock)
-        if server.callbackTable.hasKey(normPath):
-          cbFound = server.callbackTable[normPath]
-        release(server.callbackLock)
-        if cbFound != nil:
-          cbFound(req, res)
-          return
-        var uriStr = req.getUrl()
-        var parsedUri = parseUri(uriStr)
+        if server.hasCallbacks.load(moRelaxed):
+          let normPath = normalizeCallbackPath(req.getPath())
+          var cbFound: OnRequestLowLevel = nil
+          acquire(server.callbackLock)
+          if server.callbackTable.hasKey(normPath):
+            cbFound = server.callbackTable[normPath]
+          release(server.callbackLock)
+          if cbFound != nil:
+            cbFound(req, res)
+            return
+        # Minimal per-request setup (see the single-threaded handler).
         var sReq = Request(
           raw: cast[pointer](req),
           httpMethod: req.getMethod(),
           path: req.getPath(),
-          uri: parsedUri,
-          routeParams: initTable[string, string](),
-          responseSent: false,
           powReq: req,
           powRes: res,
-          clientIp: req.getClientIp(),
-          headersFetched: false,
-          headersCache: newHttpHeaders(),
         )
-        if parsedUri.query.len > 0:
-          var qTable = newTable[string, string]()
-          for (k, v) in decodeQuery(parsedUri.query):
-            qTable[k] = v
-          sReq.uriQuery = qTable
         onRequest(sReq)
         if not sReq.responseSent:
           res.status(Http200).send(""),
@@ -267,7 +259,11 @@ proc sendChunk*(req: Request, data: string) =
   req.powRes.status(Http200).send(data)
 
 proc getIp*(req: var Request): string =
-  ## Retrieve the IP of a `Request`
+  ## Retrieve the IP of a `Request` (resolved once per request, then cached).
+  if not req.clientIpFetched:
+    req.clientIpFetched = true
+    if req.powReq != nil:
+      req.clientIp = req.powReq.getClientIp()
   req.clientIp
 
 proc getBody*(req: var Request): Option[string] =
@@ -328,19 +324,39 @@ proc clearHeaders*(req: var Request) =
   req.headers = none(HttpHeaders)
   req.headersFetched = false
 
+proc ensureUri*(req: var Request) {.inline.} =
+  ## Parse the request URI once, on first need. Routing never triggers this:
+  ## the hot path works off `req.path` directly (`getUriPath`).
+  if not req.uriParsed:
+    req.uriParsed = true
+    if req.powReq != nil:
+      req.uri = parseUri($req.powReq.getUrl())
+
+proc powReqUrl*(req: Request): string {.inline.} =
+  ## Raw `path[?query]` straight from the powpow parser, or `""` when
+  ## unavailable (e.g. hand-built requests in tests).
+  if req.powReq != nil:
+    result = $req.powReq.getUrl()
+
 proc getMethod*(req: var Request): HttpMethod =
   ## Returns the HTTP method (GET, POST, PUT, etc.) of the request.
   req.httpMethod
 
 proc getQuery*(req: var Request): TableRef[string, string] =
   ## Lazily parses and caches the query parameters from the request URI.
+  ## Reads the raw query straight from the powpow parser, so the full URI
+  ## is never materialized on this path.
   if req.uriQuery != nil:
     return req.uriQuery
-  let query = decodeQuery(req.uri.query).toSeq()
   var queryTable = newTable[string, string]()
-  if query.len > 0:
-    for q in query:
-      queryTable[q[0]] = q[1]
+  if req.powReq != nil:
+    let q = req.powReq.getQuery()
+    if q.len > 0:
+      for (k, v) in decodeQuery(q):
+        queryTable[k] = v
+  elif req.uri.query.len > 0:
+    for (k, v) in decodeQuery(req.uri.query):
+      queryTable[k] = v
   result = queryTable
   req.uriQuery = result
 
@@ -501,6 +517,7 @@ proc addCallback*(server: WebServer, path: string,
   let normalized = normalizeCallbackPath(path)
   acquire(server.callbackLock)
   server.callbackTable[normalized] = callback
+  server.hasCallbacks.store(true, moRelaxed)
   release(server.callbackLock)
 
 proc registerCallback*(server: WebServer, path: string,
@@ -513,6 +530,7 @@ proc registerCallback*(server: WebServer, path: string,
   let normalized = normalizeCallbackPath(path)
   acquire(server.callbackLock)
   server.callbackTable[normalized] = callback
+  server.hasCallbacks.store(true, moRelaxed)
   release(server.callbackLock)
 
 proc unregisterCallback*(server: WebServer, path: string) =
@@ -524,4 +542,6 @@ proc unregisterCallback*(server: WebServer, path: string) =
   acquire(server.callbackLock)
   if server.callbackTable.hasKey(normalized):
     server.callbackTable.del(normalized)
+  if server.callbackTable.len == 0:
+    server.hasCallbacks.store(false, moRelaxed)
   release(server.callbackLock)

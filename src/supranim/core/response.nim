@@ -6,7 +6,7 @@
 #   https://supranim.com | https://github.com/supranim
 #
 
-import std/[strutils, htmlgen, times, options]
+import std/[strutils, htmlgen, options]
 import pkg/openparser/json # std/json is exported from here
 
 import std/httpcore except HttpMethod
@@ -89,11 +89,9 @@ proc toString*(headers: HttpHeaders): string =
 proc resp*(req: var Request, code: HttpCode,
         body: sink string, headers: HttpHeaders = nil) =
   ## Responds with the specified HttpCode and body.
-  var serverDate = now().utc().format("ddd, dd MMM yyyy HH:mm:ss 'GMT'")
-  var headers =
-    if headers != nil: headers
-    else: newHttpHeaders()
-  headers.add("Date", $serverDate)
+  ## No `Date` header is set here: the powpow backend emits a cached
+  ## per-second `Date` on every response, so formatting one per request
+  ## would only duplicate the header and burn `now().utc().format`.
   req.send(code.int, body, headers)
   req.responseSent = true
 

@@ -35,6 +35,21 @@ import ./autolink
 type
   HttpRouteType* = enum
     StaticRoute, DynamicRoute
+  FastParamKind* = enum
+    ## Single-trailing-param fast matcher. Mirrors the `RegexPatterns` classes
+    ## in `autolink.nim` without invoking the regex engine: when a dynamic
+    ## route has exactly one non-optional trailing placeholder with one of
+    ## these classes, matching is a prefix compare plus a char-class scan.
+    fpNone,       ## no fast matcher; use the regex JIT
+    fpId,         ## `[0-9]+`
+    fpSlug,       ## `[0-9A-Za-z-_]+`
+    fpAnySlug,    ## `[0-9A-Za-z-_/]+`
+    fpAlphaSlug,  ## `[A-Za-z-_]+`
+    fpUuid,       ## `8-4-4-4-12` hex with dashes
+    fpHex,        ## `[0-9a-fA-F]+`
+    fpWord,       ## `\w+`
+    fpWordDots,   ## `[\w.]+`
+    fpAny         ## `.+` (any non-empty input without `\n`)
   Callable* =
     (
       when defined supraMicroservice:
@@ -71,6 +86,14 @@ type
     case httpRouteType: HttpRouteType
       of DynamicRoute:
         routePatterns: OrderedTableRef[string, RoutePattern]
+        fastPrefix: string
+          # Static literal prefix before a single trailing param
+          # (e.g. `"/users/"` for `"/users/{id:id}"`). Empty when `fpNone`.
+        fastParamName: string
+          # Param name fed from the fast matcher. Empty when `fpNone`.
+        fastKind: FastParamKind
+          # `fpNone` unless the route is a single non-optional trailing
+          # placeholder with a fast-mirrorable class (see `matchFastClass`).
       else: discard
     case hasMiddleware: bool
       of true:
@@ -88,6 +111,14 @@ type
       httpConnect*, httpDelete*, httpPatch*,
       httpTrace*, httpOptions*, httpErrors*: TableRef[string, HttpRoute]
     httpWS*: TableRef[string, HttpRouteWs]
+    # Per-method dynamic-only route lists. Exact matches hit the tables
+    # above; dynamic matching iterates only these (static routes never
+    # enter the regex engine). Rebuilt under the router lock on
+    # register/unregister/replace; readers use them under the same lock.
+    dynGet*, dynPost*, dynPut*, dynHead*,
+      dynConnect*, dynDelete*, dynPatch*,
+      dynTrace*, dynOptions*: seq[HttpRoute]
+    dynWS*: seq[HttpRouteWs]
 
   HttpRouterError* = object of CatchableError
 
@@ -114,6 +145,53 @@ const
     else:
       proc(req: var Request, res: var Response) =
         discard
+
+proc matchFastClass*(kind: FastParamKind, s: string): bool {.inline.} =
+  ## True when the whole of `s` matches the class. All classes require at
+  ## least one char; `fpNone` never matches (falls back to the regex JIT).
+  if s.len == 0: return false
+  case kind
+  of fpNone: return false
+  of fpId:
+    for c in s:
+      if c < '0' or c > '9': return false
+    return true
+  of fpSlug:
+    for c in s:
+      if c notin {'0'..'9', 'A'..'Z', 'a'..'z', '-', '_'}: return false
+    return true
+  of fpAnySlug:
+    for c in s:
+      if c notin {'0'..'9', 'A'..'Z', 'a'..'z', '-', '_', '/'}: return false
+    return true
+  of fpAlphaSlug:
+    for c in s:
+      if c notin {'A'..'Z', 'a'..'z', '-', '_'}: return false
+    return true
+  of fpUuid:
+    if s.len != 36: return false
+    for i in 0 ..< 36:
+      let c = s[i]
+      if i in {8, 13, 18, 23}:
+        if c != '-': return false
+      elif c notin {'0'..'9', 'a'..'f', 'A'..'F'}: return false
+    return true
+  of fpHex:
+    for c in s:
+      if c notin {'0'..'9', 'a'..'f', 'A'..'F'}: return false
+    return true
+  of fpWord:
+    for c in s:
+      if c notin {'a'..'z', 'A'..'Z', '0'..'9', '_'}: return false
+    return true
+  of fpWordDots:
+    for c in s:
+      if c notin {'a'..'z', 'A'..'Z', '0'..'9', '_', '.'}: return false
+    return true
+  of fpAny:
+    for c in s:
+      if c == '\n': return false
+    return true
 
 #
 # Compile-time API
@@ -143,8 +221,42 @@ proc newHttpRouter*: HttpRouterInstance =
     httpOptions: TableRef[string, HttpRoute](),
     httpConnect: TableRef[string, HttpRoute](),
     httpWS: TableRef[string, HttpRouteWs](),
-    httpErrors: TableRef[string, HttpRoute]()
+    httpErrors: TableRef[string, HttpRoute](),
+    dynGet: @[], dynPost: @[], dynPut: @[], dynPatch: @[],
+    dynHead: @[], dynDelete: @[], dynTrace: @[],
+    dynOptions: @[], dynConnect: @[], dynWS: @[]
   )
+
+proc deriveFastMatcher*(path: string,
+    routeParams: seq[(string, bool)]): tuple[prefix, name: string,
+    kind: FastParamKind] =
+  ## Derive a regex-free matcher from the original route `path` when it is a
+  ## single non-optional trailing placeholder with a fast-mirrorable class
+  ## (e.g. `"/users/{id:id}"` → `("/users/", "id", fpId)`). Returns
+  ## `("", "", fpNone)` for anything else (multi-param, mid-path or optional
+  ## params, `semver`/custom classes), which keeps using the regex JIT.
+  result = ("", "", fpNone)
+  if routeParams.len != 1 or routeParams[0][1]: return
+  let pname = routeParams[0][0]
+  if path.len < 4 or path[^1] != '}': return
+  let openIdx = path.rfind('{')
+  if openIdx <= 0 or path.find('{') != openIdx: return
+  let inner = path[openIdx + 1 .. ^2]
+  let colon = inner.find(':')
+  if colon <= 0 or inner[0 ..< colon] != pname: return
+  let kind = case inner[colon + 1 .. ^1]
+    of "id": fpId
+    of "slug": fpSlug
+    of "anySlug": fpAnySlug
+    of "alphaSlug": fpAlphaSlug
+    of "uuid": fpUuid
+    of "hex": fpHex
+    of "word": fpWord
+    of "wordWithDots": fpWordDots
+    of "any": fpAny
+    else: fpNone
+  if kind == fpNone: return
+  result = (path[0 ..< openIdx], pname, kind)
 
 proc newHttpRoute(autolinked: (string, string),
           httpMethod: HttpMethod, callback: Callable,
@@ -186,13 +298,22 @@ proc newHttpRoute(autolinked: (string, string),
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
-  let prog = regex.compile(autolinked[0])
-  result.prog = prog
-  result.jit = compileRegex(prog)
   if isDynamic:
+    let (fastPrefix, fastName, fastKind) =
+      deriveFastMatcher(autolinked[1], routeParams)
+    result.fastPrefix = fastPrefix
+    result.fastParamName = fastName
+    result.fastKind = fastKind
     result.routePatterns = newOrderedTable[string, RoutePattern]()
     for (name, isOptional) in routeParams:
       result.routePatterns[name] = (key: name, reKey: "", isOptional: isOptional)
+    if fastKind == fpNone:
+      # Only patterns the fast matcher cannot mirror need the regex engine.
+      # Static routes never enter `matchRouteJIT`, so they skip compilation
+      # entirely (faster registration, no JIT memory).
+      let prog = regex.compile(autolinked[0])
+      result.prog = prog
+      result.jit = compileRegex(prog)
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
   # Pin the route cell: workers share route objects across threads and
@@ -215,17 +336,52 @@ proc newWsRoute(autolinked: (string, string), httpMethod: HttpMethod, callback: 
     hasMiddleware: middlewares.len > 0,
     hasAfterware: afterwares.len > 0
   )
-  let prog = regex.compile(autolinked[0])
-  result.prog = prog
-  result.jit = compileRegex(prog)
   if isDynamic:
+    let (fastPrefix, fastName, fastKind) =
+      deriveFastMatcher(autolinked[1], routeParams)
+    result.fastPrefix = fastPrefix
+    result.fastParamName = fastName
+    result.fastKind = fastKind
     result.routePatterns = newOrderedTable[string, RoutePattern]()
     for (name, isOptional) in routeParams:
       result.routePatterns[name] = (key: name, reKey: "", isOptional: isOptional)
+    if fastKind == fpNone:
+      let prog = regex.compile(autolinked[0])
+      result.prog = prog
+      result.jit = compileRegex(prog)
   if result.hasMiddleware: result.middlewares = middlewares
   if result.hasAfterware:  result.afterwares = afterwares
   # Pin the route cell (see newHttpRoute above).
   GC_ref(result)
+
+template addDynSlot(dynRoutes, routeObject) =
+  ## Append a freshly registered dynamic route to its per-method list.
+  if routeObject.httpRouteType == DynamicRoute:
+    dynRoutes.add(routeObject)
+
+template syncDynSlot(dynRoutes, routePath, routeObject) =
+  ## Keep a per-method dynamic list in sync with its exact-match table
+  ## after an explicit overwrite (`replaceRoute`). Works for both
+  ## `seq[HttpRoute]` and `seq[HttpRouteWs]`.
+  block:
+    var foundIdx = -1
+    for i in 0 ..< dynRoutes.len:
+      if dynRoutes[i].path == routePath:
+        foundIdx = i
+        break
+    if routeObject.httpRouteType == DynamicRoute:
+      if foundIdx >= 0: dynRoutes[foundIdx] = routeObject
+      else: dynRoutes.add(routeObject)
+    elif foundIdx >= 0:
+      dynRoutes.del(foundIdx)
+
+template removeDynSlot(dynRoutes, routePath) =
+  ## Drop `routePath` from a per-method dynamic list (no-op when absent).
+  block:
+    for i in 0 ..< dynRoutes.len:
+      if dynRoutes[i].path == routePath:
+        dynRoutes.del(i)
+        break
 
 proc registerRoute*(router: HttpRouterInstance,
   autolinked: sink (string, string),
@@ -243,6 +399,7 @@ proc registerRoute*(router: HttpRouterInstance,
       let routeObject = newWsRoute(autolinked, HttpGet, callback, middlewares, afterwares, routeParams)
       if not router.httpWS.hasKey(path):
         router.httpWS[path] = routeObject
+        addDynSlot(router.dynWS, routeObject)
     else:
       let routeObject =
         newHttpRoute(autolinked, httpMethod, callback,
@@ -251,30 +408,39 @@ proc registerRoute*(router: HttpRouterInstance,
       of HttpGet:
         if not router.httpGet.hasKey(path):
           router.httpGet[path] = routeObject
+          addDynSlot(router.dynGet, routeObject)
       of HttpPost:
         if not router.httpPost.hasKey(path):
           router.httpPost[path] = routeObject
+          addDynSlot(router.dynPost, routeObject)
       of HttpPut:
         if not router.httpPut.hasKey(path):
           router.httpPut[path] = routeObject
+          addDynSlot(router.dynPut, routeObject)
       of HttpPatch:
         if not router.httpPatch.hasKey(path):
           router.httpPatch[path] = routeObject
+          addDynSlot(router.dynPatch, routeObject)
       of HttpHead:
         if not router.httpHead.hasKey(path):
           router.httpHead[path] = routeObject
+          addDynSlot(router.dynHead, routeObject)
       of HttpDelete:
         if not router.httpDelete.hasKey(path):
           router.httpDelete[path] = routeObject
+          addDynSlot(router.dynDelete, routeObject)
       of HttpTrace:
         if not router.httpTrace.hasKey(path):
           router.httpTrace[path] = routeObject
+          addDynSlot(router.dynTrace, routeObject)
       of HttpOptions:
         if not router.httpOptions.hasKey(path):
           router.httpOptions[path] = routeObject
+          addDynSlot(router.dynOptions, routeObject)
       of HttpConnect:
         if not router.httpConnect.hasKey(path):
           router.httpConnect[path] = routeObject
+          addDynSlot(router.dynConnect, routeObject)
 
 proc registerRoute*(router: HttpRouterInstance, path: string,
                 httpMethod: HttpMethod, callback: Callable,
@@ -300,36 +466,46 @@ proc unregisterRoute*(router: HttpRouterInstance,
     of HttpGet:
       if router.httpGet.hasKey(path):
         router.httpGet.del(path)
+        removeDynSlot(router.dynGet, path)
     of HttpPost:
       if router.httpPost.hasKey(path):
         router.httpPost.del(path)
+        removeDynSlot(router.dynPost, path)
     of HttpPut:
       if router.httpPut.hasKey(path):
         router.httpPut.del(path)
+        removeDynSlot(router.dynPut, path)
     of HttpPatch:
       if router.httpPatch.hasKey(path):
         router.httpPatch.del(path)
+        removeDynSlot(router.dynPatch, path)
     of HttpHead:
       if router.httpHead.hasKey(path):
         router.httpHead.del(path)
+        removeDynSlot(router.dynHead, path)
     of HttpDelete:
       if router.httpDelete.hasKey(path):
         router.httpDelete.del(path)
+        removeDynSlot(router.dynDelete, path)
     of HttpTrace:
       if router.httpTrace.hasKey(path):
         router.httpTrace.del(path)
+        removeDynSlot(router.dynTrace, path)
     of HttpOptions:
       if router.httpOptions.hasKey(path):
         router.httpOptions.del(path)
+        removeDynSlot(router.dynOptions, path)
     of HttpConnect:
       if router.httpConnect.hasKey(path):
         router.httpConnect.del(path)
+        removeDynSlot(router.dynConnect, path)
 
 proc unregisterWsRoute*(router: HttpRouterInstance, path: string) =
   ## Remove a previously registered WebSocket route. No-op when missing.
   withLock rw:
     if router.httpWS.hasKey(path):
       router.httpWS.del(path)
+      removeDynSlot(router.dynWS, path)
 
 proc hasRoute*(router: HttpRouterInstance, path: string,
     httpMethod: HttpMethod): bool =
@@ -361,21 +537,41 @@ proc replaceRoute*(router: HttpRouterInstance,
   withLock rw:
     let path = autolinked[1]
     if isWebSocket:
-      router.httpWS[path] = newWsRoute(autolinked, HttpGet,
+      let wsRoute = newWsRoute(autolinked, HttpGet,
         callback, middlewares, afterwares, routeParams)
+      router.httpWS[path] = wsRoute
+      syncDynSlot(router.dynWS, path, wsRoute)
       return
     let routeObject = newHttpRoute(autolinked, httpMethod, callback,
       middlewares, afterwares, routeParams)
     case httpMethod
-    of HttpGet: router.httpGet[path] = routeObject
-    of HttpPost: router.httpPost[path] = routeObject
-    of HttpPut: router.httpPut[path] = routeObject
-    of HttpPatch: router.httpPatch[path] = routeObject
-    of HttpHead: router.httpHead[path] = routeObject
-    of HttpDelete: router.httpDelete[path] = routeObject
-    of HttpTrace: router.httpTrace[path] = routeObject
-    of HttpOptions: router.httpOptions[path] = routeObject
-    of HttpConnect: router.httpConnect[path] = routeObject
+    of HttpGet:
+      router.httpGet[path] = routeObject
+      syncDynSlot(router.dynGet, path, routeObject)
+    of HttpPost:
+      router.httpPost[path] = routeObject
+      syncDynSlot(router.dynPost, path, routeObject)
+    of HttpPut:
+      router.httpPut[path] = routeObject
+      syncDynSlot(router.dynPut, path, routeObject)
+    of HttpPatch:
+      router.httpPatch[path] = routeObject
+      syncDynSlot(router.dynPatch, path, routeObject)
+    of HttpHead:
+      router.httpHead[path] = routeObject
+      syncDynSlot(router.dynHead, path, routeObject)
+    of HttpDelete:
+      router.httpDelete[path] = routeObject
+      syncDynSlot(router.dynDelete, path, routeObject)
+    of HttpTrace:
+      router.httpTrace[path] = routeObject
+      syncDynSlot(router.dynTrace, path, routeObject)
+    of HttpOptions:
+      router.httpOptions[path] = routeObject
+      syncDynSlot(router.dynOptions, path, routeObject)
+    of HttpConnect:
+      router.httpConnect[path] = routeObject
+      syncDynSlot(router.dynConnect, path, routeObject)
 
 #
 # Verb helpers
@@ -727,39 +923,62 @@ var threadJitCtxs {.threadvar.}: Table[int, ptr JitCtx]
   ## own contexts. Contexts cannot be shared across slot counts: the
   ## generated code derives the stack base from the stack size baked in
   ## at compile time, so entry layouts must agree.
+var lastJitSlots {.threadvar.}: int
+  ## Fast-path cache for `getThreadJitCtx`: most requests hit routes with
+  ## the same slot count in a row, so a single compare skips the table.
+var lastJitCtx {.threadvar.}: ptr JitCtx
+var lastJitReady {.threadvar.}: bool
 
 proc getThreadJitCtx(slotsNeeded: int): ptr JitCtx =
   ## Return the calling thread's JIT context for `slotsNeeded` capture
   ## slots, allocating and caching it on first use.
+  if lastJitReady and lastJitSlots == slotsNeeded and lastJitCtx != nil:
+    return lastJitCtx
   let found = threadJitCtxs.getOrDefault(slotsNeeded, nil)
   if found != nil:
+    lastJitSlots = slotsNeeded
+    lastJitCtx = found
+    lastJitReady = true
     return found
   let ctx = newJitCtx(slotsNeeded)
   if ctx != nil:
     threadJitCtxs[slotsNeeded] = ctx
+    lastJitSlots = slotsNeeded
+    lastJitCtx = ctx
+    lastJitReady = true
   ctx
 
 proc matchRouteJIT*(route: HttpRoute, requestPath: string,
                     params: var Table[string, string]): bool =
-  ## Full-match an anchored route pattern against `requestPath` using the
-  ## regex JIT, extracting dynamic params into `params`.
+  ## Full-match an anchored route pattern against `requestPath`, extracting
+  ## dynamic params into `params`.
   ##
-  ## Thread-safe: the shared, immutable JIT code runs on the calling
-  ## thread's private context, so concurrent workers can match the same
-  ## route object while holding only the router read lock.
-  ##
-  ## Falls back to a per-call interpreter VM when JIT compilation is
-  ## unavailable for the pattern or the platform.
+  ## Single-trailing-param routes (`/users/{id:id}`) take a regex-free fast
+  ## path: a prefix compare plus a char-class scan. Everything else runs on
+  ## the regex JIT with the calling thread's private context, so concurrent
+  ## workers can match the same route object while holding only the router
+  ## read lock. Falls back to a per-call interpreter VM when JIT compilation
+  ## is unavailable for the pattern or the platform.
+  if route.httpRouteType == DynamicRoute and route.fastKind != fpNone:
+    if requestPath.len > route.fastPrefix.len and
+        requestPath.startsWith(route.fastPrefix):
+      let val = requestPath[route.fastPrefix.len .. ^1]
+      if matchFastClass(route.fastKind, val):
+        params[route.fastParamName] = val
+        return true
+    return false
   if route.jit.fn != nil:
     let ctx = getThreadJitCtx(route.jit.numSlots)
-    if ctx != nil:
+    if ctx != nil and ctx.capsBase != nil:
       if jitExecIn(route.jit, ctx, requestPath, 0) == requestPath.len:
         if route.httpRouteType == DynamicRoute:
-          let caps = jitCapturesIn(ctx)
+          # Read captures straight from the context buffer instead of
+          # `jitCapturesIn` (which copies them into a fresh seq per call).
+          let caps = cast[ptr UncheckedArray[int]](ctx.capsBase)
           var idx = 1
           for name, _ in route.routePatterns:
             let slot = (idx - 1) * 2
-            if slot + 1 < caps.len:
+            if slot + 1 < ctx.numSlots:
               let lo = caps[slot]
               let hi = caps[slot + 1]
               if lo >= 0 and hi >= lo:
@@ -768,6 +987,10 @@ proc matchRouteJIT*(route: HttpRoute, requestPath: string,
         return true
       return false
     # Context allocation failed — fall through to the interpreter.
+  if route.httpRouteType != DynamicRoute:
+    # Static routes never compile a pattern; without JIT there is
+    # nothing to match with.
+    return false
   var vm = regex.initRegexVM(route.prog)
   defer: regex.closeRegexVM(vm)
   let m = vm.find(requestPath)
@@ -783,13 +1006,17 @@ proc matchRouteJIT*(route: HttpRoute, requestPath: string,
   return false
 
 macro searchRoute(httpMethod: static string) =
-  result = newStmtList()
+  # `httpMethod` is the exact-match table name (`"httpGet"`); the dynamic
+  # list is the same suffix on `"dyn"` (`"dynGet"`).
   let verb = ident httpMethod
+  let dynVerb = ident("dyn" & httpMethod[4 .. ^1])
+  result = newStmtList()
   add result, quote do:
-    if likely(router.`verb`.hasKey(requestPath)):
-      result.route = router.`verb`[requestPath]
+    let foundRoute = router.`verb`.getOrDefault(requestPath, nil)
+    if likely(foundRoute != nil):
+      result.route = foundRoute
     else:
-      for k, r in router.`verb`:
+      for r in router.`dynVerb`:
         if matchRouteJIT(r, requestPath, result.params):
           result.route = r
           break
@@ -801,7 +1028,7 @@ macro searchRouteWs*() =
     if router.httpWS.hasKey(requestPath):
       result.route = router.httpWS[requestPath]
     else:
-      for k, r in router.httpWS:
+      for r in router.dynWS:
         if matchRouteJIT(r, requestPath, result.params):
           result.route = r
           break
@@ -824,10 +1051,9 @@ proc checkExists*(router: var HttpRouterInstance,
         searchRoute("httpHead")
         if result.route.isNil:
           # Fallback to GET table (exact + dynamic).
-          if likely(router.httpGet.hasKey(requestPath)):
-            result.route = router.httpGet[requestPath]
-          else:
-            for k, r in router.httpGet:
+          result.route = router.httpGet.getOrDefault(requestPath, nil)
+          if result.route.isNil:
+            for r in router.dynGet:
               if matchRouteJIT(r, requestPath, result.params):
                 result.route = r
                 break
@@ -844,28 +1070,28 @@ proc allowedMethods*(router: var HttpRouterInstance,
   ## (exact match first, then dynamic patterns). Used for `405`
   ## handling and `Allow` headers. Single lock, no nested `checkExists`.
   withLock rw:
-    template tryTable(tbl, meth: untyped) =
+    template tryTable(tbl, dynTbl, meth: untyped) =
       block:
         var matched = false
         if tbl.hasKey(requestPath):
           matched = true
         else:
           var tmp = initTable[string, string]()
-          for k, r in tbl:
+          for r in dynTbl:
             if matchRouteJIT(r, requestPath, tmp):
               matched = true
               break
         if matched:
           result.add(meth)
-    tryTable(router.httpGet, HttpGet)
-    tryTable(router.httpPost, HttpPost)
-    tryTable(router.httpPut, HttpPut)
-    tryTable(router.httpPatch, HttpPatch)
-    tryTable(router.httpHead, HttpHead)
-    tryTable(router.httpDelete, HttpDelete)
-    tryTable(router.httpTrace, HttpTrace)
-    tryTable(router.httpOptions, HttpOptions)
-    tryTable(router.httpConnect, HttpConnect)
+    tryTable(router.httpGet, router.dynGet, HttpGet)
+    tryTable(router.httpPost, router.dynPost, HttpPost)
+    tryTable(router.httpPut, router.dynPut, HttpPut)
+    tryTable(router.httpPatch, router.dynPatch, HttpPatch)
+    tryTable(router.httpHead, router.dynHead, HttpHead)
+    tryTable(router.httpDelete, router.dynDelete, HttpDelete)
+    tryTable(router.httpTrace, router.dynTrace, HttpTrace)
+    tryTable(router.httpOptions, router.dynOptions, HttpOptions)
+    tryTable(router.httpConnect, router.dynConnect, HttpConnect)
 
 proc isMethodNotAllowed*(router: var HttpRouterInstance,
     requestPath: string, httpMethod: HttpMethod): bool =
