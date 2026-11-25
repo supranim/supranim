@@ -1,9 +1,9 @@
 # Package
 
-version       = "0.1.13"
+version       = "0.1.14"
 author        = "OpenPeeps"
 description   = "A full-featured web framework for Nim"
-license       = "LGPL-3.0-or-later"
+license       = "MIT"
 srcDir        = "src"
 
 # Core dependencies
